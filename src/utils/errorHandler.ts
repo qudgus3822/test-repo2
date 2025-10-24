@@ -1,5 +1,15 @@
 import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 import type { ApiError } from "@/types/api";
+
+/**errorHandler (API 에러 처리)
+  - 역할: API 요청 중 발생하는 에러를 변환하고 처리
+  - 대상: 비동기 에러, Axios 에러
+  - 예시:
+    - 401 인증 에러
+    - 404 리소스 없음
+    - 500 서버 에러
+ */
 
 /**
  * API 에러를 ApiError 타입으로 변환
@@ -66,8 +76,33 @@ export const handleApiError = (error: unknown): ApiError => {
 
 /**
  * 에러 알림 표시
- * TODO: 토스트나 알림 라이브러리와 연동
+ * react-hot-toast를 사용하여 사용자에게 에러 메시지를 표시
  */
 export const showErrorNotification = (error: ApiError) => {
   console.error("API Error:", error);
+
+  // 상태 코드에 따라 다른 스타일의 토스트 표시
+  const message = error.message;
+
+  if (error.status === 401 || error.status === 403) {
+    // 인증/권한 에러는 경고 스타일
+    toast.error(message, {
+      duration: 4000,
+      position: "top-right",
+      icon: "🔒",
+    });
+  } else if (error.status && error.status >= 500) {
+    // 서버 에러
+    toast.error(message, {
+      duration: 5000,
+      position: "top-right",
+      icon: "⚠️",
+    });
+  } else {
+    // 일반 에러
+    toast.error(message, {
+      duration: 3000,
+      position: "top-right",
+    });
+  }
 };
