@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local commit message guide (not shared with team)
+COMMIT_MESSAGE_GUIDE.md
