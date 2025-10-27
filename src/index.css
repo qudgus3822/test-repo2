@@ -1,1 +1,9 @@
+@import "pretendard/dist/web/static/pretendard.css";
 @import "tailwindcss";
+
+@layer base {
+  * {
+    font-family: Pretendard, "Pretendard", MalgunGothic, "맑은 고딕", "돋움",
+      Dotum, AppleGothic, Sans-serif, Arial;
+  }
+}

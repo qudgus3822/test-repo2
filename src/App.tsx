@@ -39,10 +39,10 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <Toaster />
           <Routes>
+            {/* TODO:로그인 페이지 => user 권한에 따라 ProtectedRoute 처리 */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/logout" element={<LogoutPage />} />
             <Route element={<Layout />}>
-              {/* TODO:로그인 페이지 => user 권한에 따라 ProtectedRoute 처리 */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/logout" element={<LogoutPage />} />
               <Route path="/" element={<DashboardPage />} />
               {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
             </Route>
