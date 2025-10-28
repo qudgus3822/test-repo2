@@ -45,6 +45,7 @@ const LoginPage = () => {
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
       <div className="flex w-full max-w-md flex-col gap-4 rounded-lg bg-white p-8 shadow-md justify-between">
+        {/* 로고 */}
         <div className="flex justify-center">
           <img src={logoWhite} alt="logo" className="w-18 h-18" />
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 py-3">

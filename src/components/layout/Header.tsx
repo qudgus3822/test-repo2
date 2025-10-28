@@ -1,23 +1,24 @@
-import { Search, Bell, User } from 'lucide-react'
+import { Search, Bell, User } from "lucide-react";
+import logoBlack from "@/assets/images/bithumb_logo_black_vertical.png";
 
 export default function Header() {
-  const currentDate = new Date().toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const currentDate = new Date().toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
     <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-gray-200 z-10">
       <div className="h-full flex items-center justify-between px-6">
         {/* 로고 */}
-        <div className="flex items-center gap-3 w-56">
-          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-lg">B</span>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900">BDPI Dashboard</h1>
+        <div className="flex gap-3 w-56">
+          <img src={logoBlack} alt="logo" className="w-12 h-12" />
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 py-2">
+            Barcode <span className="text-[#FF6C00]">plus</span>
+          </h1>
         </div>
 
         {/* 검색바 */}
@@ -55,5 +56,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

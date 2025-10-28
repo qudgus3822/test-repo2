@@ -43,8 +43,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/logout" element={<LogoutPage />} />
             <Route element={<Layout />}>
-              <Route path="/" element={<DashboardPage />} />
-              {/* <Route path="/dashboard" element={<DashboardPage />} /> */}
+              <Route path="/dashboard" element={<DashboardPage />} />
             </Route>
           </Routes>
           {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
