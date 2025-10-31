@@ -1,4 +1,11 @@
-import { Home, FolderKanban, Users, BarChart3, Settings } from "lucide-react";
+import {
+  Home,
+  FolderKanban,
+  Users,
+  BarChart3,
+  Settings,
+  TriangleAlert,
+} from "lucide-react";
 
 interface SidebarProps {
   activeMenu?: string;
@@ -6,8 +13,9 @@ interface SidebarProps {
 
 const menuItems = [
   { id: "home", label: "홈", icon: Home },
-  { id: "projects", label: "프로젝트", icon: FolderKanban },
-  { id: "organization", label: "조직", icon: Users },
+  { id: "projects", label: "프로젝트/운영", icon: FolderKanban },
+  { id: "organization", label: "조직 비교", icon: Users },
+  { id: "projects", label: "장애 관리", icon: TriangleAlert },
   { id: "metrics", label: "지표 관리", icon: BarChart3 },
   { id: "settings", label: "설정", icon: Settings },
 ];
