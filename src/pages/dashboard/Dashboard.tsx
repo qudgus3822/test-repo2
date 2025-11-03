@@ -4,7 +4,6 @@ import {
   MetricsOverview,
   GoalAchievement,
   ServiceStability,
-  SERVICE_ICONS,
   MetricsRanking,
   ProductivityTrend,
 } from "@/components/dashboard";
@@ -18,7 +17,7 @@ import {
   mockProductionTrend,
   mockGoalAchievement,
   mockMetricRankings,
-} from "@/api/mocks/dashboard.mock";
+} from "@/api/mocks/dashboard";
 
 const DashboardPage = () => {
   const [period, setPeriod] = useState<PeriodType>("monthly");
@@ -72,7 +71,6 @@ const DashboardPage = () => {
         value: Math.abs(mockServiceStability.deploymentFrequency.changeRate),
         isPositive: mockServiceStability.deploymentFrequency.changeRate > 0,
       },
-      icon: SERVICE_ICONS.deployment,
       status: mockServiceStability.deploymentFrequency.threshold,
       iconColor:
         GOAL_STATUS_COLORS[mockServiceStability.deploymentFrequency.threshold],
@@ -86,7 +84,6 @@ const DashboardPage = () => {
         value: Math.abs(mockServiceStability.deploymentSuccessRate.changeRate),
         isPositive: mockServiceStability.deploymentSuccessRate.changeRate > 0,
       },
-      icon: SERVICE_ICONS.success,
       status: mockServiceStability.deploymentSuccessRate.threshold,
       iconColor:
         GOAL_STATUS_COLORS[
@@ -102,7 +99,6 @@ const DashboardPage = () => {
         value: Math.abs(mockServiceStability.mttr.changeRate),
         isPositive: mockServiceStability.mttr.changeRate > 0,
       },
-      icon: SERVICE_ICONS.mttr,
       status: mockServiceStability.mttr.threshold,
       iconColor: GOAL_STATUS_COLORS[mockServiceStability.mttr.threshold],
     },
@@ -115,7 +111,6 @@ const DashboardPage = () => {
         value: Math.abs(mockServiceStability.mttd.changeRate),
         isPositive: mockServiceStability.mttd.changeRate > 0,
       },
-      icon: SERVICE_ICONS.mttd,
       status: mockServiceStability.mttd.threshold,
       iconColor: GOAL_STATUS_COLORS[mockServiceStability.mttd.threshold],
     },
@@ -128,7 +123,6 @@ const DashboardPage = () => {
         value: Math.abs(mockServiceStability.incidentCount.changeRate),
         isPositive: mockServiceStability.incidentCount.changeRate > 0,
       },
-      icon: SERVICE_ICONS.incidents,
       status: mockServiceStability.incidentCount.threshold,
       iconColor:
         GOAL_STATUS_COLORS[mockServiceStability.incidentCount.threshold],
@@ -153,9 +147,10 @@ const DashboardPage = () => {
   const trendData = mockProductionTrend.trendData.map((item) => ({
     month: item.month.split("-")[1] + "월", // '2025-05' -> '05월'
     "BDPI 평균": item.bdpiAverage,
-    "코드 품질": item.codeQuality,
-    "리뷰 품질": item.reviewQuality,
     "개발 효율": item.developmentEfficiency,
+    "리뷰 품질": item.reviewQuality,
+    목표치: item.target,
+    "코드 품질": item.codeQuality,
   }));
 
   return (

@@ -1,15 +1,11 @@
-import {
-  Rocket,
-  CheckCircle2,
-  Clock,
-  Search,
-  TriangleAlert,
-} from "lucide-react";
+import { CheckCircle2, TriangleAlert } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { TREND_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
+
+type MetricStatus = "excellent" | "warning" | "danger";
 
 interface Metric {
   id: string;
@@ -20,9 +16,16 @@ interface Metric {
     value: number;
     isPositive: boolean;
   };
-  icon: LucideIcon;
+  status: MetricStatus;
   iconColor: string;
 }
+
+// status에 따른 아이콘 매핑
+const STATUS_ICONS: Record<MetricStatus, LucideIcon> = {
+  excellent: CheckCircle2,
+  warning: TriangleAlert,
+  danger: TriangleAlert,
+};
 
 interface ServiceStabilityProps {
   metrics: Metric[];
@@ -39,7 +42,7 @@ export const ServiceStability = ({ metrics }: ServiceStabilityProps) => {
       </h3>
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
         {metrics.map((metric) => {
-          const Icon = metric.icon;
+          const Icon = STATUS_ICONS[metric.status];
           return (
             <div key={metric.id} className="flex flex-col items-center">
               {/* 아이콘 */}
@@ -85,12 +88,3 @@ export const ServiceStability = ({ metrics }: ServiceStabilityProps) => {
     </Card>
   );
 };
-
-// 아이콘 매핑을 위한 헬퍼
-export const SERVICE_ICONS = {
-  deployment: Rocket,
-  success: CheckCircle2,
-  mttr: Clock,
-  mttd: Search,
-  incidents: TriangleAlert,
-} as const;

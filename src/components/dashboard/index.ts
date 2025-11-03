@@ -5,6 +5,6 @@
 export { DateFilter } from "./DateFilter";
 export { MetricsOverview } from "./MetricsOverview";
 export { GoalAchievement } from "./GoalAchievement";
-export { ServiceStability, SERVICE_ICONS } from "./ServiceStability";
+export { ServiceStability } from "./ServiceStability";
 export { MetricsRanking } from "./MetricsRanking";
 export { ProductivityTrend } from "./ProductivityTrend";
