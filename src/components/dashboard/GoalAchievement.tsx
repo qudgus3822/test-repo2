@@ -1,4 +1,4 @@
-import { CircularChart } from "@/libs/chart";
+import { DonutChart } from "@/libs/chart";
 
 interface GoalAchievementProps {
   achieved: number;
@@ -18,7 +18,7 @@ export const GoalAchievement = ({
     <div className="bg-white p-6 rounded-lg border border-gray-200">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">목표 달성률</h3>
       <div className="flex flex-col items-center">
-        <CircularChart
+        <DonutChart
           value={percentage}
           maxValue={100}
           showPercentage

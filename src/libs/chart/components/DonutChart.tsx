@@ -1,6 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-interface CircularChartProps {
+interface DonutChartProps {
   value: number;
   maxValue?: number;
   size?: number;
@@ -17,10 +17,10 @@ interface CircularChartProps {
 }
 
 /**
- * 원형 도넛 차트 컴포넌트
+ * 도넛 차트 컴포넌트
  * 중앙에 값을 표시하는 도넛 형태의 차트
  */
-export const CircularChart = ({
+export const DonutChart = ({
   value,
   maxValue = 100,
   size = 160,
@@ -31,7 +31,7 @@ export const CircularChart = ({
   sublabel,
   showPercentage = false,
   trend,
-}: CircularChartProps) => {
+}: DonutChartProps) => {
   const percentage = (value / maxValue) * 100;
   const data = [
     { name: "value", value: value },

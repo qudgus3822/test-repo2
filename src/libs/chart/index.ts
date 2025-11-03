@@ -7,7 +7,7 @@ export { LineChart } from "./components/LineChart";
 export { AreaChart } from "./components/AreaChart";
 export { BarChart } from "./components/BarChart";
 export { RadarChart } from "./components/RadarChart";
-export { CircularChart } from "./components/CircularChart";
+export { DonutChart } from "./components/DonutChart";
 
 export {
   CHART_COLORS,

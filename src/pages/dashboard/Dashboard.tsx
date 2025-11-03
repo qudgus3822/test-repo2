@@ -14,16 +14,17 @@ const DashboardPage = () => {
   const [period, setPeriod] = useState<"daily" | "monthly">("monthly");
   const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // 2025년 10월
 
-  // 샘플 데이터: 메트릭 개요
-  const metricsData = [
-    {
-      id: "timing",
-      value: 77.4,
-      label: "전시 타이밍 확보",
-      sublabel: "평균 확보율",
-      color: CHART_COLORS.primary,
-      trend: { value: 2.3, isPositive: true },
-    },
+  // 샘플 데이터: 전사 BDPI 평균 (텍스트 표시)
+  const bdpiAverage = {
+    value: 77.4,
+    label: "전사 BDPI 평균",
+    sublabel: "평균 확보율", // 현재 사용하지 않음
+    color: "#4751B8",
+    trend: { value: 2.3, isPositive: true },
+  };
+
+  // 샘플 데이터: 차트 메트릭 (도넛 차트 표시)
+  const chartMetrics = [
     {
       id: "code",
       value: 85.3,
@@ -180,14 +181,14 @@ const DashboardPage = () => {
       </div>
 
       {/* 메트릭 개요 */}
-      <MetricsOverview metrics={metricsData} />
+      <MetricsOverview bdpiAverage={bdpiAverage} chartMetrics={chartMetrics} />
 
       {/* 목표 달성률 & 서비스 안정성 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <GoalAchievement achieved={23} total={30} />
         <div className="lg:col-span-2">
           <ServiceStability metrics={stabilityMetrics} />
         </div>
+        <GoalAchievement achieved={23} total={30} />
       </div>
 
       {/* 지표 순위 */}
