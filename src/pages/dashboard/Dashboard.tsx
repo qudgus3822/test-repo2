@@ -9,202 +9,198 @@ import {
   ProductivityTrend,
 } from "@/components/dashboard";
 import { CHART_COLORS } from "@/libs/chart";
+import { type PeriodType } from "@/components/ui/PeriodNavigator";
+import { Card } from "@/components/ui/Card";
+import { GOAL_STATUS_COLORS, BRAND_COLORS } from "@/styles/colors";
+import {
+  mockCompanyQuality,
+  mockServiceStability,
+  mockProductionTrend,
+  mockGoalAchievement,
+  mockMetricRankings,
+} from "@/api/mocks/dashboard.mock";
 
 const DashboardPage = () => {
-  const [period, setPeriod] = useState<"daily" | "monthly">("monthly");
+  const [period, setPeriod] = useState<PeriodType>("monthly");
   const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // 2025년 10월
 
-  // 샘플 데이터: 전사 BDPI 평균 (텍스트 표시)
+  // 전사 BDPI 평균 (목업 데이터 사용)
   const bdpiAverage = {
-    value: 77.4,
+    value: mockCompanyQuality.bdpiAverage,
     label: "전사 BDPI 평균",
-    sublabel: "평균 확보율", // 현재 사용하지 않음
-    color: "#4751B8",
-    trend: { value: 2.3, isPositive: true },
+    sublabel: "평균 확보율",
+    color: BRAND_COLORS.secondary,
+    trend: {
+      value: Math.abs(mockCompanyQuality.bdpiChange),
+      isPositive: mockCompanyQuality.bdpiChange > 0,
+    },
   };
 
-  // 샘플 데이터: 차트 메트릭 (도넛 차트 표시)
+  // 차트 메트릭 (목업 데이터 사용)
   const chartMetrics = [
     {
       id: "code",
-      value: 85.3,
+      value: mockCompanyQuality.codeQuality.score,
       label: "코드 품질",
-      sublabel: "7가지 평균",
+      sublabel: `${mockCompanyQuality.codeQuality.achievedMetrics}/${mockCompanyQuality.codeQuality.totalMetrics}건 달성`,
       color: CHART_COLORS.success,
     },
     {
       id: "review",
-      value: 69.5,
+      value: mockCompanyQuality.reviewQuality.score,
       label: "리뷰 품질",
-      sublabel: "5/12건 달성",
+      sublabel: `${mockCompanyQuality.reviewQuality.achievedMetrics}/${mockCompanyQuality.reviewQuality.totalMetrics}건 달성`,
       color: CHART_COLORS.warning,
     },
     {
       id: "efficiency",
-      value: 77.4,
+      value: mockCompanyQuality.developmentEfficiency.score,
       label: "개발 효율",
-      sublabel: "6/9건 달성",
+      sublabel: `${mockCompanyQuality.developmentEfficiency.achievedMetrics}/${mockCompanyQuality.developmentEfficiency.totalMetrics}건 달성`,
       color: CHART_COLORS.info,
     },
   ];
 
-  // 샘플 데이터: 서비스 안정성
+  // 서비스 안정성 (목업 데이터 사용)
   const stabilityMetrics = [
     {
       id: "deployment",
-      label: "배포빈도수",
-      value: "312회",
-      target: "250회",
-      trend: { value: 18, isPositive: true },
+      label: mockServiceStability.deploymentFrequency.metricName,
+      value: `${mockServiceStability.deploymentFrequency.count}회`,
+      target: `${mockServiceStability.deploymentFrequency.targetCount}회`,
+      trend: {
+        value: Math.abs(mockServiceStability.deploymentFrequency.changeRate),
+        isPositive: mockServiceStability.deploymentFrequency.changeRate > 0,
+      },
       icon: SERVICE_ICONS.deployment,
-      iconColor: CHART_COLORS.primary,
+      status: mockServiceStability.deploymentFrequency.threshold,
+      iconColor:
+        GOAL_STATUS_COLORS[mockServiceStability.deploymentFrequency.threshold],
     },
     {
       id: "success",
-      label: "배포 성공률",
-      value: "94.8%",
-      target: "95%",
-      trend: { value: 0, isPositive: true },
+      label: mockServiceStability.deploymentSuccessRate.metricName,
+      value: `${mockServiceStability.deploymentSuccessRate.rate}%`,
+      target: `${mockServiceStability.deploymentSuccessRate.targetRate}%`,
+      trend: {
+        value: Math.abs(mockServiceStability.deploymentSuccessRate.changeRate),
+        isPositive: mockServiceStability.deploymentSuccessRate.changeRate > 0,
+      },
       icon: SERVICE_ICONS.success,
-      iconColor: CHART_COLORS.success,
+      status: mockServiceStability.deploymentSuccessRate.threshold,
+      iconColor:
+        GOAL_STATUS_COLORS[
+          mockServiceStability.deploymentSuccessRate.threshold
+        ],
     },
     {
       id: "mttr",
-      label: "MTTR",
-      value: "1.7시간",
-      target: "2시간 이하",
-      trend: { value: 22, isPositive: true },
+      label: mockServiceStability.mttr.metricName,
+      value: `${mockServiceStability.mttr.hours}시간`,
+      target: `${mockServiceStability.mttr.targetHours}시간 이하`,
+      trend: {
+        value: Math.abs(mockServiceStability.mttr.changeRate),
+        isPositive: mockServiceStability.mttr.changeRate > 0,
+      },
       icon: SERVICE_ICONS.mttr,
-      iconColor: CHART_COLORS.info,
+      status: mockServiceStability.mttr.threshold,
+      iconColor: GOAL_STATUS_COLORS[mockServiceStability.mttr.threshold],
     },
     {
       id: "mttd",
-      label: "MTTD",
-      value: "1.2시간",
-      target: "1.5시간 이하",
-      trend: { value: 14, isPositive: false },
+      label: mockServiceStability.mttd.metricName,
+      value: `${mockServiceStability.mttd.hours}시간`,
+      target: `${mockServiceStability.mttd.targetHours}시간 이하`,
+      trend: {
+        value: Math.abs(mockServiceStability.mttd.changeRate),
+        isPositive: mockServiceStability.mttd.changeRate > 0,
+      },
       icon: SERVICE_ICONS.mttd,
-      iconColor: CHART_COLORS.secondary,
+      status: mockServiceStability.mttd.threshold,
+      iconColor: GOAL_STATUS_COLORS[mockServiceStability.mttd.threshold],
     },
     {
       id: "incidents",
-      label: "장애 발생건수",
-      value: "8건",
-      target: "10건 이하",
-      trend: { value: 14, isPositive: true },
+      label: mockServiceStability.incidentCount.metricName,
+      value: `${mockServiceStability.incidentCount.count}건`,
+      target: `${mockServiceStability.incidentCount.targetCount}건 이하`,
+      trend: {
+        value: Math.abs(mockServiceStability.incidentCount.changeRate),
+        isPositive: mockServiceStability.incidentCount.changeRate > 0,
+      },
       icon: SERVICE_ICONS.incidents,
-      iconColor: CHART_COLORS.danger,
+      status: mockServiceStability.incidentCount.threshold,
+      iconColor:
+        GOAL_STATUS_COLORS[mockServiceStability.incidentCount.threshold],
     },
   ];
 
-  // 샘플 데이터: 상승 지표
-  const topGainers = [
-    { rank: 1, name: "데스크바이퍼지", change: 15.3 },
-    { rank: 2, name: "리뷰완성률", change: 12.8 },
-    { rank: 3, name: "배포성공률", change: 10.2 },
-    { rank: 4, name: "조회공유율", change: 8.7 },
-    { rank: 5, name: "커밋빈도", change: 7.6 },
-  ];
+  // 우수 지표 (목업 데이터 사용)
+  const topGainers = mockMetricRankings.growth.map((item) => ({
+    rank: item.rank,
+    name: item.metricName,
+    change: item.changeRate,
+  }));
 
-  // 샘플 데이터: 하락 지표
-  const topLosers = [
-    { rank: 1, name: "장애발생건수", change: -8.5 },
-    { rank: 2, name: "코드복잡도", change: -6.3 },
-    { rank: 3, name: "기술부채", change: -5.2 },
-    { rank: 4, name: "MTTR", change: -4.8 },
-    { rank: 5, name: "보안취약점수", change: -3.1 },
-  ];
+  // 위험 지표 (목업 데이터 사용)
+  const topLosers = mockMetricRankings.warning.map((item) => ({
+    rank: item.rank,
+    name: item.metricName,
+    change: item.changeRate,
+  }));
 
-  // 샘플 데이터: 개발생산성 트렌드
-  const trendData = [
-    {
-      month: "5월",
-      "타이밍 확보": 69,
-      "코드 품질": 75,
-      "개발 효율": 72,
-      "리뷰 품질": 68,
-      "코드 통합": 73,
-    },
-    {
-      month: "6월",
-      "타이밍 확보": 71,
-      "코드 품질": 78,
-      "개발 효율": 73,
-      "리뷰 품질": 70,
-      "코드 통합": 75,
-    },
-    {
-      month: "7월",
-      "타이밍 확보": 73,
-      "코드 품질": 80,
-      "개발 효율": 75,
-      "리뷰 품질": 72,
-      "코드 통합": 76,
-    },
-    {
-      month: "8월",
-      "타이밍 확보": 75,
-      "코드 품질": 82,
-      "개발 효율": 76,
-      "리뷰 품질": 74,
-      "코드 통합": 78,
-    },
-    {
-      month: "9월",
-      "타이밍 확보": 76,
-      "코드 품질": 84,
-      "개발 효율": 77,
-      "리뷰 품질": 75,
-      "코드 통합": 79,
-    },
-    {
-      month: "10월",
-      "타이밍 확보": 77,
-      "코드 품질": 85,
-      "개발 효율": 78,
-      "리뷰 품질": 76,
-      "코드 통합": 80,
-    },
-  ];
+  // 개발생산성 트렌드 (목업 데이터 사용)
+  const trendData = mockProductionTrend.trendData.map((item) => ({
+    month: item.month.split("-")[1] + "월", // '2025-05' -> '05월'
+    "BDPI 평균": item.bdpiAverage,
+    "코드 품질": item.codeQuality,
+    "리뷰 품질": item.reviewQuality,
+    "개발 효율": item.developmentEfficiency,
+  }));
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between mb-6">
-        {/* 날짜 필터 */}
-        <DateFilter
-          period={period}
-          onPeriodChange={setPeriod}
-          currentDate={currentDate}
-          onDateChange={setCurrentDate}
-        />
-      </div>
-
-      {/* 메트릭 개요 */}
-      <MetricsOverview bdpiAverage={bdpiAverage} chartMetrics={chartMetrics} />
-
-      {/* 목표 달성률 & 서비스 안정성 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <ServiceStability metrics={stabilityMetrics} />
-        </div>
-        <GoalAchievement achieved={23} total={30} />
-      </div>
-
-      {/* 지표 순위 */}
-      <MetricsRanking topGainers={topGainers} topLosers={topLosers} />
-
-      {/* 개발생산성 트렌드 */}
-      <ProductivityTrend
-        data={trendData}
-        metrics={[
-          "타이밍 확보",
-          "코드 품질",
-          "개발 효율",
-          "리뷰 품질",
-          "코드 통합",
-        ]}
+      {/* 헤더 - 날짜 필터 */}
+      <DateFilter
+        period={period}
+        onPeriodChange={setPeriod}
+        currentDate={currentDate}
+        onDateChange={setCurrentDate}
       />
+
+      <div className="flex gap-6">
+        <div className="w-2/3 space-y-6">
+          {/* 메트릭 개요 */}
+          <MetricsOverview
+            bdpiAverage={bdpiAverage}
+            chartMetrics={chartMetrics}
+          />
+          {/* 서비스 안정성 */}
+          <ServiceStability metrics={stabilityMetrics} />
+
+          {/* 개발생산성 트렌드 */}
+          <ProductivityTrend
+            data={trendData}
+            metrics={["BDPI 평균", "코드 품질", "리뷰 품질", "개발 효율"]}
+          />
+        </div>
+
+        <div className="w-1/3 space-y-6">
+          <Card>
+            {/* 목표 달성률 */}
+            <GoalAchievement
+              achieved={mockGoalAchievement.achievedMetrics}
+              total={mockGoalAchievement.totalMetrics}
+            />
+
+            {/* 구분선-수평선 */}
+            <div className="border-t border-[#E2E8F0] my-6"></div>
+
+            {/* 지표 순위 */}
+            <MetricsRanking topGainers={topGainers} topLosers={topLosers} />
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

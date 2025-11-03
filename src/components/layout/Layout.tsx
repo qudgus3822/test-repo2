@@ -12,7 +12,7 @@ export default function Layout() {
       <Sidebar />
 
       {/* Main Content */}
-      <main className="ml-56 pt-20">
+      <main className="ml-16 lg:ml-[200px] xl:ml-[260px] pt-20 transition-all duration-300">
         <div className="p-8">
           <Outlet />
         </div>

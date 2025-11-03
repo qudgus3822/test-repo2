@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { TREND_COLORS } from "@/styles/colors";
 
 interface DonutChartProps {
   value: number;
@@ -67,9 +68,12 @@ export const DonutChart = ({
           </div>
           {trend && (
             <div
-              className={`flex items-center gap-1 text-sm font-medium ${
-                trend.isPositive ? "text-green-600" : "text-red-600"
-              }`}
+              className="flex items-center gap-1 text-sm font-medium"
+              style={{
+                color: trend.isPositive
+                  ? TREND_COLORS.increase
+                  : TREND_COLORS.decrease,
+              }}
             >
               <span>{trend.isPositive ? "↑" : "↓"}</span>
               <span>{Math.abs(trend.value)}%</span>

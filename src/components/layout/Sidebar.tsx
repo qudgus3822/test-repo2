@@ -22,7 +22,7 @@ const menuItems = [
 
 export default function Sidebar({ activeMenu = "home" }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-white border-r border-gray-200">
+    <aside className="fixed left-0 top-0 h-screen w-16 lg:w-[200px] xl:w-[260px] bg-white border-r border-[#E2E8F0] transition-all duration-300">
       <nav className="mt-20 px-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -41,8 +41,8 @@ export default function Sidebar({ activeMenu = "home" }: SidebarProps) {
                 }
               `}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-sm font-medium">{item.label}</span>
+              <Icon className="w-5 h-5 flex-shrink-0" />
+              <span className="font-medium hidden lg:block">{item.label}</span>
             </a>
           );
         })}

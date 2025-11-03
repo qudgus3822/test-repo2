@@ -18,10 +18,10 @@ libs/
 
 ### 인프라 계층 (libs) vs 비즈니스 계층 (api)
 
-| 계층 | 경로 | 책임 | 예시 |
-|------|------|------|------|
-| **인프라** | `src/libs/` | "어떻게" 통신하는가 | axios 설정, 인터셉터, SSO 연동 |
-| **비즈니스** | `src/api/` | "무엇을" 요청하는가 | 대시보드 데이터 조회, 사용자 생성 |
+| 계층         | 경로        | 책임                | 예시                              |
+| ------------ | ----------- | ------------------- | --------------------------------- |
+| **인프라**   | `src/libs/` | "어떻게" 통신하는가 | axios 설정, 인터셉터, SSO 연동    |
+| **비즈니스** | `src/api/`  | "무엇을" 요청하는가 | 대시보드 데이터 조회, 사용자 생성 |
 
 ## 사용 예시
 
@@ -29,16 +29,16 @@ libs/
 
 ```tsx
 // libs/axios를 직접 사용
-import apiClient from '@/libs/axios';
+import apiClient from "@/libs/axios";
 
-const response = await apiClient.get('/endpoint');
+const response = await apiClient.get("/endpoint");
 ```
 
 **대부분의 경우 `libs`를 직접 사용하지 않고, `api/hooks`를 사용하세요:**
 
 ```tsx
 // 권장: api/hooks 사용
-import { useExamples } from '@/api/hooks/useExample';
+import { useExamples } from "@/api/hooks/useExample";
 
 const { data, isLoading } = useExamples();
 ```
@@ -47,12 +47,12 @@ const { data, isLoading } = useExamples();
 
 ```tsx
 // src/main.tsx
-import { QueryProvider } from '@/libs/react-query';
+import { QueryProvider } from "@/libs/react-query";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <QueryProvider>
     <App />
-  </QueryProvider>
+  </QueryProvider>,
 );
 ```
 
@@ -60,20 +60,20 @@ createRoot(document.getElementById('root')!).render(
 
 ```tsx
 // 라인 차트 사용
-import { LineChart, CHART_COLORS } from '@/libs/chart';
+import { LineChart, CHART_COLORS } from "@/libs/chart";
 
 const data = [
-  { month: '1월', 지수: 65 },
-  { month: '2월', 지수: 72 },
+  { month: "1월", 지수: 65 },
+  { month: "2월", 지수: 72 },
 ];
 
 <LineChart
   data={data}
   xKey="month"
-  yKeys={['지수']}
+  yKeys={["지수"]}
   colors={[CHART_COLORS.primary]}
   height={300}
-/>
+/>;
 
 // 더 자세한 사용법은 src/libs/chart/README.md 참고
 ```
@@ -81,14 +81,16 @@ const data = [
 ## 새로운 라이브러리 추가 가이드
 
 1. **libs 하위에 디렉터리 생성**
+
    ```bash
    mkdir src/libs/your-library
    ```
 
 2. **index.ts에서 설정 및 내보내기**
+
    ```tsx
    // src/libs/your-library/index.ts
-   import SomeLibrary from 'some-library';
+   import SomeLibrary from "some-library";
 
    export const configuredLibrary = new SomeLibrary({
      // 설정...
@@ -97,7 +99,7 @@ const data = [
 
 3. **필요한 곳에서 import**
    ```tsx
-   import { configuredLibrary } from '@/libs/your-library';
+   import { configuredLibrary } from "@/libs/your-library";
    ```
 
 ## 주의사항

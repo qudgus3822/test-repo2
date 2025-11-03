@@ -1,5 +1,9 @@
 import { DonutChart } from "@/libs/chart";
 import { Info } from "lucide-react";
+import { Card } from "@/components/ui/Card";
+import { TREND_COLORS } from "@/styles/colors";
+import downIcon from "@/assets/icons/down_icon_red.svg";
+import upIcon from "@/assets/icons/up_icon_green.svg";
 
 interface BdpiAverage {
   value: number;
@@ -38,10 +42,10 @@ export const MetricsOverview = ({
   chartMetrics,
 }: MetricsOverviewProps) => {
   return (
-    <div className="bg-white p-6 rounded-lg border border-[#E2E8F0]">
+    <Card>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* 전사 BDPI 평균 (텍스트 표시) */}
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center border-r border-[#E2E8F0] pr-6">
           <div className="flex flex-col items-center w-full">
             <div className="text-center mb-2">
               <div className="text-4xl font-bold text-gray-900 mb-2">
@@ -58,17 +62,29 @@ export const MetricsOverview = ({
               </div>
             </div>
             {bdpiAverage.trend && (
-              <div
-                className={`flex items-center gap-1 text-sm font-medium ${
-                  bdpiAverage.trend.isPositive
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                <span>{bdpiAverage.trend.isPositive ? "↑" : "↓"}</span>
-                <span>{Math.abs(bdpiAverage.trend.value)}%</span>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-700">
+                  전월대비
+                </span>
+                <div
+                  className="flex items-center gap-1 text-sm font-medium"
+                  style={{
+                    color: bdpiAverage.trend.isPositive
+                      ? TREND_COLORS.increase
+                      : TREND_COLORS.decrease,
+                  }}
+                >
+                  <span>
+                    {bdpiAverage.trend.isPositive ? (
+                      <img src={upIcon} alt="up" />
+                    ) : (
+                      <img src={downIcon} alt="down" />
+                    )}
+                  </span>
+                  <span>{Math.abs(bdpiAverage.trend.value)}%</span>
+                </div>
               </div>
-            )}
+            )}{" "}
           </div>
         </div>
 
@@ -86,6 +102,6 @@ export const MetricsOverview = ({
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 };

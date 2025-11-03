@@ -1,4 +1,5 @@
 import { LineChart, MULTI_LINE_COLORS } from "@/libs/chart";
+import { Card } from "@/components/ui/Card";
 
 const chartColors = [...MULTI_LINE_COLORS];
 
@@ -20,7 +21,7 @@ export const ProductivityTrend = ({
   metrics,
 }: ProductivityTrendProps) => {
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200">
+    <Card>
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         개발생산성 트렌드
       </h3>
@@ -33,6 +34,6 @@ export const ProductivityTrend = ({
         showLegend={true}
         showGrid={true}
       />
-    </div>
+    </Card>
   );
 };

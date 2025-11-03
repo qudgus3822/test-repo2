@@ -11,12 +11,12 @@ export default function Header() {
   });
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-gray-200 z-10">
+    <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-[#E2E8F0] z-10">
       <div className="h-full flex items-center justify-between px-6">
         {/* 로고 */}
-        <div className="flex gap-3 w-56">
-          <img src={logoBlack} alt="logo" className="w-12 h-12" />
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 py-2">
+        <div className="flex items-center gap-3 w-16 lg:w-[200px] xl:w-[260px] transition-all duration-300">
+          <img src={logoBlack} alt="logo" className="w-12 h-12 flex-shrink-0" />
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 py-2 hidden lg:block">
             Barcode <span className="text-[#FF6C00]">plus</span>
           </h1>
         </div>
@@ -28,7 +28,7 @@ export default function Header() {
             <input
               type="text"
               placeholder="프로젝트, 팀, 개인 검색..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -48,7 +48,7 @@ export default function Header() {
 
           {/* 사용자 프로필 */}
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#E2E8F0] rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-gray-600" />
             </div>
             <span className="text-sm font-medium text-gray-900">홍길동</span>
