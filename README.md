@@ -116,7 +116,7 @@ src/
 React Query hooks를 사용하여 API와 통신합니다:
 
 ```tsx
-import { useQualityMetrics } from '@/api/hooks/useQualityMetrics';
+import { useQualityMetrics } from "@/api/hooks/useQualityMetrics";
 
 function MetricsPage() {
   const { data, isLoading, error } = useQualityMetrics();
@@ -135,6 +135,7 @@ function MetricsPage() {
 TailwindCSS를 사용하여 스타일링합니다. 프로젝트 고유의 스타일 가이드는 [TailwindCSS 가이드](TAILWINDCSS_GUIDE.md)를 참고하세요.
 
 주요 원칙:
+
 - 최소한의 유틸리티 클래스 사용
 - variant 패턴으로 일관성 유지
 - 모바일 우선 반응형 디자인
@@ -144,14 +145,9 @@ TailwindCSS를 사용하여 스타일링합니다. 프로젝트 고유의 스타
 Recharts 기반의 래핑된 차트 컴포넌트를 사용합니다:
 
 ```tsx
-import { LineChart, DonutChart } from '@/libs/chart';
+import { LineChart, DonutChart } from "@/libs/chart";
 
-<LineChart
-  data={chartData}
-  xKey="date"
-  yKeys={["value"]}
-  height={300}
-/>
+<LineChart data={chartData} xKey="date" yKeys={["value"]} height={300} />;
 ```
 
 자세한 내용은 [Chart 라이브러리 가이드](src/libs/chart/README.md)를 참고하세요.
@@ -160,7 +156,7 @@ import { LineChart, DonutChart } from '@/libs/chart';
 
 ### 커밋 메시지
 
-프로젝트의 커밋 메시지 규칙은 [커밋 메시지 가이드](COMMIT_MESSAGE_GUIDE.md)를 따릅니다.
+프로젝트의 커밋 메시지 규칙은 `COMMIT_MESSAGE_GUIDE.md` 파일을 참고하세요.
 
 ### 코드 스타일
 
@@ -178,15 +174,3 @@ import { LineChart, DonutChart } from '@/libs/chart';
 ### 환경 변수
 
 환경 변수는 `.env` 파일에서 관리합니다 (별도로 설정 필요).
-
-## 예정된 기능
-
-- SSO 인증 연동 (Keycloak/OAuth)
-- WebSocket 실시간 데이터 연동
-- 권한 기반 라우팅 (ProtectedRoute)
-- 쿠키 관리
-- 에러 모니터링 (Sentry)
-
-## 라이선스
-
-Private Project

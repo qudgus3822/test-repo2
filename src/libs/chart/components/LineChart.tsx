@@ -22,6 +22,8 @@ interface LineChartProps {
   colors?: string[];
   showLegend?: boolean;
   showGrid?: boolean;
+  dashedKeys?: string[]; // 점선으로 표시할 key 배열
+  dashedColor?: string; // 점선 색상 (기본값: 회색)
 }
 
 /**
@@ -36,6 +38,8 @@ export const LineChart = ({
   colors = [CHART_COLORS.primary, CHART_COLORS.secondary],
   showLegend = true,
   showGrid = true,
+  dashedKeys = [],
+  dashedColor = "#9CA3AF", // gray-400
 }: LineChartProps) => {
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -48,17 +52,21 @@ export const LineChart = ({
           labelStyle={CHART_STYLES.tooltip.labelStyle}
         />
         {showLegend && <Legend />}
-        {yKeys.map((key, index) => (
-          <Line
-            key={key}
-            type="monotone"
-            dataKey={key}
-            stroke={colors[index % colors.length]}
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            activeDot={{ r: 6 }}
-          />
-        ))}
+        {yKeys.map((key, index) => {
+          const isDashed = dashedKeys.includes(key);
+          return (
+            <Line
+              key={key}
+              type="monotone"
+              dataKey={key}
+              stroke={isDashed ? dashedColor : colors[index % colors.length]}
+              strokeWidth={2}
+              strokeDasharray={isDashed ? "5 5" : undefined}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          );
+        })}
       </RechartsLineChart>
     </ResponsiveContainer>
   );

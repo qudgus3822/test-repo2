@@ -26,7 +26,7 @@ export const MetricsRanking = ({
       <h3 className="text-lg font-semibold text-gray-900 mb-4">지표 순위</h3>
       <div className="grid grid-cols-1 gap-8">
         {/* 우수 지표 TOP 5 */}
-        <div>
+        <div className="py-4">
           <div className="flex items-center gap-2 mb-4">
             <img src={upIcon} alt="up" />
             <h4 className="text-sm font-semibold text-gray-700">
@@ -58,7 +58,7 @@ export const MetricsRanking = ({
         {/* 구분선-수평선 */}
         <div className="border-t border-[#E2E8F0] my-6"></div>
         {/* 위험 지표 TOP 5 */}
-        <div>
+        <div className="py-4">
           <div className="flex items-center gap-2 mb-4">
             <img src={downIcon} alt="down" />
             <h4 className="text-sm font-semibold text-gray-700">

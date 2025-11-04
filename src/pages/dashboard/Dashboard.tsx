@@ -149,7 +149,7 @@ const DashboardPage = () => {
     "BDPI 평균": item.bdpiAverage,
     "개발 효율": item.developmentEfficiency,
     "리뷰 품질": item.reviewQuality,
-    목표치: item.target,
+    "BDPI 목표치": item.target,
     "코드 품질": item.codeQuality,
   }));
 
@@ -176,7 +176,13 @@ const DashboardPage = () => {
           {/* 개발생산성 트렌드 */}
           <ProductivityTrend
             data={trendData}
-            metrics={["BDPI 평균", "코드 품질", "리뷰 품질", "개발 효율"]}
+            metrics={[
+              "BDPI 평균",
+              "개발 효율",
+              "리뷰 품질",
+              "코드 품질",
+              "BDPI 목표치",
+            ]}
           />
         </div>
 

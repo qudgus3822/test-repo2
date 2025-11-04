@@ -14,7 +14,7 @@ export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
   return (
     <>
       <h3 className="text-lg font-semibold text-gray-900 mb-4">목표 달성률</h3>
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center py-5">
         <DonutChart
           value={percentage}
           maxValue={100}
