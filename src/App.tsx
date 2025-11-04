@@ -7,6 +7,7 @@ import Layout from "@/components/layout/Layout";
 import LoginPage from "@/pages/login/LoginPage";
 import LogoutPage from "@/pages/login/LogoutPage";
 import DashboardPage from "@/pages/dashboard/Dashboard";
+import MetricsPage from "@/pages/metrics/Metrics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,7 +44,10 @@ function App() {
             <Route path="/logout" element={<LogoutPage />} />
             <Route element={<Layout />}>
               <Route path="/" element={<DashboardPage />} />
+              {/* 대시보드 홈 */}
               <Route path="/dashboard" element={<DashboardPage />} />
+              {/* 지표 관리 */}
+              <Route path="/metrics" element={<MetricsPage />} />
             </Route>
           </Routes>
         </QueryClientProvider>
