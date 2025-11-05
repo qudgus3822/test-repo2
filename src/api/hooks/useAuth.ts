@@ -7,6 +7,7 @@ import {
   loginToServer,
   type LoginRequest,
 } from "@/api/auth";
+import { useAuthStore } from "@/store/useAuthStore";
 
 // Query Keys
 export const authKeys = {
@@ -34,12 +35,15 @@ export const useCurrentUser = () => {
  */
 export const useLogin = () => {
   const queryClient = useQueryClient();
+  const setLoggedIn = useAuthStore((state) => state.setLoggedIn);
 
   return useMutation({
     mutationFn: loginToServer,
     onSuccess: (data) => {
-      // 사용자 정보 캐시 업데이트
+      // React Query 캐시 업데이트
       queryClient.setQueryData(authKeys.user(), data.user);
+      // Zustand 스토어 업데이트 (localStorage에 persist)
+      setLoggedIn(data.user);
     },
     onError: (error) => {
       console.error("로그인 실패:", error);
@@ -53,12 +57,15 @@ export const useLogin = () => {
  */
 export const useLogout = () => {
   const queryClient = useQueryClient();
+  const setLoggedOut = useAuthStore((state) => state.setLoggedOut);
 
   return useMutation({
     mutationFn: logoutFromServer,
     onSuccess: () => {
-      // 모든 쿼리 캐시 초기화
+      // React Query 캐시 초기화
       queryClient.clear();
+      // Zustand 스토어 초기화 (localStorage에서도 제거)
+      setLoggedOut();
     },
     onError: (error) => {
       console.error("로그아웃 실패:", error);

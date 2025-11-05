@@ -5,8 +5,7 @@ import type {
   Repository,
   Developer,
 } from "@/types/quality-metric";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
+import { env } from "@/env";
 
 /**
  * 프로젝트 메트릭 조회
@@ -26,7 +25,7 @@ export const fetchProjectMetrics = async (
       ...(request.branch && { branch: request.branch }),
     });
 
-    const response = await fetch(`${API_BASE_URL}/quality-metrics/project?${params}`, {
+    const response = await fetch(`${env.apiBaseUrl}/quality-metrics/project?${params}`, {
       method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -56,7 +55,7 @@ export const fetchProjectMetrics = async (
  */
 export const fetchProjects = async (): Promise<Project[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/projects`, {
+    const response = await fetch(`${env.apiBaseUrl}/projects`, {
       method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -81,7 +80,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
  */
 export const fetchRepositories = async (projectId: string): Promise<Repository[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/repositories?projectId=${projectId}`, {
+    const response = await fetch(`${env.apiBaseUrl}/repositories?projectId=${projectId}`, {
       method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -105,7 +104,7 @@ export const fetchRepositories = async (projectId: string): Promise<Repository[]
  */
 export const fetchDevelopers = async (): Promise<Developer[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/developers`, {
+    const response = await fetch(`${env.apiBaseUrl}/developers`, {
       method: "GET",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

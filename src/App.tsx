@@ -1,27 +1,13 @@
 import { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { QueryProvider } from "@/libs/react-query";
 import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary";
 import Layout from "@/components/layout/Layout";
 import LoginPage from "@/pages/login/LoginPage";
 import LogoutPage from "@/pages/login/LogoutPage";
 import DashboardPage from "@/pages/dashboard/Dashboard";
 import MetricsPage from "@/pages/metrics/Metrics";
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5,
-      gcTime: 1000 * 60 * 10,
-    },
-    mutations: {
-      retry: 0,
-    },
-  },
-});
 
 function App() {
   return (
@@ -36,7 +22,7 @@ function App() {
       }
     >
       <GlobalErrorBoundary>
-        <QueryClientProvider client={queryClient}>
+        <QueryProvider>
           <Toaster />
           <Routes>
             {/* TODO:로그인 페이지 => user 권한에 따라 ProtectedRoute 처리 */}
@@ -50,7 +36,7 @@ function App() {
               <Route path="/metrics" element={<MetricsPage />} />
             </Route>
           </Routes>
-        </QueryClientProvider>
+        </QueryProvider>
       </GlobalErrorBoundary>
     </Suspense>
   );

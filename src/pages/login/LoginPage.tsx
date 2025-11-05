@@ -3,9 +3,7 @@ import logoWhite from "@/assets/images/bithumb_logo_white_vertical.png";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/api/hooks/useAuth";
 import { getRememberedEmail } from "@/api/auth";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
+import { env } from "@/env";
 
 const LoginPage = () => {
   const [isAdminLogin, setIsAdminLogin] = useState(false);
@@ -26,7 +24,7 @@ const LoginPage = () => {
 
   const handleOktaLogin = () => {
     // Okta 로그인 페이지로 리다이렉트
-    window.location.href = `${API_BASE_URL}/auth/okta`;
+    window.location.href = `${env.apiBaseUrl}/auth/okta`;
   };
 
   const handleAdminLogin = async (e: React.FormEvent<HTMLFormElement>) => {

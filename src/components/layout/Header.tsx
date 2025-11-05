@@ -1,19 +1,9 @@
-import { Search, Bell, User } from "lucide-react";
+import { User } from "lucide-react";
 import logoBlack from "@/assets/images/bithumb_logo_black_vertical.png";
+import { useCurrentDate } from "@/hooks";
 
 export default function Header() {
-  const date = new Date();
-  const dateStr = date.toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  const timeStr = date.toLocaleTimeString("ko-KR", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
-  const currentDate = `${dateStr} ${timeStr}`;
+  const currentDate = useCurrentDate();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-[#E2E8F0] z-10">

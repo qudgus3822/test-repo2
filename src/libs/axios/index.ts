@@ -1,9 +1,10 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { handleApiError, showErrorNotification } from "@/utils/errorHandler";
+import { env } from "@/env";
 
 // Axios 인스턴스 생성
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api",
+  baseURL: env.apiBaseUrl,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",

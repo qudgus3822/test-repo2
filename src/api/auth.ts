@@ -1,7 +1,5 @@
 import type { User } from "@/types/auth";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
+import { env } from "@/env";
 
 export interface LoginRequest {
   email: string;
@@ -20,7 +18,7 @@ export interface LoginResponse {
  */
 export const checkBackendHealth = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/health`, {
+    const response = await fetch(`${env.apiBaseUrl}/health`, {
       method: "GET",
       credentials: "include",
     });
@@ -36,7 +34,7 @@ export const checkBackendHealth = async (): Promise<boolean> => {
  */
 export const checkAuthStatus = async (): Promise<User | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/users/me`, {
+    const response = await fetch(`${env.apiBaseUrl}/users/me`, {
       method: "GET",
       credentials: "include", // 쿠키 포함
     });
@@ -68,7 +66,7 @@ export const loginToServer = async (
   credentials: LoginRequest,
 ): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/signin`, {
+    const response = await fetch(`${env.apiBaseUrl}/auth/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -117,7 +115,7 @@ export const loginToServer = async (
  */
 export const logoutFromServer = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    const response = await fetch(`${env.apiBaseUrl}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
