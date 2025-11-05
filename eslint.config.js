@@ -6,7 +6,17 @@ import tseslint from "typescript-eslint";
 import { globalIgnores } from "eslint/config";
 
 export default tseslint.config([
-  globalIgnores(["dist"]),
+  // ESLint 검사 제외 대상
+  globalIgnores([
+    "dist",             // 빌드 결과물
+    "build",            // 빌드 디렉토리
+    "node_modules",     // 의존성 패키지
+    "coverage",         // 테스트 커버리지
+    ".vscode",          // VS Code 설정
+    ".github",          // GitHub 설정
+    "*.config.js",      // 설정 파일들 (vite.config.ts는 체크)
+    "*.config.ts",      // TypeScript 설정 파일
+  ]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
