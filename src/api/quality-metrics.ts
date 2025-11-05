@@ -38,7 +38,7 @@ export const fetchProjectMetrics = async (
     const data = await response.json();
 
     // Date 필드 변환
-    return data.map((item: any) => ({
+    return data.map((item: Omit<QualityMetricChartData, 'measurementDate'> & { measurementDate: string }) => ({
       ...item,
       measurementDate: new Date(item.measurementDate),
     }));

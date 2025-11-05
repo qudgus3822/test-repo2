@@ -97,13 +97,9 @@ export const useAuth = () => {
   const { data: user, isLoading, error } = useCurrentUser();
 
   const login = async (credentials: LoginRequest) => {
-    try {
-      const result = await loginMutation.mutateAsync(credentials);
-      navigate("/dashboard");
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const result = await loginMutation.mutateAsync(credentials);
+    navigate("/dashboard");
+    return result;
   };
 
   const logout = async () => {

@@ -23,7 +23,7 @@ export const checkBackendHealth = async (): Promise<boolean> => {
       credentials: "include",
     });
     return response.ok;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
