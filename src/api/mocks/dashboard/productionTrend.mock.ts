@@ -1,8 +1,12 @@
+import type { DevelopmentProductionTrend } from "@/types/productionTrend.types";
+
 /**
  * 개발생산성 트렌드 데이터 목업
  */
-
-export const mockProductionTrend = {
+export const mockProductionTrend: {
+  target: number;
+  trendData: DevelopmentProductionTrend[];
+} = {
   target: 75,
   trendData: [
     {

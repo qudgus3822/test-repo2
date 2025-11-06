@@ -1,8 +1,9 @@
+import type { CompanyQualityMetrics } from "@/types/companyQuality.types";
+
 /**
  * 전사 BDPI 품질 데이터 목업
  */
-
-export const mockCompanyQuality = {
+export const mockCompanyQuality: CompanyQualityMetrics = {
   month: '2025-10',
   bdpiAverage: 77.4,
   bdpiChange: 2.3,
