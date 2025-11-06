@@ -1,69 +1,176 @@
-# React + TypeScript + Vite
+# Barcode Plus Front
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+빗썸의 품질 지표 관리 대시보드 프론트엔드 프로젝트입니다.
 
-Currently, two official plugins are available:
+## 기술 스택
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 핵심 기술
 
-## Expanding the ESLint configuration
+- **React 19** - 최신 React 기능 활용
+- **TypeScript 5.8** - 타입 안정성 확보
+- **Vite 7** - 빠른 개발 환경과 빌드 최적화
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 주요 라이브러리
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **TailwindCSS 4.x** - 유틸리티 우선 CSS 프레임워크
+- **React Router 7** - 클라이언트 사이드 라우팅
+- **React Query (TanStack Query)** - 서버 상태 관리 및 데이터 페칭
+- **Zustand** - 클라이언트 상태 관리
+- **Axios** - HTTP 클라이언트
+- **Recharts** - 데이터 시각화 및 차트
+- **Lucide React** - 아이콘 라이브러리
+- **React Hot Toast** - 토스트 알림
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## 주요 기능
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **대시보드** - 품질 지표 현황, 생산성 트렌드, 서비스 안정성 모니터링
+- **지표 관리** - 품질 메트릭 조회 및 관리
+- **인증 시스템** - 로그인/로그아웃 (SSO 인증 예정)
+- **반응형 디자인** - 모바일, 태블릿, 데스크톱 지원
+
+## 시작하기
+
+### 필수 요구사항
+
+- Node.js 18 이상
+- npm 또는 yarn
+
+### 설치
+
+```bash
+# 의존성 설치
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 개발 서버 실행
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run dev
 ```
+
+개발 서버가 `http://localhost:5173`에서 실행됩니다.
+
+### 빌드
+
+```bash
+npm run build
+```
+
+빌드된 파일은 `dist` 디렉터리에 생성됩니다.
+
+### 프리뷰
+
+```bash
+npm run preview
+```
+
+프로덕션 빌드를 로컬에서 미리 확인할 수 있습니다.
+
+## 프로젝트 구조
+
+```
+src/
+├── api/                 # API 통신 계층
+│   ├── hooks/          # React Query hooks
+│   └── mocks/          # 목업 데이터
+├── components/         # React 컴포넌트
+│   ├── dashboard/     # 대시보드 컴포넌트
+│   ├── metrics/       # 지표 관리 컴포넌트
+│   ├── layout/        # 레이아웃 컴포넌트
+│   ├── ui/            # 공통 UI 컴포넌트
+│   └── error/         # 에러 핸들링 컴포넌트
+├── libs/               # 외부 라이브러리 래핑
+│   ├── axios/         # API 클라이언트 설정
+│   ├── react-query/   # React Query 설정
+│   └── chart/         # 차트 컴포넌트
+├── pages/              # 페이지 컴포넌트
+│   ├── dashboard/     # 대시보드 페이지
+│   ├── metrics/       # 지표 관리 페이지
+│   └── login/         # 로그인/로그아웃 페이지
+├── store/              # 전역 상태 관리 (Zustand)
+├── types/              # TypeScript 타입 정의
+├── utils/              # 유틸리티 함수
+├── styles/             # 스타일 관련 파일
+└── assets/             # 정적 자산 (이미지, 아이콘 등)
+```
+
+## 아키텍처 원칙
+
+### 계층 분리
+
+| 계층         | 경로        | 책임                | 예시                              |
+| ------------ | ----------- | ------------------- | --------------------------------- |
+| **인프라**   | `src/libs/` | "어떻게" 통신하는가 | axios 설정, 인터셉터, SSO 연동    |
+| **비즈니스** | `src/api/`  | "무엇을" 요청하는가 | 대시보드 데이터 조회, 사용자 생성 |
+
+### 컴포넌트 설계
+
+- **재사용 가능한 UI 컴포넌트**: `components/ui/` 디렉터리에 Button, Card 등 공통 컴포넌트 관리
+- **도메인별 컴포넌트 분리**: dashboard, metrics 등 도메인별로 컴포넌트 구조화
+- **레이아웃 컴포넌트**: Header, Sidebar, Layout 등 전체 레이아웃 구조 관리
+
+## 개발 가이드
+
+### API 연동
+
+React Query hooks를 사용하여 API와 통신합니다:
+
+```tsx
+import { useQualityMetrics } from "@/api/hooks/useQualityMetrics";
+
+function MetricsPage() {
+  const { data, isLoading, error } = useQualityMetrics();
+
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div>에러 발생!</div>;
+
+  return <div>{/* 데이터 렌더링 */}</div>;
+}
+```
+
+자세한 내용은 [API Hooks 가이드](src/api/hooks/README.md)를 참고하세요.
+
+### 스타일링
+
+TailwindCSS를 사용하여 스타일링합니다. 프로젝트 고유의 스타일 가이드는 [TailwindCSS 가이드](TAILWINDCSS_GUIDE.md)를 참고하세요.
+
+주요 원칙:
+
+- 최소한의 유틸리티 클래스 사용
+- variant 패턴으로 일관성 유지
+- 모바일 우선 반응형 디자인
+
+### 차트 사용
+
+Recharts 기반의 래핑된 차트 컴포넌트를 사용합니다:
+
+```tsx
+import { LineChart, DonutChart } from "@/libs/chart";
+
+<LineChart data={chartData} xKey="date" yKeys={["value"]} height={300} />;
+```
+
+자세한 내용은 [Chart 라이브러리 가이드](src/libs/chart/README.md)를 참고하세요.
+
+## 코딩 컨벤션
+
+### 커밋 메시지
+
+프로젝트의 커밋 메시지 규칙은 `COMMIT_MESSAGE_GUIDE.md` 파일을 참고하세요.
+
+### 코드 스타일
+
+- ESLint 규칙 준수
+- TypeScript strict 모드 사용
+- 컴포넌트는 PascalCase, 함수와 변수는 camelCase
+
+## 환경 설정
+
+### 개발 환경
+
+- 개발 서버 포트: `5173`
+- API 프록시: `/api` → `http://localhost:3000`
+
+### 환경 변수
+
+환경 변수는 `.env` 파일에서 관리합니다 (별도로 설정 필요).
