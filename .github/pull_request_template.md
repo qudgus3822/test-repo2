@@ -49,7 +49,7 @@
 - [ ] 빌드 성공 확인 (`npm run build`)
 - [ ] ESLint 에러 없음 (`npm run lint`)
 - [ ] TypeScript 타입 에러 없음
-- [ ] 커밋 메시지 정리 완료 (COMMIT_MESSAGE_GUIDE.md 참고)
+- [ ] 커밋 메시지 정리 완료 ([COMMIT_MESSAGE_GUIDE.md](./COMMIT_MESSAGE_GUIDE.md) 참고)
 
 ---
 

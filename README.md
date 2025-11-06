@@ -132,7 +132,7 @@ function MetricsPage() {
 
 ### 스타일링
 
-TailwindCSS를 사용하여 스타일링합니다. 프로젝트 고유의 스타일 가이드는 [TailwindCSS 가이드](TAILWINDCSS_GUIDE.md)를 참고하세요.
+TailwindCSS를 사용하여 스타일링합니다. 프로젝트 고유의 스타일 가이드는 [TailwindCSS 가이드](.github/TAILWINDCSS_GUIDE.md)를 참고하세요.
 
 주요 원칙:
 
@@ -156,7 +156,7 @@ import { LineChart, DonutChart } from "@/libs/chart";
 
 ### 커밋 메시지
 
-프로젝트의 커밋 메시지 규칙은 `COMMIT_MESSAGE_GUIDE.md` 파일을 참고하세요.
+프로젝트의 커밋 메시지 규칙은 [COMMIT_MESSAGE_GUIDE.md](.github/COMMIT_MESSAGE_GUIDE.md) 파일을 참고하세요.
 
 ### 코드 스타일
 
