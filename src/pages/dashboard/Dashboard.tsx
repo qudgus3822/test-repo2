@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  DateFilter,
   MetricsOverview,
   GoalAchievement,
   ServiceStability,
@@ -8,7 +7,7 @@ import {
   ProductivityTrend,
 } from "@/components/dashboard";
 import { CHART_COLORS } from "@/libs/chart";
-import { type PeriodType } from "@/components/ui/PeriodNavigator";
+import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { GOAL_STATUS_COLORS, BRAND_COLORS } from "@/styles/colors";
 import {
@@ -144,24 +143,29 @@ const DashboardPage = () => {
   }));
 
   // 개발생산성 트렌드 (목업 데이터 사용)
-  const trendData = mockProductionTrend.trendData.map((item) => ({
-    month: item.month.split("-")[1] + "월", // '2025-05' -> '05월'
-    "BDPI 평균": item.bdpiAverage,
-    "개발 효율": item.developmentEfficiency,
-    "리뷰 품질": item.reviewQuality,
-    "BDPI 목표치": item.target,
-    "코드 품질": item.codeQuality,
-  }));
+  const trendData = mockProductionTrend.trendData.map((item) => {
+    const [year, month] = item.month.split("-");
+    return {
+      month: `${year}년 ${parseInt(month)}월`, // '2025-05' -> '2025년 5월'
+      "BDPI 평균": item.bdpiAverage,
+      "개발 효율": item.developmentEfficiency,
+      "리뷰 품질": item.reviewQuality,
+      "BDPI 목표치": item.target,
+      "코드 품질": item.codeQuality,
+    };
+  });
 
   return (
     <div className="space-y-6">
       {/* 헤더 - 날짜 필터 */}
-      <DateFilter
-        period={period}
-        onPeriodChange={setPeriod}
-        currentDate={currentDate}
-        onDateChange={setCurrentDate}
-      />
+      <Card>
+        <DateFilter
+          period={period}
+          onPeriodChange={setPeriod}
+          currentDate={currentDate}
+          onDateChange={setCurrentDate}
+        />
+      </Card>
 
       <div className="flex gap-6">
         <div className="w-2/3 space-y-6">
