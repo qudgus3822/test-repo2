@@ -8,6 +8,10 @@ import LoginPage from "@/pages/login/LoginPage";
 import LogoutPage from "@/pages/login/LogoutPage";
 import DashboardPage from "@/pages/dashboard/Dashboard";
 import MetricsPage from "@/pages/metrics/Metrics";
+import ProjectsPage from "@/pages/projects/Projects";
+import OrganizationPage from "@/pages/organization/Organization";
+import IncidentsPage from "@/pages/incidents/Incidents";
+import SettingsPage from "@/pages/settings/Settings";
 
 function App() {
   return (
@@ -34,6 +38,16 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               {/* 지표 관리 */}
               <Route path="/metrics" element={<MetricsPage />} />
+
+              {/* M2 이후 작업할 페이지 */}
+              {/* 프로젝트/운영 */}
+              <Route path="/projects" element={<ProjectsPage />} />
+              {/* 조직 비교 */}
+              <Route path="/organization" element={<OrganizationPage />} />
+              {/* 장애 관리 */}
+              <Route path="/incidents" element={<IncidentsPage />} />
+              {/* 설정 */}
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </QueryProvider>

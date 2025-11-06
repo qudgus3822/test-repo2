@@ -14,6 +14,8 @@ interface DataPoint {
   [key: string]: string | number;
 }
 
+type YAxisDomainType = 'auto' | 'dataMinMax' | 'fromZero' | [number | string, number | string];
+
 interface LineChartProps {
   data: DataPoint[];
   xKey: string;
@@ -22,6 +24,8 @@ interface LineChartProps {
   colors?: string[];
   showLegend?: boolean;
   showGrid?: boolean;
+  showDots?: boolean; // 라인의 점 표시 여부 (기본값: false)
+  yAxisDomain?: YAxisDomainType; // y축 범위 설정 (기본값: 'auto')
   dashedKeys?: string[]; // 점선으로 표시할 key 배열
   dashedColor?: string; // 점선 색상 (기본값: 회색)
 }
@@ -38,15 +42,33 @@ export const LineChart = ({
   colors = [CHART_COLORS.primary, CHART_COLORS.secondary],
   showLegend = true,
   showGrid = true,
+  showDots = false,
+  yAxisDomain = 'auto',
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
 }: LineChartProps) => {
+  // y축 domain 계산
+  const getDomain = (): [number | string, number | string] | undefined => {
+    if (Array.isArray(yAxisDomain)) {
+      return yAxisDomain;
+    }
+
+    switch (yAxisDomain) {
+      case 'dataMinMax':
+        return ['dataMin', 'dataMax'];
+      case 'fromZero':
+        return [0, 'auto'];
+      case 'auto':
+      default:
+        return undefined; // Recharts 기본 동작
+    }
+  };
   return (
     <ResponsiveContainer width="100%" height={height}>
       <RechartsLineChart data={data} margin={CHART_MARGIN}>
         {showGrid && <CartesianGrid {...CHART_STYLES.grid} />}
-        <XAxis dataKey={xKey} style={CHART_STYLES.axis} />
-        <YAxis style={CHART_STYLES.axis} />
+        <XAxis dataKey={xKey} style={CHART_STYLES.axis} tickLine={false} />
+        <YAxis style={CHART_STYLES.axis} tickLine={false} domain={getDomain()} />
         <Tooltip
           contentStyle={CHART_STYLES.tooltip.contentStyle}
           labelStyle={CHART_STYLES.tooltip.labelStyle}
@@ -61,9 +83,9 @@ export const LineChart = ({
               dataKey={key}
               stroke={isDashed ? dashedColor : colors[index % colors.length]}
               strokeWidth={2}
-              strokeDasharray={isDashed ? "5 5" : undefined}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6 }}
+              strokeDasharray={isDashed ? "1 1" : undefined}
+              dot={showDots ? { r: 4 } : false}
+              activeDot={showDots ? { r: 6 } : false}
             />
           );
         })}
