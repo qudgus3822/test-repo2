@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+// import { persist } from "zustand/middleware";
 import type { User } from "@/types/auth";
 
 interface AuthStore {
@@ -13,7 +13,10 @@ interface AuthAction {
 }
 
 /**
- * 인증 상태 관리 스토어 (Zustand + localStorage persist)
+ * 인증 상태 관리 스토어 (Zustand - 메모리 전용)
+ *
+ * 보안상의 이유로 localStorage persist를 비활성화했습니다.
+ * 사용자 정보는 메모리에만 저장되며, 새로고침 시 초기화됩니다.
  *
  * 사용법:
  * ```tsx
@@ -22,6 +25,9 @@ interface AuthAction {
  * const setLoggedOut = useAuthStore((state) => state.setLoggedOut);
  * ```
  */
+// 보안상의 이유로 localStorage 저장 기능을 주석처리했습니다.
+// 필요시 아래 코드의 주석을 해제하고 export const useAuthStore를 persist로 감싸세요.
+/*
 // Date를 포함한 상태를 직렬화/역직렬화하는 커스텀 storage
 const customStorage = {
   getItem: (name: string) => {
@@ -54,27 +60,40 @@ const customStorage = {
     localStorage.removeItem(name);
   },
 };
+*/
 
+export const useAuthStore = create<AuthStore & AuthAction>((set) => ({
+  user: null,
+
+  /**
+   * 로그인 상태 설정
+   * @param user - 로그인한 사용자 정보
+   */
+  setLoggedIn: (user: User) => set({ user }),
+
+  /**
+   * 로그아웃 상태 설정
+   */
+  setLoggedOut: () => set({ user: null }),
+
+  /**
+   * 사용자 정보 업데이트
+   * @param updatedUser - 업데이트할 사용자 정보 (부분 업데이트 가능)
+   */
+  updateUser: (updatedUser: Partial<User>) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, ...updatedUser } : null,
+    })),
+}));
+
+// persist 버전 (보안상의 이유로 주석처리됨)
+/*
 export const useAuthStore = create(
   persist<AuthStore & AuthAction>(
     (set) => ({
       user: null,
-
-      /**
-       * 로그인 상태 설정
-       * @param user - 로그인한 사용자 정보
-       */
       setLoggedIn: (user: User) => set({ user }),
-
-      /**
-       * 로그아웃 상태 설정
-       */
       setLoggedOut: () => set({ user: null }),
-
-      /**
-       * 사용자 정보 업데이트
-       * @param updatedUser - 업데이트할 사용자 정보 (부분 업데이트 가능)
-       */
       updateUser: (updatedUser: Partial<User>) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...updatedUser } : null,
@@ -86,3 +105,4 @@ export const useAuthStore = create(
     },
   ),
 );
+*/
