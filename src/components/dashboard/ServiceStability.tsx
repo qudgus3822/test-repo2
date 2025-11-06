@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/Card";
 import { TREND_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
-
-type MetricStatus = "excellent" | "warning" | "danger";
+import type { ThresholdType } from "@/types/serviceStability.types";
 
 interface Metric {
   id: string;
@@ -16,13 +15,14 @@ interface Metric {
     value: number;
     isPositive: boolean;
   };
-  status: MetricStatus;
+  status: ThresholdType;
   iconColor: string;
 }
 
 // status에 따른 아이콘 매핑
-const STATUS_ICONS: Record<MetricStatus, LucideIcon> = {
+const STATUS_ICONS: Record<ThresholdType, LucideIcon> = {
   excellent: CheckCircle2,
+  good: CheckCircle2,
   warning: TriangleAlert,
   danger: TriangleAlert,
 };

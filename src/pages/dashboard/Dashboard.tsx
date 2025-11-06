@@ -64,8 +64,8 @@ const DashboardPage = () => {
     {
       id: "deployment",
       label: mockServiceStability.deploymentFrequency.metricName,
-      value: `${mockServiceStability.deploymentFrequency.count}회`,
-      target: `${mockServiceStability.deploymentFrequency.targetCount}회`,
+      value: `${mockServiceStability.deploymentFrequency.value}회`,
+      target: `${mockServiceStability.deploymentFrequency.targetValue}회`,
       trend: {
         value: Math.abs(mockServiceStability.deploymentFrequency.changeRate),
         isPositive: mockServiceStability.deploymentFrequency.changeRate > 0,
@@ -77,8 +77,8 @@ const DashboardPage = () => {
     {
       id: "success",
       label: mockServiceStability.deploymentSuccessRate.metricName,
-      value: `${mockServiceStability.deploymentSuccessRate.rate}%`,
-      target: `${mockServiceStability.deploymentSuccessRate.targetRate}%`,
+      value: `${mockServiceStability.deploymentSuccessRate.value}%`,
+      target: `${mockServiceStability.deploymentSuccessRate.targetValue}%`,
       trend: {
         value: Math.abs(mockServiceStability.deploymentSuccessRate.changeRate),
         isPositive: mockServiceStability.deploymentSuccessRate.changeRate > 0,
@@ -92,8 +92,8 @@ const DashboardPage = () => {
     {
       id: "mttr",
       label: mockServiceStability.mttr.metricName,
-      value: `${mockServiceStability.mttr.hours}시간`,
-      target: `${mockServiceStability.mttr.targetHours}시간 이하`,
+      value: `${mockServiceStability.mttr.value}시간`,
+      target: `${mockServiceStability.mttr.targetValue}시간 이하`,
       trend: {
         value: Math.abs(mockServiceStability.mttr.changeRate),
         isPositive: mockServiceStability.mttr.changeRate > 0,
@@ -104,8 +104,8 @@ const DashboardPage = () => {
     {
       id: "mttd",
       label: mockServiceStability.mttd.metricName,
-      value: `${mockServiceStability.mttd.hours}시간`,
-      target: `${mockServiceStability.mttd.targetHours}시간 이하`,
+      value: `${mockServiceStability.mttd.value}시간`,
+      target: `${mockServiceStability.mttd.targetValue}시간 이하`,
       trend: {
         value: Math.abs(mockServiceStability.mttd.changeRate),
         isPositive: mockServiceStability.mttd.changeRate > 0,
@@ -116,8 +116,8 @@ const DashboardPage = () => {
     {
       id: "incidents",
       label: mockServiceStability.incidentCount.metricName,
-      value: `${mockServiceStability.incidentCount.count}건`,
-      target: `${mockServiceStability.incidentCount.targetCount}건 이하`,
+      value: `${mockServiceStability.incidentCount.value}건`,
+      target: `${mockServiceStability.incidentCount.targetValue}건 이하`,
       trend: {
         value: Math.abs(mockServiceStability.incidentCount.changeRate),
         isPositive: mockServiceStability.incidentCount.changeRate > 0,

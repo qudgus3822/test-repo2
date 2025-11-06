@@ -24,6 +24,7 @@ export const TREND_COLORS = {
 // 목표값 상태 색상
 export const GOAL_STATUS_COLORS = {
   excellent: "#00A63E", // 우수
+  good: "#10b981", // 양호
   warning: "#FF6900", // 경고
   danger: "#E7000B", // 위험
 } as const;

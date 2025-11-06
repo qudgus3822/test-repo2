@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { Search, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
-import type { MetricItem, MetricStatus, MetricCategory } from "@/types/metrics.types";
+import type { MetricItem } from "@/types/metrics.types";
+import { MetricStatus, MetricCategory } from "@/types/metrics.types";
 
 interface MetricsTableProps {
   metrics: MetricItem[];
@@ -47,6 +48,8 @@ const getStatusColor = (status: MetricStatus): string => {
       return "text-yellow-600";
     case "not_achieved":
       return "text-red-600";
+    default:
+      return "text-gray-600";
   }
 };
 
@@ -54,26 +57,26 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const [activeTab, setActiveTab] = useState<TabType>("all");
 
   // 카테고리별 개수 계산
-  const codeQualityCount = metrics.filter((m) => m.category === "code_quality").length;
-  const reviewQualityCount = metrics.filter((m) => m.category === "review_quality").length;
+  const codeQualityCount = metrics.filter((m) => m.category === MetricCategory.CODE_QUALITY).length;
+  const reviewQualityCount = metrics.filter((m) => m.category === MetricCategory.REVIEW_QUALITY).length;
   const developmentEfficiencyCount = metrics.filter(
-    (m) => m.category === "development_efficiency"
+    (m) => m.category === MetricCategory.DEVELOPMENT_EFFICIENCY
   ).length;
 
   const tabs: Tab[] = [
     { id: "all", label: "전체", count: metrics.length },
-    { id: "codeQuality", label: "코드분류", count: codeQualityCount, category: "code_quality" },
+    { id: "codeQuality", label: "코드분류", count: codeQualityCount, category: MetricCategory.CODE_QUALITY },
     {
       id: "reviewQuality",
       label: "지표분류",
       count: reviewQualityCount,
-      category: "review_quality",
+      category: MetricCategory.REVIEW_QUALITY,
     },
     {
       id: "developmentEfficiency",
       label: "개발정보",
       count: developmentEfficiencyCount,
-      category: "development_efficiency",
+      category: MetricCategory.DEVELOPMENT_EFFICIENCY,
     },
   ];
 
