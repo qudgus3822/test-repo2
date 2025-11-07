@@ -44,43 +44,52 @@ export const ServiceStability = ({ metrics }: ServiceStabilityProps) => {
         {metrics.map((metric) => {
           const Icon = STATUS_ICONS[metric.status];
           return (
-            <div key={metric.id} className="flex flex-col items-center">
+            <div key={metric.id} className="flex flex-col items-center gap-2.5">
               {/* 아이콘 */}
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center mb-2`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center`}
                 // style={{ backgroundColor: `${metric.iconColor}20` }}
               >
-                <Icon className="w-5 h-5" style={{ color: metric.iconColor }} />
+                <Icon className="w-7 h-7" style={{ color: metric.iconColor }} />
               </div>
 
-              {/* 값 */}
-              <div className="text-2xl font-bold text-gray-900 mb-1">
+              {/* 메트릭 값 */}
+              <div className="text-3xl font-bold text-gray-900">
                 {metric.value}
               </div>
 
-              {/* 트렌드 */}
-              <div
-                className="flex items-center gap-1 text-xs font-medium"
-                style={{
-                  color: metric.trend.isPositive
-                    ? TREND_COLORS.increase
-                    : TREND_COLORS.decrease,
-                }}
-              >
-                <span>
-                  {metric.trend.isPositive ? (
-                    <img src={upIcon} alt="up" />
-                  ) : (
-                    <img src={downIcon} alt="down" />
-                  )}
+              {/* 목표치 값 */}
+              <div className="flex justify-center items-center py-1 px-4 bg-[#DFDFDF] rounded-[45px]">
+                <span className="text-sm text-center tracking-[-1.17px] text-[#62748E]">
+                  {metric.target}
                 </span>
-                <span>{Math.abs(metric.trend.value)}%</span>
+              </div>
+
+              {/* 트렌드 */}
+              <div className="flex items-center gap-1 text-sm">
+                <div>전월대비</div>
+                <div
+                  className="flex items-center gap-1 font-medium"
+                  style={{
+                    color: metric.trend.isPositive
+                      ? TREND_COLORS.increase
+                      : TREND_COLORS.decrease,
+                  }}
+                >
+                  <span>
+                    {metric.trend.isPositive ? (
+                      <img src={upIcon} alt="up" />
+                    ) : (
+                      <img src={downIcon} alt="down" />
+                    )}
+                  </span>
+                  <span>{Math.abs(metric.trend.value)}%</span>
+                </div>
               </div>
               {/* 레이블 */}
-              <div className="text-xs text-gray-500 mb-1">{metric.label}</div>
-
-              {/* 목표 */}
-              <div className="text-xs text-gray-400 mb-2">{metric.target}</div>
+              <div className="text-md text-gray-500 font-bold">
+                {metric.label}
+              </div>
             </div>
           );
         })}

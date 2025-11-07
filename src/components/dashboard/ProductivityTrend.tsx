@@ -33,7 +33,7 @@ export const ProductivityTrend = ({
         colors={chartColors}
         showLegend={true}
         showGrid={true}
-        dashedKeys={["BDPI 목표치"]}
+        dashedKeys={["목표치"]}
         yAxisDomain={[0, 100]}
       />
     </Card>

@@ -14,7 +14,11 @@ interface DataPoint {
   [key: string]: string | number;
 }
 
-type YAxisDomainType = 'auto' | 'dataMinMax' | 'fromZero' | [number | string, number | string];
+type YAxisDomainType =
+  | "auto"
+  | "dataMinMax"
+  | "fromZero"
+  | [number | string, number | string];
 
 interface LineChartProps {
   data: DataPoint[];
@@ -43,7 +47,7 @@ export const LineChart = ({
   showLegend = true,
   showGrid = true,
   showDots = false,
-  yAxisDomain = 'auto',
+  yAxisDomain = "auto",
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
 }: LineChartProps) => {
@@ -54,11 +58,11 @@ export const LineChart = ({
     }
 
     switch (yAxisDomain) {
-      case 'dataMinMax':
-        return ['dataMin', 'dataMax'];
-      case 'fromZero':
-        return [0, 'auto'];
-      case 'auto':
+      case "dataMinMax":
+        return ["dataMin", "dataMax"];
+      case "fromZero":
+        return [0, "auto"];
+      case "auto":
       default:
         return undefined; // Recharts 기본 동작
     }
@@ -67,8 +71,16 @@ export const LineChart = ({
     <ResponsiveContainer width="100%" height={height}>
       <RechartsLineChart data={data} margin={CHART_MARGIN}>
         {showGrid && <CartesianGrid {...CHART_STYLES.grid} />}
-        <XAxis dataKey={xKey} style={CHART_STYLES.axis} tickLine={false} />
-        <YAxis style={CHART_STYLES.axis} tickLine={false} domain={getDomain()} />
+        <XAxis
+          dataKey={xKey}
+          style={{ ...CHART_STYLES.axis, fontWeight: 400 }}
+          tickLine={false}
+        />
+        <YAxis
+          style={{ ...CHART_STYLES.axis, fontWeight: 400 }}
+          tickLine={false}
+          domain={getDomain()}
+        />
         <Tooltip
           contentStyle={CHART_STYLES.tooltip.contentStyle}
           labelStyle={CHART_STYLES.tooltip.labelStyle}

@@ -10,7 +10,7 @@ export const mockServiceStability: ServiceStabilityMetrics = {
     value: 241,
     targetValue: 200,
     changeRate: 14,
-    metricName: "배포 빈도수",
+    metricName: "배포빈도",
     unit: "count",
   },
   deploymentSuccessRate: {
