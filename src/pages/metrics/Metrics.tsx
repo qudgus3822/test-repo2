@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/Card";
-import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
+import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
 import { GoalAchievement } from "@/components/metrics/GoalAchievement";
 import { MetricsTable } from "@/components/metrics/MetricsTable";
@@ -9,10 +9,31 @@ import {
   mockMetricsGoalAchievement,
   mockCodeQualityMetrics,
 } from "@/mocks/metrics.mock";
+import { useMetricsStore } from "@/store/useMetricsStore";
 
 const MetricsPage = () => {
-  const [period, setPeriod] = useState<PeriodType>("monthly");
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const {
+    period,
+    setPeriod,
+    currentDate,
+    setCurrentDate,
+    isTargetValueSettingModalOpen,
+    isAchievementRateSettingModalOpen,
+  } = useMetricsStore((state) => state);
+
+  // 목표값 설정/달성률 설정 모달이 열릴 때 body 스크롤 비활성화
+  useEffect(() => {
+    if (isTargetValueSettingModalOpen || isAchievementRateSettingModalOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    // 목표값 설정/달성률 설정 팝업이 닫힐 때 원래대로 복원
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isTargetValueSettingModalOpen, isAchievementRateSettingModalOpen]);
 
   return (
     <div className="space-y-6">

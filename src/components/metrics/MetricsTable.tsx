@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
+import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import {
   Search,
   CheckCircle2,
@@ -11,16 +12,11 @@ import {
 } from "lucide-react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricStatus, MetricCategory } from "@/types/metrics.types";
+import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
 
 interface MetricsTableProps {
   metrics: MetricItem[];
 }
-
-type TabType =
-  | "all"
-  | "codeQuality"
-  | "reviewQuality"
-  | "developmentEfficiency";
 
 interface Tab {
   id: TabType;
@@ -66,7 +62,14 @@ const getStatusColor = (status: MetricStatus): string => {
 };
 
 export const MetricsTable = ({ metrics }: MetricsTableProps) => {
-  const [activeTab, setActiveTab] = useState<TabType>("all");
+  const {
+    activeTab,
+    setActiveTab,
+    isTargetValueSettingModalOpen,
+    setIsTargetValueSettingModalOpen,
+    isAchievementRateSettingModalOpen,
+    setIsAchievementRateSettingModalOpen,
+  } = useMetricsStore((state) => state);
 
   // 전체 메트릭 개수 기준 테이블 높이 계산 (헤더 50px + 행당 53px)
   const tableHeight = 50 + metrics.length * 53;
@@ -151,10 +154,14 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                   <span>
                     <Tooltip
                       // content="전체 메트릭의 목표값을 수정할 수 있습니다."
-                      content="목표값 설정 팝업으로 이동합니다."
+                      content="목표값 설정 팝업을 엽니다."
                       color="#6B7280"
                     >
-                      <Pencil className="w-4 h-4 cursor-pointer" />
+                      <Pencil
+                        className="w-4 h-4 cursor-pointer"
+                        id="목표값 설정 아이콘"
+                        onClick={() => setIsTargetValueSettingModalOpen(true)}
+                      />
                     </Tooltip>
                   </span>
                 </div>
@@ -165,10 +172,16 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                   <span>
                     <Tooltip
                       // content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                      content="달성률 설정 팝업으로 이동합니다."
+                      content="달성률 설정 팝업을 엽니다."
                       color="#6B7280"
                     >
-                      <Pencil className="w-4 h-4 cursor-pointer" />
+                      <Pencil
+                        className="w-4 h-4 cursor-pointer"
+                        id="달성률 설정 아이콘"
+                        onClick={() =>
+                          setIsAchievementRateSettingModalOpen(true)
+                        }
+                      />
                     </Tooltip>
                   </span>
                 </div>
@@ -242,6 +255,28 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
           </tbody>
         </table>
       </div>
+
+      {/* 목표값 설정 모달 */}
+      <TargetValueSettingModal
+        isOpen={isTargetValueSettingModalOpen}
+        onClose={() => setIsTargetValueSettingModalOpen(false)}
+        metrics={metrics}
+        onSave={(updatedMetrics: MetricItem[]) => {
+          // TODO: API 연동 시 실제 저장 로직 구현
+          console.log("Updated metrics:", updatedMetrics);
+        }}
+      />
+
+      {/* 달성률 설정 모달 */}
+      <AchievementRateSettingModal
+        isOpen={isAchievementRateSettingModalOpen}
+        onClose={() => setIsAchievementRateSettingModalOpen(false)}
+        metrics={metrics}
+        onSave={(updatedMetrics: MetricItem[]) => {
+          // TODO: API 연동 시 실제 저장 로직 구현
+          console.log("Updated achievement rates:", updatedMetrics);
+        }}
+      />
     </div>
   );
 };

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   MetricsOverview,
   GoalAchievement,
@@ -7,7 +6,7 @@ import {
   ProductivityTrend,
 } from "@/components/dashboard";
 import { CHART_COLORS } from "@/libs/chart";
-import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
+import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { GOAL_STATUS_COLORS, BRAND_COLORS } from "@/styles/colors";
 import {
@@ -17,10 +16,12 @@ import {
   mockGoalAchievement,
   mockMetricRankings,
 } from "@/api/mocks/dashboard";
+import { useDashboardStore } from "@/store/useDashboardStore";
 
 const DashboardPage = () => {
-  const [period, setPeriod] = useState<PeriodType>("monthly");
-  const [currentDate, setCurrentDate] = useState(new Date()); // 오늘 날짜
+  const { period, setPeriod, currentDate, setCurrentDate } = useDashboardStore(
+    (state) => state,
+  );
 
   // 전사 BDPI 평균 (목업 데이터 사용)
   const bdpiAverage = {
