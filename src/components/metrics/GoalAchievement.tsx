@@ -1,5 +1,3 @@
-import { Card } from "@/components/ui/Card";
-
 interface GoalAchievementProps {
   achieved: number;
   total: number;
@@ -12,11 +10,14 @@ export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
     strokeDasharray - (strokeDasharray * achieved) / total;
 
   return (
-    <Card className="p-6">
+    <>
       <h3 className="text-lg font-semibold text-gray-900 mb-6">목표 달성률</h3>
       <div className="flex flex-col items-center">
-        <div className="relative w-48 h-48">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+        <div className="relative lg:w-48 lg:h-48 md:w-40 md:h-40 w-32 h-32">
+          <svg
+            className="w-full h-full transform -rotate-90"
+            viewBox="0 0 200 200"
+          >
             {/* Background circle */}
             <circle
               cx="100"
@@ -42,7 +43,9 @@ export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="text-4xl font-bold text-gray-900">{percentage}%</div>
+              <div className="text-3xl md:text-3xl lg:text-4xl font-bold text-gray-900">
+                {percentage}%
+              </div>
             </div>
           </div>
         </div>
@@ -52,6 +55,6 @@ export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
           </div>
         </div>
       </div>
-    </Card>
+    </>
   );
 };

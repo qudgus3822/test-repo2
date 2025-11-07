@@ -42,7 +42,7 @@ export const MetricsOverview = ({
   chartMetrics,
 }: MetricsOverviewProps) => {
   return (
-    <Card>
+    <Card className="w-full h-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* 전사 BDPI 평균 (텍스트 표시) */}
         <div className="flex items-center justify-center border-r border-[#E2E8F0] pr-6">

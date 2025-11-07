@@ -17,35 +17,41 @@ const MetricsPage = () => {
   return (
     <div className="space-y-6">
       {/* 헤더 - 날짜 필터 */}
-      <Card>
-        <DateFilter
-          period={period}
-          onPeriodChange={setPeriod}
-          currentDate={currentDate}
-          onDateChange={setCurrentDate}
-          showPdfButton={false}
-        />
-      </Card>
+      <div>
+        <Card className="w-full">
+          <DateFilter
+            period={period}
+            onPeriodChange={setPeriod}
+            currentDate={currentDate}
+            onDateChange={setCurrentDate}
+            showPdfButton={false}
+          />
+        </Card>
+      </div>
 
-      <div className="flex gap-6">
+      <div className="flex gap-6 md:h-[300px] lg:h-[330px]">
         {/* 지표 현황 */}
-        <div className="w-2/3 space-y-6">
-          <Card>
+        <div className="w-2/3 h-full">
+          <Card className="h-full w-full flex items-center">
             <MetricsSummary data={mockMetricOverview} />
           </Card>
         </div>
 
         {/* 목표 달성률 */}
-        <div className="w-1/3 space-y-6">
-          <GoalAchievement
-            achieved={mockMetricsGoalAchievement.achievedMetrics}
-            total={mockMetricsGoalAchievement.totalMetrics}
-          />
+        <div className="w-1/3 h-full">
+          <Card className="w-full h-full">
+            <GoalAchievement
+              achieved={mockMetricsGoalAchievement.achievedMetrics}
+              total={mockMetricsGoalAchievement.totalMetrics}
+            />
+          </Card>
         </div>
       </div>
 
       {/* 지표 리스트 */}
-      <MetricsTable metrics={mockCodeQualityMetrics} />
+      <Card className="w-full">
+        <MetricsTable metrics={mockCodeQualityMetrics} />
+      </Card>
     </div>
   );
 };

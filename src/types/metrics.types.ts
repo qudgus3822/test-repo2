@@ -15,12 +15,13 @@ export enum MetricCategory {
 export interface MetricOverview {
   month: string; // 'YYYY-MM' 형식
   totalMetrics: number; // 전체 지표 수 (30개)
+  totalMetricsIcon?: string; // 전체 지표 아이콘 (lucide-react icon name)
   codeQualityCount: number; // 코드품질 지표 수 (9개)
-  codeQualityRatio: number; // 코드품질 비율 (30%)
+  codeQualityIcon?: string; // 코드품질 아이콘 (lucide-react icon name)
   reviewQualityCount: number; // 리뷰품질 지표 수 (12개)
-  reviewQualityRatio: number; // 리뷰품질 비율 (40%)
+  reviewQualityIcon?: string; // 리뷰품질 아이콘 (lucide-react icon name)
   developmentEfficiencyCount: number; // 개발효율 지표 수 (9개)
-  developmentEfficiencyRatio: number; // 개발효율 비율 (30%)
+  developmentEfficiencyIcon?: string; // 개발효율 아이콘 (lucide-react icon name)
 }
 
 // ==================== 목표 달성률 ====================

@@ -20,7 +20,7 @@ import {
 
 const DashboardPage = () => {
   const [period, setPeriod] = useState<PeriodType>("monthly");
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 1)); // 2025년 10월
+  const [currentDate, setCurrentDate] = useState(new Date()); // 오늘 날짜
 
   // 전사 BDPI 평균 (목업 데이터 사용)
   const bdpiAverage = {
@@ -158,14 +158,16 @@ const DashboardPage = () => {
   return (
     <div className="space-y-6">
       {/* 헤더 - 날짜 필터 */}
-      <Card>
-        <DateFilter
-          period={period}
-          onPeriodChange={setPeriod}
-          currentDate={currentDate}
-          onDateChange={setCurrentDate}
-        />
-      </Card>
+      <div>
+        <Card className="w-full">
+          <DateFilter
+            period={period}
+            onPeriodChange={setPeriod}
+            currentDate={currentDate}
+            onDateChange={setCurrentDate}
+          />
+        </Card>
+      </div>
 
       <div className="flex gap-6">
         <div className="w-2/3 space-y-6">
@@ -190,8 +192,8 @@ const DashboardPage = () => {
           />
         </div>
 
-        <div className="w-1/3 space-y-6">
-          <Card>
+        <div className="w-1/3">
+          <Card className="w-full h-full">
             {/* 목표 달성률 */}
             <GoalAchievement
               achieved={mockGoalAchievement.achievedMetrics}

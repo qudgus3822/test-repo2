@@ -11,11 +11,8 @@ export const mockMetricOverview: MetricOverview = {
   month: "2025-10",
   totalMetrics: 30,
   codeQualityCount: 9,
-  codeQualityRatio: 30,
   reviewQualityCount: 12,
-  reviewQualityRatio: 40,
   developmentEfficiencyCount: 9,
-  developmentEfficiencyRatio: 30,
 };
 
 // ==================== 목표 달성률 목업 ====================
