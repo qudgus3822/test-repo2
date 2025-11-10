@@ -1,6 +1,6 @@
-import { DonutChart } from "@/libs/chart";
+import { CHART_COLORS, DonutChart } from "@/libs/chart";
 
-interface GoalAchievementProps {
+interface TargetValueAchievementProps {
   achieved: number;
   total: number;
 }
@@ -8,7 +8,10 @@ interface GoalAchievementProps {
 /**
  * 목표 달성률 컴포넌트
  */
-export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
+export const TargetValueAchievement = ({
+  achieved,
+  total,
+}: TargetValueAchievementProps) => {
   const percentage = (achieved / total) * 100;
 
   return (
@@ -19,8 +22,7 @@ export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
           value={percentage}
           maxValue={100}
           showPercentage
-          color="#10b981"
-          backgroundColor="#e5e7eb"
+          color={CHART_COLORS.orange}
           size={180}
           strokeWidth={20}
         />

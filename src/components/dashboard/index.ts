@@ -3,7 +3,7 @@
  */
 
 export { MetricsOverview } from "./MetricsOverview";
-export { GoalAchievement } from "./GoalAchievement";
+export { TargetValueAchievement } from "./TargetValueAchievement";
 export { ServiceStability } from "./ServiceStability";
 export { MetricsRanking } from "./MetricsRanking";
 export { ProductivityTrend } from "./ProductivityTrend";

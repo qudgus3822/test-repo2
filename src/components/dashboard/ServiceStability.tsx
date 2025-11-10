@@ -54,7 +54,7 @@ export const ServiceStability = ({ metrics }: ServiceStabilityProps) => {
               </div>
 
               {/* 메트릭 값 */}
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="lg:text-2xl text-xl font-bold text-gray-900">
                 {metric.value}
               </div>
 

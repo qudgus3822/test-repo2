@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import { TREND_COLORS, PALETTE_COLORS } from "@/styles/colors";
+import { TREND_COLORS, CHART_COLORS } from "@/styles/colors";
 
 interface DonutChartProps {
   value: number;
@@ -26,7 +26,7 @@ export const DonutChart = ({
   maxValue = 100,
   size = 160,
   strokeWidth = 16,
-  color = PALETTE_COLORS.blue, // #1E54B8
+  color = CHART_COLORS.blue, // #1E54B8
   backgroundColor = "#e5e7eb",
   label,
   sublabel,

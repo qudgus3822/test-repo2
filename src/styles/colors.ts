@@ -18,14 +18,17 @@ export const PALETTE_COLORS = {
   lightYellow: "#F5DB86", // 연한 노란색
 } as const;
 
-// 차트 색상 배열 (라인차트, 도넛차트 등에 사용)
-export const CHART_COLORS = [
-  "#1B21A6", // 진한 파란색
-  "#1E54B8", // 파란색
-  "#FABA3F", // 노란색
-  "#F39200", // 주황색
-  "#F5DB86", // 연한 노란색
-] as const;
+// 차트 색상 (PALETTE_COLORS와 동일, 명확성을 위한 별칭)
+export const CHART_COLORS = {
+  darkBlue: "#1B21A6", // 진한 파란색
+  blue: "#1E54B8", // 파란색
+  yellow: "#FABA3F", // 노란색
+  orange: "#F39200", // 주황색
+  lightYellow: "#F5DB86", // 연한 노란색
+} as const;
+
+// 차트 컴포넌트용 색상 배열 (순환 참조용)
+export const CHART_COLOR_ARRAY = Object.values(CHART_COLORS);
 
 // 카드/영역 색상
 export const SURFACE_COLORS = {

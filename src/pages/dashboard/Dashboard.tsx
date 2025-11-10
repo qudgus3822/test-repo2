@@ -1,6 +1,6 @@
 import {
   MetricsOverview,
-  GoalAchievement,
+  TargetValueAchievement,
   ServiceStability,
   MetricsRanking,
   ProductivityTrend,
@@ -42,21 +42,21 @@ const DashboardPage = () => {
       value: mockCompanyQuality.codeQuality.score,
       label: "코드 품질",
       sublabel: `${mockCompanyQuality.codeQuality.achievedMetrics}/${mockCompanyQuality.codeQuality.totalMetrics}건 달성`,
-      color: CHART_COLORS.success,
+      color: CHART_COLORS.blue,
     },
     {
       id: "review",
       value: mockCompanyQuality.reviewQuality.score,
       label: "리뷰 품질",
       sublabel: `${mockCompanyQuality.reviewQuality.achievedMetrics}/${mockCompanyQuality.reviewQuality.totalMetrics}건 달성`,
-      color: CHART_COLORS.warning,
+      color: CHART_COLORS.yellow,
     },
     {
       id: "efficiency",
       value: mockCompanyQuality.developmentEfficiency.score,
       label: "개발 효율",
       sublabel: `${mockCompanyQuality.developmentEfficiency.achievedMetrics}/${mockCompanyQuality.developmentEfficiency.totalMetrics}건 달성`,
-      color: CHART_COLORS.info,
+      color: CHART_COLORS.orange,
     },
   ];
 
@@ -196,7 +196,7 @@ const DashboardPage = () => {
         <div className="w-1/3">
           <Card className="w-full h-auto">
             {/* 목표 달성률 */}
-            <GoalAchievement
+            <TargetValueAchievement
               achieved={mockGoalAchievement.achievedMetrics}
               total={mockGoalAchievement.totalMetrics}
             />

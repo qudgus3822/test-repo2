@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
-import { TargetValueAchievement } from "@/components/metrics/TargetValueAchievement";
+import { TargetValueAchievement } from "@/components/dashboard/TargetValueAchievement";
 import { MetricsTable } from "@/components/metrics/MetricsTable";
 import {
   mockMetricOverview,
@@ -81,6 +81,7 @@ const MetricsPage = () => {
         {/* 목표 달성률 */}
         <div className="w-1/3 h-full">
           <Card className="w-full h-full">
+            {/* 목표 달성률 */}
             <TargetValueAchievement
               achieved={mockMetricsTargetValueAchievement.achievedMetrics}
               total={mockMetricsTargetValueAchievement.totalMetrics}
