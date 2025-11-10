@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface AchievementRateSettingModalProps {
   isOpen: boolean;
@@ -26,8 +27,28 @@ export const AchievementRateSettingModal = ({
   onSave,
 }: AchievementRateSettingModalProps) => {
   const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
+  const [shouldRender, setShouldRender] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  if (!isOpen) return null;
+  // 애니메이션을 위한 지연된 unmount
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      // DOM에 렌더링된 후 다음 프레임에서 애니메이션 시작
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
+    } else {
+      setIsAnimating(false);
+      // 닫히는 애니메이션 후 unmount (300ms)
+      const timer = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
 
   const handleAchievementRateChange = (index: number, value: string) => {
     const updated = [...editedMetrics];
@@ -48,12 +69,17 @@ export const AchievementRateSettingModal = ({
   return (
     <>
       {/* 오버레이 */}
-      <div className="fixed inset-0 bg-black/50 z-40" onClick={handleCancel} />
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+          isAnimating ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleCancel}
+      />
 
       {/* 슬라이드 패널 */}
       <div
-        className={`fixed top-0 right-0 h-full w-[600px] bg-white shadow-xl z-50 transform transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "translate-x-full"
+        className={`fixed top-0 right-0 h-full w-[600px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+          isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
@@ -121,18 +147,22 @@ export const AchievementRateSettingModal = ({
 
           {/* 하단 버튼 */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleCancel}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="!bg-white !text-gray-700 border border-gray-300 hover:!bg-gray-50"
             >
               취소
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={handleSave}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              className="!bg-blue-600 hover:!bg-blue-700 focus:!ring-blue-500"
             >
               저장
-            </button>
+            </Button>
           </div>
         </div>
       </div>

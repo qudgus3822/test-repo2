@@ -2,14 +2,17 @@ import { useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
-import { GoalAchievement } from "@/components/metrics/GoalAchievement";
+import { TargetValueAchievement } from "@/components/metrics/TargetValueAchievement";
 import { MetricsTable } from "@/components/metrics/MetricsTable";
 import {
   mockMetricOverview,
-  mockMetricsGoalAchievement,
+  mockMetricsTargetValueAchievement,
   mockCodeQualityMetrics,
 } from "@/mocks/metrics.mock";
 import { useMetricsStore } from "@/store/useMetricsStore";
+import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
+import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
+import type { MetricItem } from "@/types/metrics.types";
 
 const MetricsPage = () => {
   const {
@@ -18,25 +21,42 @@ const MetricsPage = () => {
     currentDate,
     setCurrentDate,
     isTargetValueSettingModalOpen,
+    setIsTargetValueSettingModalOpen,
     isAchievementRateSettingModalOpen,
+    setIsAchievementRateSettingModalOpen,
   } = useMetricsStore((state) => state);
 
-  // 목표값 설정/달성률 설정 모달이 열릴 때 body 스크롤 비활성화
+  // 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
-    if (isTargetValueSettingModalOpen || isAchievementRateSettingModalOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
+    const isAnyModalOpen =
+      isTargetValueSettingModalOpen || isAchievementRateSettingModalOpen;
+
+    if (!isAnyModalOpen) return;
+
+    // 현재 스타일 저장
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+
+    // 스크롤바 너비 계산
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+
+    // 스크롤 잠금 및 레이아웃 시프트 방지
+    document.body.classList.add("overflow-hidden");
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
-    // 목표값 설정/달성률 설정 팝업이 닫힐 때 원래대로 복원
+    // 모달이 닫힐 때 원래 상태로 복원
     return () => {
       document.body.classList.remove("overflow-hidden");
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
     };
   }, [isTargetValueSettingModalOpen, isAchievementRateSettingModalOpen]);
 
   return (
-    <div className="space-y-6">
+    <div className="">
       {/* 헤더 - 날짜 필터 */}
       <div>
         <Card className="w-full">
@@ -61,9 +81,9 @@ const MetricsPage = () => {
         {/* 목표 달성률 */}
         <div className="w-1/3 h-full">
           <Card className="w-full h-full">
-            <GoalAchievement
-              achieved={mockMetricsGoalAchievement.achievedMetrics}
-              total={mockMetricsGoalAchievement.totalMetrics}
+            <TargetValueAchievement
+              achieved={mockMetricsTargetValueAchievement.achievedMetrics}
+              total={mockMetricsTargetValueAchievement.totalMetrics}
             />
           </Card>
         </div>
@@ -71,8 +91,30 @@ const MetricsPage = () => {
 
       {/* 지표 리스트 */}
       <Card className="w-full">
-        <MetricsTable metrics={mockCodeQualityMetrics} />
+        <MetricsTable metrics={mockCodeQualityMetrics.metrics} />
       </Card>
+
+      {/* 지표 리스트 - 목표값 설정 모달 */}
+      <TargetValueSettingModal
+        isOpen={isTargetValueSettingModalOpen}
+        onClose={() => setIsTargetValueSettingModalOpen(false)}
+        metrics={mockCodeQualityMetrics.metrics}
+        onSave={(updatedMetrics: MetricItem[]) => {
+          // TODO: API 연동 시 실제 저장 로직 구현
+          console.log("Updated metrics:", updatedMetrics);
+        }}
+      />
+
+      {/* 지표 리스트 - 달성률 설정 모달 */}
+      <AchievementRateSettingModal
+        isOpen={isAchievementRateSettingModalOpen}
+        onClose={() => setIsAchievementRateSettingModalOpen(false)}
+        metrics={mockCodeQualityMetrics.metrics}
+        onSave={(updatedMetrics: MetricItem[]) => {
+          // TODO: API 연동 시 실제 저장 로직 구현
+          console.log("Updated achievement rates:", updatedMetrics);
+        }}
+      />
     </div>
   );
 };

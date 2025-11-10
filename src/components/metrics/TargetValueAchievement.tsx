@@ -1,9 +1,12 @@
-interface GoalAchievementProps {
+interface TargetValueAchievementProps {
   achieved: number;
   total: number;
 }
 
-export const GoalAchievement = ({ achieved, total }: GoalAchievementProps) => {
+export const TargetValueAchievement = ({
+  achieved,
+  total,
+}: TargetValueAchievementProps) => {
   const percentage = ((achieved / total) * 100).toFixed(1);
   const strokeDasharray = 2 * Math.PI * 80; // 원의 둘레 (반지름 80)
   const strokeDashoffset =

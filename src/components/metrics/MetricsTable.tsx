@@ -1,6 +1,4 @@
 import { Tooltip } from "@/components/ui/Tooltip";
-import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
-import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import {
   Search,
   CheckCircle2,
@@ -65,9 +63,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const {
     activeTab,
     setActiveTab,
-    isTargetValueSettingModalOpen,
     setIsTargetValueSettingModalOpen,
-    isAchievementRateSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
   } = useMetricsStore((state) => state);
 
@@ -151,7 +147,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-2">
                   목표값
-                  <span>
+                  <span className="flex items-center">
                     <Tooltip
                       // content="전체 메트릭의 목표값을 수정할 수 있습니다."
                       content="목표값 설정 팝업을 엽니다."
@@ -169,7 +165,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-2">
                   달성률
-                  <span>
+                  <span className="flex items-center">
                     <Tooltip
                       // content="지표의 달성률을 평가하는 기준값을 설정합니다."
                       content="달성률 설정 팝업을 엽니다."
@@ -255,28 +251,6 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
           </tbody>
         </table>
       </div>
-
-      {/* 목표값 설정 모달 */}
-      <TargetValueSettingModal
-        isOpen={isTargetValueSettingModalOpen}
-        onClose={() => setIsTargetValueSettingModalOpen(false)}
-        metrics={metrics}
-        onSave={(updatedMetrics: MetricItem[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
-          console.log("Updated metrics:", updatedMetrics);
-        }}
-      />
-
-      {/* 달성률 설정 모달 */}
-      <AchievementRateSettingModal
-        isOpen={isAchievementRateSettingModalOpen}
-        onClose={() => setIsAchievementRateSettingModalOpen(false)}
-        metrics={metrics}
-        onSave={(updatedMetrics: MetricItem[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
-          console.log("Updated achievement rates:", updatedMetrics);
-        }}
-      />
     </div>
   );
 };
