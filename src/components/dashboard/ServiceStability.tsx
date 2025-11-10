@@ -36,7 +36,7 @@ interface ServiceStabilityProps {
  */
 export const ServiceStability = ({ metrics }: ServiceStabilityProps) => {
   return (
-    <Card className="w-full h-full">
+    <Card className="w-full h-auto">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         서비스 안정성
       </h3>

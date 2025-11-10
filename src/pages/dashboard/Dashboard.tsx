@@ -194,7 +194,7 @@ const DashboardPage = () => {
         </div>
 
         <div className="w-1/3">
-          <Card className="w-full h-full">
+          <Card className="w-full h-auto">
             {/* 목표 달성률 */}
             <GoalAchievement
               achieved={mockGoalAchievement.achievedMetrics}

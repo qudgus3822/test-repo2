@@ -21,7 +21,7 @@ export const ProductivityTrend = ({
   metrics,
 }: ProductivityTrendProps) => {
   return (
-    <Card className="w-full h-full">
+    <Card className="w-full h-auto">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         개발생산성 트렌드
       </h3>
