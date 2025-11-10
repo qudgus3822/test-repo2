@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { CHART_COLORS, CHART_STYLES } from "../config";
+import { CHART_STYLES, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
   [key: string]: string | number;
@@ -19,7 +19,7 @@ interface RadarChartProps {
   angleKey: string;
   dataKeys: string[];
   height?: number;
-  colors?: string[];
+  colors?: readonly string[];
   showLegend?: boolean;
 }
 
@@ -32,7 +32,7 @@ export const RadarChart = ({
   angleKey,
   dataKeys,
   height = 400,
-  colors = [CHART_COLORS.primary, CHART_COLORS.secondary],
+  colors = MULTI_LINE_COLORS,
   showLegend = true,
 }: RadarChartProps) => {
   return (

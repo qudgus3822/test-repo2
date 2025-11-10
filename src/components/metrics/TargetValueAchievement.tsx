@@ -1,3 +1,5 @@
+import { PALETTE_COLORS } from "@/styles/colors";
+
 interface TargetValueAchievementProps {
   achieved: number;
   total: number;
@@ -36,7 +38,7 @@ export const TargetValueAchievement = ({
               cy="100"
               r="80"
               fill="none"
-              stroke="#3b82f6"
+              stroke={PALETTE_COLORS.blue}
               strokeWidth="16"
               strokeDasharray={strokeDasharray}
               strokeDashoffset={strokeDashoffset}

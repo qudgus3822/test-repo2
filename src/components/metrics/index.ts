@@ -1,3 +1,3 @@
 export { MetricsSummary } from "./MetricsSummary";
-export { GoalAchievement } from "./TargetValueAchievement";
+export { TargetValueAchievement } from "./TargetValueAchievement";
 export { MetricsTable } from "./MetricsTable";

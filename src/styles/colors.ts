@@ -5,9 +5,27 @@
 
 // 브랜드 색상
 export const BRAND_COLORS = {
-  primary: "#FF6C00", // 빗썸 주황색
-  secondary: "#4751B8", // 보조 색상
+  primary: "#FF6C00", // 빗썸 주황색 (메인 로고)
+  secondary: "#4751B8", // 보조 색상 (레거시)
 } as const;
+
+// Color Palette 3 - 프로젝트 전반 사용
+export const PALETTE_COLORS = {
+  darkBlue: "#1B21A6", // 진한 파란색 (네이비)
+  blue: "#1E54B8", // 파란색 (메인 포인트)
+  yellow: "#FABA3F", // 노란색
+  orange: "#F39200", // 주황색 (경고/강조)
+  lightYellow: "#F5DB86", // 연한 노란색
+} as const;
+
+// 차트 색상 배열 (라인차트, 도넛차트 등에 사용)
+export const CHART_COLORS = [
+  "#1B21A6", // 진한 파란색
+  "#1E54B8", // 파란색
+  "#FABA3F", // 노란색
+  "#F39200", // 주황색
+  "#F5DB86", // 연한 노란색
+] as const;
 
 // 카드/영역 색상
 export const SURFACE_COLORS = {
@@ -47,6 +65,8 @@ export const TEXT_COLORS = {
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
+  palette: PALETTE_COLORS,
+  chart: CHART_COLORS,
   surface: SURFACE_COLORS,
   trend: TREND_COLORS,
   status: STATUS_COLORS,

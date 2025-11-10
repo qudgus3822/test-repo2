@@ -17,9 +17,10 @@ import type { ButtonHTMLAttributes } from "react";
  */
 
 const BUTTON_VARIANTS = {
-  primary: "bg-[#FF6C00] hover:bg-[#E66100] focus:ring-[#FF6C00]",
-  secondary: "bg-gray-500 hover:bg-gray-600 focus:ring-gray-500",
-  danger: "bg-red-500 hover:bg-red-600 focus:ring-red-500",
+  primary: "bg-[#1E54B8] hover:bg-[#1B21A6] focus:ring-[#1E54B8]", // 파란색 (저장 등)
+  secondary: "bg-gray-500 hover:bg-gray-600 focus:ring-gray-500", // 취소
+  danger: "bg-[#F39200] hover:bg-[#E66100] focus:ring-[#F39200]", // 삭제/경고
+  warning: "bg-[#FABA3F] hover:bg-[#F39200] focus:ring-[#FABA3F]", // 주의
 };
 
 const BUTTON_SIZES = {

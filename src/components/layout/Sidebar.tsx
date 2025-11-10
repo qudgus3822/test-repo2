@@ -7,6 +7,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { PALETTE_COLORS } from "@/styles/colors";
 
 interface SidebarProps {
   activeMenu?: string;
@@ -55,11 +56,16 @@ export default function Sidebar({ activeMenu }: SidebarProps) {
             <button
               key={item.id}
               onClick={() => navigate(item.path)}
+              style={
+                isActive
+                  ? { backgroundColor: PALETTE_COLORS.blue }
+                  : undefined
+              }
               className={`
                 w-full flex items-center gap-3 px-4 py-3 mb-1 rounded-lg transition-colors cursor-pointer
                 ${
                   isActive
-                    ? "bg-blue-600 text-white"
+                    ? "text-white"
                     : "text-gray-700 hover:bg-gray-100"
                 }
               `}
