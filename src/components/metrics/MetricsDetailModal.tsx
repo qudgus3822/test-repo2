@@ -1,30 +1,14 @@
 import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
-import { MetricStatus } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { LineChart } from "@/libs/chart";
-import { getCategoryLabel } from "@/utils/metrics";
-import { STATUS_COLORS } from "@/styles/colors";
+import { getCategoryLabel, getStatusIconConfig } from "@/utils/metrics";
 
 interface MetricsDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   metric: MetricItem | null;
 }
-
-// MetricStatus에 따른 STATUS_COLORS 매핑
-const getStatusColor = (status: MetricStatus): string => {
-  switch (status) {
-    case "achieved":
-      return STATUS_COLORS.success; // #10b981
-    case "warning":
-      return STATUS_COLORS.warning; // #FF6900
-    case "not_achieved":
-      return STATUS_COLORS.error; // #E7000B
-    default:
-      return STATUS_COLORS.info; // #06b6d4
-  }
-};
 
 export const MetricsDetailModal = ({
   isOpen,
@@ -55,6 +39,8 @@ export const MetricsDetailModal = ({
 
   if (!shouldRender || !metric) return null;
 
+  const statusConfig = getStatusIconConfig(metric.status);
+
   // 6개월 추이 목업 데이터 (실제로는 API에서 받아와야 함)
   const trendData = [
     { month: "2024.06", 목표값: metric.targetValue, 달성값: 75, 기준값: 80 },
@@ -83,7 +69,7 @@ export const MetricsDetailModal = ({
       >
         <div className="flex flex-col h-full">
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-start justify-between p-6 border-b border-gray-200 ">
             <h2 className="text-lg font-semibold text-gray-900">
               {metric.name} 상세 정보
             </h2>
@@ -138,13 +124,13 @@ export const MetricsDetailModal = ({
                 <div
                   className="rounded-lg px-4 py-3"
                   style={{
-                    backgroundColor: `${getStatusColor(metric.status)}20`, // 20% opacity
+                    backgroundColor: statusConfig.bgColor,
                   }}
                 >
                   <div className="text-xs text-gray-500 mb-1">달성률</div>
                   <div
                     className="text-sm font-semibold"
-                    style={{ color: getStatusColor(metric.status) }}
+                    style={{ color: statusConfig.color }}
                   >
                     {metric.achievementRate}%
                   </div>

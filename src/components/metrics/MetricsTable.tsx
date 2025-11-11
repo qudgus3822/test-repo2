@@ -1,17 +1,13 @@
 import { Tooltip } from "@/components/ui/Tooltip";
-import {
-  Search,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-  ArrowDownUp,
-  Info,
-  Pencil,
-} from "lucide-react";
+import { Search, ArrowDownUp, Info, Pencil } from "lucide-react";
 import type { MetricItem } from "@/types/metrics.types";
-import { MetricStatus, MetricCategory } from "@/types/metrics.types";
+import { MetricCategory } from "@/types/metrics.types";
 import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
-import { getCategoryLabel } from "@/utils/metrics";
+import {
+  getCategoryLabel,
+  getStatusIcon,
+  getStatusColor,
+} from "@/utils/metrics";
 
 interface MetricsTableProps {
   metrics: MetricItem[];
@@ -23,32 +19,6 @@ interface Tab {
   count: number;
   category?: MetricCategory;
 }
-
-// MetricStatus에 따른 아이콘 반환
-const getStatusIcon = (status: MetricStatus) => {
-  switch (status) {
-    case "achieved":
-      return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-    case "warning":
-      return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-    case "not_achieved":
-      return <XCircle className="w-5 h-5 text-red-500" />;
-  }
-};
-
-// MetricStatus에 따른 텍스트 색상 반환
-const getStatusColor = (status: MetricStatus): string => {
-  switch (status) {
-    case "achieved":
-      return "text-green-600";
-    case "warning":
-      return "text-yellow-600";
-    case "not_achieved":
-      return "text-red-600";
-    default:
-      return "text-gray-600";
-  }
-};
 
 export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const {
@@ -226,14 +196,24 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center space-x-2">
-                      {getStatusIcon(metric.status)}
-                      <span
-                        className={`text-sm font-medium ${getStatusColor(
-                          metric.status,
-                        )}`}
-                      >
-                        {metric.achievementRate}%
-                      </span>
+                      {(() => {
+                        const Icon = getStatusIcon(metric.status);
+                        const iconColor = getStatusColor(metric.status);
+                        return (
+                          <>
+                            <Icon
+                              className="w-5 h-5"
+                              style={{ color: iconColor }}
+                            />
+                            <span
+                              className="text-sm font-medium"
+                              style={{ color: iconColor }}
+                            >
+                              {metric.achievementRate}%
+                            </span>
+                          </>
+                        );
+                      })()}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">

@@ -52,17 +52,17 @@ export const GOAL_STATUS_COLORS = {
 
 // 상태(달성률) 색상
 export const STATUS_COLORS = {
-  success: "#10b981", // 성공
+  excellent: "#10B981", // 우수
   warning: "#FF6900", // 경고
-  error: "#E7000B", // 에러
+  danger: "#E7000B", // 위험
   info: "#06b6d4", // 정보
 } as const;
 
 // 텍스트 색상
 export const TEXT_COLORS = {
   primary: "#111827", // 주요 텍스트
-  secondary: "#6b7280", // 보조 텍스트
-  disabled: "#9ca3af", // 비활성화 텍스트
+  secondary: "#6B7280", // 보조 텍스트
+  disabled: "#9CA3AF", // 비활성화 텍스트
 } as const;
 
 // 모든 색상 통합 export

@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
+import { MetricStatus } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getCategoryLabel } from "@/utils/metrics";
+import { getStatusIconConfig } from "@/utils/metrics";
 
 interface AchievementRateSettingModalProps {
   isOpen: boolean;
@@ -41,11 +42,11 @@ export const AchievementRateSettingModal = ({
 
   if (!shouldRender) return null;
 
-  const handleAchievementRateChange = (index: number, value: string) => {
-    const updated = [...editedMetrics];
-    updated[index] = { ...updated[index], achievementRate: parseFloat(value) };
-    setEditedMetrics(updated);
-  };
+  // const handleAchievementRateChange = (index: number, value: string) => {
+  //   const updated = [...editedMetrics];
+  //   updated[index] = { ...updated[index], achievementRate: parseFloat(value) };
+  //   setEditedMetrics(updated);
+  // };
 
   const handleSave = () => {
     onSave(editedMetrics);
@@ -56,6 +57,15 @@ export const AchievementRateSettingModal = ({
     setEditedMetrics(metrics); // 원래 값으로 복원
     onClose();
   };
+
+  // 상태별 아이콘 설정
+  const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);
+  const warningConfig = getStatusIconConfig(MetricStatus.WARNING);
+  const dangerConfig = getStatusIconConfig(MetricStatus.DANGER);
+
+  const ExcellentIcon = excellentConfig.icon;
+  const WarningIcon = warningConfig.icon;
+  const DangerIcon = dangerConfig.icon;
 
   return (
     <>
@@ -75,13 +85,15 @@ export const AchievementRateSettingModal = ({
       >
         <div className="flex flex-col h-full">
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-start justify-between p-6 border-b border-gray-200 gap-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                달성률 설정
+                달성률 기준 설정
               </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                각 메트릭의 달성률 기준값을 일괄적으로 수정합니다.
+              {/* 설명 텍스트 */}
+              <p className="text-sm text-gray-600 mt-1">
+                지표의 달성률을 평가하는 기준값을 설정합니다. 설정한 기준에 따라
+                지표의 상태 아이콘이 변경됩니다.
               </p>
             </div>
             <button
@@ -92,66 +104,130 @@ export const AchievementRateSettingModal = ({
             </button>
           </div>
 
-          {/* 테이블 */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-                  <th className="px-4 py-3 w-[30%]">지표명</th>
-                  <th className="px-4 py-3 w-[20%]">범주</th>
-                  <th className="px-4 py-3 w-[20%]">현재 달성률</th>
-                  <th className="px-4 py-3 w-[30%]">달성률 기준(%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {editedMetrics.map((metric, index) => (
-                  <tr
-                    key={metric.metricCode || index}
-                    className="border-b border-gray-100"
-                  >
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {metric.name}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {getCategoryLabel(metric.category)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {metric.achievementRate}%
-                    </td>
-                    <td className="px-4 py-3">
-                      <input
-                        type="number"
-                        value={metric.achievementRate}
-                        onChange={(e) =>
-                          handleAchievementRateChange(index, e.target.value)
-                        }
-                        min="0"
-                        max="100"
-                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* 기본값으로 재설정 버튼 */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4">
+            <Button
+              variant="normal"
+              size="sm"
+              onClick={handleCancel}
+              // className="text-gray-700 border border-gray-300 hover:bg-gray-50"
+            >
+              기본값으로 재설정
+            </Button>
+          </div>
+
+          <div className="overflow-y-auto px-6 py-4 gap-6 flex flex-col">
+            {/* 우수 기준 */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <ExcellentIcon
+                  className="w-6 h-6"
+                  style={{ color: excellentConfig.color }}
+                />
+
+                <span className="font-medium text-gray-900">우수 기준</span>
+              </div>
+              <div className="flex items-center gap-3 mb-2">
+                <input
+                  type="number"
+                  defaultValue="80"
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  % 이상
+                </span>
+              </div>
+              <p className="text-sm text-gray-500">
+                달성률이 이 값 이상이면 초록색 체크 아이콘이 표시됩니다.
+              </p>
+            </div>
+
+            {/* 경고 기준 */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <WarningIcon
+                  className="w-6 h-6"
+                  style={{ color: warningConfig.color }}
+                />
+
+                <span className="font-medium text-gray-900">경고 기준</span>
+              </div>
+              <div className="flex items-center gap-3 mb-2">
+                <input
+                  type="number"
+                  defaultValue="70"
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  % 이상 ~ 80% 미만
+                </span>
+              </div>
+              <p className="text-sm text-gray-500">
+                달성률이 이 범위에 있으면 주황색 느낌표 아이콘이 표시됩니다.
+              </p>
+            </div>
+
+            {/* 위험 기준 */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <DangerIcon
+                  className="w-6 h-6"
+                  style={{ color: dangerConfig.color }}
+                />
+                <span className="font-medium text-gray-900">위험 기준</span>
+              </div>
+              <div className="flex items-center gap-3 mb-2 w-full">
+                <input
+                  type="number"
+                  defaultValue="70"
+                  className="w-[10%] flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="text-sm text-gray-600 whitespace-nowrap">
+                  % 미만
+                </span>
+              </div>
+              <p className="text-sm text-gray-500">
+                달성률이 경고 기준 미만이면 빨간색 경고 아이콘이 표시됩니다.
+              </p>
+            </div>
+
+            {/* 미리보기 */}
+            <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                미리보기
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <ExcellentIcon
+                    className="w-6 h-6"
+                    style={{ color: excellentConfig.color }}
+                  />
+                  <span className="text-sm text-gray-700">80% 이상</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <WarningIcon
+                    className="w-6 h-6"
+                    style={{ color: warningConfig.color }}
+                  />
+                  <span className="text-sm text-gray-700">70% ~ 80% 미만</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DangerIcon
+                    className="w-6 h-6"
+                    style={{ color: dangerConfig.color }}
+                  />
+                  <span className="text-sm text-gray-700">70% 미만</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 하단 버튼 */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleCancel}
-              className="!bg-white !text-gray-700 border border-gray-300 hover:!bg-gray-50"
-            >
+            <Button variant="cancel" size="sm" onClick={handleCancel}>
               취소
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSave}
-              className="!bg-blue-600 hover:!bg-blue-700 focus:!ring-blue-500"
-            >
+            <Button variant="primary" size="sm" onClick={handleSave}>
               저장
             </Button>
           </div>

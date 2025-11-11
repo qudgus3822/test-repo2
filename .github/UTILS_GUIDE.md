@@ -123,6 +123,180 @@ const MetricsTable = ({ metrics }: { metrics: MetricItem[] }) => {
 
 ---
 
+### `getStatusIcon`
+
+MetricStatus 또는 ThresholdType에 따른 Lucide 아이콘을 반환합니다.
+
+#### 사용 위치
+
+- 지표 상태 아이콘을 표시하는 모든 컴포넌트
+- 대시보드, 지표 테이블, 모달 등
+
+#### Import
+
+```typescript
+import { getStatusIcon } from "@/utils/metrics";
+```
+
+#### 함수 시그니처
+
+```typescript
+getStatusIcon(status: MetricStatus | ThresholdType): LucideIcon
+```
+
+#### 파라미터
+
+- `status`: MetricStatus 또는 ThresholdType
+  - MetricStatus: `"achieved"`, `"warning"`, `"not_achieved"`
+  - ThresholdType: `"excellent"`, `"good"`, `"warning"`, `"danger"`
+
+#### 반환값
+
+- `LucideIcon`: Lucide React 아이콘 컴포넌트
+
+#### 사용 예시
+
+```typescript
+import { getStatusIcon } from "@/utils/metrics";
+import { MetricStatus } from "@/types/metrics.types";
+
+const Icon = getStatusIcon(MetricStatus.ACHIEVED);
+// Returns: CheckCircle2 component
+
+// 컴포넌트에서 사용
+<Icon className="w-5 h-5" style={{ color: "#10b981" }} />
+```
+
+#### 적용된 컴포넌트
+
+- ✅ `src/components/dashboard/ServiceStability.tsx`
+- ✅ `src/components/metrics/MetricsTable.tsx`
+- ✅ `src/components/metrics/AchievementRateSettingModal.tsx`
+
+---
+
+### `getStatusColor`
+
+MetricStatus 또는 ThresholdType에 따른 색상을 반환합니다.
+
+#### 사용 위치
+
+- 지표 상태에 따른 색상이 필요한 모든 컴포넌트
+
+#### Import
+
+```typescript
+import { getStatusColor } from "@/utils/metrics";
+```
+
+#### 함수 시그니처
+
+```typescript
+getStatusColor(status: MetricStatus | ThresholdType): string
+```
+
+#### 파라미터
+
+- `status`: MetricStatus 또는 ThresholdType
+
+#### 반환값
+
+- `string`: 색상 hex 코드 (예: `"#10b981"`)
+
+#### 사용 예시
+
+```typescript
+import { getStatusColor } from "@/utils/metrics";
+import { MetricStatus } from "@/types/metrics.types";
+
+const color = getStatusColor(MetricStatus.ACHIEVED);
+// Returns: "#10b981"
+
+// 컴포넌트에서 사용
+<div style={{ color: getStatusColor(metric.status) }}>
+  {metric.value}
+</div>
+```
+
+#### 적용된 컴포넌트
+
+- ✅ `src/components/dashboard/ServiceStability.tsx`
+- ✅ `src/components/metrics/MetricsTable.tsx`
+- ✅ `src/components/metrics/MetricsDetailModal.tsx`
+
+---
+
+### `getStatusIconConfig`
+
+MetricStatus 또는 ThresholdType에 따른 아이콘, 색상, 배경색, 라벨을 모두 반환합니다.
+
+#### 사용 위치
+
+- 지표 상태의 전체 스타일링이 필요한 컴포넌트
+
+#### Import
+
+```typescript
+import { getStatusIconConfig } from "@/utils/metrics";
+```
+
+#### 함수 시그니처
+
+```typescript
+getStatusIconConfig(status: MetricStatus | ThresholdType): StatusIconConfig
+
+interface StatusIconConfig {
+  icon: LucideIcon;
+  color: string;
+  bgColor: string;
+  label: string;
+}
+```
+
+#### 파라미터
+
+- `status`: MetricStatus 또는 ThresholdType
+
+#### 반환값
+
+- `StatusIconConfig`: 아이콘, 색상, 배경색, 라벨을 포함한 설정 객체
+
+#### 사용 예시
+
+```typescript
+import { getStatusIconConfig } from "@/utils/metrics";
+import { MetricStatus } from "@/types/metrics.types";
+
+const config = getStatusIconConfig(MetricStatus.ACHIEVED);
+const Icon = config.icon;
+
+// 컴포넌트에서 사용
+<div
+  className="w-10 h-10 rounded-full flex items-center justify-center"
+  style={{ backgroundColor: config.bgColor }}
+>
+  <Icon className="w-6 h-6" style={{ color: config.color }} />
+</div>
+<span>{config.label}</span>
+```
+
+#### 지원하는 상태
+
+| 상태 | 아이콘 | 색상 | 라벨 |
+|------|--------|------|------|
+| `achieved` | CheckCircle2 | #10b981 | 달성 |
+| `warning` | AlertCircle | #FF6900 | 주의 |
+| `not_achieved` | X | #E7000B | 미달성 |
+| `excellent` | CheckCircle2 | #10b981 | 우수 |
+| `good` | CheckCircle2 | #10b981 | 양호 |
+| `danger` | TriangleAlert | #E7000B | 위험 |
+
+#### 적용된 컴포넌트
+
+- ✅ `src/components/metrics/AchievementRateSettingModal.tsx`
+
+---
+
 ## ⚠️ 에러 처리 유틸리티
 
 ### 위치

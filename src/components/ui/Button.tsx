@@ -8,7 +8,7 @@ import type { ButtonHTMLAttributes } from "react";
   <Button type="submit" fullWidth>로그인</Button>
 
   // 다른 variant 사용
-  <Button variant="secondary">취소</Button>
+  <Button variant="normal">기본</Button>
   <Button variant="danger">삭제</Button>
 
   // 크기 변경
@@ -17,10 +17,15 @@ import type { ButtonHTMLAttributes } from "react";
  */
 
 const BUTTON_VARIANTS = {
-  primary: "bg-[#1E54B8] hover:bg-[#1B21A6] focus:ring-[#1E54B8]", // 파란색 (저장 등)
-  secondary: "bg-gray-500 hover:bg-gray-600 focus:ring-gray-500", // 취소
-  danger: "bg-[#F39200] hover:bg-[#E66100] focus:ring-[#F39200]", // 삭제/경고
-  warning: "bg-[#FABA3F] hover:bg-[#F39200] focus:ring-[#FABA3F]", // 주의
+  primary:
+    "bg-[#2563EB] text-[#FFFFFF] hover:bg-[#1D4ED8] focus:ring-[#3B82F6]", // 저장
+  normal:
+    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-[#F39200]", // 기본
+  cancel:
+    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-[#F39200]", // 취소
+  danger: "bg-[#F39200] text-[#FFFFFF] hover:bg-[#E66100] focus:ring-[#F39200]", // 삭제/경고
+  warning:
+    "bg-[#FABA3F] text-[#FFFFFF] hover:bg-[#F39200] focus:ring-[#FABA3F]", // 주의
 };
 
 const BUTTON_SIZES = {
@@ -47,7 +52,7 @@ export const Button = ({
   return (
     <button
       className={clsx(
-        "rounded-md font-medium text-white transition-colors cursor-pointer",
+        "flex cursor-pointer items-center justify-center rounded-[8px] text-[14px] font-medium text-[#000000]",
         "focus:outline-none focus:ring-2 focus:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
         BUTTON_VARIANTS[variant],

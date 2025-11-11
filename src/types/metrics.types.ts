@@ -1,8 +1,9 @@
 // ==================== 지표 상태 Enum ====================
+// 2025.11.11 정책 엑셀 참고하여 수정 필요!
 export enum MetricStatus {
-  ACHIEVED = "achieved", // 달성 (초록색 체크)
-  WARNING = "warning", // 주의 (노란색 경고)
-  NOT_ACHIEVED = "not_achieved", // 미달성 (빨간색 X)
+  EXCELLENT = "excellent", // 우수 (초록색 체크)
+  WARNING = "warning", // 경고 (주황색 느낌표)
+  DANGER = "danger", // 위험 (빨간색 X)
 }
 
 export enum MetricCategory {

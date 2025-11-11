@@ -75,7 +75,7 @@ export const TargetValueSettingModal = ({
       >
         <div className="flex flex-col h-full">
           {/* 헤더 */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-start justify-between p-6 border-b border-gray-200 gap-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 목표값 일괄 설정
@@ -137,7 +137,7 @@ export const TargetValueSettingModal = ({
           {/* 하단 버튼 */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
             <Button
-              variant="secondary"
+              variant="cancel"
               size="sm"
               onClick={handleCancel}
               className="!bg-white !text-gray-700 border border-gray-300 hover:!bg-gray-50"
