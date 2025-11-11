@@ -15,19 +15,19 @@ export const MetricsSummary = ({ data }: MetricsSummaryProps) => {
       iconColor: "text-[#E66100]", // 전체 지표만 다른 색상
     },
     {
-      label: "코드분류",
+      label: "코드품질",
       value: data.codeQualityCount,
       icon: BarChart3,
       iconColor: "text-blue-500",
     },
     {
-      label: "지표 분류",
+      label: "리뷰품질",
       value: data.reviewQualityCount,
       icon: BarChart3,
       iconColor: "text-blue-500",
     },
     {
-      label: "지표 등록",
+      label: "개발 효율",
       value: data.developmentEfficiencyCount,
       icon: BarChart3,
       iconColor: "text-blue-500",

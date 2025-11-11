@@ -11,6 +11,7 @@ import {
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricStatus, MetricCategory } from "@/types/metrics.types";
 import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
+import { getCategoryLabel } from "@/utils/metrics";
 
 interface MetricsTableProps {
   metrics: MetricItem[];
@@ -22,16 +23,6 @@ interface Tab {
   count: number;
   category?: MetricCategory;
 }
-
-// MetricCategory enum을 한글 라벨로 변환
-const getCategoryLabel = (category: MetricCategory): string => {
-  const labels: Record<MetricCategory, string> = {
-    code_quality: "코드분류",
-    review_quality: "지표분류",
-    development_efficiency: "개발정보",
-  };
-  return labels[category];
-};
 
 // MetricStatus에 따른 아이콘 반환
 const getStatusIcon = (status: MetricStatus) => {
@@ -65,6 +56,8 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     setActiveTab,
     setIsTargetValueSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
+    setIsMetricsDetailModalOpen,
+    setSelectedMetric,
   } = useMetricsStore((state) => state);
 
   // 전체 메트릭 개수 기준 테이블 높이 계산 (헤더 50px + 행당 53px)
@@ -85,19 +78,19 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     { id: "all", label: "전체", count: metrics.length },
     {
       id: "codeQuality",
-      label: "코드분류",
+      label: "코드품질",
       count: codeQualityCount,
       category: MetricCategory.CODE_QUALITY,
     },
     {
       id: "reviewQuality",
-      label: "지표분류",
+      label: "리뷰품질",
       count: reviewQualityCount,
       category: MetricCategory.REVIEW_QUALITY,
     },
     {
       id: "developmentEfficiency",
-      label: "개발정보",
+      label: "개발품질",
       count: developmentEfficiencyCount,
       category: MetricCategory.DEVELOPMENT_EFFICIENCY,
     },
@@ -113,6 +106,12 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
             activeTabData?.category && m.category === activeTabData.category
           );
         });
+
+  // 지표 상세보기 모달 열기
+  const handleMetricsDetailClick = (metric: MetricItem) => {
+    setSelectedMetric(metric);
+    setIsMetricsDetailModalOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -147,14 +146,14 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-2">
                   목표값
-                  <span className="flex items-center">
+                  <span className="flex items-center cursor-pointer">
                     <Tooltip
                       // content="전체 메트릭의 목표값을 수정할 수 있습니다."
                       content="목표값 설정 팝업을 엽니다."
                       color="#6B7280"
                     >
                       <Pencil
-                        className="w-4 h-4 cursor-pointer"
+                        className="w-4 h-4"
                         id="목표값 설정 아이콘"
                         onClick={() => setIsTargetValueSettingModalOpen(true)}
                       />
@@ -165,14 +164,14 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-2">
                   달성률
-                  <span className="flex items-center">
+                  <span className="flex items-center cursor-pointer">
                     <Tooltip
                       // content="지표의 달성률을 평가하는 기준값을 설정합니다."
                       content="달성률 설정 팝업을 엽니다."
                       color="#6B7280"
                     >
                       <Pencil
-                        className="w-4 h-4 cursor-pointer"
+                        className="w-4 h-4"
                         id="달성률 설정 아이콘"
                         onClick={() =>
                           setIsAchievementRateSettingModalOpen(true)
@@ -184,7 +183,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
               </th>
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-2">
-                  비율 <ArrowDownUp className="w-4 h-4 cursor-pointer" />
+                  비율 <ArrowDownUp className="w-4 h-4" />
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">상세</th>
@@ -241,7 +240,10 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                     {metric.ratio}%
                   </td>
                   <td className="px-4 py-3">
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button
+                      className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                      onClick={() => handleMetricsDetailClick(metric)}
+                    >
                       <Search className="w-5 h-5" />
                     </button>
                   </td>

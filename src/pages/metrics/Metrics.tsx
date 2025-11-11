@@ -12,6 +12,7 @@ import {
 import { useMetricsStore } from "@/store/useMetricsStore";
 import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
 import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
+import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import type { MetricItem } from "@/types/metrics.types";
 
 const MetricsPage = () => {
@@ -24,12 +25,17 @@ const MetricsPage = () => {
     setIsTargetValueSettingModalOpen,
     isAchievementRateSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
+    isMetricsDetailModalOpen,
+    setIsMetricsDetailModalOpen,
+    selectedMetric,
   } = useMetricsStore((state) => state);
 
   // 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
     const isAnyModalOpen =
-      isTargetValueSettingModalOpen || isAchievementRateSettingModalOpen;
+      isTargetValueSettingModalOpen ||
+      isAchievementRateSettingModalOpen ||
+      isMetricsDetailModalOpen;
 
     if (!isAnyModalOpen) return;
 
@@ -53,7 +59,11 @@ const MetricsPage = () => {
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
     };
-  }, [isTargetValueSettingModalOpen, isAchievementRateSettingModalOpen]);
+  }, [
+    isTargetValueSettingModalOpen,
+    isAchievementRateSettingModalOpen,
+    isMetricsDetailModalOpen,
+  ]);
 
   return (
     <div className="">
@@ -115,6 +125,13 @@ const MetricsPage = () => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated achievement rates:", updatedMetrics);
         }}
+      />
+
+      {/* 지표 리스트 - 지표 상세보기 모달 */}
+      <MetricsDetailModal
+        isOpen={isMetricsDetailModalOpen}
+        onClose={() => setIsMetricsDetailModalOpen(false)}
+        metric={selectedMetric}
       />
     </div>
   );

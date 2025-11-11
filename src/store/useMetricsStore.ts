@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { PeriodType } from "@/components/ui/DateFilter";
+import type { MetricItem } from "@/types/metrics.types";
 
 export type TabType =
   | "all"
@@ -28,6 +29,14 @@ interface MetricsStore {
    * 달성률 설정 모달이 열려있는지 여부입니다.
    */
   isAchievementRateSettingModalOpen: boolean;
+  /**
+   * 지표 상세 모달이 열려있는지 여부입니다.
+   */
+  isMetricsDetailModalOpen: boolean;
+  /**
+   * 선택된 지표입니다.
+   */
+  selectedMetric: MetricItem | null;
 }
 
 interface MetricsAction {
@@ -55,6 +64,14 @@ interface MetricsAction {
   setIsAchievementRateSettingModalOpen: (
     isAchievementRateSettingModalOpen: boolean,
   ) => void;
+  /**
+   * 지표 상세 모달을 엽니다.
+   */
+  setIsMetricsDetailModalOpen: (isMetricsDetailModalOpen: boolean) => void;
+  /**
+   * 선택된 지표를 설정합니다.
+   */
+  setSelectedMetric: (metric: MetricItem | null) => void;
 }
 
 const initState: MetricsStore = {
@@ -63,6 +80,8 @@ const initState: MetricsStore = {
   activeTab: "all",
   isTargetValueSettingModalOpen: false,
   isAchievementRateSettingModalOpen: false,
+  isMetricsDetailModalOpen: false,
+  selectedMetric: null,
 };
 
 export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
@@ -75,4 +94,8 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
   setIsAchievementRateSettingModalOpen: (
     isAchievementRateSettingModalOpen: boolean,
   ) => set({ isAchievementRateSettingModalOpen }),
+  setIsMetricsDetailModalOpen: (isMetricsDetailModalOpen: boolean) =>
+    set({ isMetricsDetailModalOpen }),
+  setSelectedMetric: (metric: MetricItem | null) =>
+    set({ selectedMetric: metric }),
 }));

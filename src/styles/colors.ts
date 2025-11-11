@@ -50,7 +50,7 @@ export const GOAL_STATUS_COLORS = {
   danger: "#E7000B", // 위험
 } as const;
 
-// 상태 색상
+// 상태(달성률) 색상
 export const STATUS_COLORS = {
   success: "#10b981", // 성공
   warning: "#FF6900", // 경고

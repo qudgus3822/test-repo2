@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { getCategoryLabel } from "@/utils/metrics";
 
 interface AchievementRateSettingModalProps {
   isOpen: boolean;
@@ -9,16 +10,6 @@ interface AchievementRateSettingModalProps {
   metrics: MetricItem[];
   onSave: (updatedMetrics: MetricItem[]) => void;
 }
-
-// MetricCategory enum을 한글 라벨로 변환
-const getCategoryLabel = (category: string): string => {
-  const labels: Record<string, string> = {
-    code_quality: "코드분류",
-    review_quality: "지표분류",
-    development_efficiency: "개발정보",
-  };
-  return labels[category] || category;
-};
 
 export const AchievementRateSettingModal = ({
   isOpen,
