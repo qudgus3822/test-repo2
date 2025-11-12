@@ -262,9 +262,11 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     {metric.currentValue}
+                    {metric.unit}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {metric.targetValue}
+                    {metric.unit}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center space-x-2">

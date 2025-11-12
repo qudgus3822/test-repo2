@@ -25,6 +25,7 @@ export const mockMetricsTargetValueAchievement: MetricsTargetValueAchievement =
   };
 
 // ==================== 지표 리스트 목업 ====================
+// 2025.11.12 정책 엑셀 참고하여 프론트에서 "unit" 수정
 export const mockCodeQualityMetrics: MetricsListData = {
   month: "2025-10",
   totalCount: 30,
@@ -42,7 +43,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.WARNING,
       ratio: 3.33,
       metricCode: "TECH_DEBT",
-      unit: "hour",
+      unit: "일",
       description: "기술부채 시간",
     },
     {
@@ -54,7 +55,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "CODE_COMPLEXITY",
-      unit: "count",
+      unit: "",
       description: "평균 복잡도",
     },
     {
@@ -66,7 +67,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.WARNING,
       ratio: 3.33,
       metricCode: "CODE_DUPLICATION",
-      unit: "percent",
+      unit: "%",
       description: "중복 비율",
     },
     {
@@ -78,7 +79,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.WARNING,
       ratio: 3.33,
       metricCode: "CODE_SMELL",
-      unit: "count",
+      unit: "개",
       description: "코드스멜 개수",
     },
     {
@@ -90,7 +91,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "TEST_COVERAGE",
-      unit: "percent",
+      unit: "%",
       description: "테스트 커버리지",
     },
     {
@@ -102,7 +103,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.WARNING,
       ratio: 3.33,
       metricCode: "SECURITY_VULNERABILITIES",
-      unit: "count",
+      unit: "개",
       description: "보안 취약점",
     },
     {
@@ -114,7 +115,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "CODE_COUPLING",
-      unit: "count",
+      unit: "/KLOC",
       description: "결합도",
     },
     {
@@ -126,7 +127,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "BUG_COUNT",
-      unit: "count",
+      unit: "건",
       description: "버그 건수",
     },
     {
@@ -138,7 +139,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "INCIDENT_COUNT",
-      unit: "count",
+      unit: "건",
       description: "장애 건수",
     },
     // 리뷰 품질 (12개)
@@ -151,7 +152,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_SPEED",
-      unit: "hour",
+      unit: "h",
       description: "평균 리뷰 시간",
     },
     {
@@ -163,7 +164,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_THOROUGHNESS",
-      unit: "percent",
+      unit: "%",
       description: "리뷰 철저도",
     },
     {
@@ -175,7 +176,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_COVERAGE",
-      unit: "percent",
+      unit: "%",
       description: "리뷰 커버리지",
     },
     {
@@ -187,7 +188,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_RESPONSE_RATE",
-      unit: "percent",
+      unit: "%",
       description: "리뷰 응답률",
     },
     {
@@ -199,7 +200,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_PARTICIPATION_RATE",
-      unit: "percent",
+      unit: "%",
       description: "리뷰 참여율",
     },
     {
@@ -211,7 +212,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_COMMENT_QUALITY",
-      unit: "percent",
+      unit: "%",
       description: "코멘트 품질",
     },
     {
@@ -223,7 +224,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_REWORK_RATE",
-      unit: "percent",
+      unit: "%",
       description: "재작업률",
     },
     {
@@ -235,7 +236,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_APPROVAL_TIME",
-      unit: "hour",
+      unit: "h",
       description: "승인 시간",
     },
     {
@@ -247,7 +248,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.WARNING,
       ratio: 3.33,
       metricCode: "REVIEW_REQUEST_COUNT",
-      unit: "count",
+      unit: "건",
       description: "요청 건수",
     },
     {
@@ -259,7 +260,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_DEFECT_DETECTION",
-      unit: "percent",
+      unit: "%",
       description: "결함 검출률",
     },
     {
@@ -271,7 +272,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_FOLLOW_UP",
-      unit: "percent",
+      unit: "%",
       description: "후속조치율",
     },
     {
@@ -283,7 +284,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "REVIEW_KNOWLEDGE_SHARING",
-      unit: "percent",
+      unit: "%",
       description: "지식 공유도",
     },
     // 개발 효율성 (9개)
@@ -296,7 +297,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "COMMIT_FREQUENCY",
-      unit: "count",
+      unit: "회/일",
       description: "주간 커밋 수",
     },
     {
@@ -308,7 +309,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "DEPLOYMENT_FREQUENCY",
-      unit: "count",
+      unit: "회",
       description: "주간 배포 수",
     },
     {
@@ -320,7 +321,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "LEAD_TIME",
-      unit: "hour",
+      unit: "h",
       description: "평균 리드 타임",
     },
     {
@@ -332,7 +333,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "CYCLE_TIME",
-      unit: "hour",
+      unit: "h",
       description: "평균 사이클 타임",
     },
     {
@@ -344,7 +345,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "DEPLOYMENT_SUCCESS_RATE",
-      unit: "percent",
+      unit: "%",
       description: "배포 성공률",
     },
     {
@@ -356,7 +357,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "MTTR",
-      unit: "hour",
+      unit: "h",
       description: "평균 복구 시간",
     },
     {
@@ -368,7 +369,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "CHANGE_FAILURE_RATE",
-      unit: "percent",
+      unit: "%",
       description: "변경 실패율",
     },
     {
@@ -380,7 +381,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "THROUGHPUT",
-      unit: "count",
+      unit: "개",
       description: "주간 처리량",
     },
     {
@@ -392,7 +393,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
       metricCode: "WORK_IN_PROGRESS",
-      unit: "count",
+      unit: "개",
       description: "WIP 제한",
     },
   ],
