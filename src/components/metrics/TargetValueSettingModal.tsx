@@ -136,20 +136,10 @@ export const TargetValueSettingModal = ({
 
           {/* 하단 버튼 */}
           <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-            <Button
-              variant="cancel"
-              size="sm"
-              onClick={handleCancel}
-              className="!bg-white !text-gray-700 border border-gray-300 hover:!bg-gray-50"
-            >
+            <Button variant="cancel" size="sm" onClick={handleCancel}>
               취소
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSave}
-              className="!bg-blue-600 hover:!bg-blue-700 focus:!ring-blue-500"
-            >
+            <Button variant="primary" size="sm" onClick={handleSave}>
               저장
             </Button>
           </div>

@@ -18,19 +18,18 @@ import type { ButtonHTMLAttributes } from "react";
 
 const BUTTON_VARIANTS = {
   primary:
-    "bg-[#2563EB] text-[#FFFFFF] hover:bg-[#1D4ED8] focus:ring-[#3B82F6]", // 저장
+    "bg-[#005FCC] text-[#FFFFFF] border border-[#005FCC] hover:bg-[#1D4ED8] disabled:cursor-not-allowed  disabled:bg-[#33393F0C] disabled:text-[#CCCCCC]", // 저장
   normal:
-    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-[#F39200]", // 기본
+    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB] disabled:cursor-not-allowed  disabled:bg-[#33393F0C] disabled:text-[#CCCCCC]", // 기본
   cancel:
-    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-[#F39200]", // 취소
-  danger: "bg-[#F39200] text-[#FFFFFF] hover:bg-[#E66100] focus:ring-[#F39200]", // 삭제/경고
-  warning:
-    "bg-[#FABA3F] text-[#FFFFFF] hover:bg-[#F39200] focus:ring-[#FABA3F]", // 주의
+    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB]", // 취소
+  danger: "bg-[#F39200] text-[#FFFFFF] hover:bg-[#E66100]", // 삭제/경고
+  warning: "bg-[#FABA3F] text-[#FFFFFF] hover:bg-[#F39200]", // 주의
 };
 
 const BUTTON_SIZES = {
   sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-3 text-md",
+  md: "px-5 py-2 text-[14px]",
   lg: "px-6 py-4 text-lg",
 };
 
@@ -52,7 +51,7 @@ export const Button = ({
   return (
     <button
       className={clsx(
-        "flex cursor-pointer items-center justify-center rounded-[8px] text-[14px] font-medium text-[#000000]",
+        "flex cursor-pointer items-center justify-center rounded-[8px] font-medium text-[#000000]",
         "focus:outline-none focus:ring-2 focus:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
         BUTTON_VARIANTS[variant],

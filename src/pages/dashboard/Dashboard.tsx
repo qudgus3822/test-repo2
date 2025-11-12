@@ -8,6 +8,7 @@ import {
 import { CHART_COLORS } from "@/libs/chart";
 import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { GOAL_STATUS_COLORS, BRAND_COLORS } from "@/styles/colors";
 import {
   mockCompanyQuality,
@@ -17,11 +18,20 @@ import {
   mockMetricRankings,
 } from "@/api/mocks/dashboard";
 import { useDashboardStore } from "@/store/useDashboardStore";
+import { usePdfDownload } from "@/hooks";
 
 const DashboardPage = () => {
   const { period, setPeriod, currentDate, setCurrentDate } = useDashboardStore(
     (state) => state,
   );
+  const { downloadPdf, isGenerating } = usePdfDownload();
+
+  const handleDownload = () => {
+    downloadPdf(
+      "dashboard-content",
+      "BarcodePlus_Monitoring_Dashboard_2025.pdf",
+    );
+  };
 
   // 전사 BDPI 평균 (목업 데이터 사용)
   const bdpiAverage = {
@@ -161,16 +171,27 @@ const DashboardPage = () => {
       {/* 헤더 - 날짜 필터 */}
       <div>
         <Card className="w-full">
-          <DateFilter
-            period={period}
-            onPeriodChange={setPeriod}
-            currentDate={currentDate}
-            onDateChange={setCurrentDate}
-          />
+          <div className="w-full flex items-center justify-between gap-4">
+            <DateFilter
+              period={period}
+              onPeriodChange={setPeriod}
+              currentDate={currentDate}
+              onDateChange={setCurrentDate}
+            />
+            {/* PDF 다운로드 버튼 */}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleDownload}
+              disabled={isGenerating}
+            >
+              {isGenerating ? "PDF 생성 중..." : "PDF 내보내기"}
+            </Button>
+          </div>
         </Card>
       </div>
 
-      <div className="flex gap-6">
+      <div id="dashboard-content" className="flex gap-6">
         <div className="w-2/3 space-y-6">
           {/* 메트릭 개요 */}
           <MetricsOverview

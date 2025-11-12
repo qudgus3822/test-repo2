@@ -17,7 +17,6 @@ export const MetricsDetailModal = ({
 }: MetricsDetailModalProps) => {
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  console.log(metric);
 
   // 애니메이션을 위한 지연된 unmount
   useEffect(() => {

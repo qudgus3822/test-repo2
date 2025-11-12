@@ -58,6 +58,10 @@ export const AchievementRateSettingModal = ({
     onClose();
   };
 
+  const handleReset = () => {
+    setEditedMetrics(metrics); // 원래 값으로 복원
+  };
+
   // 상태별 아이콘 설정
   const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);
   const warningConfig = getStatusIconConfig(MetricStatus.WARNING);
@@ -104,19 +108,8 @@ export const AchievementRateSettingModal = ({
             </button>
           </div>
 
-          {/* 기본값으로 재설정 버튼 */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4">
-            <Button
-              variant="normal"
-              size="sm"
-              onClick={handleCancel}
-              // className="text-gray-700 border border-gray-300 hover:bg-gray-50"
-            >
-              기본값으로 재설정
-            </Button>
-          </div>
-
-          <div className="overflow-y-auto px-6 py-4 gap-6 flex flex-col">
+          {/* 본문 */}
+          <div className="flex-1 overflow-y-auto px-6 py-4 gap-6 flex flex-col">
             {/* 우수 기준 */}
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -127,13 +120,13 @@ export const AchievementRateSettingModal = ({
 
                 <span className="font-medium text-gray-900">우수 기준</span>
               </div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-4 mb-2">
                 <input
                   type="number"
                   defaultValue="80"
                   className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <span className="text-sm text-gray-600 whitespace-nowrap">
+                <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
                   % 이상
                 </span>
               </div>
@@ -152,14 +145,14 @@ export const AchievementRateSettingModal = ({
 
                 <span className="font-medium text-gray-900">경고 기준</span>
               </div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-4 mb-2">
                 <input
                   type="number"
                   defaultValue="70"
                   className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <span className="text-sm text-gray-600 whitespace-nowrap">
-                  % 이상 ~ 80% 미만
+                <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                  % 이상
                 </span>
               </div>
               <p className="text-sm text-gray-500">
@@ -176,13 +169,13 @@ export const AchievementRateSettingModal = ({
                 />
                 <span className="font-medium text-gray-900">위험 기준</span>
               </div>
-              <div className="flex items-center gap-3 mb-2 w-full">
+              <div className="flex items-center gap-4 mb-2 w-full">
                 <input
                   type="number"
                   defaultValue="70"
-                  className="w-[10%] flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <span className="text-sm text-gray-600 whitespace-nowrap">
+                <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
                   % 미만
                 </span>
               </div>
@@ -222,14 +215,22 @@ export const AchievementRateSettingModal = ({
             </div>
           </div>
 
-          {/* 하단 버튼 */}
-          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200">
-            <Button variant="cancel" size="sm" onClick={handleCancel}>
-              취소
-            </Button>
-            <Button variant="primary" size="sm" onClick={handleSave}>
-              저장
-            </Button>
+          {/* 하단 푸터 - 버튼 */}
+          <div className="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-200">
+            {/* 기본값으로 재설정 버튼 */}
+            <div className="flex items-center justify-start gap-3">
+              <Button variant="normal" size="sm" onClick={handleReset}>
+                기본값으로 재설정
+              </Button>
+            </div>
+            <div className="flex items-center justify-end gap-3">
+              <Button variant="cancel" size="sm" onClick={handleCancel}>
+                취소
+              </Button>
+              <Button variant="primary" size="sm" onClick={handleSave}>
+                저장
+              </Button>
+            </div>
           </div>
         </div>
       </div>

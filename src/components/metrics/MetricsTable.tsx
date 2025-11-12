@@ -1,5 +1,13 @@
 import { Tooltip } from "@/components/ui/Tooltip";
-import { Search, ArrowDownUp, Info, Pencil } from "lucide-react";
+import {
+  Search,
+  ArrowDownUp,
+  Info,
+  Pencil,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
+import { useState } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
@@ -30,8 +38,10 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     setSelectedMetric,
   } = useMetricsStore((state) => state);
 
-  // 전체 메트릭 개수 기준 테이블 높이 계산 (헤더 50px + 행당 53px)
-  const tableHeight = 50 + metrics.length * 53;
+  // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
+  const [ratioSortOrder, setRatioSortOrder] = useState<"asc" | "desc" | null>(
+    null,
+  );
 
   // 카테고리별 개수 계산
   const codeQualityCount = metrics.filter(
@@ -43,6 +53,24 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const developmentEfficiencyCount = metrics.filter(
     (m) => m.category === MetricCategory.DEVELOPMENT_EFFICIENCY,
   ).length;
+
+  // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px)
+  const getTableHeight = () => {
+    switch (activeTab) {
+      case "all":
+        return 50 + metrics.length * 53;
+      case "codeQuality":
+        return 50 + codeQualityCount * 53;
+      case "reviewQuality":
+        return 50 + reviewQualityCount * 53;
+      case "developmentEfficiency":
+        return 50 + developmentEfficiencyCount * 53;
+      default:
+        return 50 + metrics.length * 53;
+    }
+  };
+
+  const tableHeight = getTableHeight();
 
   const tabs: Tab[] = [
     { id: "all", label: "전체", count: metrics.length },
@@ -77,6 +105,26 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
           );
         });
 
+  // 비율 정렬
+  const handleRatioSort = () => {
+    if (ratioSortOrder === null) {
+      setRatioSortOrder("asc");
+    } else if (ratioSortOrder === "asc") {
+      setRatioSortOrder("desc");
+    } else {
+      setRatioSortOrder(null);
+    }
+  };
+
+  // 정렬된 지표 목록
+  const sortedMetrics = [...filteredMetrics].sort((a, b) => {
+    if (ratioSortOrder === null) return 0;
+    if (ratioSortOrder === "asc") {
+      return a.ratio - b.ratio;
+    }
+    return b.ratio - a.ratio;
+  });
+
   // 지표 상세보기 모달 열기
   const handleMetricsDetailClick = (metric: MetricItem) => {
     setSelectedMetric(metric);
@@ -91,7 +139,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === tab.id
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
@@ -110,16 +158,14 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
               <th className="px-4 py-3 w-[25%]">지표명</th>
               <th className="px-4 py-3 w-[12%]">범주</th>
               <th className="px-4 py-3 w-[12%]">현재값</th>
-              {/* <th className="px-4 py-3 w-[12%]">목표값</th>
-              <th className="px-4 py-3 w-[15%]">달성률</th> */}
 
               <th className="px-4 py-3 w-[12%]">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   목표값
                   <span className="flex items-center cursor-pointer">
                     <Tooltip
-                      // content="전체 메트릭의 목표값을 수정할 수 있습니다."
-                      content="목표값 설정 팝업을 엽니다."
+                      content="지표의 목표값을 수정할 수 있습니다."
+                      // content="목표값 설정 팝업을 엽니다."
                       color="#6B7280"
                     >
                       <Pencil
@@ -132,12 +178,12 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   달성률
                   <span className="flex items-center cursor-pointer">
                     <Tooltip
-                      // content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                      content="달성률 설정 팝업을 엽니다."
+                      content="지표의 달성률을 평가하는 기준값을 설정합니다."
+                      // content="달성률 설정 팝업을 엽니다."
                       color="#6B7280"
                     >
                       <Pencil
@@ -152,15 +198,41 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">
-                <div className="flex items-center gap-2">
-                  비율 <ArrowDownUp className="w-4 h-4" />
+                <div className="flex items-center gap-1.5">
+                  비율
+                  <span
+                    className="flex items-center cursor-pointer"
+                    onClick={handleRatioSort}
+                  >
+                    <Tooltip
+                      content={"비율의 정렬을 변경합니다."}
+                      color="#6B7280"
+                    >
+                      {ratioSortOrder === null ? (
+                        <ArrowDownUp
+                          className="w-4 h-4 text-gray-400"
+                          id="비율 정렬 아이콘"
+                        />
+                      ) : ratioSortOrder === "asc" ? (
+                        <ArrowUp
+                          className="w-4 h-4 text-blue-600"
+                          id="비율 오름차순 정렬 아이콘"
+                        />
+                      ) : (
+                        <ArrowDown
+                          className="w-4 h-4 text-blue-600"
+                          id="비율 내림차순 정렬 아이콘"
+                        />
+                      )}
+                    </Tooltip>
+                  </span>
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">상세</th>
             </tr>
           </thead>
           <tbody>
-            {filteredMetrics.length === 0 ? (
+            {sortedMetrics.length === 0 ? (
               <tr>
                 <td
                   colSpan={7}
@@ -170,10 +242,10 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                 </td>
               </tr>
             ) : (
-              filteredMetrics.map((metric, index) => (
+              sortedMetrics.map((metric, index) => (
                 <tr
                   key={metric.metricCode || index}
-                  className="border-b border-gray-100 hover:bg-gray-50"
+                  className="border-b border-gray-100 hover:bg-gray-50 whitespace-nowrap overflow-x-auto"
                 >
                   <td className="px-4 py-3 text-sm text-gray-900">
                     <div className="flex items-center space-x-2">

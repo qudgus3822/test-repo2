@@ -53,30 +53,28 @@ RGBA 형식 대신 슬래시(/) 문법을 사용합니다.
 module.exports = {
   theme: {
     colors: {
-      primary: 'oklch(75% 0.18 154)',
-      secondary: 'oklch(40% 0.23 283)',
-      error: 'oklch(54% 0.22 29)'
+      primary: "oklch(75% 0.18 154)",
+      secondary: "oklch(40% 0.23 283)",
+      error: "oklch(54% 0.22 29)",
     },
     spacing: {
-      'sm': '4px',
-      'md': '8px',
-      'lg': '12px'
+      sm: "4px",
+      md: "8px",
+      lg: "12px",
     },
     screens: {
-      'sm': '640px',
-      'md': '768px'
+      sm: "640px",
+      md: "768px",
     },
   },
-}
+};
 ```
 
 ### 사용 예시
 
 ```tsx
 // 정의된 디자인 토큰 사용
-<button className="bg-primary text-white p-md">
-  클릭
-</button>
+<button className="bg-primary text-white p-md">클릭</button>
 ```
 
 ---
@@ -154,17 +152,17 @@ export const Button = ({ className, variant = "primary", ...props }) => {
 조건부 클래스 적용 시 `clsx` 또는 커스텀 `cn` 유틸리티를 사용합니다.
 
 ```tsx
-import { clsx } from 'clsx';
+import { clsx } from "clsx";
 
 <button
   className={clsx(
     "px-4 py-2 rounded",
     isActive && "bg-blue-500",
-    isDisabled && "opacity-50 cursor-not-allowed"
+    isDisabled && "opacity-50 cursor-not-allowed",
   )}
 >
   버튼
-</button>
+</button>;
 ```
 
 ### 반응형 디자인
@@ -173,9 +171,7 @@ import { clsx } from 'clsx';
 
 ```tsx
 // 모바일 우선 (기본값: 모바일, sm 이상: 태블릿, md 이상: 데스크톱)
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-  컨텐츠
-</div>
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">컨텐츠</div>
 ```
 
 ---
