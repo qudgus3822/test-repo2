@@ -75,7 +75,6 @@ const MetricsPage = () => {
             onPeriodChange={setPeriod}
             currentDate={currentDate}
             onDateChange={setCurrentDate}
-            showPdfButton={false}
           />
         </Card>
       </div>
