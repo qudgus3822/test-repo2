@@ -19,7 +19,13 @@ export default defineConfig({
     }),
   ],
   server: {
+    host: "0.0.0.0", // ngrok 사용을 위해 모든 네트워크 인터페이스에서 수신
     port: 5173,
+    strictPort: true, // 포트가 이미 사용 중이면 실패
+    allowedHosts: [".ngrok-free.dev", ".ngrok.io"], // ngrok 도메인 허용
+    hmr: {
+      clientPort: 443, // ngrok이 HTTPS(443)를 사용하므로
+    },
     proxy: {
       "/api": {
         target: "http://localhost:3000",

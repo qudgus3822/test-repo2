@@ -50,6 +50,55 @@ npm run dev
 
 개발 서버가 `http://localhost:5173`에서 실행됩니다.
 
+### 외부 공개 (ngrok)
+
+로컬 개발 환경을 외부에 공개하려면 ngrok을 사용할 수 있습니다.
+
+#### 1. ngrok 설치
+
+```bash
+# macOS (Homebrew)
+brew install ngrok/ngrok/ngrok
+
+# Windows (Chocolatey)
+choco install ngrok
+
+# Linux (Snap)
+snap install ngrok
+
+# 또는 공식 웹사이트에서 다운로드
+# https://ngrok.com/download
+```
+
+#### 2. ngrok 인증 (최초 1회)
+
+[ngrok 대시보드](https://dashboard.ngrok.com/get-started/your-authtoken)에서 인증 토큰을 받아 설정합니다:
+
+```bash
+ngrok config add-authtoken YOUR_AUTHTOKEN
+```
+
+#### 3. 개발 서버와 ngrok 실행
+
+터미널을 2개 열어서 각각 실행:
+
+```bash
+# 터미널 1: 개발 서버 실행
+npm run dev
+
+# 터미널 2: ngrok 실행
+npm run ngrok
+```
+
+ngrok이 실행되면 공개 URL이 표시됩니다 (예: `https://abcd1234.ngrok.io`).
+이 URL을 사용하여 외부에서 로컬 개발 환경에 접근할 수 있습니다.
+
+#### 주의사항
+
+- ngrok 무료 플랜은 세션당 2시간 제한이 있습니다
+- 매번 실행할 때마다 새로운 랜덤 URL이 생성됩니다
+- 백엔드 API도 외부에 공개해야 하는 경우, `ngrok.yml`의 주석을 해제하고 추가 터널을 설정하세요
+
 ### 빌드
 
 ```bash
