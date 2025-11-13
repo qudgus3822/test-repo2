@@ -9,3 +9,10 @@ export interface DevelopmentProductionTrend {
   developmentEfficiency: number; // 개발효율 점수
   target: number; // 목표치 (점선)
 }
+
+/**
+ * 개발생산성 트렌드 API 응답 타입 (6개월 데이터 배열)
+ */
+export interface ProductionTrendResponse {
+  trends: DevelopmentProductionTrend[];
+}

@@ -10,21 +10,53 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { GOAL_STATUS_COLORS, BRAND_COLORS } from "@/styles/colors";
-import {
-  mockCompanyQuality,
-  mockServiceStability,
-  mockProductionTrend,
-  mockGoalAchievement,
-  mockMetricRankings,
-} from "@/api/mocks/dashboard";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { usePdfDownload } from "@/hooks";
+import {
+  useCompanyQuality,
+  useServiceStability,
+  useDeveloperProductivity,
+  useGoalAchievement,
+  useMetricRankings,
+} from "@/api/hooks/useDashboard";
 
 const DashboardPage = () => {
   const { period, setPeriod, currentDate, setCurrentDate } = useDashboardStore(
     (state) => state,
   );
   const { downloadPdf, isGenerating } = usePdfDownload();
+
+  // 날짜를 YYYY-MM 형식으로 변환
+  const formattedMonth = `${currentDate.getFullYear()}-${String(
+    currentDate.getMonth() + 1,
+  ).padStart(2, "0")}`;
+
+  // 모든 대시보드 데이터 조회
+  const {
+    data: companyQuality,
+    isLoading: isLoadingCompanyQuality,
+    error: errorCompanyQuality,
+  } = useCompanyQuality(formattedMonth);
+  const {
+    data: serviceStability,
+    isLoading: isLoadingServiceStability,
+    error: errorServiceStability,
+  } = useServiceStability(formattedMonth);
+  const {
+    data: developerProductivity,
+    isLoading: isLoadingDeveloperProductivity,
+    error: errorDeveloperProductivity,
+  } = useDeveloperProductivity(formattedMonth);
+  const {
+    data: goalAchievement,
+    isLoading: isLoadingGoalAchievement,
+    error: errorGoalAchievement,
+  } = useGoalAchievement(formattedMonth);
+  const {
+    data: metricRankings,
+    isLoading: isLoadingMetricRankings,
+    error: errorMetricRankings,
+  } = useMetricRankings(formattedMonth);
 
   const handleDownload = () => {
     downloadPdf(
@@ -33,128 +65,178 @@ const DashboardPage = () => {
     );
   };
 
-  // 전사 BDPI 평균 (목업 데이터 사용)
+  // 전체 로딩 상태 확인
+  const isLoading =
+    isLoadingCompanyQuality ||
+    isLoadingServiceStability ||
+    isLoadingDeveloperProductivity ||
+    isLoadingGoalAchievement ||
+    isLoadingMetricRankings;
+
+  // 에러 확인
+  const error =
+    errorCompanyQuality ||
+    errorServiceStability ||
+    errorDeveloperProductivity ||
+    errorGoalAchievement ||
+    errorMetricRankings;
+
+  // 로딩 중일 때 표시
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>데이터를 불러오는 중...</p>
+      </div>
+    );
+  }
+
+  // 에러 발생 시 표시
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500">
+          데이터를 불러오는 중 오류가 발생했습니다: {error.message}
+        </p>
+      </div>
+    );
+  }
+
+  // 데이터가 없을 때 표시
+  if (
+    !companyQuality ||
+    !serviceStability ||
+    !developerProductivity ||
+    !goalAchievement ||
+    !metricRankings
+  ) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>데이터가 없습니다.</p>
+      </div>
+    );
+  }
+
+  // 전사 BDPI 평균
   const bdpiAverage = {
-    value: mockCompanyQuality.bdpiAverage,
+    value: companyQuality.bdpiAverage,
     label: "전사 BDPI 평균",
     sublabel: "평균 확보율",
     color: BRAND_COLORS.secondary,
     trend: {
-      value: Math.abs(mockCompanyQuality.bdpiChange),
-      isPositive: mockCompanyQuality.bdpiChange > 0,
+      value: Math.abs(companyQuality.bdpiChange),
+      isPositive: companyQuality.bdpiChange > 0,
     },
   };
 
-  // 차트 메트릭 (목업 데이터 사용)
+  // 차트 메트릭
   const chartMetrics = [
     {
       id: "code",
-      value: mockCompanyQuality.codeQuality.score,
+      value: companyQuality.codeQuality.score,
       label: "코드 품질",
-      sublabel: `${mockCompanyQuality.codeQuality.achievedMetrics}/${mockCompanyQuality.codeQuality.totalMetrics}건 달성`,
+      sublabel: `${companyQuality.codeQuality.achievedMetrics}/${companyQuality.codeQuality.totalMetrics}건 달성`,
       color: CHART_COLORS.blue,
     },
     {
       id: "review",
-      value: mockCompanyQuality.reviewQuality.score,
+      value: companyQuality.reviewQuality.score,
       label: "리뷰 품질",
-      sublabel: `${mockCompanyQuality.reviewQuality.achievedMetrics}/${mockCompanyQuality.reviewQuality.totalMetrics}건 달성`,
+      sublabel: `${companyQuality.reviewQuality.achievedMetrics}/${companyQuality.reviewQuality.totalMetrics}건 달성`,
       color: CHART_COLORS.yellow,
     },
     {
       id: "efficiency",
-      value: mockCompanyQuality.developmentEfficiency.score,
+      value: companyQuality.developmentEfficiency.score,
       label: "개발 효율",
-      sublabel: `${mockCompanyQuality.developmentEfficiency.achievedMetrics}/${mockCompanyQuality.developmentEfficiency.totalMetrics}건 달성`,
+      sublabel: `${companyQuality.developmentEfficiency.achievedMetrics}/${companyQuality.developmentEfficiency.totalMetrics}건 달성`,
       color: CHART_COLORS.orange,
     },
   ];
 
-  // 서비스 안정성 (목업 데이터 사용)
+  // 서비스 안정성
   const stabilityMetrics = [
     {
       id: "deployment",
-      label: mockServiceStability.deploymentFrequency.metricName,
-      value: `${mockServiceStability.deploymentFrequency.value}회`,
-      target: `${mockServiceStability.deploymentFrequency.targetValue}회`,
+      label: serviceStability.deploymentFrequency.metricName,
+      value: `${serviceStability.deploymentFrequency.value}회`,
+      target: `${serviceStability.deploymentFrequency.targetValue}회`,
       trend: {
-        value: Math.abs(mockServiceStability.deploymentFrequency.changeRate),
-        isPositive: mockServiceStability.deploymentFrequency.changeRate > 0,
+        value: Math.abs(serviceStability.deploymentFrequency.changeRate),
+        isPositive: serviceStability.deploymentFrequency.changeRate > 0,
       },
-      status: mockServiceStability.deploymentFrequency.threshold,
+      status: serviceStability.deploymentFrequency.threshold,
       iconColor:
-        GOAL_STATUS_COLORS[mockServiceStability.deploymentFrequency.threshold],
+        GOAL_STATUS_COLORS[serviceStability.deploymentFrequency.threshold],
     },
     {
       id: "success",
-      label: mockServiceStability.deploymentSuccessRate.metricName,
-      value: `${mockServiceStability.deploymentSuccessRate.value}%`,
-      target: `${mockServiceStability.deploymentSuccessRate.targetValue}%`,
+      label: serviceStability.deploymentSuccessRate.metricName,
+      value: `${serviceStability.deploymentSuccessRate.value}%`,
+      target: `${serviceStability.deploymentSuccessRate.targetValue}%`,
       trend: {
-        value: Math.abs(mockServiceStability.deploymentSuccessRate.changeRate),
-        isPositive: mockServiceStability.deploymentSuccessRate.changeRate > 0,
+        value: Math.abs(serviceStability.deploymentSuccessRate.changeRate),
+        isPositive: serviceStability.deploymentSuccessRate.changeRate > 0,
       },
-      status: mockServiceStability.deploymentSuccessRate.threshold,
+      status: serviceStability.deploymentSuccessRate.threshold,
       iconColor:
-        GOAL_STATUS_COLORS[
-          mockServiceStability.deploymentSuccessRate.threshold
-        ],
+        GOAL_STATUS_COLORS[serviceStability.deploymentSuccessRate.threshold],
     },
     {
       id: "mttr",
-      label: mockServiceStability.mttr.metricName,
-      value: `${mockServiceStability.mttr.value}시간`,
-      target: `${mockServiceStability.mttr.targetValue}시간 이하`,
+      label: serviceStability.mttr.metricName,
+      value: `${serviceStability.mttr.value}시간`,
+      target: `${serviceStability.mttr.targetValue}시간 이하`,
       trend: {
-        value: Math.abs(mockServiceStability.mttr.changeRate),
-        isPositive: mockServiceStability.mttr.changeRate > 0,
+        value: Math.abs(serviceStability.mttr.changeRate),
+        isPositive: serviceStability.mttr.changeRate > 0,
       },
-      status: mockServiceStability.mttr.threshold,
-      iconColor: GOAL_STATUS_COLORS[mockServiceStability.mttr.threshold],
+      status: serviceStability.mttr.threshold,
+      iconColor: GOAL_STATUS_COLORS[serviceStability.mttr.threshold],
     },
     {
       id: "mttd",
-      label: mockServiceStability.mttd.metricName,
-      value: `${mockServiceStability.mttd.value}시간`,
-      target: `${mockServiceStability.mttd.targetValue}시간 이하`,
+      label: serviceStability.mttd.metricName,
+      value: `${serviceStability.mttd.value}시간`,
+      target: `${serviceStability.mttd.targetValue}시간 이하`,
       trend: {
-        value: Math.abs(mockServiceStability.mttd.changeRate),
-        isPositive: mockServiceStability.mttd.changeRate > 0,
+        value: Math.abs(serviceStability.mttd.changeRate),
+        isPositive: serviceStability.mttd.changeRate > 0,
       },
-      status: mockServiceStability.mttd.threshold,
-      iconColor: GOAL_STATUS_COLORS[mockServiceStability.mttd.threshold],
+      status: serviceStability.mttd.threshold,
+      iconColor: GOAL_STATUS_COLORS[serviceStability.mttd.threshold],
     },
     {
       id: "incidents",
-      label: mockServiceStability.incidentCount.metricName,
-      value: `${mockServiceStability.incidentCount.value}건`,
-      target: `${mockServiceStability.incidentCount.targetValue}건 이하`,
+      label: serviceStability.incidentCount.metricName,
+      value: `${serviceStability.incidentCount.value}건`,
+      target: `${serviceStability.incidentCount.targetValue}건 이하`,
       trend: {
-        value: Math.abs(mockServiceStability.incidentCount.changeRate),
-        isPositive: mockServiceStability.incidentCount.changeRate > 0,
+        value: Math.abs(serviceStability.incidentCount.changeRate),
+        isPositive: serviceStability.incidentCount.changeRate > 0,
       },
-      status: mockServiceStability.incidentCount.threshold,
-      iconColor:
-        GOAL_STATUS_COLORS[mockServiceStability.incidentCount.threshold],
+      status: serviceStability.incidentCount.threshold,
+      iconColor: GOAL_STATUS_COLORS[serviceStability.incidentCount.threshold],
     },
   ];
 
-  // 우수 지표 (목업 데이터 사용)
-  const topGainers = mockMetricRankings.growth.map((item) => ({
-    rank: item.rank,
-    name: item.metricName,
-    change: item.changeRate,
-  }));
+  // 우수 지표
+  const topGainers =
+    metricRankings.growth?.map((item) => ({
+      rank: item.rank,
+      name: item.metricName,
+      change: item.changeRate,
+    })) || [];
 
-  // 위험 지표 (목업 데이터 사용)
-  const topLosers = mockMetricRankings.warning.map((item) => ({
-    rank: item.rank,
-    name: item.metricName,
-    change: item.changeRate,
-  }));
+  // 위험 지표
+  const topLosers =
+    metricRankings.warning?.map((item) => ({
+      rank: item.rank,
+      name: item.metricName,
+      change: item.changeRate,
+    })) || [];
 
-  // 개발생산성 트렌드 (목업 데이터 사용)
-  const trendData = mockProductionTrend.trendData.map((item) => {
+  // 개발생산성 트렌드
+  const trendData = developerProductivity.trends.map((item) => {
     const [year, month] = item.month.split("-");
     return {
       month: `${year}년 ${parseInt(month)}월`, // '2025-05' -> '2025년 5월'
@@ -216,10 +298,10 @@ const DashboardPage = () => {
 
         <div className="w-1/3">
           <Card className="w-full h-auto">
-            {/* 목표 달성률 */}
+            {/* 목표 달성률  */}
             <TargetValueAchievement
-              achieved={mockGoalAchievement.achievedMetrics}
-              total={mockGoalAchievement.totalMetrics}
+              achieved={goalAchievement.achievedMetrics}
+              total={goalAchievement.totalMetrics}
             />
 
             {/* 구분선-수평선 */}

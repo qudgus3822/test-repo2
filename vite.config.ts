@@ -24,7 +24,9 @@ export default defineConfig({
     strictPort: true, // 포트가 이미 사용 중이면 실패
     allowedHosts: [".ngrok-free.dev", ".ngrok.io"], // ngrok 도메인 허용
     hmr: {
-      clientPort: 443, // ngrok이 HTTPS(443)를 사용하므로
+      // ngrok 사용 시에만 clientPort: 443 설정
+      // 로컬 개발 시에는 기본값(5173) 사용
+      // 환경 변수 VITE_USE_NGROK=true로 설정하면 ngrok 모드 활성화
     },
     proxy: {
       "/api": {

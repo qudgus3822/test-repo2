@@ -104,7 +104,7 @@ export const PeriodNavigator = ({
       <div className="flex items-center gap-4">
         <button
           onClick={handlePrevious}
-          className="p-1.5 hover:bg-gray-100 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] transition-colors"
+          className="p-1.5 hover:bg-gray-100 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] transition-colors cursor-pointer"
           aria-label="이전"
         >
           <ChevronLeft className="w-5 h-5 text-gray-600" />
@@ -118,7 +118,7 @@ export const PeriodNavigator = ({
           className={`p-1.5 rounded-lg border border-[#E2E8F0] transition-colors ${
             isNextDisabled()
               ? "bg-gray-100 opacity-50"
-              : "hover:bg-gray-100 bg-[#FFFFFF]"
+              : "hover:bg-gray-100 bg-[#FFFFFF] cursor-pointer"
           }`}
           aria-label="다음"
         >
