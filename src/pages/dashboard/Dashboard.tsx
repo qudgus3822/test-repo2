@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   MetricsOverview,
   TargetValueAchievement,
@@ -57,157 +58,181 @@ const DashboardPage = () => {
   }
 
   // 전사 BDPI 평균 (store의 companyQualityData 사용)
-  const bdpiAverage = companyQualityData.month
-    ? {
-        value: companyQualityData.bdpiAverage,
-        label: "전사 BDPI 평균",
-        sublabel: "평균 확보율",
-        color: BRAND_COLORS.secondary,
-        trend: {
-          value: Math.abs(companyQualityData.bdpiChange),
-          isPositive: companyQualityData.bdpiChange > 0,
-        },
-      }
-    : null;
+  const bdpiAverage = useMemo(
+    () =>
+      companyQualityData.month
+        ? {
+            value: companyQualityData.bdpiAverage,
+            label: "전사 BDPI 평균",
+            sublabel: "평균 확보율",
+            color: BRAND_COLORS.secondary,
+            trend: {
+              value: Math.abs(companyQualityData.bdpiChange),
+              isPositive: companyQualityData.bdpiChange > 0,
+            },
+          }
+        : null,
+    [companyQualityData],
+  );
 
   // 차트 메트릭 (store의 companyQualityData 사용)
-  const chartMetrics = companyQualityData.month
-    ? [
-        {
-          id: "code",
-          value: companyQualityData.codeQuality.score,
-          label: "코드 품질",
-          sublabel: `${companyQualityData.codeQuality.achievedMetrics}/${companyQualityData.codeQuality.totalMetrics}건 달성`,
-          color: CHART_COLORS.blue,
-        },
-        {
-          id: "review",
-          value: companyQualityData.reviewQuality.score,
-          label: "리뷰 품질",
-          sublabel: `${companyQualityData.reviewQuality.achievedMetrics}/${companyQualityData.reviewQuality.totalMetrics}건 달성`,
-          color: CHART_COLORS.yellow,
-        },
-        {
-          id: "efficiency",
-          value: companyQualityData.developmentEfficiency.score,
-          label: "개발 효율",
-          sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
-          color: CHART_COLORS.orange,
-        },
-      ]
-    : null;
+  const chartMetrics = useMemo(
+    () =>
+      companyQualityData.month
+        ? [
+            {
+              id: "code",
+              value: companyQualityData.codeQuality.score,
+              label: "코드 품질",
+              sublabel: `${companyQualityData.codeQuality.achievedMetrics}/${companyQualityData.codeQuality.totalMetrics}건 달성`,
+              color: CHART_COLORS.blue,
+            },
+            {
+              id: "review",
+              value: companyQualityData.reviewQuality.score,
+              label: "리뷰 품질",
+              sublabel: `${companyQualityData.reviewQuality.achievedMetrics}/${companyQualityData.reviewQuality.totalMetrics}건 달성`,
+              color: CHART_COLORS.yellow,
+            },
+            {
+              id: "efficiency",
+              value: companyQualityData.developmentEfficiency.score,
+              label: "개발 효율",
+              sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
+              color: CHART_COLORS.orange,
+            },
+          ]
+        : null,
+    [companyQualityData],
+  );
 
   // 서비스 안정성 (store의 serviceStabilityData 사용)
-  const stabilityMetrics = serviceStabilityData
-    ? [
-        {
-          id: "deployment",
-          label: serviceStabilityData.deploymentFrequency.metricName,
-          value: `${serviceStabilityData.deploymentFrequency.value}회`,
-          target: `${serviceStabilityData.deploymentFrequency.targetValue}회`,
-          trend: {
-            value: Math.abs(
-              serviceStabilityData.deploymentFrequency.changeRate,
-            ),
-            isPositive:
-              serviceStabilityData.deploymentFrequency.changeRate > 0,
-          },
-          status: serviceStabilityData.deploymentFrequency.threshold,
-          iconColor:
-            GOAL_STATUS_COLORS[
-              serviceStabilityData.deploymentFrequency.threshold
-            ],
-        },
-        {
-          id: "success",
-          label: serviceStabilityData.deploymentSuccessRate.metricName,
-          value: `${serviceStabilityData.deploymentSuccessRate.value}%`,
-          target: `${serviceStabilityData.deploymentSuccessRate.targetValue}%`,
-          trend: {
-            value: Math.abs(
-              serviceStabilityData.deploymentSuccessRate.changeRate,
-            ),
-            isPositive:
-              serviceStabilityData.deploymentSuccessRate.changeRate > 0,
-          },
-          status: serviceStabilityData.deploymentSuccessRate.threshold,
-          iconColor:
-            GOAL_STATUS_COLORS[
-              serviceStabilityData.deploymentSuccessRate.threshold
-            ],
-        },
-        {
-          id: "mttr",
-          label: serviceStabilityData.mttr.metricName,
-          value: `${serviceStabilityData.mttr.value}시간`,
-          target: `${serviceStabilityData.mttr.targetValue}시간 이하`,
-          trend: {
-            value: Math.abs(serviceStabilityData.mttr.changeRate),
-            isPositive: serviceStabilityData.mttr.changeRate > 0,
-          },
-          status: serviceStabilityData.mttr.threshold,
-          iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttr.threshold],
-        },
-        {
-          id: "mttd",
-          label: serviceStabilityData.mttd.metricName,
-          value: `${serviceStabilityData.mttd.value}시간`,
-          target: `${serviceStabilityData.mttd.targetValue}시간 이하`,
-          trend: {
-            value: Math.abs(serviceStabilityData.mttd.changeRate),
-            isPositive: serviceStabilityData.mttd.changeRate > 0,
-          },
-          status: serviceStabilityData.mttd.threshold,
-          iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttd.threshold],
-        },
-        {
-          id: "incidents",
-          label: serviceStabilityData.incidentCount.metricName,
-          value: `${serviceStabilityData.incidentCount.value}건`,
-          target: `${serviceStabilityData.incidentCount.targetValue}건 이하`,
-          trend: {
-            value: Math.abs(serviceStabilityData.incidentCount.changeRate),
-            isPositive: serviceStabilityData.incidentCount.changeRate > 0,
-          },
-          status: serviceStabilityData.incidentCount.threshold,
-          iconColor:
-            GOAL_STATUS_COLORS[serviceStabilityData.incidentCount.threshold],
-        },
-      ]
-    : null;
+  const stabilityMetrics = useMemo(
+    () =>
+      serviceStabilityData
+        ? [
+            {
+              id: "deployment",
+              label: serviceStabilityData.deploymentFrequency.metricName,
+              value: `${serviceStabilityData.deploymentFrequency.value}회`,
+              target: `${serviceStabilityData.deploymentFrequency.targetValue}회`,
+              trend: {
+                value: Math.abs(
+                  serviceStabilityData.deploymentFrequency.changeRate,
+                ),
+                isPositive:
+                  serviceStabilityData.deploymentFrequency.changeRate > 0,
+              },
+              status: serviceStabilityData.deploymentFrequency.threshold,
+              iconColor:
+                GOAL_STATUS_COLORS[
+                  serviceStabilityData.deploymentFrequency.threshold
+                ],
+            },
+            {
+              id: "success",
+              label: serviceStabilityData.deploymentSuccessRate.metricName,
+              value: `${serviceStabilityData.deploymentSuccessRate.value}%`,
+              target: `${serviceStabilityData.deploymentSuccessRate.targetValue}%`,
+              trend: {
+                value: Math.abs(
+                  serviceStabilityData.deploymentSuccessRate.changeRate,
+                ),
+                isPositive:
+                  serviceStabilityData.deploymentSuccessRate.changeRate > 0,
+              },
+              status: serviceStabilityData.deploymentSuccessRate.threshold,
+              iconColor:
+                GOAL_STATUS_COLORS[
+                  serviceStabilityData.deploymentSuccessRate.threshold
+                ],
+            },
+            {
+              id: "mttr",
+              label: serviceStabilityData.mttr.metricName,
+              value: `${serviceStabilityData.mttr.value}시간`,
+              target: `${serviceStabilityData.mttr.targetValue}시간 이하`,
+              trend: {
+                value: Math.abs(serviceStabilityData.mttr.changeRate),
+                isPositive: serviceStabilityData.mttr.changeRate > 0,
+              },
+              status: serviceStabilityData.mttr.threshold,
+              iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttr.threshold],
+            },
+            {
+              id: "mttd",
+              label: serviceStabilityData.mttd.metricName,
+              value: `${serviceStabilityData.mttd.value}시간`,
+              target: `${serviceStabilityData.mttd.targetValue}시간 이하`,
+              trend: {
+                value: Math.abs(serviceStabilityData.mttd.changeRate),
+                isPositive: serviceStabilityData.mttd.changeRate > 0,
+              },
+              status: serviceStabilityData.mttd.threshold,
+              iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttd.threshold],
+            },
+            {
+              id: "incidents",
+              label: serviceStabilityData.incidentCount.metricName,
+              value: `${serviceStabilityData.incidentCount.value}건`,
+              target: `${serviceStabilityData.incidentCount.targetValue}건 이하`,
+              trend: {
+                value: Math.abs(serviceStabilityData.incidentCount.changeRate),
+                isPositive: serviceStabilityData.incidentCount.changeRate > 0,
+              },
+              status: serviceStabilityData.incidentCount.threshold,
+              iconColor:
+                GOAL_STATUS_COLORS[serviceStabilityData.incidentCount.threshold],
+            },
+          ]
+        : null,
+    [serviceStabilityData],
+  );
 
   // 우수 지표 (store의 metricRankingsData 사용)
-  const topGainers = metricRankingsData?.growth
-    ? metricRankingsData.growth.map((item) => ({
-        rank: item.rank,
-        name: item.metricName,
-        change: item.changeRate,
-      }))
-    : [];
+  const topGainers = useMemo(
+    () =>
+      metricRankingsData?.growth
+        ? metricRankingsData.growth.map((item) => ({
+            rank: item.rank,
+            name: item.metricName,
+            change: item.changeRate,
+          }))
+        : [],
+    [metricRankingsData],
+  );
 
   // 위험 지표 (store의 metricRankingsData 사용)
-  const topLosers = metricRankingsData?.warning
-    ? metricRankingsData.warning.map((item) => ({
-        rank: item.rank,
-        name: item.metricName,
-        change: item.changeRate,
-      }))
-    : [];
+  const topLosers = useMemo(
+    () =>
+      metricRankingsData?.warning
+        ? metricRankingsData.warning.map((item) => ({
+            rank: item.rank,
+            name: item.metricName,
+            change: item.changeRate,
+          }))
+        : [],
+    [metricRankingsData],
+  );
 
   // 개발생산성 트렌드 (store의 developerProductivityData 사용)
-  const trendData = developerProductivityData
-    ? developerProductivityData.trends.map((item) => {
-        const [year, month] = item.month.split("-");
-        return {
-          month: `${year}년 ${parseInt(month)}월`, // '2025-05' -> '2025년 5월'
-          "BDPI 평균": item.bdpiAverage,
-          "개발 효율": item.developmentEfficiency,
-          "리뷰 품질": item.reviewQuality,
-          "BDPI 목표치": item.target,
-          "코드 품질": item.codeQuality,
-        };
-      })
-    : null;
+  const trendData = useMemo(
+    () =>
+      developerProductivityData
+        ? developerProductivityData.trends.map((item) => {
+            const [year, month] = item.month.split("-");
+            return {
+              month: `${year}년 ${parseInt(month)}월`, // '2025-05' -> '2025년 5월'
+              "BDPI 평균": item.bdpiAverage,
+              "개발 효율": item.developmentEfficiency,
+              "리뷰 품질": item.reviewQuality,
+              "BDPI 목표치": item.target,
+              "코드 품질": item.codeQuality,
+            };
+          })
+        : null,
+    [developerProductivityData],
+  );
 
   return (
     <div className="space-y-6">
