@@ -1,46 +1,103 @@
+import { useMemo } from "react";
 import { DonutChart } from "@/libs/chart";
 import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
-import { TREND_COLORS } from "@/styles/colors";
+import { TREND_COLORS, BRAND_COLORS, CHART_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
-
-interface BdpiAverage {
-  value: number;
-  label: string;
-  sublabel: string;
-  color: string;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
-}
-
-interface ChartMetric {
-  id: string;
-  value: number;
-  label: string;
-  sublabel: string;
-  color: string;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
-}
+import { useCompanyQuality } from "@/api/hooks/useCompanyQuality";
 
 interface MetricsOverviewProps {
-  bdpiAverage: BdpiAverage;
-  chartMetrics: ChartMetric[];
+  month: string; // YYYY-MM 형식
 }
 
 /**
  * 메트릭 개요 컴포넌트
  * 전사 BDPI 평균(텍스트)과 주요 지표들(도넛 차트)을 표시
  */
-export const MetricsOverview = ({
-  bdpiAverage,
-  chartMetrics,
-}: MetricsOverviewProps) => {
+export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
+  // React Query로 전사 BDPI 데이터 조회
+  const { data: companyQualityData, isLoading, error } = useCompanyQuality(month);
+
+  // 전사 BDPI 평균 계산
+  const bdpiAverage = useMemo(
+    () =>
+      companyQualityData
+        ? {
+            value: companyQualityData.bdpiAverage,
+            label: "전사 BDPI 평균",
+            sublabel: "평균 확보율",
+            color: BRAND_COLORS.secondary,
+            trend: {
+              value: Math.abs(companyQualityData.bdpiChange),
+              isPositive: companyQualityData.bdpiChange > 0,
+            },
+          }
+        : null,
+    [companyQualityData],
+  );
+
+  // 차트 메트릭 계산
+  const chartMetrics = useMemo(
+    () =>
+      companyQualityData
+        ? [
+            {
+              id: "code",
+              value: companyQualityData.codeQuality.score,
+              label: "코드 품질",
+              sublabel: `${companyQualityData.codeQuality.achievedMetrics}/${companyQualityData.codeQuality.totalMetrics}건 달성`,
+              color: CHART_COLORS.blue,
+            },
+            {
+              id: "review",
+              value: companyQualityData.reviewQuality.score,
+              label: "리뷰 품질",
+              sublabel: `${companyQualityData.reviewQuality.achievedMetrics}/${companyQualityData.reviewQuality.totalMetrics}건 달성`,
+              color: CHART_COLORS.yellow,
+            },
+            {
+              id: "efficiency",
+              value: companyQualityData.developmentEfficiency.score,
+              label: "개발 효율",
+              sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
+              color: CHART_COLORS.orange,
+            },
+          ]
+        : null,
+    [companyQualityData],
+  );
+
+  // 로딩 중일 때
+  if (isLoading) {
+    return (
+      <Card className="w-full h-auto">
+        <div className="flex items-center justify-center h-40">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
+            <p className="text-gray-600">데이터를 불러오는 중...</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // 에러가 발생했을 때
+  if (error) {
+    return (
+      <Card className="w-full h-auto">
+        <p className="text-red-500">
+          전사 BDPI 데이터를 불러오는데 실패했습니다.
+        </p>
+      </Card>
+    );
+  }
+
+  // 데이터가 없을 때
+  if (!bdpiAverage || !chartMetrics) {
+    return null;
+  }
+
   return (
     <Card className="w-full h-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -97,7 +154,6 @@ export const MetricsOverview = ({
               color={metric.color}
               label={metric.label}
               sublabel={metric.sublabel}
-              trend={metric.trend}
             />
           </div>
         ))}
