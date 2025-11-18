@@ -1,31 +1,134 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/Card";
-import { TREND_COLORS } from "@/styles/colors";
+import { TREND_COLORS, GOAL_STATUS_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
-import type { ThresholdType } from "@/types/serviceStability.types";
 import { getStatusIcon, getStatusColor } from "@/utils/metrics";
-
-interface Metric {
-  id: string;
-  label: string;
-  value: string;
-  target: string;
-  trend: {
-    value: number;
-    isPositive: boolean;
-  };
-  status: ThresholdType;
-  iconColor: string;
-}
+import { useServiceStability } from "@/api/hooks/useServiceStability";
 
 interface ServiceStabilityProps {
-  metrics: Metric[];
+  month: string;
 }
 
 /**
  * 서비스 안정성 메트릭 컴포넌트
  */
-export const ServiceStability = ({ metrics }: ServiceStabilityProps) => {
+export const ServiceStability = ({ month }: ServiceStabilityProps) => {
+  const { data: serviceStabilityData, isLoading, error } = useServiceStability(month);
+
+  // 서비스 안정성 데이터 가공
+  const metrics = useMemo(
+    () =>
+      serviceStabilityData
+        ? [
+            {
+              id: "deployment",
+              label: serviceStabilityData.deploymentFrequency.metricName,
+              value: `${serviceStabilityData.deploymentFrequency.value}회`,
+              target: `${serviceStabilityData.deploymentFrequency.targetValue}회`,
+              trend: {
+                value: Math.abs(
+                  serviceStabilityData.deploymentFrequency.changeRate,
+                ),
+                isPositive:
+                  serviceStabilityData.deploymentFrequency.changeRate > 0,
+              },
+              status: serviceStabilityData.deploymentFrequency.threshold,
+              iconColor:
+                GOAL_STATUS_COLORS[
+                  serviceStabilityData.deploymentFrequency.threshold
+                ],
+            },
+            {
+              id: "success",
+              label: serviceStabilityData.deploymentSuccessRate.metricName,
+              value: `${serviceStabilityData.deploymentSuccessRate.value}%`,
+              target: `${serviceStabilityData.deploymentSuccessRate.targetValue}%`,
+              trend: {
+                value: Math.abs(
+                  serviceStabilityData.deploymentSuccessRate.changeRate,
+                ),
+                isPositive:
+                  serviceStabilityData.deploymentSuccessRate.changeRate > 0,
+              },
+              status: serviceStabilityData.deploymentSuccessRate.threshold,
+              iconColor:
+                GOAL_STATUS_COLORS[
+                  serviceStabilityData.deploymentSuccessRate.threshold
+                ],
+            },
+            {
+              id: "mttr",
+              label: serviceStabilityData.mttr.metricName,
+              value: `${serviceStabilityData.mttr.value}시간`,
+              target: `${serviceStabilityData.mttr.targetValue}시간 이하`,
+              trend: {
+                value: Math.abs(serviceStabilityData.mttr.changeRate),
+                isPositive: serviceStabilityData.mttr.changeRate > 0,
+              },
+              status: serviceStabilityData.mttr.threshold,
+              iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttr.threshold],
+            },
+            {
+              id: "mttd",
+              label: serviceStabilityData.mttd.metricName,
+              value: `${serviceStabilityData.mttd.value}시간`,
+              target: `${serviceStabilityData.mttd.targetValue}시간 이하`,
+              trend: {
+                value: Math.abs(serviceStabilityData.mttd.changeRate),
+                isPositive: serviceStabilityData.mttd.changeRate > 0,
+              },
+              status: serviceStabilityData.mttd.threshold,
+              iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttd.threshold],
+            },
+            {
+              id: "incidents",
+              label: serviceStabilityData.incidentCount.metricName,
+              value: `${serviceStabilityData.incidentCount.value}건`,
+              target: `${serviceStabilityData.incidentCount.targetValue}건 이하`,
+              trend: {
+                value: Math.abs(serviceStabilityData.incidentCount.changeRate),
+                isPositive: serviceStabilityData.incidentCount.changeRate > 0,
+              },
+              status: serviceStabilityData.incidentCount.threshold,
+              iconColor:
+                GOAL_STATUS_COLORS[serviceStabilityData.incidentCount.threshold],
+            },
+          ]
+        : [],
+    [serviceStabilityData],
+  );
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <Card className="w-full h-auto">
+        <div className="flex items-center justify-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </Card>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <Card className="w-full">
+        <p className="text-red-500">
+          {error.message || "서비스 안정성 데이터를 불러오는데 실패했습니다."}
+        </p>
+      </Card>
+    );
+  }
+
+  // 데이터가 없는 경우
+  if (!metrics || metrics.length === 0) {
+    return (
+      <Card className="w-full">
+        <p className="text-gray-500">서비스 안정성 데이터가 없습니다.</p>
+      </Card>
+    );
+  }
   return (
     <Card className="w-full h-auto">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
