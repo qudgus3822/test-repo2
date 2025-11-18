@@ -24,7 +24,7 @@ interface PeriodNavigatorProps {
  */
 export const PeriodNavigator = ({
   period,
-  onPeriodChange,
+  //onPeriodChange,
   currentDate,
   onDateChange,
 }: PeriodNavigatorProps) => {
@@ -67,19 +67,36 @@ export const PeriodNavigator = ({
     }
   };
 
+  // "다음" 버튼 비활성화 여부 확인 (오늘 날짜 기준)
+  const isNextDisabled = () => {
+    const today = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+    const todayYear = today.getFullYear();
+    const todayMonth = today.getMonth();
+
+    if (period === "monthly") {
+      return currentYear === todayYear && currentMonth === todayMonth;
+    }
+    // 추후 quarterly, halfyearly 개발 시 추가
+    return false;
+  };
+
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-5">
       {/* 기간 선택 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <span className="text-sm font-medium text-gray-700">기간 선택</span>
         <select
-          value={period}
-          onChange={(e) => onPeriodChange(e.target.value as PeriodType)}
-          className="px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value="monthly"
+          disabled
+          // onChange={(e) => onPeriodChange(e.target.value as PeriodType)}
+          className="min-w-[100px] px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-lg text-sm"
         >
           <option value="monthly">월별</option>
-          <option value="quarterly">분기별</option>
-          <option value="halfyearly">반기별</option>
+          {/* 추후 개발 예정 */}
+          {/* <option value="quarterly">분기별</option> */}
+          {/* <option value="halfyearly">반기별</option> */}
         </select>
       </div>
 
@@ -87,20 +104,29 @@ export const PeriodNavigator = ({
       <div className="flex items-center gap-4">
         <button
           onClick={handlePrevious}
-          className="p-1.5 hover:bg-gray-100 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] transition-colors"
+          className="p-1.5 hover:bg-gray-100 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] transition-colors cursor-pointer"
           aria-label="이전"
         >
           <ChevronLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <span className="min-w-[140px] text-center font-medium text-gray-900">
+        <span className="min-w-[120px] text-center text-sm font-medium text-gray-900">
           {formatDate()}
         </span>
         <button
           onClick={handleNext}
-          className="p-1.5 hover:bg-gray-100 bg-[#FFFFFF] rounded-lg border border-[#E2E8F0] transition-colors"
+          disabled={isNextDisabled()}
+          className={`p-1.5 rounded-lg border border-[#E2E8F0] transition-colors ${
+            isNextDisabled()
+              ? "bg-gray-100 opacity-50"
+              : "hover:bg-gray-100 bg-[#FFFFFF] cursor-pointer"
+          }`}
           aria-label="다음"
         >
-          <ChevronRight className="w-5 h-5 text-gray-600" />
+          <ChevronRight
+            className={`w-5 h-5 ${
+              isNextDisabled() ? "text-gray-400" : "text-gray-600"
+            }`}
+          />
         </button>
       </div>
     </div>

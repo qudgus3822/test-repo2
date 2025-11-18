@@ -8,7 +8,7 @@ import type { ButtonHTMLAttributes } from "react";
   <Button type="submit" fullWidth>로그인</Button>
 
   // 다른 variant 사용
-  <Button variant="secondary">취소</Button>
+  <Button variant="normal">기본</Button>
   <Button variant="danger">삭제</Button>
 
   // 크기 변경
@@ -17,14 +17,19 @@ import type { ButtonHTMLAttributes } from "react";
  */
 
 const BUTTON_VARIANTS = {
-  primary: "bg-[#FF6C00] hover:bg-[#E66100] focus:ring-[#FF6C00]",
-  secondary: "bg-gray-500 hover:bg-gray-600 focus:ring-gray-500",
-  danger: "bg-red-500 hover:bg-red-600 focus:ring-red-500",
+  primary:
+    "bg-[#005FCC] text-[#FFFFFF] border border-[#005FCC] hover:bg-[#1D4ED8] disabled:cursor-not-allowed  disabled:bg-[#33393F0C] disabled:text-[#CCCCCC]", // 저장
+  normal:
+    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB] disabled:cursor-not-allowed  disabled:bg-[#33393F0C] disabled:text-[#CCCCCC]", // 기본
+  cancel:
+    "bg-[#FFFFFF] text-[#374151] border border-[#D1D5DB] hover:bg-[#F9FAFB]", // 취소
+  danger: "bg-[#F39200] text-[#FFFFFF] hover:bg-[#E66100]", // 삭제/경고
+  warning: "bg-[#FABA3F] text-[#FFFFFF] hover:bg-[#F39200]", // 주의
 };
 
 const BUTTON_SIZES = {
   sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-3 text-md",
+  md: "px-5 py-2 text-[14px]",
   lg: "px-6 py-4 text-lg",
 };
 
@@ -46,7 +51,7 @@ export const Button = ({
   return (
     <button
       className={clsx(
-        "rounded-md font-medium text-white transition-colors cursor-pointer",
+        "flex cursor-pointer items-center justify-center rounded-[8px] font-medium text-[#000000]",
         "focus:outline-none focus:ring-2 focus:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-50",
         BUTTON_VARIANTS[variant],

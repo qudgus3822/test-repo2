@@ -5,9 +5,30 @@
 
 // 브랜드 색상
 export const BRAND_COLORS = {
-  primary: "#FF6C00", // 빗썸 주황색
-  secondary: "#4751B8", // 보조 색상
+  primary: "#FF6C00", // 빗썸 주황색 (메인 로고)
+  secondary: "#4751B8", // 보조 색상 (레거시)
 } as const;
+
+// Color Palette 3 - 프로젝트 전반 사용
+export const PALETTE_COLORS = {
+  darkBlue: "#1B21A6", // 진한 파란색 (네이비)
+  blue: "#1E54B8", // 파란색 (메인 포인트)
+  yellow: "#FABA3F", // 노란색
+  orange: "#F39200", // 주황색 (경고/강조)
+  lightYellow: "#F5DB86", // 연한 노란색
+} as const;
+
+// 차트 색상 (PALETTE_COLORS와 동일, 명확성을 위한 별칭)
+export const CHART_COLORS = {
+  darkBlue: "#1B21A6", // 진한 파란색
+  blue: "#1E54B8", // 파란색
+  yellow: "#FABA3F", // 노란색
+  orange: "#F39200", // 주황색
+  lightYellow: "#F5DB86", // 연한 노란색
+} as const;
+
+// 차트 컴포넌트용 색상 배열 (순환 참조용)
+export const CHART_COLOR_ARRAY = Object.values(CHART_COLORS);
 
 // 카드/영역 색상
 export const SURFACE_COLORS = {
@@ -24,28 +45,31 @@ export const TREND_COLORS = {
 // 목표값 상태 색상
 export const GOAL_STATUS_COLORS = {
   excellent: "#00A63E", // 우수
+  good: "#10b981", // 양호
   warning: "#FF6900", // 경고
   danger: "#E7000B", // 위험
 } as const;
 
-// 상태 색상
+// 상태(달성률) 색상
 export const STATUS_COLORS = {
-  success: "#10b981", // 성공
+  excellent: "#10B981", // 우수
   warning: "#FF6900", // 경고
-  error: "#E7000B", // 에러
+  danger: "#E7000B", // 위험
   info: "#06b6d4", // 정보
 } as const;
 
 // 텍스트 색상
 export const TEXT_COLORS = {
   primary: "#111827", // 주요 텍스트
-  secondary: "#6b7280", // 보조 텍스트
-  disabled: "#9ca3af", // 비활성화 텍스트
+  secondary: "#6B7280", // 보조 텍스트
+  disabled: "#9CA3AF", // 비활성화 텍스트
 } as const;
 
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
+  palette: PALETTE_COLORS,
+  chart: CHART_COLORS,
   surface: SURFACE_COLORS,
   trend: TREND_COLORS,
   status: STATUS_COLORS,

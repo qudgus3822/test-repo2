@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# ngrok
+ngrok.yml
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,10 +26,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# Local commit message guide (not shared with team)
-COMMIT_MESSAGE_GUIDE.md
-
-# Local PR guide and examples (not shared with team)
-.github/PULL_REQUEST_GUIDE.md
-.github/examples/
-.github/README.md

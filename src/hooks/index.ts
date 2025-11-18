@@ -4,3 +4,4 @@
 
 export { useCurrentDate } from "./useCurrentDate";
 export { useFormattedDate, type UseFormattedDateOptions, type DateFormatType } from "./useFormattedDate";
+export { usePdfDownload } from "./usePdfDownload";

@@ -8,7 +8,11 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { CHART_COLORS, CHART_STYLES, CHART_MARGIN } from "../config";
+import {
+  CHART_STYLES,
+  CHART_MARGIN,
+  MULTI_LINE_COLORS,
+} from "../config";
 
 interface DataPoint {
   [key: string]: string | number;
@@ -19,7 +23,7 @@ interface BarChartProps {
   xKey: string;
   yKeys: string[];
   height?: number;
-  colors?: string[];
+  colors?: readonly string[];
   showLegend?: boolean;
   showGrid?: boolean;
   stacked?: boolean;
@@ -35,7 +39,7 @@ export const BarChart = ({
   xKey,
   yKeys,
   height = 300,
-  colors = [CHART_COLORS.primary, CHART_COLORS.secondary],
+  colors = MULTI_LINE_COLORS,
   showLegend = true,
   showGrid = true,
   stacked = false,

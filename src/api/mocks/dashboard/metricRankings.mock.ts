@@ -1,8 +1,9 @@
+import type { MetricRankings } from "@/types/metricRankings.types";
+
 /**
  * 지표 순위 데이터 목업
  */
-
-export const mockMetricRankings = {
+export const mockMetricRankings: MetricRankings = {
   growth: [
     {
       month: '2025-10',
