@@ -136,7 +136,7 @@ export const AchievementRateSettingModal = ({
             </div>
 
             {/* 경고 기준 */}
-            <div>
+            <div className="w-full">
               <div className="flex items-center gap-2 mb-3">
                 <WarningIcon
                   className="w-6 h-6"
@@ -145,15 +145,30 @@ export const AchievementRateSettingModal = ({
 
                 <span className="font-medium text-gray-900">경고 기준</span>
               </div>
-              <div className="flex items-center gap-4 mb-2">
-                <input
-                  type="number"
-                  defaultValue="70"
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
-                  % 이상
+              <div className="flex items-center gap-4 mb-2 w-full justify-between">
+                <div className="flex items-center gap-4 w-[47%] justify-start">
+                  <input
+                    type="number"
+                    defaultValue="70"
+                    className="w-[80%] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                    % 이상
+                  </span>
+                </div>
+                <span className="text-sm text-gray-600 whitespace-nowrap w-[6%] text-center">
+                  ~
                 </span>
+                <div className="flex items-center gap-4 w-[47%] justify-end">
+                  <input
+                    type="number"
+                    defaultValue="70"
+                    className="w-[80%] px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                    % 이상
+                  </span>
+                </div>
               </div>
               <p className="text-sm text-gray-500">
                 달성률이 이 범위에 있으면 주황색 느낌표 아이콘이 표시됩니다.

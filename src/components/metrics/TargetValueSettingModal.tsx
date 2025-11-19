@@ -117,16 +117,22 @@ export const TargetValueSettingModal = ({
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {metric.currentValue}
+                      {metric.unit && `${metric.unit}`}
                     </td>
                     <td className="px-4 py-3">
-                      <input
-                        type="text"
-                        value={metric.targetValue}
-                        onChange={(e) =>
-                          handleTargetValueChange(index, e.target.value)
-                        }
-                        className="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={metric.targetValue}
+                          onChange={(e) =>
+                            handleTargetValueChange(index, e.target.value)
+                          }
+                          className="w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                          {metric.unit && `${metric.unit}`}
+                        </span>
+                      </div>
                     </td>
                   </tr>
                 ))}
