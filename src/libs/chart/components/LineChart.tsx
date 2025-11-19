@@ -8,11 +8,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  CHART_STYLES,
-  CHART_MARGIN,
-  MULTI_LINE_COLORS,
-} from "../config";
+import { CHART_STYLES, LINE_CHART_MARGIN, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
   [key: string]: string | number;
@@ -73,28 +69,83 @@ export const LineChart = ({
   };
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsLineChart data={data} margin={CHART_MARGIN}>
+      <RechartsLineChart data={data} margin={LINE_CHART_MARGIN}>
         {showGrid && <CartesianGrid {...CHART_STYLES.grid} />}
         <XAxis
           dataKey={xKey}
-          style={{ ...CHART_STYLES.axis, fontWeight: 400 }}
+          style={{ ...CHART_STYLES.axis, fontWeight: 100 }}
           tickLine={false}
+          padding={{ left: 20, right: 20 }}
         />
         <YAxis
-          style={{ ...CHART_STYLES.axis, fontWeight: 400 }}
+          style={{ ...CHART_STYLES.axis, fontWeight: 100 }}
           tickLine={false}
           domain={getDomain()}
+          padding={{ top: 0, bottom: 10 }}
         />
         <Tooltip
-          contentStyle={CHART_STYLES.tooltip.contentStyle}
-          labelStyle={CHART_STYLES.tooltip.labelStyle}
+          content={({ active, payload, label }) => {
+            if (!active || !payload || !payload.length) return null;
+            return (
+              <div style={CHART_STYLES.tooltip.contentStyle}>
+                <p style={CHART_STYLES.tooltip.labelStyle}>{label}</p>
+                {yKeys.map((key) => {
+                  const item = payload.find((p) => p.dataKey === key);
+                  if (!item) return null;
+                  return (
+                    <p
+                      key={key}
+                      style={{
+                        ...CHART_STYLES.tooltip.itemStyle,
+                        color: item.color,
+                      }}
+                    >
+                      {`${key}: ${item.value}`}
+                    </p>
+                  );
+                })}
+              </div>
+            );
+          }}
         />
-        {showLegend && <Legend />}
+        {showLegend && (
+          <Legend
+            content={() => {
+              return (
+                <ul className="flex flex-wrap justify-center gap-4 mt-4">
+                  {yKeys.map((key, index) => {
+                    const isDashed = dashedKeys.includes(key);
+                    const color = isDashed
+                      ? dashedColor
+                      : colors[index % colors.length];
+                    return (
+                      <li key={key} className="flex items-center gap-2">
+                        <svg width="20" height="20" className="flex-shrink-0">
+                          <line
+                            x1="0"
+                            y1="10"
+                            x2="20"
+                            y2="10"
+                            stroke={color}
+                            strokeWidth="2"
+                            strokeDasharray={isDashed ? "4 4" : undefined}
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700">{key}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            }}
+          />
+        )}
         {yKeys.map((key, index) => {
           const isDashed = dashedKeys.includes(key);
           return (
             <Line
               key={key}
+              name={key}
               type="monotone"
               dataKey={key}
               stroke={isDashed ? dashedColor : colors[index % colors.length]}

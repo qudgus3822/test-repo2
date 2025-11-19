@@ -28,17 +28,23 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
             return {
               month: `${year}년 ${parseInt(monthNum)}월`, // '2025-05' -> '2025년 5월'
               "BDPI 평균": item.bdpiAverage,
-              "개발 효율": item.developmentEfficiency,
-              "리뷰 품질": item.reviewQuality,
-              "BDPI 목표치": item.target,
               "코드 품질": item.codeQuality,
+              "리뷰 품질": item.reviewQuality,
+              "개발 효율": item.developmentEfficiency,
+              "목표치": item.target,
             };
           })
         : [],
     [developerProductivityData],
   );
 
-  const metrics = ["BDPI 평균", "개발 효율", "리뷰 품질", "코드 품질", "목표치"];
+  const metrics = [
+    "BDPI 평균",
+    "코드 품질",
+    "리뷰 품질",
+    "개발 효율",
+    "목표치",
+  ];
 
   // 로딩 상태
   if (isLoading) {
