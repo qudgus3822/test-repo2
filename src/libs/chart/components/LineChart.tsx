@@ -14,11 +14,7 @@ interface DataPoint {
   [key: string]: string | number;
 }
 
-type YAxisDomainType =
-  | "auto"
-  | "dataMinMax"
-  | "fromZero"
-  | [number | string, number | string];
+type YAxisDomainType = "auto" | "dataMinMax" | "fromZero" | [number, number];
 
 interface LineChartProps {
   data: DataPoint[];
@@ -28,7 +24,7 @@ interface LineChartProps {
   colors?: readonly string[];
   showLegend?: boolean;
   showGrid?: boolean;
-  showDots?: boolean; // 라인의 점 표시 여부 (기본값: false)
+  showDots?: boolean; // 라인의 점 표시 여부 (기본값: true)
   yAxisDomain?: YAxisDomainType; // y축 범위 설정 (기본값: 'auto')
   dashedKeys?: string[]; // 점선으로 표시할 key 배열
   dashedColor?: string; // 점선 색상 (기본값: 회색)
@@ -46,7 +42,7 @@ export const LineChart = ({
   colors = MULTI_LINE_COLORS,
   showLegend = true,
   showGrid = true,
-  showDots = false,
+  showDots = true,
   yAxisDomain = "auto",
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
@@ -73,15 +69,14 @@ export const LineChart = ({
         {showGrid && <CartesianGrid {...CHART_STYLES.grid} />}
         <XAxis
           dataKey={xKey}
-          style={{ ...CHART_STYLES.axis, fontWeight: 100 }}
+          style={{ ...CHART_STYLES.axis }}
           tickLine={false}
-          padding={{ left: 20, right: 20 }}
+          tick={{ dy: 8 }} // x축 라벨 위치 조정
         />
         <YAxis
-          style={{ ...CHART_STYLES.axis, fontWeight: 100 }}
+          style={{ ...CHART_STYLES.axis }}
           tickLine={false}
           domain={getDomain()}
-          padding={{ top: 0, bottom: 10 }}
         />
         <Tooltip
           content={({ active, payload, label }) => {
@@ -149,9 +144,9 @@ export const LineChart = ({
               type="monotone"
               dataKey={key}
               stroke={isDashed ? dashedColor : colors[index % colors.length]}
-              strokeWidth={2}
+              strokeWidth={1}
               strokeDasharray={isDashed ? "1 1" : undefined}
-              dot={showDots ? { r: 4 } : false}
+              dot={showDots && !isDashed ? { r: 4 } : false}
               activeDot={showDots ? { r: 6 } : false}
             />
           );

@@ -55,6 +55,7 @@ export const CHART_STYLES = {
   axis: {
     stroke: "#9ca3af",
     fontSize: 14,
+    fontWeight: 100,
   },
 } as const;
 

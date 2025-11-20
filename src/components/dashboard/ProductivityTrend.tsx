@@ -46,6 +46,28 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
     "목표치",
   ];
 
+  // yAxisDomain 계산 (데이터의 최소값, 최대값)
+  const yAxisDomain = useMemo((): [number, number] => {
+    if (!trendData || trendData.length === 0) {
+      return [0, 100];
+    }
+
+    const allValues = trendData.flatMap((item) =>
+      metrics
+        .map((metric) => item[metric as keyof typeof item])
+        .filter((val) => val != null),
+    );
+
+    if (allValues.length === 0) {
+      return [0, 100];
+    }
+
+    const dataMin = Math.min(...allValues.map(Number)) - 5;
+    const dataMax = Math.max(...allValues.map(Number)) + 5;
+
+    return [dataMin, dataMax];
+  }, [trendData]);
+
   // 로딩 상태
   if (isLoading) {
     return (
@@ -92,7 +114,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
         showLegend={true}
         showGrid={true}
         dashedKeys={["목표치"]}
-        yAxisDomain={[0, 100]}
+        yAxisDomain={yAxisDomain}
       />
     </Card>
   );
