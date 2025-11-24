@@ -28,17 +28,45 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
             return {
               month: `${year}년 ${parseInt(monthNum)}월`, // '2025-05' -> '2025년 5월'
               "BDPI 평균": item.bdpiAverage,
-              "개발 효율": item.developmentEfficiency,
-              "리뷰 품질": item.reviewQuality,
-              "BDPI 목표치": item.target,
               "코드 품질": item.codeQuality,
+              "리뷰 품질": item.reviewQuality,
+              "개발 효율": item.developmentEfficiency,
+              "목표치": item.target,
             };
           })
         : [],
     [developerProductivityData],
   );
 
-  const metrics = ["BDPI 평균", "개발 효율", "리뷰 품질", "코드 품질", "목표치"];
+  const metrics = [
+    "BDPI 평균",
+    "코드 품질",
+    "리뷰 품질",
+    "개발 효율",
+    "목표치",
+  ];
+
+  // yAxisDomain 계산 (데이터의 최소값, 최대값)
+  const yAxisDomain = useMemo((): [number, number] => {
+    if (!trendData || trendData.length === 0) {
+      return [0, 100];
+    }
+
+    const allValues = trendData.flatMap((item) =>
+      metrics
+        .map((metric) => item[metric as keyof typeof item])
+        .filter((val) => val != null),
+    );
+
+    if (allValues.length === 0) {
+      return [0, 100];
+    }
+
+    const dataMin = Math.min(...allValues.map(Number)) - 5;
+    const dataMax = Math.max(...allValues.map(Number)) + 5;
+
+    return [dataMin, dataMax];
+  }, [trendData]);
 
   // 로딩 상태
   if (isLoading) {
@@ -86,7 +114,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
         showLegend={true}
         showGrid={true}
         dashedKeys={["목표치"]}
-        yAxisDomain={[0, 100]}
+        yAxisDomain={yAxisDomain}
       />
     </Card>
   );
