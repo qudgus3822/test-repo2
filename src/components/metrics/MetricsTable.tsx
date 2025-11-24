@@ -1,4 +1,5 @@
 import { Tooltip } from "@/components/ui/Tooltip";
+import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
 import {
   Search,
   ArrowDownUp,
@@ -10,11 +11,17 @@ import {
 import { useState } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
-import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
+import {
+  useMetricsStore,
+  type TabType,
+  DEFAULT_EXCELLENT_THRESHOLD,
+  DEFAULT_DANGER_THRESHOLD,
+} from "@/store/useMetricsStore";
 import {
   getCategoryLabel,
   getStatusIcon,
   getStatusColor,
+  calculateMetricStatus,
 } from "@/utils/metrics";
 
 interface MetricsTableProps {
@@ -32,6 +39,10 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const {
     activeTab,
     setActiveTab,
+    achievementRateFilter,
+    setAchievementRateFilter,
+    achievementRateExcellentThreshold,
+    achievementRateDangerThreshold,
     setIsTargetValueSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
     setIsMetricsDetailModalOpen,
@@ -43,37 +54,72 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     null,
   );
 
-  // 카테고리별 개수 계산
-  const codeQualityCount = metrics.filter(
+  // 달성률 기준값
+  const excellentThreshold =
+    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD;
+  const dangerThreshold =
+    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD;
+
+  // 먼저 달성률 필터 적용
+  const achievementRateFilteredAllMetrics = metrics.filter((m) => {
+    if (achievementRateFilter === "all") return true;
+    if (achievementRateFilter === "excellent") {
+      return m.achievementRate >= excellentThreshold;
+    }
+    if (achievementRateFilter === "warning") {
+      return (
+        m.achievementRate >= dangerThreshold &&
+        m.achievementRate < excellentThreshold
+      );
+    }
+    if (achievementRateFilter === "danger") {
+      return m.achievementRate < dangerThreshold;
+    }
+    return true;
+  });
+
+  // 카테고리별 개수 계산 (달성률 필터 적용 후)
+  const codeQualityCount = achievementRateFilteredAllMetrics.filter(
     (m) => m.category === MetricCategory.CODE_QUALITY,
   ).length;
-  const reviewQualityCount = metrics.filter(
+  const reviewQualityCount = achievementRateFilteredAllMetrics.filter(
     (m) => m.category === MetricCategory.REVIEW_QUALITY,
   ).length;
-  const developmentEfficiencyCount = metrics.filter(
+  const developmentEfficiencyCount = achievementRateFilteredAllMetrics.filter(
     (m) => m.category === MetricCategory.DEVELOPMENT_EFFICIENCY,
   ).length;
 
-  // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px)
+  // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
   const getTableHeight = () => {
+    let count = 0;
     switch (activeTab) {
       case "all":
-        return 50 + metrics.length * 53;
+        count = achievementRateFilteredAllMetrics.length;
+        break;
       case "codeQuality":
-        return 50 + codeQualityCount * 53;
+        count = codeQualityCount;
+        break;
       case "reviewQuality":
-        return 50 + reviewQualityCount * 53;
+        count = reviewQualityCount;
+        break;
       case "developmentEfficiency":
-        return 50 + developmentEfficiencyCount * 53;
+        count = developmentEfficiencyCount;
+        break;
       default:
-        return 50 + metrics.length * 53;
+        count = achievementRateFilteredAllMetrics.length;
     }
+    // 지표가 없을 때도 메시지가 보이도록 최소 높이 보장
+    return Math.max(200, 50 + count * 53);
   };
 
   const tableHeight = getTableHeight();
 
   const tabs: Tab[] = [
-    { id: "all", label: "전체", count: metrics.length },
+    {
+      id: "all",
+      label: "전체",
+      count: achievementRateFilteredAllMetrics.length,
+    },
     {
       id: "codeQuality",
       label: "코드품질",
@@ -94,16 +140,26 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     },
   ];
 
-  // 활성 탭에 따라 지표 필터링
+  // 활성 탭에 따라 지표 필터링 (이미 달성률 필터가 적용된 metrics 사용)
   const filteredMetrics =
     activeTab === "all"
-      ? metrics
-      : metrics.filter((m) => {
+      ? achievementRateFilteredAllMetrics
+      : achievementRateFilteredAllMetrics.filter((m) => {
           const activeTabData = tabs.find((t) => t.id === activeTab);
           return (
             activeTabData?.category && m.category === activeTabData.category
           );
         });
+
+  // 프론트에서 달성률 기준값에 따라 status 계산
+  const metricsWithCalculatedStatus = filteredMetrics.map((metric) => ({
+    ...metric,
+    status: calculateMetricStatus(
+      metric.achievementRate,
+      excellentThreshold,
+      dangerThreshold,
+    ),
+  }));
 
   // 비율 정렬
   const handleRatioSort = () => {
@@ -117,7 +173,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   };
 
   // 정렬된 지표 목록
-  const sortedMetrics = [...filteredMetrics].sort((a, b) => {
+  const sortedMetrics = [...metricsWithCalculatedStatus].sort((a, b) => {
     if (ratioSortOrder === null) return 0;
     if (ratioSortOrder === "asc") {
       return a.ratio - b.ratio;
@@ -133,21 +189,28 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Tabs */}
-      <div className="flex space-x-6 border-b border-gray-200">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
-              activeTab === tab.id
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}({tab.count})
-          </button>
-        ))}
+      {/* Tabs와 달성률 필터 */}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+        <div className="flex space-x-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`pb-4 px-1 text-sm font-medium border-b-2 -mb-[20px] transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}({tab.count})
+            </button>
+          ))}
+        </div>
+        {/* 달성률 필터 */}
+        <AchievementRateFilter
+          value={achievementRateFilter}
+          onChange={setAchievementRateFilter}
+        />
       </div>
 
       {/* Table */}

@@ -66,16 +66,18 @@ const MetricsPage = () => {
   ]);
 
   return (
-    <div className="">
+    <div className="flex flex-col gap-6">
       {/* 헤더 - 날짜 필터 */}
       <div>
         <Card className="w-full">
-          <DateFilter
-            period={period}
-            onPeriodChange={setPeriod}
-            currentDate={currentDate}
-            onDateChange={setCurrentDate}
-          />
+          <div className="w-full flex">
+            <DateFilter
+              period={period}
+              onPeriodChange={setPeriod}
+              currentDate={currentDate}
+              onDateChange={setCurrentDate}
+            />
+          </div>
         </Card>
       </div>
 
