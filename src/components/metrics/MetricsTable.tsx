@@ -1,5 +1,6 @@
 import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
+import { Button } from "@/components/ui/Button";
 import {
   Search,
   ArrowDownUp,
@@ -7,6 +8,7 @@ import {
   Pencil,
   ArrowUp,
   ArrowDown,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import type { MetricItem } from "@/types/metrics.types";
@@ -46,6 +48,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     setIsTargetValueSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
     setIsMetricsDetailModalOpen,
+    setIsMetricRateSettingModalOpen,
     setSelectedMetric,
   } = useMetricsStore((state) => state);
 
@@ -206,11 +209,24 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
             </button>
           ))}
         </div>
-        {/* 달성률 필터 */}
-        <AchievementRateFilter
-          value={achievementRateFilter}
-          onChange={setAchievementRateFilter}
-        />
+        <div className="flex items-center gap-3">
+          {/* 비율 설정 버튼 (전체 탭 제외) */}
+          {activeTab !== "all" && (
+            <Button
+              variant="setting"
+              size="sm"
+              onClick={() => setIsMetricRateSettingModalOpen(true)}
+            >
+              <Settings className="w-4 h-4 mr-1.5" />
+              비율 설정
+            </Button>
+          )}
+          {/* 달성률 필터 */}
+          <AchievementRateFilter
+            value={achievementRateFilter}
+            onChange={setAchievementRateFilter}
+          />
+        </div>
       </div>
 
       {/* Table */}

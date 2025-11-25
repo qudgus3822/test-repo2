@@ -93,51 +93,71 @@ export const TargetValueSettingModal = ({
           </div>
 
           {/* 테이블 */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-                  <th className="px-4 py-3 w-[30%]">지표명</th>
-                  <th className="px-4 py-3 w-[20%]">범주</th>
-                  <th className="px-4 py-3 w-[20%]">현재값</th>
-                  <th className="px-4 py-3 w-[30%]">목표값</th>
-                </tr>
-              </thead>
-              <tbody>
-                {editedMetrics.map((metric, index) => (
-                  <tr
-                    key={metric.metricCode || index}
-                    className="border-b border-gray-100"
-                  >
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {metric.name}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {getCategoryLabel(metric.category)}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {metric.currentValue}
-                      {metric.unit && `${metric.unit}`}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={metric.targetValue}
-                          onChange={(e) =>
-                            handleTargetValueChange(index, e.target.value)
-                          }
-                          className="w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
-                          {metric.unit && `${metric.unit}`}
-                        </span>
-                      </div>
-                    </td>
+          <div className="flex-1 flex flex-col overflow-hidden px-6 pt-4">
+            {/* 고정 헤더 */}
+            <div className="[scrollbar-gutter:stable] pr-[15px]">
+              <table className="w-full table-fixed">
+                <colgroup>
+                  <col className="w-[30%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[30%]" />
+                </colgroup>
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
+                    <th className="px-4 py-3">지표명</th>
+                    <th className="px-4 py-3">범주</th>
+                    <th className="px-4 py-3">현재값</th>
+                    <th className="px-4 py-3">목표값</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+              </table>
+            </div>
+            {/* 스크롤 영역 */}
+            <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+              <table className="w-full table-fixed">
+                <colgroup>
+                  <col className="w-[30%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[30%]" />
+                </colgroup>
+                <tbody>
+                  {editedMetrics.map((metric, index) => (
+                    <tr
+                      key={metric.metricCode || index}
+                      className="border-b border-gray-100"
+                    >
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {metric.name}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {getCategoryLabel(metric.category)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-900">
+                        {metric.currentValue}
+                        {metric.unit && `${metric.unit}`}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={metric.targetValue}
+                            onChange={(e) =>
+                              handleTargetValueChange(index, e.target.value)
+                            }
+                            className="w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                            {metric.unit && `${metric.unit}`}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* 하단 버튼 */}
