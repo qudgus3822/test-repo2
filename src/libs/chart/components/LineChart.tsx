@@ -8,21 +8,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  CHART_STYLES,
-  CHART_MARGIN,
-  MULTI_LINE_COLORS,
-} from "../config";
+import { CHART_STYLES, LINE_CHART_MARGIN, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
   [key: string]: string | number;
 }
 
-type YAxisDomainType =
-  | "auto"
-  | "dataMinMax"
-  | "fromZero"
-  | [number | string, number | string];
+type YAxisDomainType = "auto" | "dataMinMax" | "fromZero" | [number, number];
 
 interface LineChartProps {
   data: DataPoint[];
@@ -32,7 +24,7 @@ interface LineChartProps {
   colors?: readonly string[];
   showLegend?: boolean;
   showGrid?: boolean;
-  showDots?: boolean; // 라인의 점 표시 여부 (기본값: false)
+  showDots?: boolean; // 라인의 점 표시 여부 (기본값: true)
   yAxisDomain?: YAxisDomainType; // y축 범위 설정 (기본값: 'auto')
   dashedKeys?: string[]; // 점선으로 표시할 key 배열
   dashedColor?: string; // 점선 색상 (기본값: 회색)
@@ -50,7 +42,7 @@ export const LineChart = ({
   colors = MULTI_LINE_COLORS,
   showLegend = true,
   showGrid = true,
-  showDots = false,
+  showDots = true,
   yAxisDomain = "auto",
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
@@ -73,34 +65,88 @@ export const LineChart = ({
   };
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <RechartsLineChart data={data} margin={CHART_MARGIN}>
+      <RechartsLineChart data={data} margin={LINE_CHART_MARGIN}>
         {showGrid && <CartesianGrid {...CHART_STYLES.grid} />}
         <XAxis
           dataKey={xKey}
-          style={{ ...CHART_STYLES.axis, fontWeight: 400 }}
+          style={{ ...CHART_STYLES.axis }}
           tickLine={false}
+          tick={{ dy: 8 }} // x축 라벨 위치 조정
         />
         <YAxis
-          style={{ ...CHART_STYLES.axis, fontWeight: 400 }}
+          style={{ ...CHART_STYLES.axis }}
           tickLine={false}
           domain={getDomain()}
         />
         <Tooltip
-          contentStyle={CHART_STYLES.tooltip.contentStyle}
-          labelStyle={CHART_STYLES.tooltip.labelStyle}
+          content={({ active, payload, label }) => {
+            if (!active || !payload || !payload.length) return null;
+            return (
+              <div style={CHART_STYLES.tooltip.contentStyle}>
+                <p style={CHART_STYLES.tooltip.labelStyle}>{label}</p>
+                {yKeys.map((key) => {
+                  const item = payload.find((p) => p.dataKey === key);
+                  if (!item) return null;
+                  return (
+                    <p
+                      key={key}
+                      style={{
+                        ...CHART_STYLES.tooltip.itemStyle,
+                        color: item.color,
+                      }}
+                    >
+                      {`${key}: ${item.value}`}
+                    </p>
+                  );
+                })}
+              </div>
+            );
+          }}
         />
-        {showLegend && <Legend />}
+        {showLegend && (
+          <Legend
+            content={() => {
+              return (
+                <ul className="flex flex-wrap justify-center gap-4 mt-4">
+                  {yKeys.map((key, index) => {
+                    const isDashed = dashedKeys.includes(key);
+                    const color = isDashed
+                      ? dashedColor
+                      : colors[index % colors.length];
+                    return (
+                      <li key={key} className="flex items-center gap-2">
+                        <svg width="20" height="20" className="flex-shrink-0">
+                          <line
+                            x1="0"
+                            y1="10"
+                            x2="20"
+                            y2="10"
+                            stroke={color}
+                            strokeWidth="2"
+                            strokeDasharray={isDashed ? "4 4" : undefined}
+                          />
+                        </svg>
+                        <span className="text-sm text-gray-700">{key}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              );
+            }}
+          />
+        )}
         {yKeys.map((key, index) => {
           const isDashed = dashedKeys.includes(key);
           return (
             <Line
               key={key}
+              name={key}
               type="monotone"
               dataKey={key}
               stroke={isDashed ? dashedColor : colors[index % colors.length]}
-              strokeWidth={2}
+              strokeWidth={1}
               strokeDasharray={isDashed ? "1 1" : undefined}
-              dot={showDots ? { r: 4 } : false}
+              dot={showDots && !isDashed ? { r: 4 } : false}
               activeDot={showDots ? { r: 6 } : false}
             />
           );

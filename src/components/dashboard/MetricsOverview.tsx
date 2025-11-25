@@ -6,6 +6,7 @@ import { TREND_COLORS, BRAND_COLORS, CHART_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import { useCompanyQuality } from "@/api/hooks/useCompanyQuality";
+import { Tooltip } from "../ui/Tooltip";
 
 interface MetricsOverviewProps {
   month: string; // YYYY-MM 형식
@@ -116,10 +117,19 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                 <div className="text-sm font-medium text-gray-700">
                   {bdpiAverage.label}
                 </div>
-                <Info
-                  className="w-4 h-4"
-                  style={{ color: bdpiAverage.color }}
-                />
+                <Tooltip
+                  content={
+                    "BDPI는 코드품질, 리뷰품질, 개발효율의 점수를 동일 가중치로 평균한 지표입니다."
+                  }
+                  color="#6B7280"
+                  maxWidth={250}
+                  arrowPosition="top-[15px]"
+                >
+                  <Info
+                    className="w-4 h-4 cursor-pointer"
+                    style={{ color: bdpiAverage.color }}
+                  />
+                </Tooltip>
               </div>
             </div>
             {bdpiAverage.trend && (

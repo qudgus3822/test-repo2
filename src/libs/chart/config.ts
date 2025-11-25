@@ -31,10 +31,17 @@ export const CHART_STYLES = {
       border: "1px solid #e5e7eb",
       borderRadius: "8px",
       boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+      padding: 15,
     },
     labelStyle: {
       color: "#374151",
-      fontWeight: 600,
+      // fontWeight: 100,
+      fontSize: 14,
+      paddingBottom: 5,
+    },
+    itemStyle: {
+      //color: "#374151",
+      fontSize: 14,
     },
   },
 
@@ -47,7 +54,8 @@ export const CHART_STYLES = {
   // 축 스타일
   axis: {
     stroke: "#9ca3af",
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: 100,
   },
 } as const;
 
@@ -56,6 +64,14 @@ export const CHART_MARGIN = {
   top: 20,
   right: 30,
   left: 20,
+  bottom: 20,
+} as const;
+
+// LineChart 전용 마진
+export const LINE_CHART_MARGIN = {
+  top: 20,
+  right: 40,
+  left: 0,
   bottom: 20,
 } as const;
 
