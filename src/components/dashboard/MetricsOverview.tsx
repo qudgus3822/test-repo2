@@ -17,7 +17,11 @@ interface MetricsOverviewProps {
  */
 export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
   // React Query로 전사 BDPI 데이터 조회
-  const { data: companyQualityData, isLoading, error } = useCompanyQuality(month);
+  const {
+    data: companyQualityData,
+    isLoading,
+    error,
+  } = useCompanyQuality(month);
 
   // 전사 BDPI 평균 계산
   const bdpiAverage = useMemo(
@@ -61,7 +65,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               value: companyQualityData.developmentEfficiency.score,
               label: "개발 효율",
               sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
-              color: CHART_COLORS.orange,
+              color: CHART_COLORS.lightYellow,
             },
           ]
         : null,

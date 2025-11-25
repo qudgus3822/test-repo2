@@ -1,5 +1,5 @@
 import { BarChart3 } from "lucide-react";
-
+import { PALETTE_COLORS } from "@/styles/colors";
 import type { MetricOverview } from "@/types/metrics.types";
 
 interface MetricsSummaryProps {
@@ -12,25 +12,25 @@ export const MetricsSummary = ({ data }: MetricsSummaryProps) => {
       label: "전체 지표",
       value: data.totalMetrics,
       icon: BarChart3,
-      iconColor: "text-[#E66100]", // 전체 지표만 다른 색상
+      iconColor: PALETTE_COLORS.darkBlue,
     },
     {
       label: "코드품질",
       value: data.codeQualityCount,
       icon: BarChart3,
-      iconColor: "text-blue-500",
+      iconColor: PALETTE_COLORS.blue,
     },
     {
       label: "리뷰품질",
       value: data.reviewQualityCount,
       icon: BarChart3,
-      iconColor: "text-blue-500",
+      iconColor: PALETTE_COLORS.orange,
     },
     {
       label: "개발 효율",
       value: data.developmentEfficiencyCount,
       icon: BarChart3,
-      iconColor: "text-blue-500",
+      iconColor: PALETTE_COLORS.purple,
     },
   ];
 
@@ -43,8 +43,11 @@ export const MetricsSummary = ({ data }: MetricsSummaryProps) => {
             const Icon = item.icon;
             return (
               <div key={index} className="flex flex-col items-center space-y-2">
-                <div className={item.iconColor}>
-                  <Icon className="w-8 h-8 flex-shrink-0" />
+                <div>
+                  <Icon
+                    className="w-10 h-10 flex-shrink-0"
+                    style={{ color: item.iconColor }}
+                  />
                 </div>
                 <div className="text-lg md:text-2xl lg:text-2xl xl:text-3xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
                   {item.value}개

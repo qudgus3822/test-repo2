@@ -16,6 +16,8 @@ export const PALETTE_COLORS = {
   yellow: "#FABA3F", // 노란색
   orange: "#F39200", // 주황색 (경고/강조)
   lightYellow: "#F5DB86", // 연한 노란색
+  purple: "#9333EA", // 보라색 - 지표 관리 화면에서 사용
+  teal: "#14B8A6", // 청록 (Teal) - 지표 관리 화면에서 사용 후보
 } as const;
 
 // 차트 색상 (PALETTE_COLORS와 동일, 명확성을 위한 별칭)
@@ -25,6 +27,8 @@ export const CHART_COLORS = {
   yellow: "#FABA3F", // 노란색
   orange: "#F39200", // 주황색
   lightYellow: "#F5DB86", // 연한 노란색
+  purple: "#9333EA", // 보라색 - 지표 관리 화면에서 사용
+  teal: "#14B8A6", // 청록 (Teal) - 지표 관리 화면에서 사용 후보
 } as const;
 
 // 차트 컴포넌트용 색상 배열 (순환 참조용)
@@ -44,17 +48,17 @@ export const TREND_COLORS = {
 
 // 목표값 상태 색상
 export const GOAL_STATUS_COLORS = {
-  excellent: "#00A63E", // 우수
+  excellent: "#00A756", // 우수
   good: "#10b981", // 양호
-  warning: "#FF6900", // 경고
-  danger: "#E7000B", // 위험
+  warning: "#E27531", // 경고
+  danger: "#FC3018", // 위험
 } as const;
 
 // 상태(달성률) 색상
 export const STATUS_COLORS = {
-  excellent: "#10B981", // 우수
-  warning: "#FF6900", // 경고
-  danger: "#E7000B", // 위험
+  excellent: "#00A756", // 우수
+  warning: "#E27531", // 경고
+  danger: "#FC3018", // 위험
   info: "#06b6d4", // 정보
 } as const;
 

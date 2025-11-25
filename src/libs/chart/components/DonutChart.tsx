@@ -1,12 +1,20 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { TREND_COLORS, CHART_COLORS } from "@/styles/colors";
 
+// 그라데이션 설정 타입
+interface GradientConfig {
+  startColor: string;
+  endColor: string;
+  id?: string;
+}
+
 interface DonutChartProps {
   value: number;
   maxValue?: number;
   size?: number;
   strokeWidth?: number;
   color?: string;
+  gradient?: GradientConfig;
   backgroundColor?: string;
   label?: string;
   sublabel?: string;
@@ -27,6 +35,7 @@ export const DonutChart = ({
   size = 160,
   strokeWidth = 16,
   color = CHART_COLORS.blue, // #1E54B8
+  gradient,
   backgroundColor = "#e5e7eb",
   label,
   sublabel,
@@ -39,11 +48,24 @@ export const DonutChart = ({
     { name: "remaining", value: maxValue - value },
   ];
 
+  // 그라데이션 ID 생성 (고유값)
+  const gradientId = gradient?.id || `donut-gradient-${Math.random().toString(36).substring(2, 11)}`;
+  const fillColor = gradient ? `url(#${gradientId})` : color;
+
   return (
     <div className="relative flex flex-col items-center">
       <div className="relative" style={{ width: size, height: size }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
+            {/* 그라데이션 정의 */}
+            {gradient && (
+              <defs>
+                <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={gradient.startColor} />
+                  <stop offset="100%" stopColor={gradient.endColor} />
+                </linearGradient>
+              </defs>
+            )}
             <Pie
               data={data}
               cx="50%"
@@ -55,7 +77,7 @@ export const DonutChart = ({
               dataKey="value"
               stroke="none"
             >
-              <Cell fill={color} />
+              <Cell fill={fillColor} />
               <Cell fill={backgroundColor} />
             </Pie>
           </PieChart>

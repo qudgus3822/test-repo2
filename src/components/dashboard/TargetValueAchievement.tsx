@@ -1,5 +1,12 @@
-import { CHART_COLORS, DonutChart } from "@/libs/chart";
+import { DonutChart } from "@/libs/chart";
 import { useGoalAchievement } from "@/api/hooks/useGoalAchievement";
+
+// 목표 달성률 그라데이션 색상 (Cyan -> Purple)
+const ACHIEVEMENT_GRADIENT = {
+  startColor: "#06B6D4", // Cyan
+  endColor: "#9333EA", // Purple
+  id: "achievement-gradient",
+};
 
 type TargetValueAchievementProps =
   | {
@@ -80,7 +87,7 @@ export const TargetValueAchievement = (
             value={percentage}
             maxValue={100}
             showPercentage
-            color={CHART_COLORS.orange}
+            gradient={ACHIEVEMENT_GRADIENT}
             size={180}
             strokeWidth={20}
           />
@@ -104,7 +111,7 @@ export const TargetValueAchievement = (
           value={percentage}
           maxValue={100}
           showPercentage
-          color={CHART_COLORS.orange}
+          gradient={ACHIEVEMENT_GRADIENT}
           size={180}
           strokeWidth={20}
         />

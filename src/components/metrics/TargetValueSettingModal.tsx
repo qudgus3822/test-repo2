@@ -1,8 +1,36 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
+import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getCategoryLabel } from "@/utils/metrics";
+import { PALETTE_COLORS } from "@/styles/colors";
+
+// 범주별 스타일 정의
+const getCategoryStyle = (category: MetricCategory) => {
+  switch (category) {
+    case MetricCategory.CODE_QUALITY:
+      return {
+        color: PALETTE_COLORS.blue,
+        borderColor: PALETTE_COLORS.blue,
+      };
+    case MetricCategory.REVIEW_QUALITY:
+      return {
+        color: PALETTE_COLORS.orange,
+        borderColor: PALETTE_COLORS.orange,
+      };
+    case MetricCategory.DEVELOPMENT_EFFICIENCY:
+      return {
+        color: PALETTE_COLORS.purple,
+        borderColor: PALETTE_COLORS.purple,
+      };
+    default:
+      return {
+        color: "#6B7280",
+        borderColor: "#D1D5DB",
+      };
+  }
+};
 
 interface TargetValueSettingModalProps {
   isOpen: boolean;
@@ -10,6 +38,38 @@ interface TargetValueSettingModalProps {
   metrics: MetricItem[];
   onSave: (updatedMetrics: MetricItem[]) => void;
 }
+
+// 유효성 검사 에러 타입
+type ValidationError = "empty" | "invalid" | null;
+
+// 목표값 유효성 검사 함수
+const validateTargetValue = (value: string): ValidationError => {
+  // 빈값, 공백, 0 체크
+  const trimmedValue = value.trim();
+  if (trimmedValue === "" || trimmedValue === "0") {
+    return "empty";
+  }
+
+  // 숫자 및 소수점 첫째자리까지만 허용하는 정규식
+  const validNumberRegex = /^[0-9]+(\.[0-9])?$/;
+  if (!validNumberRegex.test(trimmedValue)) {
+    return "invalid";
+  }
+
+  return null;
+};
+
+// 에러 메시지 반환
+const getErrorMessage = (error: ValidationError): string => {
+  switch (error) {
+    case "empty":
+      return "목표값을 입력해주세요.";
+    case "invalid":
+      return "목표값은 정수 및 소수점 첫번째 자리까지 입력해 주세요.";
+    default:
+      return "";
+  }
+};
 
 export const TargetValueSettingModal = ({
   isOpen,
@@ -20,11 +80,13 @@ export const TargetValueSettingModal = ({
   const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [errors, setErrors] = useState<Record<number, ValidationError>>({});
 
   // 애니메이션을 위한 지연된 unmount
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
+      setErrors({}); // 모달 열릴 때 에러 초기화
       // DOM에 렌더링된 후 다음 프레임에서 애니메이션 시작
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -45,9 +107,36 @@ export const TargetValueSettingModal = ({
     const updated = [...editedMetrics];
     updated[index] = { ...updated[index], targetValue: value };
     setEditedMetrics(updated);
+
+    // 유효성 검사 실행
+    const error = validateTargetValue(value);
+    setErrors((prev) => ({ ...prev, [index]: error }));
   };
 
+  // 저장 버튼 비활성화 여부 확인
+  const hasErrors = editedMetrics.some((metric, index) => {
+    const error = errors[index] ?? validateTargetValue(String(metric.targetValue));
+    return error !== null;
+  });
+
   const handleSave = () => {
+    // 저장 전 전체 유효성 검사
+    const newErrors: Record<number, ValidationError> = {};
+    let hasValidationError = false;
+
+    editedMetrics.forEach((metric, index) => {
+      const error = validateTargetValue(String(metric.targetValue));
+      if (error) {
+        newErrors[index] = error;
+        hasValidationError = true;
+      }
+    });
+
+    if (hasValidationError) {
+      setErrors(newErrors);
+      return;
+    }
+
     onSave(editedMetrics);
     onClose();
   };
@@ -106,7 +195,7 @@ export const TargetValueSettingModal = ({
                 <thead>
                   <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
                     <th className="px-4 py-3">지표명</th>
-                    <th className="px-4 py-3">범주</th>
+                    <th className="px-4 py-3 text-center">범주</th>
                     <th className="px-4 py-3">현재값</th>
                     <th className="px-4 py-3">목표값</th>
                   </tr>
@@ -123,38 +212,67 @@ export const TargetValueSettingModal = ({
                   <col className="w-[30%]" />
                 </colgroup>
                 <tbody>
-                  {editedMetrics.map((metric, index) => (
-                    <tr
-                      key={metric.metricCode || index}
-                      className="border-b border-gray-100"
-                    >
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {metric.name}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {getCategoryLabel(metric.category)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        {metric.currentValue}
-                        {metric.unit && `${metric.unit}`}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={metric.targetValue}
-                            onChange={(e) =>
-                              handleTargetValueChange(index, e.target.value)
-                            }
-                            className="w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                          <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                  {editedMetrics.map((metric, index) => {
+                    const error = errors[index];
+                    const hasError = error !== null && error !== undefined;
+                    return (
+                      <React.Fragment key={metric.metricCode || index}>
+                        <tr className={hasError ? "" : "border-b border-gray-100"}>
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            {metric.name}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center">
+                            {(() => {
+                              const style = getCategoryStyle(metric.category);
+                              return (
+                                <span
+                                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                                  style={{
+                                    color: style.color,
+                                    borderColor: style.borderColor,
+                                  }}
+                                >
+                                  {getCategoryLabel(metric.category)}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-900">
+                            {metric.currentValue}
                             {metric.unit && `${metric.unit}`}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                value={metric.targetValue}
+                                onChange={(e) =>
+                                  handleTargetValueChange(index, e.target.value)
+                                }
+                                className={`w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                                  hasError
+                                    ? "border-red-300 bg-red-50 focus:ring-red-500"
+                                    : "border-gray-200 focus:ring-blue-500"
+                                }`}
+                              />
+                              <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                                {metric.unit && `${metric.unit}`}
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                        {hasError && (
+                          <tr className="border-b border-gray-100">
+                            <td colSpan={4} className="px-4 pb-2 pt-0">
+                              <span className="text-xs text-red-500">
+                                {getErrorMessage(error)}
+                              </span>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -165,7 +283,12 @@ export const TargetValueSettingModal = ({
             <Button variant="cancel" size="sm" onClick={handleCancel}>
               취소
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSave}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSave}
+              disabled={hasErrors}
+            >
               저장
             </Button>
           </div>

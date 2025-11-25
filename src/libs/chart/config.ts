@@ -1,7 +1,4 @@
-import {
-  CHART_COLORS,
-  CHART_COLOR_ARRAY,
-} from "@/styles/colors";
+import { CHART_COLORS, CHART_COLOR_ARRAY } from "@/styles/colors";
 
 /**
  * 차트 공통 설정

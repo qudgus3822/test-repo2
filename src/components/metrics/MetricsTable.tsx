@@ -25,6 +25,34 @@ import {
   getStatusColor,
   calculateMetricStatus,
 } from "@/utils/metrics";
+import { PALETTE_COLORS } from "@/styles/colors";
+
+// 범주별 스타일 정의
+const getCategoryStyle = (category: MetricCategory) => {
+  switch (category) {
+    case MetricCategory.CODE_QUALITY:
+      return {
+        color: PALETTE_COLORS.blue,
+        borderColor: PALETTE_COLORS.blue,
+      };
+    case MetricCategory.REVIEW_QUALITY:
+      return {
+        color: PALETTE_COLORS.orange,
+        borderColor: PALETTE_COLORS.orange,
+      };
+    case MetricCategory.DEVELOPMENT_EFFICIENCY:
+      return {
+        color: PALETTE_COLORS.purple,
+        borderColor: PALETTE_COLORS.purple,
+      };
+    default:
+      return {
+        color: "#6B7280",
+        borderColor: "#D1D5DB",
+        bgColor: "#F9FAFB",
+      };
+  }
+};
 
 interface MetricsTableProps {
   metrics: MetricItem[];
@@ -50,12 +78,19 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     setIsMetricsDetailModalOpen,
     setIsMetricRateSettingModalOpen,
     setSelectedMetric,
+    currentDate,
   } = useMetricsStore((state) => state);
 
   // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
   const [ratioSortOrder, setRatioSortOrder] = useState<"asc" | "desc" | null>(
     null,
   );
+
+  // 현재 날짜와 선택된 날짜의 년/월 비교 (같은 월인지 확인)
+  const now = new Date();
+  const isCurrentMonth =
+    currentDate.getFullYear() === now.getFullYear() &&
+    currentDate.getMonth() === now.getMonth();
 
   // 달성률 기준값
   const excellentThreshold =
@@ -235,45 +270,48 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
           <thead>
             <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
               <th className="px-4 py-3 w-[25%]">지표명</th>
-              <th className="px-4 py-3 w-[12%]">범주</th>
+              <th className="px-4 py-3 w-[12%] text-center">범주</th>
               <th className="px-4 py-3 w-[12%]">현재값</th>
 
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-1.5">
                   목표값
-                  <span className="flex items-center cursor-pointer">
-                    <Tooltip
-                      content="지표의 목표값을 수정할 수 있습니다."
-                      // content="목표값 설정 팝업을 엽니다."
-                      color="#6B7280"
-                    >
-                      <Pencil
-                        className="w-4 h-4"
-                        id="목표값 설정 아이콘"
-                        onClick={() => setIsTargetValueSettingModalOpen(true)}
-                      />
-                    </Tooltip>
-                  </span>
+                  {isCurrentMonth && (
+                    <span className="flex items-center cursor-pointer">
+                      <Tooltip
+                        content="지표의 목표값을 수정할 수 있습니다."
+                        color="#6B7280"
+                      >
+                        <Pencil
+                          className="w-4 h-4"
+                          id="목표값 설정 아이콘"
+                          onClick={() => setIsTargetValueSettingModalOpen(true)}
+                        />
+                      </Tooltip>
+                    </span>
+                  )}
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-1.5">
                   달성률
-                  <span className="flex items-center cursor-pointer">
-                    <Tooltip
-                      content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                      // content="달성률 설정 팝업을 엽니다."
-                      color="#6B7280"
-                    >
-                      <Pencil
-                        className="w-4 h-4"
-                        id="달성률 설정 아이콘"
-                        onClick={() =>
-                          setIsAchievementRateSettingModalOpen(true)
-                        }
-                      />
-                    </Tooltip>
-                  </span>
+                  {isCurrentMonth && (
+                    <span className="flex items-center cursor-pointer">
+                      <Tooltip
+                        content="지표의 달성률을 평가하는 기준값을 설정합니다."
+                        // content="달성률 설정 팝업을 엽니다."
+                        color="#6B7280"
+                      >
+                        <Pencil
+                          className="w-4 h-4"
+                          id="달성률 설정 아이콘"
+                          onClick={() =>
+                            setIsAchievementRateSettingModalOpen(true)
+                          }
+                        />
+                      </Tooltip>
+                    </span>
+                  )}
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">
@@ -336,8 +374,22 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {getCategoryLabel(metric.category)}
+                  <td className="px-4 py-3 text-sm text-center">
+                    {(() => {
+                      const style = getCategoryStyle(metric.category);
+                      return (
+                        <span
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                          style={{
+                            color: style.color,
+                            borderColor: style.borderColor,
+                            backgroundColor: style.bgColor,
+                          }}
+                        >
+                          {getCategoryLabel(metric.category)}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     {metric.currentValue}
