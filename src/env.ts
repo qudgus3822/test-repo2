@@ -38,4 +38,7 @@ export const env = {
 
   /** 프로덕션 모드 여부 */
   isProd: import.meta.env.PROD,
+
+  /** 인증 스킵 여부 (true: 로그인 없이 접근 가능) */
+  skipAuth: getEnv("VITE_SKIP_AUTH", "false") === "true",
 } as const;
