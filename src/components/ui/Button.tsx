@@ -31,7 +31,7 @@ const BUTTON_VARIANTS = {
 
 const BUTTON_SIZES = {
   sm: "px-3 py-1.5 text-sm",
-  md: "px-5 py-2 text-[14px]",
+  md: "px-5 py-2 text-md",
   lg: "px-6 py-4 text-lg",
 };
 

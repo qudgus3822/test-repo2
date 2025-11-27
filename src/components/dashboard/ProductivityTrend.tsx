@@ -5,6 +5,8 @@ import { useDeveloperProductivity } from "@/api/hooks/useDeveloperProductivity";
 
 const chartColors = [...MULTI_LINE_COLORS];
 
+const metrics = ["BDPI 평균", "코드 품질", "리뷰 품질", "개발 효율", "목표치"];
+
 interface ProductivityTrendProps {
   month: string;
 }
@@ -37,14 +39,6 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
         : [],
     [developerProductivityData],
   );
-
-  const metrics = [
-    "BDPI 평균",
-    "코드 품질",
-    "리뷰 품질",
-    "개발 효율",
-    "목표치",
-  ];
 
   // yAxisDomain 계산 (데이터의 최소값, 최대값)
   const yAxisDomain = useMemo((): [number, number] => {

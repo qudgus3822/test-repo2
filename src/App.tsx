@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { QueryProvider } from "@/libs/react-query";
 import GlobalErrorBoundary from "@/components/error/GlobalErrorBoundary";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Layout from "@/components/layout/Layout";
 import LoginPage from "@/pages/login/LoginPage";
 import LogoutPage from "@/pages/login/LogoutPage";
@@ -29,25 +30,29 @@ function App() {
         <QueryProvider>
           <Toaster />
           <Routes>
-            {/* TODO:로그인 페이지 => user 권한에 따라 ProtectedRoute 처리 */}
+            {/* 공개 라우트 */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/logout" element={<LogoutPage />} />
-            <Route element={<Layout />}>
-              <Route path="/" element={<DashboardPage />} />
-              {/* 대시보드 홈 */}
-              <Route path="/dashboard" element={<DashboardPage />} />
-              {/* 지표 관리 */}
-              <Route path="/metrics" element={<MetricsPage />} />
 
-              {/* M2 이후 작업할 페이지 */}
-              {/* 프로젝트/운영 */}
-              <Route path="/projects" element={<ProjectsPage />} />
-              {/* 조직 비교 */}
-              <Route path="/organization" element={<OrganizationPage />} />
-              {/* 장애 관리 */}
-              <Route path="/incidents" element={<IncidentsPage />} />
-              {/* 설정 */}
-              <Route path="/settings" element={<SettingsPage />} />
+            {/* 보호된 라우트 - 로그인 필요 */}
+            <Route element={<ProtectedRoute />}>
+              <Route element={<Layout />}>
+                <Route path="/" element={<DashboardPage />} />
+                {/* 대시보드 홈 */}
+                <Route path="/dashboard" element={<DashboardPage />} />
+                {/* 지표 관리 */}
+                <Route path="/metrics" element={<MetricsPage />} />
+
+                {/* M2 이후 작업할 페이지 */}
+                {/* 프로젝트/운영 */}
+                <Route path="/projects" element={<ProjectsPage />} />
+                {/* 조직 비교 */}
+                <Route path="/organization" element={<OrganizationPage />} />
+                {/* 장애 관리 */}
+                <Route path="/incidents" element={<IncidentsPage />} />
+                {/* 설정 */}
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
             </Route>
           </Routes>
         </QueryProvider>
