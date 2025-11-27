@@ -254,10 +254,7 @@ export const findDepartmentById = (id: string): Department | undefined => {
 };
 
 // 헬퍼 함수: 팀 찾기
-export const findTeamById = (
-  departmentId: string,
-  teamId: string,
-) => {
+export const findTeamById = (departmentId: string, teamId: string) => {
   const department = findDepartmentById(departmentId);
   return department?.teams.find((team) => team.id === teamId);
 };

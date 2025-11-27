@@ -4,23 +4,8 @@ import { Button } from "@/components/ui/Button";
 import { ChevronRight, Users, Clock, History, Settings } from "lucide-react";
 import { mockOrganizationData } from "@/mocks/organization.mock";
 import type { Department, Team, Member } from "@/types/organization.types";
-import { PALETTE_COLORS } from "@/styles/colors";
-
-// 프로필 아바타 색상 배열
-const AVATAR_COLORS = [
-  "#F59E0B", // amber
-  "#10B981", // emerald
-  "#3B82F6", // blue
-  "#8B5CF6", // violet
-  "#EC4899", // pink
-  "#06B6D4", // cyan
-];
-
-// 이름에서 아바타 색상 결정
-const getAvatarColor = (name: string) => {
-  const index = name.charCodeAt(0) % AVATAR_COLORS.length;
-  return AVATAR_COLORS[index];
-};
+import { PALETTE_COLORS, getAvatarColor } from "@/styles/colors";
+import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
 
 // 조직 유형 배지 컴포넌트
 const TypeBadge = ({ type }: { type: string }) => {
@@ -254,6 +239,7 @@ export const OrganizationManagement = () => {
   );
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>("team-5-1");
   const [isAutoSyncEnabled] = useState(true);
+  const [isOrgTypeModalOpen, setIsOrgTypeModalOpen] = useState(false);
 
   const { departments, lastSyncDate, syncSource } = mockOrganizationData;
 
@@ -314,7 +300,11 @@ export const OrganizationManagement = () => {
             <History className="w-4 h-4 mr-1" />
             히스토리
           </Button>
-          <Button variant="setting" size="sm">
+          <Button
+            variant="setting"
+            size="sm"
+            onClick={() => setIsOrgTypeModalOpen(true)}
+          >
             <Settings className="w-4 h-4 mr-1" />
             조직유형 설정
           </Button>
@@ -364,6 +354,16 @@ export const OrganizationManagement = () => {
 
       {/* 변경 이력 */}
       <ChangeHistorySection />
+
+      {/* 조직 유형 설정 모달 */}
+      <OrganizationTypeSettingModal
+        isOpen={isOrgTypeModalOpen}
+        onClose={() => setIsOrgTypeModalOpen(false)}
+        onSave={() => {
+          // TODO: 저장 로직 구현
+          console.log("조직 유형 설정 저장");
+        }}
+      />
     </div>
   );
 };
