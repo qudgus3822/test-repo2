@@ -69,6 +69,24 @@ export const TEXT_COLORS = {
   disabled: "#9CA3AF", // 비활성화 텍스트
 } as const;
 
+// 조직비교 점수 색상 (달성률 기반)
+export const SCORE_COLORS = {
+  excellent: "#91D470", // 80% 이상 (초록)
+  good: "#FBFFBD", // 70% ~ 80% 미만 (연한 노란색)
+  danger: "#F38752", // 70% 미만 (주황)
+  none: "#F3F4F6", // 데이터 없음 (회색)
+} as const;
+
+// 조직비교 상태 뱃지 색상
+export const STATUS_BADGE_COLORS = {
+  입사: { bg: "#F3E8FF", text: "#7C3AED" }, // purple-100, purple-600
+  재직: { bg: "#DBEAFE", text: "#2563EB" }, // blue-100, blue-600
+  휴직: { bg: "#F3F4F6", text: "#4B5563" }, // gray-100, gray-600
+  직급변경: { bg: "#FEF3C7", text: "#D97706" }, // amber-100, amber-600
+  퇴사: { bg: "#FEE2E2", text: "#DC2626" }, // red-100, red-600
+  default: { bg: "#F3F4F6", text: "#4B5563" }, // gray-100, gray-600
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -78,4 +96,6 @@ export const COLORS = {
   trend: TREND_COLORS,
   status: STATUS_COLORS,
   text: TEXT_COLORS,
+  score: SCORE_COLORS,
+  statusBadge: STATUS_BADGE_COLORS,
 } as const;
