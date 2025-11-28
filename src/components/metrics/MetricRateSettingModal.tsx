@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { flushSync } from "react-dom";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
@@ -39,14 +40,11 @@ export const MetricRateSettingModal = ({
   }, [metrics, category, isOpen]);
 
   // 애니메이션을 위한 지연된 unmount
+  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
   useEffect(() => {
     if (isOpen) {
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsAnimating(true);
-        });
-      });
+      flushSync(() => setShouldRender(true));
+      setIsAnimating(true);
     } else {
       setIsAnimating(false);
       const timer = setTimeout(() => setShouldRender(false), 300);
