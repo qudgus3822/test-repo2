@@ -1,9 +1,19 @@
 import { useState, useEffect } from "react";
+import { flushSync } from "react-dom";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricStatus } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getStatusIconConfig } from "@/utils/metrics";
+import {
+  useMetricsStore,
+  DEFAULT_EXCELLENT_THRESHOLD,
+  DEFAULT_DANGER_THRESHOLD,
+} from "@/store/useMetricsStore";
+
+// 절대 최소/최대 기준 상수
+const MIN_DANGER_THRESHOLD = 1; // 위험 기준 절대 최솟값
+const MAX_EXCELLENT_THRESHOLD = 100; // 우수 기준 절대 최댓값
 
 interface AchievementRateSettingModalProps {
   isOpen: boolean;
@@ -18,23 +28,66 @@ export const AchievementRateSettingModal = ({
   metrics,
   onSave,
 }: AchievementRateSettingModalProps) => {
+  const {
+    achievementRateExcellentThreshold,
+    achievementRateDangerThreshold,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
+  } = useMetricsStore();
+
   const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
+  const [excellentThreshold, setExcellentThreshold] = useState(
+    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD,
+  );
+  const [dangerThreshold, setDangerThreshold] = useState(
+    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD,
+  );
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // 우수 기준 검증 (위험 기준값 이상, 절대 최댓값 이하)
+  const isExcellentThresholdValid =
+    excellentThreshold >= dangerThreshold &&
+    excellentThreshold <= MAX_EXCELLENT_THRESHOLD;
+
+  // 위험 기준 검증 (절대 최솟값 이상, 우수 기준값 미만)
+  const isDangerThresholdValid =
+    dangerThreshold >= MIN_DANGER_THRESHOLD &&
+    dangerThreshold < excellentThreshold;
+
+  // 전체 폼 유효성 검사
+  const isFormValid = isExcellentThresholdValid && isDangerThresholdValid;
+
+  // 우수 기준 에러 메시지
+  const getExcellentThresholdErrorMessage = () => {
+    if (excellentThreshold > MAX_EXCELLENT_THRESHOLD) {
+      return `우수 기준은 ${MAX_EXCELLENT_THRESHOLD}%이하여야 합니다.`;
+    }
+    if (excellentThreshold < dangerThreshold) {
+      return `우수 기준은 위험 기준보다 높아야 합니다.`;
+    }
+    return "";
+  };
+
+  // 위험 기준 에러 메시지
+  const getDangerThresholdErrorMessage = () => {
+    if (dangerThreshold < MIN_DANGER_THRESHOLD) {
+      return `위험 기준은 ${MIN_DANGER_THRESHOLD}%이상이어야 합니다.`;
+    }
+    if (dangerThreshold >= excellentThreshold) {
+      return `위험 기준은 우수 기준보다 낮아야 합니다.`;
+    }
+    return "";
+  };
+
   // 애니메이션을 위한 지연된 unmount
+  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
   useEffect(() => {
     if (isOpen) {
-      setShouldRender(true);
-      // DOM에 렌더링된 후 다음 프레임에서 애니메이션 시작
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsAnimating(true);
-        });
-      });
+      flushSync(() => setShouldRender(true));
+      setIsAnimating(true);
     } else {
       setIsAnimating(false);
-      // 닫히는 애니메이션 후 unmount (300ms)
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
@@ -49,17 +102,38 @@ export const AchievementRateSettingModal = ({
   // };
 
   const handleSave = () => {
+    // Store에 threshold 값들 저장
+    setAchievementRateExcellentThreshold(excellentThreshold);
+    setAchievementRateDangerThreshold(dangerThreshold);
+
     onSave(editedMetrics);
     onClose();
   };
 
   const handleCancel = () => {
-    setEditedMetrics(metrics); // 원래 값으로 복원
+    setEditedMetrics(metrics);
+    // 원래 값으로 복원
+    setExcellentThreshold(
+      achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD,
+    );
+    setDangerThreshold(
+      achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD,
+    );
     onClose();
   };
 
   const handleReset = () => {
-    setEditedMetrics(metrics); // 원래 값으로 복원
+    setEditedMetrics(metrics);
+    // 기본값으로 재설정
+    setExcellentThreshold(DEFAULT_EXCELLENT_THRESHOLD);
+    setDangerThreshold(DEFAULT_DANGER_THRESHOLD);
+  };
+
+  // 소수점 입력 차단
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "." || e.key === ",") {
+      e.preventDefault();
+    }
   };
 
   // 상태별 아이콘 설정
@@ -123,20 +197,34 @@ export const AchievementRateSettingModal = ({
               <div className="flex items-center gap-4 mb-2">
                 <input
                   type="number"
-                  defaultValue="80"
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  step="1"
+                  value={excellentThreshold}
+                  onChange={(e) =>
+                    setExcellentThreshold(Math.floor(Number(e.target.value)))
+                  }
+                  onKeyDown={handleKeyDown}
+                  className={`flex-1 px-4 py-2.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                    isExcellentThresholdValid
+                      ? "border-gray-200 focus:ring-blue-500"
+                      : "border-red-300 focus:ring-red-500"
+                  }`}
                 />
                 <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
                   % 이상
                 </span>
               </div>
+              {!isExcellentThresholdValid && (
+                <p className="text-sm text-red-500 mb-2">
+                  {getExcellentThresholdErrorMessage()}
+                </p>
+              )}
               <p className="text-sm text-gray-500">
                 달성률이 이 값 이상이면 초록색 체크 아이콘이 표시됩니다.
               </p>
             </div>
 
             {/* 경고 기준 */}
-            <div>
+            <div className="w-full">
               <div className="flex items-center gap-2 mb-3">
                 <WarningIcon
                   className="w-6 h-6"
@@ -145,15 +233,32 @@ export const AchievementRateSettingModal = ({
 
                 <span className="font-medium text-gray-900">경고 기준</span>
               </div>
-              <div className="flex items-center gap-4 mb-2">
-                <input
-                  type="number"
-                  defaultValue="70"
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
-                  % 이상
+              <div className="flex items-center gap-4 mb-2 w-full justify-between">
+                <div className="flex items-center gap-4 w-[47%] justify-start">
+                  <input
+                    type="number"
+                    value={dangerThreshold}
+                    disabled
+                    className="w-[80%] px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                  />
+                  <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                    % 이상
+                  </span>
+                </div>
+                <span className="text-sm text-gray-600 whitespace-nowrap w-[6%] text-center">
+                  ~
                 </span>
+                <div className="flex items-center gap-4 w-[47%] justify-end">
+                  <input
+                    type="number"
+                    value={excellentThreshold}
+                    disabled
+                    className="w-[80%] px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                  />
+                  <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                    % 미만
+                  </span>
+                </div>
               </div>
               <p className="text-sm text-gray-500">
                 달성률이 이 범위에 있으면 주황색 느낌표 아이콘이 표시됩니다.
@@ -172,13 +277,27 @@ export const AchievementRateSettingModal = ({
               <div className="flex items-center gap-4 mb-2 w-full">
                 <input
                   type="number"
-                  defaultValue="70"
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  step="1"
+                  value={dangerThreshold}
+                  onChange={(e) =>
+                    setDangerThreshold(Math.floor(Number(e.target.value)))
+                  }
+                  onKeyDown={handleKeyDown}
+                  className={`flex-1 px-4 py-2.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                    isDangerThresholdValid
+                      ? "border-gray-200 focus:ring-blue-500"
+                      : "border-red-300 focus:ring-red-500"
+                  }`}
                 />
                 <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
                   % 미만
                 </span>
               </div>
+              {!isDangerThresholdValid && (
+                <p className="text-sm text-red-500 mb-2">
+                  {getDangerThresholdErrorMessage()}
+                </p>
+              )}
               <p className="text-sm text-gray-500">
                 달성률이 경고 기준 미만이면 빨간색 경고 아이콘이 표시됩니다.
               </p>
@@ -195,21 +314,27 @@ export const AchievementRateSettingModal = ({
                     className="w-6 h-6"
                     style={{ color: excellentConfig.color }}
                   />
-                  <span className="text-sm text-gray-700">80% 이상</span>
+                  <span className="text-sm text-gray-700">
+                    {excellentThreshold}% 이상
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <WarningIcon
                     className="w-6 h-6"
                     style={{ color: warningConfig.color }}
                   />
-                  <span className="text-sm text-gray-700">70% ~ 80% 미만</span>
+                  <span className="text-sm text-gray-700">
+                    {dangerThreshold}% ~ {excellentThreshold}% 미만
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <DangerIcon
                     className="w-6 h-6"
                     style={{ color: dangerConfig.color }}
                   />
-                  <span className="text-sm text-gray-700">70% 미만</span>
+                  <span className="text-sm text-gray-700">
+                    {dangerThreshold}% 미만
+                  </span>
                 </div>
               </div>
             </div>
@@ -227,7 +352,12 @@ export const AchievementRateSettingModal = ({
               <Button variant="cancel" size="sm" onClick={handleCancel}>
                 취소
               </Button>
-              <Button variant="primary" size="sm" onClick={handleSave}>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSave}
+                disabled={!isFormValid}
+              >
                 저장
               </Button>
             </div>

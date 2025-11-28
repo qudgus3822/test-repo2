@@ -1,4 +1,6 @@
 import { Tooltip } from "@/components/ui/Tooltip";
+import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
+import { Button } from "@/components/ui/Button";
 import {
   Search,
   ArrowDownUp,
@@ -6,16 +8,51 @@ import {
   Pencil,
   ArrowUp,
   ArrowDown,
+  Settings,
 } from "lucide-react";
 import { useState } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
-import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
+import {
+  useMetricsStore,
+  type TabType,
+  DEFAULT_EXCELLENT_THRESHOLD,
+  DEFAULT_DANGER_THRESHOLD,
+} from "@/store/useMetricsStore";
 import {
   getCategoryLabel,
   getStatusIcon,
   getStatusColor,
+  calculateMetricStatus,
 } from "@/utils/metrics";
+import { PALETTE_COLORS } from "@/styles/colors";
+
+// 범주별 스타일 정의
+const getCategoryStyle = (category: MetricCategory) => {
+  switch (category) {
+    case MetricCategory.CODE_QUALITY:
+      return {
+        color: PALETTE_COLORS.blue,
+        borderColor: PALETTE_COLORS.blue,
+      };
+    case MetricCategory.REVIEW_QUALITY:
+      return {
+        color: PALETTE_COLORS.orange,
+        borderColor: PALETTE_COLORS.orange,
+      };
+    case MetricCategory.DEVELOPMENT_EFFICIENCY:
+      return {
+        color: PALETTE_COLORS.purple,
+        borderColor: PALETTE_COLORS.purple,
+      };
+    default:
+      return {
+        color: "#6B7280",
+        borderColor: "#D1D5DB",
+        bgColor: "#F9FAFB",
+      };
+  }
+};
 
 interface MetricsTableProps {
   metrics: MetricItem[];
@@ -32,10 +69,16 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   const {
     activeTab,
     setActiveTab,
+    achievementRateFilter,
+    setAchievementRateFilter,
+    achievementRateExcellentThreshold,
+    achievementRateDangerThreshold,
     setIsTargetValueSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
     setIsMetricsDetailModalOpen,
+    setIsMetricRateSettingModalOpen,
     setSelectedMetric,
+    currentDate,
   } = useMetricsStore((state) => state);
 
   // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
@@ -43,37 +86,78 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     null,
   );
 
-  // 카테고리별 개수 계산
-  const codeQualityCount = metrics.filter(
+  // 현재 날짜와 선택된 날짜의 년/월 비교 (같은 월인지 확인)
+  const now = new Date();
+  const isCurrentMonth =
+    currentDate.getFullYear() === now.getFullYear() &&
+    currentDate.getMonth() === now.getMonth();
+
+  // 달성률 기준값
+  const excellentThreshold =
+    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD;
+  const dangerThreshold =
+    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD;
+
+  // 먼저 달성률 필터 적용
+  const achievementRateFilteredAllMetrics = metrics.filter((m) => {
+    if (achievementRateFilter === "all") return true;
+    if (achievementRateFilter === "excellent") {
+      return m.achievementRate >= excellentThreshold;
+    }
+    if (achievementRateFilter === "warning") {
+      return (
+        m.achievementRate >= dangerThreshold &&
+        m.achievementRate < excellentThreshold
+      );
+    }
+    if (achievementRateFilter === "danger") {
+      return m.achievementRate < dangerThreshold;
+    }
+    return true;
+  });
+
+  // 카테고리별 개수 계산 (달성률 필터 적용 후)
+  const codeQualityCount = achievementRateFilteredAllMetrics.filter(
     (m) => m.category === MetricCategory.CODE_QUALITY,
   ).length;
-  const reviewQualityCount = metrics.filter(
+  const reviewQualityCount = achievementRateFilteredAllMetrics.filter(
     (m) => m.category === MetricCategory.REVIEW_QUALITY,
   ).length;
-  const developmentEfficiencyCount = metrics.filter(
+  const developmentEfficiencyCount = achievementRateFilteredAllMetrics.filter(
     (m) => m.category === MetricCategory.DEVELOPMENT_EFFICIENCY,
   ).length;
 
-  // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px)
+  // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
   const getTableHeight = () => {
+    let count = 0;
     switch (activeTab) {
       case "all":
-        return 50 + metrics.length * 53;
+        count = achievementRateFilteredAllMetrics.length;
+        break;
       case "codeQuality":
-        return 50 + codeQualityCount * 53;
+        count = codeQualityCount;
+        break;
       case "reviewQuality":
-        return 50 + reviewQualityCount * 53;
+        count = reviewQualityCount;
+        break;
       case "developmentEfficiency":
-        return 50 + developmentEfficiencyCount * 53;
+        count = developmentEfficiencyCount;
+        break;
       default:
-        return 50 + metrics.length * 53;
+        count = achievementRateFilteredAllMetrics.length;
     }
+    // 지표가 없을 때도 메시지가 보이도록 최소 높이 보장
+    return Math.max(200, 50 + count * 53);
   };
 
   const tableHeight = getTableHeight();
 
   const tabs: Tab[] = [
-    { id: "all", label: "전체", count: metrics.length },
+    {
+      id: "all",
+      label: "전체",
+      count: achievementRateFilteredAllMetrics.length,
+    },
     {
       id: "codeQuality",
       label: "코드품질",
@@ -94,16 +178,26 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     },
   ];
 
-  // 활성 탭에 따라 지표 필터링
+  // 활성 탭에 따라 지표 필터링 (이미 달성률 필터가 적용된 metrics 사용)
   const filteredMetrics =
     activeTab === "all"
-      ? metrics
-      : metrics.filter((m) => {
+      ? achievementRateFilteredAllMetrics
+      : achievementRateFilteredAllMetrics.filter((m) => {
           const activeTabData = tabs.find((t) => t.id === activeTab);
           return (
             activeTabData?.category && m.category === activeTabData.category
           );
         });
+
+  // 프론트에서 달성률 기준값에 따라 status 계산
+  const metricsWithCalculatedStatus = filteredMetrics.map((metric) => ({
+    ...metric,
+    status: calculateMetricStatus(
+      metric.achievementRate,
+      excellentThreshold,
+      dangerThreshold,
+    ),
+  }));
 
   // 비율 정렬
   const handleRatioSort = () => {
@@ -117,7 +211,7 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
   };
 
   // 정렬된 지표 목록
-  const sortedMetrics = [...filteredMetrics].sort((a, b) => {
+  const sortedMetrics = [...metricsWithCalculatedStatus].sort((a, b) => {
     if (ratioSortOrder === null) return 0;
     if (ratioSortOrder === "asc") {
       return a.ratio - b.ratio;
@@ -133,21 +227,41 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
 
   return (
     <div className="space-y-4">
-      {/* Tabs */}
-      <div className="flex space-x-6 border-b border-gray-200">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
-              activeTab === tab.id
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}({tab.count})
-          </button>
-        ))}
+      {/* Tabs와 달성률 필터 */}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+        <div className="flex space-x-6">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`pb-4 px-1 text-sm font-medium border-b-2 -mb-[20px] transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab.label}({tab.count})
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
+          {/* 비율 설정 버튼 (전체 탭 제외) */}
+          {activeTab !== "all" && (
+            <Button
+              variant="setting"
+              size="sm"
+              onClick={() => setIsMetricRateSettingModalOpen(true)}
+            >
+              <Settings className="w-4 h-4 mr-1.5" />
+              비율 설정
+            </Button>
+          )}
+          {/* 달성률 필터 */}
+          <AchievementRateFilter
+            value={achievementRateFilter}
+            onChange={setAchievementRateFilter}
+          />
+        </div>
       </div>
 
       {/* Table */}
@@ -156,45 +270,48 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
           <thead>
             <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
               <th className="px-4 py-3 w-[25%]">지표명</th>
-              <th className="px-4 py-3 w-[12%]">범주</th>
+              <th className="px-4 py-3 w-[12%] text-center">범주</th>
               <th className="px-4 py-3 w-[12%]">현재값</th>
 
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-1.5">
                   목표값
-                  <span className="flex items-center cursor-pointer">
-                    <Tooltip
-                      content="지표의 목표값을 수정할 수 있습니다."
-                      // content="목표값 설정 팝업을 엽니다."
-                      color="#6B7280"
-                    >
-                      <Pencil
-                        className="w-4 h-4"
-                        id="목표값 설정 아이콘"
-                        onClick={() => setIsTargetValueSettingModalOpen(true)}
-                      />
-                    </Tooltip>
-                  </span>
+                  {isCurrentMonth && (
+                    <span className="flex items-center cursor-pointer">
+                      <Tooltip
+                        content="지표의 목표값을 수정할 수 있습니다."
+                        color="#6B7280"
+                      >
+                        <Pencil
+                          className="w-4 h-4"
+                          id="목표값 설정 아이콘"
+                          onClick={() => setIsTargetValueSettingModalOpen(true)}
+                        />
+                      </Tooltip>
+                    </span>
+                  )}
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">
                 <div className="flex items-center gap-1.5">
                   달성률
-                  <span className="flex items-center cursor-pointer">
-                    <Tooltip
-                      content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                      // content="달성률 설정 팝업을 엽니다."
-                      color="#6B7280"
-                    >
-                      <Pencil
-                        className="w-4 h-4"
-                        id="달성률 설정 아이콘"
-                        onClick={() =>
-                          setIsAchievementRateSettingModalOpen(true)
-                        }
-                      />
-                    </Tooltip>
-                  </span>
+                  {isCurrentMonth && (
+                    <span className="flex items-center cursor-pointer">
+                      <Tooltip
+                        content="지표의 달성률을 평가하는 기준값을 설정합니다."
+                        // content="달성률 설정 팝업을 엽니다."
+                        color="#6B7280"
+                      >
+                        <Pencil
+                          className="w-4 h-4"
+                          id="달성률 설정 아이콘"
+                          onClick={() =>
+                            setIsAchievementRateSettingModalOpen(true)
+                          }
+                        />
+                      </Tooltip>
+                    </span>
+                  )}
                 </div>
               </th>
               <th className="px-4 py-3 w-[12%]">
@@ -257,8 +374,22 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {getCategoryLabel(metric.category)}
+                  <td className="px-4 py-3 text-sm text-center">
+                    {(() => {
+                      const style = getCategoryStyle(metric.category);
+                      return (
+                        <span
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                          style={{
+                            color: style.color,
+                            borderColor: style.borderColor,
+                            backgroundColor: style.bgColor,
+                          }}
+                        >
+                          {getCategoryLabel(metric.category)}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-900">
                     {metric.currentValue}

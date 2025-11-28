@@ -13,7 +13,9 @@ import { useMetricsStore } from "@/store/useMetricsStore";
 import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
 import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
+import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
 import type { MetricItem } from "@/types/metrics.types";
+import { MetricCategory } from "@/types/metrics.types";
 
 const MetricsPage = () => {
   const {
@@ -28,14 +30,32 @@ const MetricsPage = () => {
     isMetricsDetailModalOpen,
     setIsMetricsDetailModalOpen,
     selectedMetric,
+    isMetricRateSettingModalOpen,
+    setIsMetricRateSettingModalOpen,
+    activeTab,
   } = useMetricsStore((state) => state);
+
+  // activeTab을 MetricCategory로 변환
+  const getSelectedCategory = (): MetricCategory => {
+    switch (activeTab) {
+      case "codeQuality":
+        return MetricCategory.CODE_QUALITY;
+      case "reviewQuality":
+        return MetricCategory.REVIEW_QUALITY;
+      case "developmentEfficiency":
+        return MetricCategory.DEVELOPMENT_EFFICIENCY;
+      default:
+        return MetricCategory.CODE_QUALITY;
+    }
+  };
 
   // 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
     const isAnyModalOpen =
       isTargetValueSettingModalOpen ||
       isAchievementRateSettingModalOpen ||
-      isMetricsDetailModalOpen;
+      isMetricsDetailModalOpen ||
+      isMetricRateSettingModalOpen;
 
     if (!isAnyModalOpen) return;
 
@@ -63,19 +83,22 @@ const MetricsPage = () => {
     isTargetValueSettingModalOpen,
     isAchievementRateSettingModalOpen,
     isMetricsDetailModalOpen,
+    isMetricRateSettingModalOpen,
   ]);
 
   return (
-    <div className="">
+    <div className="flex flex-col gap-6">
       {/* 헤더 - 날짜 필터 */}
       <div>
         <Card className="w-full">
-          <DateFilter
-            period={period}
-            onPeriodChange={setPeriod}
-            currentDate={currentDate}
-            onDateChange={setCurrentDate}
-          />
+          <div className="w-full flex">
+            <DateFilter
+              period={period}
+              onPeriodChange={setPeriod}
+              currentDate={currentDate}
+              onDateChange={setCurrentDate}
+            />
+          </div>
         </Card>
       </div>
 
@@ -131,6 +154,18 @@ const MetricsPage = () => {
         isOpen={isMetricsDetailModalOpen}
         onClose={() => setIsMetricsDetailModalOpen(false)}
         metric={selectedMetric}
+      />
+
+      {/* 지표 리스트 - 비율 설정 모달 */}
+      <MetricRateSettingModal
+        isOpen={isMetricRateSettingModalOpen}
+        onClose={() => setIsMetricRateSettingModalOpen(false)}
+        metrics={mockCodeQualityMetrics.metrics}
+        category={getSelectedCategory()}
+        onSave={(updatedMetrics: MetricItem[]) => {
+          // TODO: API 연동 시 실제 저장 로직 구현
+          console.log("Updated metric rates:", updatedMetrics);
+        }}
       />
     </div>
   );

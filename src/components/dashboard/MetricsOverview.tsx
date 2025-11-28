@@ -66,7 +66,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               value: companyQualityData.developmentEfficiency.score,
               label: "개발 효율",
               sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
-              color: CHART_COLORS.orange,
+              color: CHART_COLORS.lightYellow,
             },
           ]
         : null,
