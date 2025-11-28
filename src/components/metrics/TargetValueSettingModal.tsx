@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { flushSync } from "react-dom";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
@@ -83,19 +84,16 @@ export const TargetValueSettingModal = ({
   const [errors, setErrors] = useState<Record<number, ValidationError>>({});
 
   // 애니메이션을 위한 지연된 unmount
+  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
   useEffect(() => {
     if (isOpen) {
-      setShouldRender(true);
-      setErrors({}); // 모달 열릴 때 에러 초기화
-      // DOM에 렌더링된 후 다음 프레임에서 애니메이션 시작
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsAnimating(true);
-        });
+      flushSync(() => {
+        setShouldRender(true);
+        setErrors({}); // 모달 열릴 때 에러 초기화
       });
+      setIsAnimating(true);
     } else {
       setIsAnimating(false);
-      // 닫히는 애니메이션 후 unmount (300ms)
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
