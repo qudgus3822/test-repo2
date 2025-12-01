@@ -23,30 +23,30 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   INCIDENT_COUNT: "장애 발생 건수",
   // 리뷰품질 (12개)
   REVIEW_SPEED: "리뷰 속도",
-  REVIEW_THOROUGHNESS: "리뷰 철저도",
-  REVIEW_COVERAGE: "리뷰 커버리지",
-  REVIEW_RESPONSE_RATE: "리뷰 응답률",
+  REVIEW_RESPONSE_RATE: "리뷰요청응답률",
   REVIEW_PARTICIPATION_RATE: "리뷰 참여율",
-  REVIEW_COMMENT_QUALITY: "리뷰 코멘트 품질",
-  REVIEW_REWORK_RATE: "리뷰 재작업률",
-  REVIEW_APPROVAL_TIME: "리뷰 승인 시간",
-  REVIEW_REQUEST_COUNT: "리뷰 요청 건수",
-  REVIEW_DEFECT_DETECTION: "리뷰 결함 검출률",
-  REVIEW_FOLLOW_UP: "리뷰 후속조치율",
-  REVIEW_KNOWLEDGE_SHARING: "리뷰 지식 공유도",
+  REVIEW_ACCEPTANCE_RATE: "리뷰제안수용률",
+  REVIEW_FEEDBACK_CONCRETENESS: "리뷰피드백구체성",
+  REVIEW_REVIEWER_DIVERSE: "리뷰어다양성",
+  REVIEW_REQUEST_COUNT: "리뷰요청건수",
+  REVIEW_PARTICIPATION_COUNT: "리뷰참여건수",
+  REVIEW_PASS_RATE: "초회통과율",
+  REVIEW_PARTICIPATION_NUMBER: "코드리뷰참여수치",
+  REVIEW_FEEDBACK_TIME: "리뷰피드백반영시간",
+  REVIEW_COMPLETION_TIME: "리뷰완료시간",
   // 개발효율 (9개)
-  COMMIT_FREQUENCY: "커밋 빈도",
-  DEPLOYMENT_FREQUENCY: "배포 빈도",
-  LEAD_TIME: "리드 타임",
-  CYCLE_TIME: "사이클 타임",
-  DEPLOYMENT_SUCCESS_RATE: "배포 성공률",
-  MTTR: "평균 복구 시간",
-  CHANGE_FAILURE_RATE: "변경 실패율",
-  THROUGHPUT: "처리량",
-  WORK_IN_PROGRESS: "진행중 작업량",
+  DEPLOYMENT_FREQUENCY: "배포빈도 (완료건)",
+  COMMIT_FREQUENCY: "커밋빈도",
+  LEAD_TIME: "평균장애해결시간",
+  FAILURE_DETECTION_TIME: "장애탐지시간",
+  FAILURE_DIAGNOSIS_TIME: "장애진단시간",
+  FAILURE_RECOVERY_TIME: "장애복구시간",
+  DEPLOYMENT_SUCCESS_RATE: "배포성공률",
+  MR_SIZE: "MR크기",
+  CODE_LINE_COUNT_PER_COMMIT: "커밋당 코드라인수",
 };
 
-// 지표 코드 목록 (metrics.mock.ts 기준)
+// 지표 코드 목록 (METRIC_CODE_NAMES 기준)
 const METRIC_CODES = {
   // 코드품질 (9개)
   codeQuality: [
@@ -63,38 +63,38 @@ const METRIC_CODES = {
   // 리뷰품질 (12개)
   reviewQuality: [
     "REVIEW_SPEED",
-    "REVIEW_THOROUGHNESS",
-    "REVIEW_COVERAGE",
     "REVIEW_RESPONSE_RATE",
     "REVIEW_PARTICIPATION_RATE",
-    "REVIEW_COMMENT_QUALITY",
-    "REVIEW_REWORK_RATE",
-    "REVIEW_APPROVAL_TIME",
+    "REVIEW_ACCEPTANCE_RATE",
+    "REVIEW_FEEDBACK_CONCRETENESS",
+    "REVIEW_REVIEWER_DIVERSE",
     "REVIEW_REQUEST_COUNT",
-    "REVIEW_DEFECT_DETECTION",
-    "REVIEW_FOLLOW_UP",
-    "REVIEW_KNOWLEDGE_SHARING",
+    "REVIEW_PARTICIPATION_COUNT",
+    "REVIEW_PASS_RATE",
+    "REVIEW_PARTICIPATION_NUMBER",
+    "REVIEW_FEEDBACK_TIME",
+    "REVIEW_COMPLETION_TIME",
   ],
   // 개발효율 (9개)
   developmentEfficiency: [
-    "COMMIT_FREQUENCY",
     "DEPLOYMENT_FREQUENCY",
+    "COMMIT_FREQUENCY",
     "LEAD_TIME",
-    "CYCLE_TIME",
+    "FAILURE_DETECTION_TIME",
+    "FAILURE_DIAGNOSIS_TIME",
+    "FAILURE_RECOVERY_TIME",
     "DEPLOYMENT_SUCCESS_RATE",
-    "MTTR",
-    "CHANGE_FAILURE_RATE",
-    "THROUGHPUT",
-    "WORK_IN_PROGRESS",
+    "MR_SIZE",
+    "CODE_LINE_COUNT_PER_COMMIT",
   ],
 };
 
-// 지표별 목표값 및 범위 설정
+// 지표별 목표값 및 범위 설정 (METRIC_CODE_NAMES 기준)
 const METRIC_CONFIG: Record<
   string,
   { targetValue: number; min: number; max: number; isLowerBetter?: boolean }
 > = {
-  // 코드품질
+  // 코드품질 (9개)
   TECH_DEBT: { targetValue: 40, min: 30, max: 60, isLowerBetter: true },
   CODE_COMPLEXITY: { targetValue: 5, min: 3, max: 8, isLowerBetter: true },
   CODE_DUPLICATION: { targetValue: 3, min: 1, max: 6, isLowerBetter: true },
@@ -109,44 +109,59 @@ const METRIC_CONFIG: Record<
   CODE_COUPLING: { targetValue: 20, min: 10, max: 30, isLowerBetter: true },
   BUG_COUNT: { targetValue: 5, min: 0, max: 10, isLowerBetter: true },
   INCIDENT_COUNT: { targetValue: 2, min: 0, max: 5, isLowerBetter: true },
-  // 리뷰품질
+  // 리뷰품질 (12개)
   REVIEW_SPEED: { targetValue: 24, min: 12, max: 36, isLowerBetter: true },
-  REVIEW_THOROUGHNESS: { targetValue: 80, min: 60, max: 95 },
-  REVIEW_COVERAGE: { targetValue: 90, min: 70, max: 100 },
   REVIEW_RESPONSE_RATE: { targetValue: 85, min: 65, max: 98 },
   REVIEW_PARTICIPATION_RATE: { targetValue: 75, min: 55, max: 95 },
-  REVIEW_COMMENT_QUALITY: { targetValue: 80, min: 60, max: 95 },
-  REVIEW_REWORK_RATE: {
-    targetValue: 20,
-    min: 10,
-    max: 35,
-    isLowerBetter: true,
-  },
-  REVIEW_APPROVAL_TIME: {
+  REVIEW_ACCEPTANCE_RATE: { targetValue: 80, min: 60, max: 95 },
+  REVIEW_FEEDBACK_CONCRETENESS: { targetValue: 80, min: 60, max: 95 },
+  REVIEW_REVIEWER_DIVERSE: { targetValue: 70, min: 50, max: 90 },
+  REVIEW_REQUEST_COUNT: { targetValue: 40, min: 20, max: 60 },
+  REVIEW_PARTICIPATION_COUNT: { targetValue: 30, min: 15, max: 50 },
+  REVIEW_PASS_RATE: { targetValue: 80, min: 60, max: 95 },
+  REVIEW_PARTICIPATION_NUMBER: { targetValue: 50, min: 30, max: 80 },
+  REVIEW_FEEDBACK_TIME: {
     targetValue: 16,
     min: 8,
     max: 24,
     isLowerBetter: true,
   },
-  REVIEW_REQUEST_COUNT: { targetValue: 40, min: 20, max: 60 },
-  REVIEW_DEFECT_DETECTION: { targetValue: 70, min: 50, max: 90 },
-  REVIEW_FOLLOW_UP: { targetValue: 90, min: 70, max: 100 },
-  REVIEW_KNOWLEDGE_SHARING: { targetValue: 70, min: 50, max: 85 },
-  // 개발효율
-  COMMIT_FREQUENCY: { targetValue: 20, min: 10, max: 35 },
-  DEPLOYMENT_FREQUENCY: { targetValue: 5, min: 2, max: 12 },
-  LEAD_TIME: { targetValue: 48, min: 24, max: 72, isLowerBetter: true },
-  CYCLE_TIME: { targetValue: 24, min: 12, max: 36, isLowerBetter: true },
-  DEPLOYMENT_SUCCESS_RATE: { targetValue: 90, min: 75, max: 100 },
-  MTTR: { targetValue: 4, min: 1, max: 8, isLowerBetter: true },
-  CHANGE_FAILURE_RATE: {
-    targetValue: 10,
-    min: 2,
-    max: 20,
+  REVIEW_COMPLETION_TIME: {
+    targetValue: 24,
+    min: 12,
+    max: 48,
     isLowerBetter: true,
   },
-  THROUGHPUT: { targetValue: 40, min: 25, max: 55 },
-  WORK_IN_PROGRESS: { targetValue: 10, min: 5, max: 15, isLowerBetter: true },
+  // 개발효율 (9개)
+  DEPLOYMENT_FREQUENCY: { targetValue: 5, min: 2, max: 12 },
+  COMMIT_FREQUENCY: { targetValue: 20, min: 10, max: 35 },
+  LEAD_TIME: { targetValue: 48, min: 24, max: 72, isLowerBetter: true },
+  FAILURE_DETECTION_TIME: {
+    targetValue: 10,
+    min: 5,
+    max: 30,
+    isLowerBetter: true,
+  },
+  FAILURE_DIAGNOSIS_TIME: {
+    targetValue: 15,
+    min: 5,
+    max: 40,
+    isLowerBetter: true,
+  },
+  FAILURE_RECOVERY_TIME: {
+    targetValue: 30,
+    min: 10,
+    max: 60,
+    isLowerBetter: true,
+  },
+  DEPLOYMENT_SUCCESS_RATE: { targetValue: 90, min: 75, max: 100 },
+  MR_SIZE: { targetValue: 200, min: 50, max: 500, isLowerBetter: true },
+  CODE_LINE_COUNT_PER_COMMIT: {
+    targetValue: 100,
+    min: 20,
+    max: 300,
+    isLowerBetter: true,
+  },
 };
 
 // 랜덤 값 생성 (소수점 1자리)

@@ -26,6 +26,7 @@ import {
   formatChangeDate,
 } from "@/utils/organization";
 import { METRIC_CODE_NAMES } from "@/mocks/organization.mock";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 // 탭 타입 → 지표 카테고리 매핑
 const TAB_TO_CATEGORY: Record<
@@ -37,7 +38,7 @@ const TAB_TO_CATEGORY: Record<
   developmentEfficiency: "development_efficiency",
 };
 
-// 카테고리별 지표 코드 목록 (순서 유지)
+// 카테고리별 지표 코드 목록 (METRIC_CODE_NAMES 기준, 순서 유지)
 const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
   code_quality: [
     "TECH_DEBT",
@@ -52,28 +53,28 @@ const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
   ],
   review_quality: [
     "REVIEW_SPEED",
-    "REVIEW_THOROUGHNESS",
-    "REVIEW_COVERAGE",
     "REVIEW_RESPONSE_RATE",
     "REVIEW_PARTICIPATION_RATE",
-    "REVIEW_COMMENT_QUALITY",
-    "REVIEW_REWORK_RATE",
-    "REVIEW_APPROVAL_TIME",
+    "REVIEW_ACCEPTANCE_RATE",
+    "REVIEW_FEEDBACK_CONCRETENESS",
+    "REVIEW_REVIEWER_DIVERSE",
     "REVIEW_REQUEST_COUNT",
-    "REVIEW_DEFECT_DETECTION",
-    "REVIEW_FOLLOW_UP",
-    "REVIEW_KNOWLEDGE_SHARING",
+    "REVIEW_PARTICIPATION_COUNT",
+    "REVIEW_PASS_RATE",
+    "REVIEW_PARTICIPATION_NUMBER",
+    "REVIEW_FEEDBACK_TIME",
+    "REVIEW_COMPLETION_TIME",
   ],
   development_efficiency: [
-    "COMMIT_FREQUENCY",
     "DEPLOYMENT_FREQUENCY",
+    "COMMIT_FREQUENCY",
     "LEAD_TIME",
-    "CYCLE_TIME",
+    "FAILURE_DETECTION_TIME",
+    "FAILURE_DIAGNOSIS_TIME",
+    "FAILURE_RECOVERY_TIME",
     "DEPLOYMENT_SUCCESS_RATE",
-    "MTTR",
-    "CHANGE_FAILURE_RATE",
-    "THROUGHPUT",
-    "WORK_IN_PROGRESS",
+    "MR_SIZE",
+    "CODE_LINE_COUNT_PER_COMMIT",
   ],
 };
 
@@ -166,12 +167,43 @@ const ScoreCell = ({
   );
 };
 
-// 상태 뱃지 컴포넌트
+// 변경이력 툴팁 내용 생성 함수
+// 형식: [상태표기] 날짜 상세내용
+// 이동전/이동후는 detail 앞에 줄바꿈 추가
+const getChangeInfoTooltipContent = (change?: ChangeInfo): string => {
+  if (!hasChangeInfo(change)) return "";
+
+  const { changeType, changeDate, changeEndDate, changeDetail } = change!;
+
+  // 상태 라벨
+  const statusLabel = getChangeTypeLabel(changeType);
+
+  // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
+  const formattedDate = changeEndDate
+    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
+    : formatChangeDate(changeDate);
+
+  // 이동전/이동후는 detail 앞에 줄바꿈 추가
+  const isTransfer =
+    changeType === "TRANSFERRED_IN" || changeType === "TRANSFERRED_OUT";
+  const separator = isTransfer && changeDetail ? "\n" : " ";
+
+  // 날짜와 상세내용 조합
+  const dateAndDetail = changeDetail
+    ? `${formattedDate}${separator}${changeDetail}`
+    : formattedDate;
+
+  // [상태표기] 날짜 상세내용
+  return statusLabel ? `[${statusLabel}] ${dateAndDetail}` : dateAndDetail;
+};
+
+// 상태 뱃지 컴포넌트 (Tooltip 포함)
 const StatusBadge = ({ change }: { change?: ChangeInfo }) => {
   if (!hasChangeInfo(change)) return null;
 
   const { changeType, category } = change!;
   const color = getChangeTypeBadgeColor(changeType);
+  const tooltipContent = getChangeInfoTooltipContent(change);
 
   // category에 따라 variant 결정: GROUP은 outlined, HR/POLICY는 filled
   const variant = category === "GROUP" ? "outlined" : "filled";
@@ -181,36 +213,25 @@ const StatusBadge = ({ change }: { change?: ChangeInfo }) => {
       ? { backgroundColor: color, color: "#E7E7E7" }
       : { border: `1px solid ${color}`, color };
 
-  return (
+  const badge = (
     <span
-      className="ml-2 px-2 py-0.5 text-xs font-medium rounded-xl"
+      className="ml-2 px-2 py-0.5 text-xs font-medium rounded-xl cursor-default"
       style={style}
     >
       {getChangeTypeLabel(changeType)}
     </span>
   );
-};
 
-// 변경이력 컴포넌트 (날짜 + 상세)
-const ChangeInfoDisplay = ({ change }: { change?: ChangeInfo }) => {
-  if (!hasChangeInfo(change)) return null;
+  // 툴팁 내용이 있으면 Tooltip으로 감싸기
+  if (tooltipContent) {
+    return (
+      <Tooltip content={tooltipContent} color="#6B7280" maxWidth={250}>
+        {badge}
+      </Tooltip>
+    );
+  }
 
-  const { changeDate, changeEndDate, changeDetail } = change!;
-
-  // 날짜나 상세 정보가 없으면 렌더링하지 않음
-  if (!changeDate && !changeDetail) return null;
-
-  // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
-  const formattedDate = changeEndDate
-    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
-    : formatChangeDate(changeDate);
-
-  return (
-    <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
-      {formattedDate}
-      {changeDetail && ` ${changeDetail}`}
-    </span>
-  );
+  return badge;
 };
 
 // 멤버 행 컴포넌트
@@ -274,7 +295,6 @@ const MemberRow = ({
               {getMemberRoleOrPositionLabel(member.role, member.position)}
             </span>
             <StatusBadge change={member.change} />
-            <ChangeInfoDisplay change={member.change} />
           </div>
         </div>
         <div
@@ -391,7 +411,6 @@ const OrganizationRow = ({
               ({org.memberCount})
             </span>
             <StatusBadge change={org.change} />
-            <ChangeInfoDisplay change={org.change} />
           </div>
         </td>
         {renderMetricsCells()}
