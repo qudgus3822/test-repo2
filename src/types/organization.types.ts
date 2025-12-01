@@ -15,7 +15,8 @@ export type ApiMemberStatus =
   | "RESIGNED" // 퇴사
   | "ON_LEAVE" // 휴직
   | "RETURNED" // 복직
-  | "CHANGED_ROLE"; // 직급변경
+  | "CHANGED_ROLE" // 직급변경
+  | "CHANGED_POSITION"; // 직책변경
 
 export const ApiMemberStatusLabel = {
   ACTIVE: "재직",
@@ -26,6 +27,7 @@ export const ApiMemberStatusLabel = {
   ON_LEAVE: "휴직",
   RETURNED: "복직",
   CHANGED_ROLE: "직급변경",
+  CHANGED_POSITION: "직책변경",
 };
 // 직급 타입 (API: role)
 export type ApiMemberRole =
@@ -89,6 +91,7 @@ export type OrganizationMetricCategory =
 export interface OrganizationMetricValue {
   metricCode: string; // 지표 코드 (예: "TECH_DEBT")
   category: OrganizationMetricCategory; // 지표 카테고리
+  isUse: boolean; // 지표 사용 여부 (false면 데이터 없음)
   value: number | null; // 현재값
   targetValue?: number | null; // 목표값
   achievementRate?: number | null; // 달성률 (%)

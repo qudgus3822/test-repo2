@@ -77,20 +77,25 @@ export const SCORE_COLORS = {
   none: "#F3F4F6", // 데이터 없음 (회색)
 } as const;
 
-// 조직비교 상태 뱃지 색상 (레거시 - 한글 키)
+// 조직비교 상태 뱃지 색상 (ApiMemberStatus 기준)
 export const STATUS_BADGE_COLORS = {
-  입사: { bg: "#F3E8FF", text: "#7C3AED" }, // purple-100, purple-600
-  재직: { bg: "#DBEAFE", text: "#2563EB" }, // blue-100, blue-600
-  휴직: { bg: "#F3F4F6", text: "#4B5563" }, // gray-100, gray-600
-  직급변경: { bg: "#FEF3C7", text: "#D97706" }, // amber-100, amber-600
-  퇴사: { bg: "#FEE2E2", text: "#DC2626" }, // red-100, red-600
-  default: { bg: "#F3F4F6", text: "#4B5563" }, // gray-100, gray-600
+  ACTIVE: { bg: "#DBEAFE", text: "#2563EB" }, // 재직 (blue-100, blue-600)
+  JOINED: { bg: "#F3E8FF", text: "#7C3AED" }, // 입사 (purple-100, purple-600)
+  RESIGNED: { bg: "#FEE2E2", text: "#DC2626" }, // 퇴사 (red-100, red-600)
+  ON_LEAVE: { bg: "#F3F4F6", text: "#4B5563" }, // 휴직 (gray-100, gray-600)
+  RETURNED: { bg: "#EDE9FE", text: "#7C3AED" }, // 복직 (violet-100, violet-600)
+  TRANSFERRED_IN: { bg: "#FEF3C7", text: "#D97706" }, // 이동후 (amber-100, amber-600)
+  TRANSFERRED_OUT: { bg: "#FEF3C7", text: "#D97706" }, // 이동전 (amber-100, amber-600)
+  CHANGED_ROLE: { bg: "#DBEAFE", text: "#2563EB" }, // 직급변경 (blue-100, blue-600)
+  CHANGED_POSITION: { bg: "#DBEAFE", text: "#2563EB" }, // 직책변경 (blue-100, blue-600)
+  default: { bg: "#F3F4F6", text: "#4B5563" }, // 기본 (gray-100, gray-600)
 } as const;
 
 // 변경 유형 뱃지 색상 (ApiMemberStatus, ApiDepartmentStatus, ApiPolicyStatus)
 export const CHANGE_TYPE_BADGE_COLORS = {
   // ApiMemberStatus
-  CHANGED_ROLE: "#0063AC", // 직급변경 (파란색)
+  CHANGED_ROLE: "#5B6CFF", // 직책변경 (파란색)
+  CHANGED_POSITION: "#0063AC", // 직급변경 (파란색)
   TRANSFERRED_OUT: "#DA9604", // 이동전 (주황색)
   TRANSFERRED_IN: "#DA9604", // 이동후 (주황색)
   JOINED: "#7B88FF", // 입사 (보라색)

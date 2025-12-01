@@ -43,6 +43,7 @@ export const getMemberStatusLabel = (status: ApiMemberStatus): string => {
     ON_LEAVE: "휴직",
     RETURNED: "복직",
     CHANGED_ROLE: "직급변경",
+    CHANGED_POSITION: "직책변경",
   };
   return labels[status] || status;
 };

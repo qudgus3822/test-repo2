@@ -18,7 +18,7 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   CODE_SMELL: "코드스멜",
   TEST_COVERAGE: "테스트커버리지",
   SECURITY_VULNERABILITIES: "보안취약점수",
-  CODE_COUPLING: "코드결합밀도",
+  CODE_COUPLING: "코드결함밀도",
   BUG_COUNT: "버그 발생 건수",
   INCIDENT_COUNT: "장애 발생 건수",
   // 리뷰품질 (12개)
@@ -182,7 +182,10 @@ const getMetricCategory = (
 };
 
 // 30개 지표 데이터 생성 함수
-const generateMetrics = (seed: number = 0): OrganizationMetricValue[] => {
+const generateMetrics = (
+  seed: number = 0,
+  isUse: boolean = true,
+): OrganizationMetricValue[] => {
   const metrics: OrganizationMetricValue[] = [];
   const allCodes = [
     ...METRIC_CODES.codeQuality,
@@ -192,6 +195,20 @@ const generateMetrics = (seed: number = 0): OrganizationMetricValue[] => {
 
   allCodes.forEach((metricCode, index) => {
     const config = METRIC_CONFIG[metricCode];
+
+    // isUse가 false인 경우 값을 null로 설정
+    if (!isUse) {
+      metrics.push({
+        metricCode,
+        category: getMetricCategory(metricCode),
+        isUse: false,
+        value: null,
+        targetValue: config.targetValue,
+        achievementRate: null,
+      });
+      return;
+    }
+
     // seed를 사용하여 각 조직마다 다른 값 생성
     const adjustedMin =
       config.min + (seed % 5) * ((config.max - config.min) / 10);
@@ -210,6 +227,7 @@ const generateMetrics = (seed: number = 0): OrganizationMetricValue[] => {
     metrics.push({
       metricCode,
       category: getMetricCategory(metricCode),
+      isUse: true,
       value,
       targetValue: config.targetValue,
       achievementRate,
@@ -251,8 +269,8 @@ const generateMetrics = (seed: number = 0): OrganizationMetricValue[] => {
 const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
   {
     type: "member",
-    name: "강준서",
-    employeeID: "junseo.kang",
+    name: "한영훈",
+    employeeID: "younghun.han",
     role: "MANAGER",
     position: "TEAM_LEADER",
     status: "ACTIVE",
@@ -266,13 +284,13 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     developmentEfficiency: 84.9,
     bdpi: 85.9,
     changeRate: 4.1,
-    email: "junseo.kang@company.com",
+    email: "younghun.han@company.com",
     metrics: generateMetrics(1),
     change: {
-      changeType: "CHANGED_ROLE",
+      changeType: "JOINED",
       changeDate: "2025-11-20T09:00:00.000Z",
       category: "HR",
-      changeDetail: "(후)실장",
+      changeDetail: "",
       processedBy: "자동(LDAP)",
     },
   },
@@ -298,7 +316,7 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
       changeType: "TRANSFERRED_IN",
       changeDate: "2025-11-20T09:00:00.000Z",
       category: "HR",
-      changeDetail: "(전)공통플랫폼개발팀",
+      changeDetail: "(전)공통플랫폼개발팀 → (후)자산플랫폼개발팀",
       processedBy: "자동(LDAP)",
     },
   },
@@ -353,19 +371,19 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     name: "김시현",
     employeeID: "sihyun.kim",
     role: "ASSISTANT_MANAGER",
-    status: "ACTIVE",
+    status: "ON_LEAVE",
     departmentCode: "1001",
     departmentName: "자산플랫폼개발팀",
     level: 3,
     isEvaluationTarget: true,
     isManager: false,
-    codeQuality: 87.9,
-    reviewQuality: 82.9,
-    developmentEfficiency: 82.9,
-    bdpi: 83.9,
-    changeRate: 0.6,
+    codeQuality: null,
+    reviewQuality: null,
+    developmentEfficiency: null,
+    bdpi: null,
+    changeRate: null,
     email: "sihyun.kim@company.com",
-    metrics: generateMetrics(5),
+    metrics: generateMetrics(5, false), // 휴직 상태는 지표 미사용
     change: {
       changeType: "ON_LEAVE",
       changeDate: "2025-11-20T09:00:00.000Z",
@@ -525,7 +543,7 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
       changeType: "TRANSFERRED_OUT",
       changeDate: "2025-11-20T09:00:00.000Z",
       category: "HR",
-      changeDetail: "(후)자산플랫폼개발팀",
+      changeDetail: "(전)공통플랫폼개발팀 → (후)자산플랫폼개발팀",
       processedBy: "자동(LDAP)",
     },
   },
@@ -639,7 +657,7 @@ const regulationDevTeamMembers: ApiOrganizationMember[] = [
       changeType: "JOINED",
       changeDate: "2025-11-20T09:00:00.000Z",
       category: "HR",
-      changeDetail: "입사",
+      changeDetail: "",
       processedBy: "자동(LDAP)",
     },
   },
@@ -1115,7 +1133,7 @@ const corePlatformDevDeptHead: ApiOrganizationMember = {
   email: "junseo.kang@company.com",
   metrics: generateMetrics(21),
   change: {
-    changeType: "CHANGED_ROLE",
+    changeType: "CHANGED_POSITION",
     changeDate: "2025-11-20T09:00:00.000Z",
     category: "HR",
     changeDetail: "(전)팀장",
