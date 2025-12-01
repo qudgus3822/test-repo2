@@ -7,20 +7,90 @@ import {
   SCORE_GOOD_THRESHOLD,
 } from "@/store/useOrganizationStore";
 import type {
-  OrganizationUnit,
-  OrganizationMember,
+  ApiOrganizationDepartment,
+  ApiOrganizationMember,
+  ApiOrganizationNode,
   OrganizationTabType,
   ScoreLevel,
+  ChangeInfo,
+  OrganizationMetricValue,
+  OrganizationMetricCategory,
 } from "@/types/organization.types";
-import {
-  SCORE_COLORS,
-  STATUS_BADGE_COLORS,
-  TREND_COLORS,
-} from "@/styles/colors";
+import { SCORE_COLORS, TREND_COLORS } from "@/styles/colors";
 import { clsx } from "clsx";
+import {
+  getMemberRoleOrPositionLabel,
+  hasChangeInfo,
+  getChangeTypeBadgeColor,
+  getChangeTypeLabel,
+  formatChangeDate,
+} from "@/utils/organization";
+import { METRIC_CODE_NAMES } from "@/mocks/organization.mock";
+
+// 탭 타입 → 지표 카테고리 매핑
+const TAB_TO_CATEGORY: Record<
+  Exclude<OrganizationTabType, "bdpi">,
+  OrganizationMetricCategory
+> = {
+  codeQuality: "code_quality",
+  reviewQuality: "review_quality",
+  developmentEfficiency: "development_efficiency",
+};
+
+// 카테고리별 지표 코드 목록 (순서 유지)
+const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
+  code_quality: [
+    "TECH_DEBT",
+    "CODE_COMPLEXITY",
+    "CODE_DUPLICATION",
+    "CODE_SMELL",
+    "TEST_COVERAGE",
+    "SECURITY_VULNERABILITIES",
+    "CODE_COUPLING",
+    "BUG_COUNT",
+    "INCIDENT_COUNT",
+  ],
+  review_quality: [
+    "REVIEW_SPEED",
+    "REVIEW_THOROUGHNESS",
+    "REVIEW_COVERAGE",
+    "REVIEW_RESPONSE_RATE",
+    "REVIEW_PARTICIPATION_RATE",
+    "REVIEW_COMMENT_QUALITY",
+    "REVIEW_REWORK_RATE",
+    "REVIEW_APPROVAL_TIME",
+    "REVIEW_REQUEST_COUNT",
+    "REVIEW_DEFECT_DETECTION",
+    "REVIEW_FOLLOW_UP",
+    "REVIEW_KNOWLEDGE_SHARING",
+  ],
+  development_efficiency: [
+    "COMMIT_FREQUENCY",
+    "DEPLOYMENT_FREQUENCY",
+    "LEAD_TIME",
+    "CYCLE_TIME",
+    "DEPLOYMENT_SUCCESS_RATE",
+    "MTTR",
+    "CHANGE_FAILURE_RATE",
+    "THROUGHPUT",
+    "WORK_IN_PROGRESS",
+  ],
+};
+
+// metrics 배열에서 특정 카테고리의 지표들을 순서대로 가져오기
+const getMetricsByCategory = (
+  metrics: OrganizationMetricValue[] | undefined,
+  category: OrganizationMetricCategory,
+): (OrganizationMetricValue | null)[] => {
+  const codes = CATEGORY_METRIC_CODES[category];
+  return codes.map((code) => {
+    const metric = metrics?.find((m) => m.metricCode === code);
+    return metric || null;
+  });
+};
 
 interface OrganizationTableProps {
-  organizations: OrganizationUnit[];
+  organizations: ApiOrganizationDepartment[];
 }
 
 // 점수에 따른 배경색 결정
@@ -85,7 +155,7 @@ const ScoreCell = ({
   return (
     <td
       className={clsx(
-        "px-3 text-center text-sm font-medium align-middle border-r border-gray-200",
+        "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px] max-w-[80px]",
         isFirst && "border-l",
         getScoreTextColor(score),
       )}
@@ -96,71 +166,98 @@ const ScoreCell = ({
   );
 };
 
+// 상태 뱃지 컴포넌트
+const StatusBadge = ({ change }: { change?: ChangeInfo }) => {
+  if (!hasChangeInfo(change)) return null;
+
+  const { changeType, category } = change!;
+  const color = getChangeTypeBadgeColor(changeType);
+
+  // category에 따라 variant 결정: GROUP은 outlined, HR/POLICY는 filled
+  const variant = category === "GROUP" ? "outlined" : "filled";
+
+  const style =
+    variant === "filled"
+      ? { backgroundColor: color, color: "#E7E7E7" }
+      : { border: `1px solid ${color}`, color };
+
+  return (
+    <span
+      className="ml-2 px-2 py-0.5 text-xs font-medium rounded-xl"
+      style={style}
+    >
+      {getChangeTypeLabel(changeType)}
+    </span>
+  );
+};
+
+// 변경이력 컴포넌트 (날짜 + 상세)
+const ChangeInfoDisplay = ({ change }: { change?: ChangeInfo }) => {
+  if (!hasChangeInfo(change)) return null;
+
+  const { changeDate, changeEndDate, changeDetail } = change!;
+
+  // 날짜나 상세 정보가 없으면 렌더링하지 않음
+  if (!changeDate && !changeDetail) return null;
+
+  // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
+  const formattedDate = changeEndDate
+    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
+    : formatChangeDate(changeDate);
+
+  return (
+    <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
+      {formattedDate}
+      {changeDetail && ` ${changeDetail}`}
+    </span>
+  );
+};
+
 // 멤버 행 컴포넌트
 const MemberRow = ({
   member,
   depth,
   activeTab,
 }: {
-  member: OrganizationMember;
+  member: ApiOrganizationMember;
   depth: number;
   activeTab: OrganizationTabType;
 }) => {
   const paddingLeft = 24 + depth * 24;
 
-  // 상태 뱃지 색상
-  const getStatusBadgeColor = (status: string) => {
-    const colors =
-      STATUS_BADGE_COLORS[status as keyof typeof STATUS_BADGE_COLORS] ||
-      STATUS_BADGE_COLORS.default;
-    return colors;
-  };
-
-  // 상태 뱃지 렌더링
-  const renderStatusBadge = () => {
-    if (!member.status) return null;
-
-    return (
-      <span
-        className="ml-2 px-2 py-0.5 text-xs font-medium rounded"
-        style={{
-          backgroundColor: getStatusBadgeColor(member.status).bg,
-          color: getStatusBadgeColor(member.status).text,
-        }}
-      >
-        {member.status}
-      </span>
-    );
-  };
-
-  // 상태별 날짜 메시지 렌더링
-  const renderStatusDateMessage = () => {
-    if (!member.joinDate) return null;
-
-    if (member.status === "직급변경" && member.previousRole) {
+  // 카테고리별 지표 렌더링
+  const renderMetricsCells = () => {
+    if (activeTab === "bdpi") {
       return (
-        <span className="ml-2 text-xs text-gray-500">
-          {member.joinDate} (전){member.previousRole}
-        </span>
+        <>
+          <ScoreCell score={member.codeQuality} isFirst />
+          <ScoreCell score={member.reviewQuality} />
+          <ScoreCell score={member.developmentEfficiency} />
+          <ScoreCell score={member.bdpi} />
+        </>
       );
     }
 
-    if (member.status === "퇴사") {
-      return (
-        <span className="ml-2 text-xs text-gray-500">{member.joinDate}</span>
-      );
-    }
+    const category = TAB_TO_CATEGORY[activeTab];
+    const categoryMetrics = getMetricsByCategory(member.metrics, category);
 
-    // 입사, 재직 등 기타 상태
     return (
-      <span className="ml-2 text-xs text-gray-500">{member.joinDate}</span>
+      <>
+        {categoryMetrics.map((metric, index) => (
+          <ScoreCell
+            key={metric?.metricCode || index}
+            score={metric?.value ?? null}
+            isFirst={index === 0}
+          />
+        ))}
+      </>
     );
   };
 
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[70px]">
       <td
-        className="pr-4 align-middle"
+        className="pr-4 align-middle whitespace-nowrap"
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         <div className="flex items-center">
@@ -174,47 +271,25 @@ const MemberRow = ({
               {member.name}
             </span>
             <span className="ml-2 text-sm text-gray-500 whitespace-nowrap">
-              {member.role}
+              {getMemberRoleOrPositionLabel(member.role, member.position)}
             </span>
-            {(member.status || member.joinDate) && (
-              <span className="inline-flex items-center whitespace-nowrap">
-                {renderStatusBadge()}
-                {renderStatusDateMessage()}
-              </span>
-            )}
+            <StatusBadge change={member.change} />
+            <ChangeInfoDisplay change={member.change} />
           </div>
         </div>
         <div
-          className="text-xs text-gray-500 mt-0.5"
+          className="text-xs text-gray-500 mt-0.5 whitespace-nowrap"
           style={{ marginLeft: "28px" }}
         >
           {member.email}
         </div>
       </td>
-      {activeTab === "bdpi" ? (
-        <>
-          <ScoreCell score={member.codeQuality} isFirst />
-          <ScoreCell score={member.reviewQuality} />
-          <ScoreCell score={member.developmentEfficiency} />
-          <ScoreCell score={member.bdpi} />
-        </>
-      ) : (
-        <>
-          <ScoreCell
-            score={
-              activeTab === "codeQuality"
-                ? member.codeQuality
-                : activeTab === "reviewQuality"
-                ? member.reviewQuality
-                : member.developmentEfficiency
-            }
-            isFirst
-          />
-        </>
+      {renderMetricsCells()}
+      {activeTab === "bdpi" && (
+        <td className="px-3 text-center align-middle">
+          <ChangeRate rate={member.changeRate} />
+        </td>
       )}
-      <td className="px-3 text-center align-middle">
-        <ChangeRate rate={member.changeRate} />
-      </td>
       <td className="px-3 text-center align-middle">
         <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
           <SearchIcon className="w-5 h-5" />
@@ -230,24 +305,63 @@ const OrganizationRow = ({
   depth,
   activeTab,
 }: {
-  org: OrganizationUnit;
+  org: ApiOrganizationDepartment;
   depth: number;
   activeTab: OrganizationTabType;
 }) => {
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
-  const isExpanded = expandedOrganizations.has(org.id);
-  const hasChildren =
-    (org.children && org.children.length > 0) ||
-    (org.members && org.members.length > 0);
+  const isExpanded = expandedOrganizations.has(org.code);
+  const hasChildren = org.children && org.children.length > 0;
   const paddingLeft = 16 + depth * 24;
+
+  // children을 부서와 멤버로 분리
+  const childDepartments: ApiOrganizationDepartment[] = [];
+  const childMembers: ApiOrganizationMember[] = [];
+
+  org.children?.forEach((child: ApiOrganizationNode) => {
+    if (child.type === "department") {
+      childDepartments.push(child);
+    } else if (child.type === "member") {
+      childMembers.push(child);
+    }
+  });
+
+  // 카테고리별 지표 렌더링
+  const renderMetricsCells = () => {
+    if (activeTab === "bdpi") {
+      return (
+        <>
+          <ScoreCell score={org.codeQuality} isFirst />
+          <ScoreCell score={org.reviewQuality} />
+          <ScoreCell score={org.developmentEfficiency} />
+          <ScoreCell score={org.bdpi} />
+        </>
+      );
+    }
+
+    const category = TAB_TO_CATEGORY[activeTab];
+    const categoryMetrics = getMetricsByCategory(org.metrics, category);
+
+    return (
+      <>
+        {categoryMetrics.map((metric, index) => (
+          <ScoreCell
+            key={metric?.metricCode || index}
+            score={metric?.value ?? null}
+            isFirst={index === 0}
+          />
+        ))}
+      </>
+    );
+  };
 
   return (
     <>
       {/* 조직 행 */}
       <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[70px]">
         <td
-          className="pr-4 align-middle"
+          className="pr-4 align-middle whitespace-nowrap"
           style={{ paddingLeft: `${paddingLeft}px` }}
         >
           <div className="flex items-center">
@@ -258,7 +372,7 @@ const OrganizationRow = ({
             />
             {hasChildren ? (
               <button
-                onClick={() => toggleOrganization(org.id)}
+                onClick={() => toggleOrganization(org.code)}
                 className="mr-2 p-0.5 hover:bg-gray-200 rounded cursor-pointer"
               >
                 {isExpanded ? (
@@ -270,36 +384,22 @@ const OrganizationRow = ({
             ) : (
               <span className="mr-2 w-5" />
             )}
-            <span className="font-semibold text-gray-900">{org.name}</span>
-            <span className="ml-2 text-sm text-gray-500">
+            <span className="font-semibold text-gray-900 whitespace-nowrap">
+              {org.name}
+            </span>
+            <span className="ml-2 text-sm text-gray-500 whitespace-nowrap">
               ({org.memberCount})
             </span>
+            <StatusBadge change={org.change} />
+            <ChangeInfoDisplay change={org.change} />
           </div>
         </td>
-        {activeTab === "bdpi" ? (
-          <>
-            <ScoreCell score={org.codeQuality} isFirst />
-            <ScoreCell score={org.reviewQuality} />
-            <ScoreCell score={org.developmentEfficiency} />
-            <ScoreCell score={org.bdpi} />
-          </>
-        ) : (
-          <>
-            <ScoreCell
-              score={
-                activeTab === "codeQuality"
-                  ? org.codeQuality
-                  : activeTab === "reviewQuality"
-                  ? org.reviewQuality
-                  : org.developmentEfficiency
-              }
-              isFirst
-            />
-          </>
+        {renderMetricsCells()}
+        {activeTab === "bdpi" && (
+          <td className="px-3 text-center align-middle">
+            <ChangeRate rate={org.changeRate} />
+          </td>
         )}
-        <td className="px-3 text-center align-middle">
-          <ChangeRate rate={org.changeRate} />
-        </td>
         <td className="px-3 text-center align-middle">
           <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
             <SearchIcon className="w-5 h-5" />
@@ -312,18 +412,18 @@ const OrganizationRow = ({
         <>
           {/* 직속 멤버 렌더링 (showMembers가 true일 때만) */}
           {showMembers &&
-            org.members?.map((member) => (
+            childMembers.map((member) => (
               <MemberRow
-                key={member.id}
+                key={member.employeeID}
                 member={member}
                 depth={depth + 1}
                 activeTab={activeTab}
               />
             ))}
           {/* 하위 조직 렌더링 */}
-          {org.children?.map((child) => (
+          {childDepartments.map((child) => (
             <OrganizationRow
-              key={child.id}
+              key={child.code}
               org={child}
               depth={depth + 1}
               activeTab={activeTab}
@@ -356,31 +456,65 @@ export const OrganizationTable = ({
       );
     }
 
-    const labels: Record<OrganizationTabType, string> = {
-      bdpi: "BDPI",
-      codeQuality: "코드품질",
-      reviewQuality: "리뷰품질",
-      developmentEfficiency: "개발효율",
-    };
+    // 카테고리별 지표 헤더 렌더링
+    const category = TAB_TO_CATEGORY[activeTab];
+    const metricCodes = CATEGORY_METRIC_CODES[category];
 
-    return <th className={`${thStyle} w-[7%]`}>{labels[activeTab]}</th>;
+    return (
+      <>
+        {metricCodes.map((code, index) => (
+          <th
+            key={code}
+            className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px]`}
+            style={{
+              borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
+              wordBreak: "keep-all",
+            }}
+          >
+            {METRIC_CODE_NAMES[code] || code}
+          </th>
+        ))}
+      </>
+    );
   };
+
+  // 지표 개수 계산
+  const getMetricCount = () => {
+    if (activeTab === "bdpi") return 4; // 코드품질, 리뷰품질, 개발효율, BDPI
+    const category = TAB_TO_CATEGORY[activeTab];
+    return CATEGORY_METRIC_CODES[category].length;
+  };
+
+  const metricCount = getMetricCount();
 
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-lg">
-      <table className="w-full">
+      <table className="w-full table-fixed">
+        {activeTab !== "bdpi" && (
+          <colgroup>
+            <col style={{ width: "50%" }} />
+            {Array.from({ length: metricCount }).map((_, i) => (
+              <col key={i} style={{ width: "80px" }} />
+            ))}
+            <col style={{ width: "80px" }} />
+          </colgroup>
+        )}
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
-            <th className={`${thStyle} text-left w-[52%]`}>조직 이름</th>
+            <th className={`${thStyle} text-left whitespace-nowrap`}>
+              조직 이름
+            </th>
             {getTableHeaders()}
-            <th className={`${thStyle} w-[10%]`}>전월비교</th>
-            <th className={`${thStyle} w-[10%]`}>상세</th>
+            {activeTab === "bdpi" && (
+              <th className={`${thStyle} w-[80px]`}>전월비교</th>
+            )}
+            <th className={`${thStyle} w-[80px]`}>상세</th>
           </tr>
         </thead>
         <tbody>
           {organizations.map((org) => (
             <OrganizationRow
-              key={org.id}
+              key={org.code}
               org={org}
               depth={0}
               activeTab={activeTab}

@@ -9,21 +9,26 @@ import {
   ScoreLegend,
 } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
-import { mockOrganizationList } from "@/mocks/organization.mock";
-import type { OrganizationUnit } from "@/types/organization.types";
+import { mockApiOrganizationCompare } from "@/mocks/organization.mock";
+import type { ApiOrganizationDepartment } from "@/types/organization.types";
 
-// "실" 단위까지의 조직 ID 수집 (IT부문 + 실)
-const getDepartmentOrgIds = (orgs: OrganizationUnit[]): string[] => {
-  const ids: string[] = [];
-  const collect = (org: OrganizationUnit, depth: number) => {
-    ids.push(org.id);
-    // depth 0: 부문, depth 1: 실 - 실까지만 수집
-    if (depth < 1) {
-      org.children?.forEach((child) => collect(child, depth + 1));
+// Level 3(팀)까지의 조직 코드 수집 (부문 + 실 + 팀)
+// 전체 팀 열기 클릭 시 사용 → 팀 멤버까지 보임
+const getDepartmentCodes = (orgs: ApiOrganizationDepartment[]): string[] => {
+  const codes: string[] = [];
+  const collect = (org: ApiOrganizationDepartment) => {
+    codes.push(org.code);
+    // Level 1(부문), Level 2(실), Level 3(팀)까지 수집
+    if (org.level <= 3 && org.children) {
+      org.children.forEach((child) => {
+        if (child.type === "department") {
+          collect(child);
+        }
+      });
     }
   };
-  orgs.forEach((org) => collect(org, 0));
-  return ids;
+  orgs.forEach((org) => collect(org));
+  return codes;
 };
 
 const OrganizationPage = () => {
@@ -39,14 +44,17 @@ const OrganizationPage = () => {
     isTeamsExpanded,
   } = useOrganizationStore();
 
+  // 새로운 API 구조에서 조직 트리 가져오기
+  const organizations = mockApiOrganizationCompare.tree;
+  console.log("organizations", organizations);
   const handleToggleTeams = () => {
     if (isTeamsExpanded) {
-      // 접기: IT부문만 펼침
+      // 접기: IT부문만 펼침 → 실 단위까지 보임
       collapseToDefault();
     } else {
-      // 열기: 실 단위까지 펼침
-      const deptOrgIds = getDepartmentOrgIds(mockOrganizationList);
-      expandAllTeams(deptOrgIds);
+      // 열기: 실 단위까지 펼침 → 팀 단위까지 보임
+      const deptCodes = getDepartmentCodes(organizations);
+      expandAllTeams(deptCodes);
     }
   };
 
@@ -101,7 +109,7 @@ const OrganizationPage = () => {
 
         {/* 조직 테이블 */}
         <div className="p-4">
-          <OrganizationTable organizations={mockOrganizationList} />
+          <OrganizationTable organizations={organizations} />
         </div>
 
         {/* 범례 */}

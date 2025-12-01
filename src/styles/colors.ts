@@ -77,7 +77,7 @@ export const SCORE_COLORS = {
   none: "#F3F4F6", // 데이터 없음 (회색)
 } as const;
 
-// 조직비교 상태 뱃지 색상
+// 조직비교 상태 뱃지 색상 (레거시 - 한글 키)
 export const STATUS_BADGE_COLORS = {
   입사: { bg: "#F3E8FF", text: "#7C3AED" }, // purple-100, purple-600
   재직: { bg: "#DBEAFE", text: "#2563EB" }, // blue-100, blue-600
@@ -85,6 +85,27 @@ export const STATUS_BADGE_COLORS = {
   직급변경: { bg: "#FEF3C7", text: "#D97706" }, // amber-100, amber-600
   퇴사: { bg: "#FEE2E2", text: "#DC2626" }, // red-100, red-600
   default: { bg: "#F3F4F6", text: "#4B5563" }, // gray-100, gray-600
+} as const;
+
+// 변경 유형 뱃지 색상 (ApiMemberStatus, ApiDepartmentStatus, ApiPolicyStatus)
+export const CHANGE_TYPE_BADGE_COLORS = {
+  // ApiMemberStatus
+  CHANGED_ROLE: "#0063AC", // 직급변경 (파란색)
+  TRANSFERRED_OUT: "#DA9604", // 이동전 (주황색)
+  TRANSFERRED_IN: "#DA9604", // 이동후 (주황색)
+  JOINED: "#7B88FF", // 입사 (보라색)
+  RESIGNED: "#7B7B7B", // 퇴사 (회색)
+  ON_LEAVE: "#A7A7A7", // 휴직 (연회색)
+  RETURNED: "#AD89B3", // 복직 (연보라색)
+  // ApiDepartmentStatus
+  CREATED: "#7B88FF", // 생성 (보라색)
+  DELETED: "#FF6A6A", // 삭제 (빨간색)
+  RENAMED: "#90A1B9", // 변경 (연회색)
+  // ApiPolicyStatus
+  ADD: "#5B6CFF", // 추가 (보라색)
+  EXCLUDE: "#90A1B9", // 제외 (회색)
+  // 기본값
+  default: "#6B7280", // 기본 (회색)
 } as const;
 
 // 모든 색상 통합 export
@@ -98,4 +119,5 @@ export const COLORS = {
   text: TEXT_COLORS,
   score: SCORE_COLORS,
   statusBadge: STATUS_BADGE_COLORS,
+  changeTypeBadge: CHANGE_TYPE_BADGE_COLORS,
 } as const;

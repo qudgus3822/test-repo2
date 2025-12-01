@@ -109,6 +109,9 @@ const initialCompareGroups: CompareGroup[] = [
   { id: "b", label: "비교 B", color: "#10B981" },
 ];
 
+// 기본 펼침 조직 코드 (IT부문만 펼침 → 실 단위까지 보임)
+const DEFAULT_EXPANDED_CODES = ["IT01"];
+
 const initState: OrganizationStore = {
   activeTab: "bdpi",
   period: "monthly",
@@ -116,7 +119,7 @@ const initState: OrganizationStore = {
   compareGroups: initialCompareGroups,
   filterType: "all",
   searchKeyword: "",
-  expandedOrganizations: new Set(["org1"]), // 초기: IT부문만 펼침 (실 단위까지 표시)
+  expandedOrganizations: new Set(DEFAULT_EXPANDED_CODES), // 초기: IT부문만 펼침 (실 단위까지 보임)
   showMembers: true, // 기본: 멤버 표시
   isTeamsExpanded: false, // 초기: 팀 접힌 상태
 };
@@ -167,7 +170,7 @@ export const useOrganizationStore = create<
   setShowMembers: (show: boolean) => set({ showMembers: show }),
   collapseToDefault: () =>
     set(() => ({
-      expandedOrganizations: new Set(["org1"]),
+      expandedOrganizations: new Set(DEFAULT_EXPANDED_CODES),
       showMembers: true,
       isTeamsExpanded: false,
     })),
