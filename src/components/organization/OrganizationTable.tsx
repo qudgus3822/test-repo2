@@ -25,7 +25,7 @@ import {
   getChangeTypeLabel,
   formatChangeDate,
 } from "@/utils/organization";
-import { METRIC_CODE_NAMES } from "@/mocks/organization.mock";
+import { METRIC_CODE_NAMES } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 
 // 탭 타입 → 지표 카테고리 매핑
@@ -497,10 +497,9 @@ export const OrganizationTable = ({
         {metricCodes.map((code, index) => (
           <th
             key={code}
-            className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px]`}
+            className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px] break-words`}
             style={{
               borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
-              wordBreak: "keep-all",
             }}
           >
             {METRIC_CODE_NAMES[code] || code}
@@ -538,9 +537,15 @@ export const OrganizationTable = ({
             </th>
             {getTableHeaders()}
             {activeTab === "bdpi" && (
-              <th className={`${thStyle} w-[80px]`}>전월비교</th>
+              <th className={`${thStyle} w-[7%]`}>전월비교</th>
             )}
-            <th className={`${thStyle} w-[80px]`}>상세</th>
+            <th
+              className={`${thStyle} ${
+                activeTab === "bdpi" ? "w-[7%]" : "w-[80px]"
+              }`}
+            >
+              상세
+            </th>
           </tr>
         </thead>
         <tbody>

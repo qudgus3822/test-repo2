@@ -9,43 +9,6 @@ import type {
 // 30개 지표 목업 데이터 생성 헬퍼
 // ================================
 
-// 지표 코드 → 지표명 매핑 (metrics.mock.ts 기준)
-export const METRIC_CODE_NAMES: Record<string, string> = {
-  // 코드품질 (9개)
-  TECH_DEBT: "기술부채",
-  CODE_COMPLEXITY: "코드복잡도",
-  CODE_DUPLICATION: "코드중복률",
-  CODE_SMELL: "코드스멜",
-  TEST_COVERAGE: "테스트커버리지",
-  SECURITY_VULNERABILITIES: "보안취약점수",
-  CODE_COUPLING: "코드결함밀도",
-  BUG_COUNT: "버그 발생 건수",
-  INCIDENT_COUNT: "장애 발생 건수",
-  // 리뷰품질 (12개)
-  REVIEW_SPEED: "리뷰 속도",
-  REVIEW_RESPONSE_RATE: "리뷰요청응답률",
-  REVIEW_PARTICIPATION_RATE: "리뷰 참여율",
-  REVIEW_ACCEPTANCE_RATE: "리뷰제안수용률",
-  REVIEW_FEEDBACK_CONCRETENESS: "리뷰피드백구체성",
-  REVIEW_REVIEWER_DIVERSE: "리뷰어다양성",
-  REVIEW_REQUEST_COUNT: "리뷰요청건수",
-  REVIEW_PARTICIPATION_COUNT: "리뷰참여건수",
-  REVIEW_PASS_RATE: "초회통과율",
-  REVIEW_PARTICIPATION_NUMBER: "코드리뷰참여수치",
-  REVIEW_FEEDBACK_TIME: "리뷰피드백반영시간",
-  REVIEW_COMPLETION_TIME: "리뷰완료시간",
-  // 개발효율 (9개)
-  DEPLOYMENT_FREQUENCY: "배포빈도 (완료건)",
-  COMMIT_FREQUENCY: "커밋빈도",
-  LEAD_TIME: "평균장애해결시간",
-  FAILURE_DETECTION_TIME: "장애탐지시간",
-  FAILURE_DIAGNOSIS_TIME: "장애진단시간",
-  FAILURE_RECOVERY_TIME: "장애복구시간",
-  DEPLOYMENT_SUCCESS_RATE: "배포성공률",
-  MR_SIZE: "MR크기",
-  CODE_LINE_COUNT_PER_COMMIT: "커밋당 코드라인수",
-};
-
 // 지표 코드 목록 (METRIC_CODE_NAMES 기준)
 const METRIC_CODES = {
   // 코드품질 (9개)
