@@ -156,7 +156,7 @@ const ScoreCell = ({
   return (
     <td
       className={clsx(
-        "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px] max-w-[80px]",
+        "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px]",
         isFirst && "border-l",
         getScoreTextColor(score),
       )}
@@ -167,16 +167,11 @@ const ScoreCell = ({
   );
 };
 
-// 변경이력 툴팁 내용 생성 함수
-// 형식: [상태표기] 날짜 상세내용
-// 이동전/이동후는 detail 앞에 줄바꿈 추가
-const getChangeInfoTooltipContent = (change?: ChangeInfo): string => {
-  if (!hasChangeInfo(change)) return "";
-
-  const { changeType, changeDate, changeEndDate, changeDetail } = change!;
-
-  // 상태 라벨
-  const statusLabel = getChangeTypeLabel(changeType);
+// 단일 변경이력 툴팁 내용 생성 함수
+// 형식: 날짜 상세내용 (이동전/이동후는 detail 앞에 줄바꿈 추가)
+// GROUP: (자동), POLICY: (수동) 텍스트 추가
+const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
+  const { changeDate, changeEndDate, changeDetail, category } = change;
 
   // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
   const formattedDate = changeEndDate
@@ -184,26 +179,27 @@ const getChangeInfoTooltipContent = (change?: ChangeInfo): string => {
     : formatChangeDate(changeDate);
 
   // 이동전/이동후는 detail 앞에 줄바꿈 추가
-  const isTransfer =
-    changeType === "TRANSFERRED_IN" || changeType === "TRANSFERRED_OUT";
-  const separator = isTransfer && changeDetail ? "\n" : " ";
+  // const isTransfer =
+  //   changeType === "TRANSFERRED_IN" || changeType === "TRANSFERRED_OUT";
+  // const separator = isTransfer && changeDetail ? "\n" : " ";
+  const separator = " ";
 
-  // 날짜와 상세내용 조합
-  const dateAndDetail = changeDetail
-    ? `${formattedDate}${separator}${changeDetail}`
+  // category에 따라 suffix 결정
+  const suffix =
+    category === "GROUP" ? " (자동)" : category === "POLICY" ? " (수동)" : "";
+
+  // changeDetail에 suffix 추가
+  const detailWithSuffix = changeDetail ? `${changeDetail}${suffix}` : "";
+
+  return detailWithSuffix
+    ? `${formattedDate}${separator}${detailWithSuffix}`
     : formattedDate;
-
-  // [상태표기] 날짜 상세내용
-  return statusLabel ? `[${statusLabel}] ${dateAndDetail}` : dateAndDetail;
 };
 
-// 상태 뱃지 컴포넌트 (Tooltip 포함)
-const StatusBadge = ({ change }: { change?: ChangeInfo }) => {
-  if (!hasChangeInfo(change)) return null;
-
-  const { changeType, category } = change!;
+// 단일 상태 뱃지 컴포넌트 (툴팁 없이 뱃지만 렌더링)
+const SingleBadge = ({ change }: { change: ChangeInfo }) => {
+  const { changeType, category } = change;
   const color = getChangeTypeBadgeColor(changeType);
-  const tooltipContent = getChangeInfoTooltipContent(change);
 
   // category에 따라 variant 결정: GROUP은 outlined, HR/POLICY는 filled
   const variant = category === "GROUP" ? "outlined" : "filled";
@@ -213,7 +209,7 @@ const StatusBadge = ({ change }: { change?: ChangeInfo }) => {
       ? { backgroundColor: color, color: "#E7E7E7" }
       : { border: `1px solid ${color}`, color };
 
-  const badge = (
+  return (
     <span
       className="ml-2 px-2 py-0.5 text-xs font-medium rounded-xl cursor-default"
       style={style}
@@ -221,17 +217,34 @@ const StatusBadge = ({ change }: { change?: ChangeInfo }) => {
       {getChangeTypeLabel(changeType)}
     </span>
   );
+};
 
-  // 툴팁 내용이 있으면 Tooltip으로 감싸기
-  if (tooltipContent) {
-    return (
-      <Tooltip content={tooltipContent} color="#6B7280" maxWidth={250}>
-        {badge}
-      </Tooltip>
-    );
-  }
+// 여러 변경이력의 툴팁 내용을 하나로 합치는 함수
+const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
+  return changes
+    .map((change) => getSingleChangeTooltipContent(change))
+    .join("\n");
+};
 
-  return badge;
+// 상태 뱃지 컴포넌트 (배열 지원, 통합 Tooltip)
+const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
+  if (!hasChangeInfo(change)) return null;
+
+  const tooltipContent = getCombinedTooltipContent(change!);
+
+  const badges = (
+    <div className="inline-flex items-center">
+      {change!.map((item, index) => (
+        <SingleBadge key={`${item.changeType}-${index}`} change={item} />
+      ))}
+    </div>
+  );
+
+  return (
+    <Tooltip content={tooltipContent} color="#6B7280">
+      {badges}
+    </Tooltip>
+  );
 };
 
 // 멤버 행 컴포넌트

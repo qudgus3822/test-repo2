@@ -301,13 +301,15 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 4.1,
     email: "younghun.han@company.com",
     metrics: generateMetrics(1),
-    change: {
-      changeType: "JOINED",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "JOINED",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "입사",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -327,13 +329,15 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.1,
     email: "gimo.yang@company.com",
     metrics: generateMetrics(2),
-    change: {
-      changeType: "TRANSFERRED_IN",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "(전)공통플랫폼개발팀 → (후)자산플랫폼개발팀",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "TRANSFERRED_IN",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "팀이동: 공통플랫폼개발팀 → 자산플랫폼개발팀",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -353,7 +357,7 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.6,
     email: "yujin.choi@company.com",
     metrics: generateMetrics(3),
-    change: {},
+    change: [],
   },
   {
     type: "member",
@@ -373,13 +377,15 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.6,
     email: "donghyun.hwang@company.com",
     metrics: generateMetrics(4),
-    change: {
-      changeType: "RESIGNED",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "RESIGNED",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "퇴사",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -399,13 +405,15 @@ const assetPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: null,
     email: "sihyun.kim@company.com",
     metrics: generateMetrics(5, false), // 휴직 상태는 지표 미사용
-    change: {
-      changeType: "ON_LEAVE",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "ON_LEAVE",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "휴직",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
 ];
 
@@ -429,7 +437,7 @@ const tradingPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.6,
     email: "gaeun.kim@company.com",
     metrics: generateMetrics(6),
-    change: {},
+    change: [],
   },
 ];
 
@@ -454,13 +462,15 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 2.3,
     email: "hyeongbu.park@company.com",
     metrics: generateMetrics(7),
-    change: {
-      changeType: "RESIGNED",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "RESIGNED",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "퇴사",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -481,13 +491,15 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 2.3,
     email: "nambu.park@company.com",
     metrics: generateMetrics(8),
-    change: {
-      changeType: "JOINED",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "JOINED",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "입사",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -507,7 +519,7 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 2.3,
     email: "hanju.hwang@company.com",
     metrics: generateMetrics(9),
-    change: {},
+    change: [],
   },
   {
     type: "member",
@@ -527,14 +539,30 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 2.3,
     email: "duckhun.park@company.com",
     metrics: generateMetrics(10),
-    change: {
-      changeType: "RETURNED",
-      changeDate: "2025-10-01T09:00:00.000Z",
-      changeEndDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "RETURNED",
+        changeDate: "2025-10-01T09:00:00.000Z",
+        changeEndDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "복직",
+        processedBy: "자동(LDAP)",
+      },
+      {
+        changeType: "TRANSFERRED_OUT",
+        changeDate: "2025-10-01T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "팀이동: 자산플랫폼개발팀 → 공통플랫폼개발팀",
+        processedBy: "자동(LDAP)",
+      },
+      {
+        changeType: "CHANGED_ROLE",
+        changeDate: "2025-10-01T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "직급변경: 사원 → 대리",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -554,13 +582,15 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.1,
     email: "gimo.yang@company.com",
     metrics: generateMetrics(11),
-    change: {
-      changeType: "TRANSFERRED_OUT",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "(전)공통플랫폼개발팀 → (후)자산플랫폼개발팀",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "TRANSFERRED_OUT",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "팀이동: 공통플랫폼개발팀 → 자산플랫폼개발팀",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
   {
     type: "member",
@@ -580,13 +610,15 @@ const commonPlatformDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 2.3,
     email: "junseo.lim@company.com",
     metrics: generateMetrics(12),
-    change: {
-      changeType: "CHANGED_ROLE",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "(전)사원",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "CHANGED_ROLE",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "직급변경: 사원 → 대리",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
 ];
 
@@ -615,7 +647,7 @@ const iosDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 4.4,
     email: "yuchan.choi@company.com",
     metrics: generateMetrics(13),
-    change: {},
+    change: [],
   },
 ];
 
@@ -640,7 +672,7 @@ const androidDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.6,
     email: "donghyun.hwang@company.com",
     metrics: generateMetrics(14),
-    change: {},
+    change: [],
   },
 ];
 
@@ -668,13 +700,15 @@ const regulationDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: null,
     email: "sihyun.kim@company.com",
     metrics: [], // 신입이라 지표 데이터 없음
-    change: {
-      changeType: "JOINED",
-      changeDate: "2025-11-20T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "JOINED",
+        changeDate: "2025-11-20T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "입사",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
 ];
 
@@ -703,7 +737,7 @@ const financialProductDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.1,
     email: "donghyun.kang@company.com",
     metrics: generateMetrics(15),
-    change: {},
+    change: [],
   },
 ];
 
@@ -728,7 +762,7 @@ const memberAuthDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 1.2,
     email: "gapsu.kim@company.com",
     metrics: generateMetrics(16),
-    change: {},
+    change: [],
   },
 ];
 
@@ -753,7 +787,7 @@ const orderDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.1,
     email: "hyunju.ham@company.com",
     metrics: generateMetrics(17),
-    change: {},
+    change: [],
   },
 ];
 
@@ -782,7 +816,7 @@ const tradingWebDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 0.1,
     email: "gildong.hong@company.com",
     metrics: generateMetrics(18),
-    change: {},
+    change: [],
   },
   {
     type: "member",
@@ -802,7 +836,7 @@ const tradingWebDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 4.1,
     email: "gamchan.kang@company.com",
     metrics: generateMetrics(19),
-    change: {},
+    change: [],
   },
 ];
 
@@ -827,13 +861,15 @@ const clientWebDevTeamMembers: ApiOrganizationMember[] = [
     changeRate: 4.4,
     email: "hyeonsu.lee@company.com",
     metrics: generateMetrics(20),
-    change: {
-      changeType: "CHANGED_ROLE",
-      changeDate: "2025-11-28T09:00:00.000Z",
-      category: "HR",
-      changeDetail: "사원 → 대리",
-      processedBy: "자동(LDAP)",
-    },
+    change: [
+      {
+        changeType: "CHANGED_ROLE",
+        changeDate: "2025-11-28T09:00:00.000Z",
+        category: "HR",
+        changeDetail: "직급변경: 사원 → 대리",
+        processedBy: "자동(LDAP)",
+      },
+    ],
   },
 ];
 
@@ -862,13 +898,15 @@ const assetPlatformDevTeam: ApiOrganizationDepartment = {
   bdpi: 84.9,
   changeRate: 2.9,
   metrics: generateMetrics(101),
-  change: {
-    changeType: "CREATED",
-    changeDate: "2025-11-28T09:00:00.000Z",
-    category: "GROUP",
-    changeDetail: "",
-    processedBy: "자동(LDAP)",
-  },
+  change: [
+    {
+      changeType: "CREATED",
+      changeDate: "2025-11-28T09:00:00.000Z",
+      category: "GROUP",
+      changeDetail: "조직생성",
+      processedBy: "자동(LDAP)",
+    },
+  ],
 };
 
 // 코어플랫폼개발실 > 거래플랫폼개발팀
@@ -892,7 +930,7 @@ const tradingPlatformDevTeam: ApiOrganizationDepartment = {
   bdpi: 83.9,
   changeRate: 0.6,
   metrics: generateMetrics(102),
-  change: {},
+  change: [],
 };
 
 // 코어플랫폼개발실 > 공통플랫폼개발팀
@@ -916,7 +954,7 @@ const commonPlatformDevTeam: ApiOrganizationDepartment = {
   bdpi: 84.2,
   changeRate: 2.3,
   metrics: generateMetrics(103),
-  change: {},
+  change: [],
 };
 
 // 모바일App개발실 > iOS개발팀
@@ -940,7 +978,7 @@ const iosDevTeam: ApiOrganizationDepartment = {
   bdpi: 84.9,
   changeRate: 4.4,
   metrics: generateMetrics(104),
-  change: {},
+  change: [],
 };
 
 // 모바일App개발실 > Android개발팀
@@ -964,7 +1002,7 @@ const androidDevTeam: ApiOrganizationDepartment = {
   bdpi: 83.9,
   changeRate: 0.6,
   metrics: generateMetrics(105),
-  change: {},
+  change: [],
 };
 
 // 규제기술실 > 규제개발팀
@@ -988,7 +1026,7 @@ const regulationDevTeam: ApiOrganizationDepartment = {
   bdpi: 69.5,
   changeRate: -1.5,
   metrics: generateMetrics(106),
-  change: {},
+  change: [],
 };
 
 // 서비스BE개발실 > 금융상품개발팀
@@ -1012,13 +1050,15 @@ const financialProductDevTeam: ApiOrganizationDepartment = {
   bdpi: 76.9,
   changeRate: 0.1,
   metrics: generateMetrics(107),
-  change: {
-    changeType: "RENAMED",
-    changeDate: "2025-11-28T09:00:00.000Z",
-    category: "GROUP",
-    changeDetail: "(전)모바일UI/UX팀",
-    processedBy: "자동(LDAP)",
-  },
+  change: [
+    {
+      changeType: "RENAMED",
+      changeDate: "2025-11-28T09:00:00.000Z",
+      category: "GROUP",
+      changeDetail: "정보변경: 모바일UI/UX팀 → 금융상품개발팀",
+      processedBy: "자동(LDAP)",
+    },
+  ],
 };
 
 // 서비스BE개발실 > 회원인증개발팀
@@ -1042,7 +1082,7 @@ const memberAuthDevTeam: ApiOrganizationDepartment = {
   bdpi: 78.5,
   changeRate: 1.2,
   metrics: generateMetrics(108),
-  change: {},
+  change: [],
 };
 
 // 서비스BE개발실 > 거래주문개발팀
@@ -1066,7 +1106,7 @@ const orderDevTeam: ApiOrganizationDepartment = {
   bdpi: 76.9,
   changeRate: 0.1,
   metrics: generateMetrics(109),
-  change: {},
+  change: [],
 };
 
 // 웹FE개발실 > 거래웹개발팀
@@ -1090,13 +1130,15 @@ const tradingWebDevTeam: ApiOrganizationDepartment = {
   bdpi: 81.4,
   changeRate: 2.1,
   metrics: generateMetrics(110),
-  change: {
-    changeType: "ADD",
-    changeDate: "2025-11-11T09:00:00.000Z",
-    category: "POLICY",
-    changeDetail: "",
-    processedBy: "자동(LDAP)",
-  },
+  change: [
+    {
+      changeType: "ADD",
+      changeDate: "2025-11-11T09:00:00.000Z",
+      category: "POLICY",
+      changeDetail: "개발유형추가",
+      processedBy: "{수정한 사용자}",
+    },
+  ],
 };
 
 // 웹FE개발실 > 클라이언트웹개발팀
@@ -1120,7 +1162,15 @@ const clientWebDevTeam: ApiOrganizationDepartment = {
   bdpi: 84.9,
   changeRate: 4.4,
   metrics: generateMetrics(111),
-  change: {},
+  change: [
+    {
+      changeType: "EXCLUDE",
+      changeDate: "2025-11-11T09:00:00.000Z",
+      category: "POLICY",
+      changeDetail: "개발유형제외",
+      processedBy: "{수정한 사용자}",
+    },
+  ],
 };
 
 // ================================
@@ -1147,13 +1197,15 @@ const corePlatformDevDeptHead: ApiOrganizationMember = {
   changeRate: 3.2,
   email: "junseo.kang@company.com",
   metrics: generateMetrics(21),
-  change: {
-    changeType: "CHANGED_POSITION",
-    changeDate: "2025-11-20T09:00:00.000Z",
-    category: "HR",
-    changeDetail: "(전)팀장",
-    processedBy: "자동(LDAP)",
-  },
+  change: [
+    {
+      changeType: "CHANGED_POSITION",
+      changeDate: "2025-11-20T09:00:00.000Z",
+      category: "HR",
+      changeDetail: "직책변경: (없음) → 팀장",
+      processedBy: "자동(LDAP)",
+    },
+  ],
 };
 
 // 코어플랫폼개발실
@@ -1182,7 +1234,7 @@ const corePlatformDevDept: ApiOrganizationDepartment = {
   bdpi: 84.3,
   changeRate: 1.9,
   metrics: generateMetrics(201),
-  change: {},
+  change: [],
 };
 
 // 모바일App개발실
@@ -1206,7 +1258,7 @@ const mobileAppDevDept: ApiOrganizationDepartment = {
   bdpi: 84.4,
   changeRate: 2.5,
   metrics: generateMetrics(202),
-  change: {},
+  change: [],
 };
 
 // 규제기술실
@@ -1230,13 +1282,15 @@ const regulationTechDept: ApiOrganizationDepartment = {
   bdpi: 69.5,
   changeRate: -1.5,
   metrics: generateMetrics(203),
-  change: {
-    changeType: "DELETED",
-    changeDate: "2025-11-28T09:00:00.000Z",
-    category: "GROUP",
-    changeDetail: "",
-    processedBy: "자동(LDAP)",
-  },
+  change: [
+    {
+      changeType: "DELETED",
+      changeDate: "2025-11-28T09:00:00.000Z",
+      category: "GROUP",
+      changeDetail: "실삭제",
+      processedBy: "자동(LDAP)",
+    },
+  ],
 };
 
 // 서비스BE개발실
@@ -1260,7 +1314,7 @@ const serviceBEDevDept: ApiOrganizationDepartment = {
   bdpi: 77.4,
   changeRate: 0.5,
   metrics: generateMetrics(204),
-  change: {},
+  change: [],
 };
 
 // 웹FE개발실
@@ -1284,7 +1338,7 @@ const webFEDevDept: ApiOrganizationDepartment = {
   bdpi: 82.6,
   changeRate: 2.9,
   metrics: generateMetrics(205),
-  change: {},
+  change: [],
 };
 
 // ================================
@@ -1317,7 +1371,7 @@ const itDivision: ApiOrganizationDepartment = {
   bdpi: 79.5,
   changeRate: 1.8,
   metrics: generateMetrics(301),
-  change: {},
+  change: [],
 };
 
 // ================================

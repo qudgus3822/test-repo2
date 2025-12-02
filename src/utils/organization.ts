@@ -191,12 +191,12 @@ export const getMemberDisplayName = (
 /**
  * 변경 이력이 있는지 확인합니다.
  *
- * @param change - ChangeInfo 객체
+ * @param change - ChangeInfo 배열
  * @returns 변경 이력 존재 여부
  */
-export const hasChangeInfo = (change?: ChangeInfo): boolean => {
-  if (!change) return false;
-  return Object.keys(change).length > 0;
+export const hasChangeInfo = (change?: ChangeInfo[]): boolean => {
+  if (!change || !Array.isArray(change)) return false;
+  return change.length > 0 && change.some((c) => Object.keys(c).length > 0);
 };
 
 /**

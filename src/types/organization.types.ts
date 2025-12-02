@@ -9,8 +9,8 @@
 // 멤버 상태 타입 (API: status)
 export type ApiMemberStatus =
   | "ACTIVE" // 재직
-  | "TRANSFERRED_IN" // 이동후
-  | "TRANSFERRED_OUT" // 이동전
+  | "TRANSFERRED_IN" // 이동 전
+  | "TRANSFERRED_OUT" // 이동 후
   | "JOINED" // 입사
   | "RESIGNED" // 퇴사
   | "ON_LEAVE" // 휴직
@@ -20,14 +20,14 @@ export type ApiMemberStatus =
 
 export const ApiMemberStatusLabel = {
   ACTIVE: "재직",
-  TRANSFERRED_IN: "이동후",
-  TRANSFERRED_OUT: "이동전",
+  TRANSFERRED_IN: "이동 전",
+  TRANSFERRED_OUT: "이동 후",
   JOINED: "입사",
   RESIGNED: "퇴사",
   ON_LEAVE: "휴직",
   RETURNED: "복직",
-  CHANGED_ROLE: "직급변경",
-  CHANGED_POSITION: "직책변경",
+  CHANGED_ROLE: "직급",
+  CHANGED_POSITION: "직책",
 };
 // 직급 타입 (API: role)
 export type ApiMemberRole =
@@ -66,19 +66,19 @@ export type ApiDepartmentStatus =
 
 export const ApiDepartmentStatusLabel = {
   ACTIVE: "활성",
-  CREATED: "생성",
-  DELETED: "삭제",
-  RENAMED: "변경",
+  CREATED: "조직생성",
+  DELETED: "조직삭제",
+  RENAMED: "정보변경",
 };
 
 // 정책 변경 타입
 export type ApiPolicyStatus =
-  | "ADD" // 추가
-  | "EXCLUDE"; // 제외
+  | "ADD" // 유형추가
+  | "EXCLUDE"; // 유형제외
 
 export const ApiPolicyStatusLabel = {
-  ADD: "추가",
-  EXCLUDE: "제외",
+  ADD: "유형추가",
+  EXCLUDE: "유형제외",
 };
 
 // 지표 카테고리 타입 (metrics.types.ts의 MetricCategory와 동일)
@@ -138,7 +138,7 @@ export interface ApiOrganizationMember extends ScoreMetrics {
   previousRole?: ApiMemberRole; // 이전 직급 (승진 시)
   // 화면 표시용 추가 필드
   email?: string; // 이메일 주소
-  change?: ChangeInfo; // 변경 사항 (인사 변경 등)
+  change?: ChangeInfo[]; // 변경 사항 (인사 변경 등) - 복수 가능
 }
 
 // 조직(팀/부서) 정보 (API: type === "department")
@@ -156,7 +156,7 @@ export interface ApiOrganizationDepartment extends ScoreMetrics {
   memberCount: number;
   children?: ApiOrganizationNode[]; // 하위 조직 또는 멤버
   isExpanded?: boolean; // UI 상태 (클라이언트 전용)
-  change?: ChangeInfo; // 변경 사항 (조직 변경, 정책 변경 등)
+  change?: ChangeInfo[]; // 변경 사항 (조직 변경, 정책 변경 등) - 복수 가능
 }
 
 // 조직 트리 노드 (부서 또는 멤버)
