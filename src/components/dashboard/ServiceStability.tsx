@@ -113,10 +113,15 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
   // 에러 상태
   if (error) {
     return (
-      <Card className="w-full">
-        <p className="text-red-500">
-          {error.message || "서비스 안정성 데이터를 불러오는데 실패했습니다."}
-        </p>
+      <Card className="w-full h-auto">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          서비스 안정성
+        </h3>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="col-span-full flex items-center justify-center py-16">
+            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+          </div>
+        </div>
       </Card>
     );
   }

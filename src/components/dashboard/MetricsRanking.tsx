@@ -54,18 +54,19 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
     );
   }
 
-  // 에러 상태
-  if (error) {
+  // 에러 상태 또는 데이터가 없는 경우
+  const hasNoData = topGainers.length === 0 && topLosers.length === 0;
+  if (error || hasNoData) {
     return (
-      <p className="text-red-500">
-        {error.message || "지표 순위 데이터를 불러오는데 실패했습니다."}
-      </p>
+      <>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">지표 순위</h3>
+        <div className="grid grid-cols-1">
+          <div className="flex items-center justify-center min-h-[264px]">
+            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+          </div>
+        </div>
+      </>
     );
-  }
-
-  // 데이터가 없는 경우
-  if (topGainers.length === 0 && topLosers.length === 0) {
-    return <p className="text-gray-500">지표 순위 데이터가 없습니다.</p>;
   }
 
   return (

@@ -76,11 +76,13 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
   // 에러 상태
   if (error) {
     return (
-      <Card className="w-full">
-        <p className="text-red-500">
-          {error.message ||
-            "개발 생산성 트렌드 데이터를 불러오는데 실패했습니다."}
-        </p>
+      <Card className="w-full h-auto">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          개발생산성 트렌드
+        </h3>
+        <div className="flex items-center justify-center" style={{ height: 350 }}>
+          <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+        </div>
       </Card>
     );
   }

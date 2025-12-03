@@ -13,9 +13,7 @@ const TypeBadge = ({ type }: { type: string }) => {
   return (
     <span
       className={`px-2 py-0.5 text-xs rounded-full ${
-        isDevType
-          ? "bg-blue-100 text-blue-700"
-          : "bg-gray-100 text-gray-600"
+        isDevType ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
       }`}
     >
       {isDevType ? "개발" : "비개발"}
@@ -93,7 +91,6 @@ const DepartmentList = ({
 // 팀 목록 컴포넌트
 const TeamList = ({
   teams,
-  departmentName,
   selectedId,
   onSelect,
 }: {
@@ -110,9 +107,7 @@ const TeamList = ({
             className="w-2 h-2 rounded-full"
             style={{ backgroundColor: PALETTE_COLORS.orange }}
           />
-          <span className="font-medium text-gray-900">
-            {departmentName} - 팀 목록
-          </span>
+          <span className="font-medium text-gray-900">팀 목록</span>
         </div>
       </div>
       <div className="overflow-y-auto max-h-[400px]">
@@ -166,7 +161,9 @@ const MemberList = ({
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-gray-500" />
-          <span className="font-medium text-gray-900">{teamName} - 개인 목록</span>
+          <span className="font-medium text-gray-900">
+            {teamName} - 개인 목록
+          </span>
         </div>
       </div>
       <div className="overflow-y-auto max-h-[400px]">
@@ -223,7 +220,9 @@ const ChangeHistorySection = () => {
     <Card padding="sm" className="mt-4">
       <div className="flex items-center gap-2 mb-2">
         <ChevronRight className="w-4 h-4 text-gray-500 rotate-90" />
-        <span className="font-medium text-gray-700 text-sm">실/팀 변경 이력</span>
+        <span className="font-medium text-gray-700 text-sm">
+          실/팀 변경 이력
+        </span>
       </div>
       <ul className="list-disc list-inside text-sm text-gray-500 pl-2">
         <li>변경 이력이 없습니다.</li>
@@ -234,10 +233,12 @@ const ChangeHistorySection = () => {
 
 // 메인 조직도 관리 컴포넌트
 export const OrganizationManagement = () => {
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<string | null>(
-    "dept-5"
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<
+    string | null
+  >("dept-5");
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(
+    "team-5-1",
   );
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>("team-5-1");
   const [isAutoSyncEnabled] = useState(true);
   const [isOrgTypeModalOpen, setIsOrgTypeModalOpen] = useState(false);
 
@@ -245,12 +246,12 @@ export const OrganizationManagement = () => {
 
   // 선택된 부서
   const selectedDepartment = departments.find(
-    (d) => d.id === selectedDepartmentId
+    (d) => d.id === selectedDepartmentId,
   );
 
   // 선택된 팀
   const selectedTeam = selectedDepartment?.teams.find(
-    (t) => t.id === selectedTeamId
+    (t) => t.id === selectedTeamId,
   );
 
   // 부서 선택 핸들러
@@ -338,7 +339,9 @@ export const OrganizationManagement = () => {
       {/* 하단 영역 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>마지막 동기화: {lastSyncDate} ({syncSource})</span>
+          <span>
+            마지막 동기화: {lastSyncDate} ({syncSource})
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span

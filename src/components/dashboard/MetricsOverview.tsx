@@ -91,9 +91,11 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
   if (error) {
     return (
       <Card className="w-full h-auto">
-        <p className="text-red-500">
-          전사 BDPI 데이터를 불러오는데 실패했습니다.
-        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="col-span-full flex items-center justify-center h-40">
+            <p className="text-gray-500">수집된 전사 BDPI 데이터가 없습니다.</p>
+          </div>
+        </div>
       </Card>
     );
   }

@@ -63,9 +63,14 @@ export const TargetValueAchievement = (
     // 에러 상태
     if (error) {
       return (
-        <p className="text-red-500">
-          {error.message || "목표 달성률 데이터를 불러오는데 실패했습니다."}
-        </p>
+        <>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            목표 달성률
+          </h3>
+          <div className="flex flex-col items-center justify-center py-5" style={{ minHeight: 240 }}>
+            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+          </div>
+        </>
       );
     }
 
