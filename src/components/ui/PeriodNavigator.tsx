@@ -7,6 +7,10 @@ interface PeriodNavigatorProps {
   onPeriodChange: (period: PeriodType) => void;
   currentDate: Date;
   onDateChange: (date: Date) => void;
+  /** 조직도 현황 버튼 표시 여부 (기본값: false) */
+  showOrgChartButton?: boolean;
+  /** 조직도 현황 버튼 클릭 핸들러 */
+  onOrgChartClick?: () => void;
 }
 
 /**
@@ -27,6 +31,8 @@ export const PeriodNavigator = ({
   //onPeriodChange,
   currentDate,
   onDateChange,
+  showOrgChartButton = false,
+  onOrgChartClick,
 }: PeriodNavigatorProps) => {
   const handlePrevious = () => {
     const newDate = new Date(currentDate);
@@ -129,6 +135,16 @@ export const PeriodNavigator = ({
           />
         </button>
       </div>
+
+      {/* 조직도 현황 버튼 (홈 화면에서만 표시) */}
+      {showOrgChartButton && (
+        <button
+          onClick={onOrgChartClick}
+          className="px-4 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          조직도 현황
+        </button>
+      )}
     </div>
   );
 };

@@ -69,6 +69,50 @@ export const TEXT_COLORS = {
   disabled: "#9CA3AF", // 비활성화 텍스트
 } as const;
 
+// 조직비교 점수 색상 (달성률 기반)
+export const SCORE_COLORS = {
+  excellent: "#91D470", // 80% 이상 (초록)
+  good: "#FBFFBD", // 70% ~ 80% 미만 (연한 노란색)
+  danger: "#F38752", // 70% 미만 (주황)
+  none: "#F3F4F6", // 데이터 없음 (회색)
+} as const;
+
+// 조직비교 상태 뱃지 색상 (ApiMemberStatus 기준)
+export const STATUS_BADGE_COLORS = {
+  ACTIVE: { bg: "#DBEAFE", text: "#2563EB" }, // 재직 (blue-100, blue-600)
+  JOINED: { bg: "#F3E8FF", text: "#7C3AED" }, // 입사 (purple-100, purple-600)
+  RESIGNED: { bg: "#FEE2E2", text: "#DC2626" }, // 퇴사 (red-100, red-600)
+  ON_LEAVE: { bg: "#F3F4F6", text: "#4B5563" }, // 휴직 (gray-100, gray-600)
+  RETURNED: { bg: "#EDE9FE", text: "#7C3AED" }, // 복직 (violet-100, violet-600)
+  TRANSFERRED_IN: { bg: "#FEF3C7", text: "#D97706" }, // 이동후 (amber-100, amber-600)
+  TRANSFERRED_OUT: { bg: "#FEF3C7", text: "#D97706" }, // 이동전 (amber-100, amber-600)
+  CHANGED_ROLE: { bg: "#DBEAFE", text: "#2563EB" }, // 직급변경 (blue-100, blue-600)
+  CHANGED_POSITION: { bg: "#DBEAFE", text: "#2563EB" }, // 직책변경 (blue-100, blue-600)
+  default: { bg: "#F3F4F6", text: "#4B5563" }, // 기본 (gray-100, gray-600)
+} as const;
+
+// 변경 유형 뱃지 색상 (ApiMemberStatus, ApiDepartmentStatus, ApiPolicyStatus)
+export const CHANGE_TYPE_BADGE_COLORS = {
+  // ApiMemberStatus
+  CHANGED_ROLE: "#5B6CFF", // 직책변경 (파란색)
+  CHANGED_POSITION: "#0063AC", // 직급변경 (파란색)
+  TRANSFERRED_OUT: "#DA9604", // 이동전 (주황색)
+  TRANSFERRED_IN: "#DA9604", // 이동후 (주황색)
+  JOINED: "#7B88FF", // 입사 (보라색)
+  RESIGNED: "#7B7B7B", // 퇴사 (회색)
+  ON_LEAVE: "#A7A7A7", // 휴직 (연회색)
+  RETURNED: "#AD89B3", // 복직 (연보라색)
+  // ApiDepartmentStatus
+  CREATED: "#7B88FF", // 생성 (보라색)
+  DELETED: "#FF6A6A", // 삭제 (빨간색)
+  RENAMED: "#90A1B9", // 변경 (연회색)
+  // ApiPolicyStatus
+  ADD: "#5B6CFF", // 추가 (보라색)
+  EXCLUDE: "#90A1B9", // 제외 (회색)
+  // 기본값
+  default: "#6B7280", // 기본 (회색)
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -78,4 +122,7 @@ export const COLORS = {
   trend: TREND_COLORS,
   status: STATUS_COLORS,
   text: TEXT_COLORS,
+  score: SCORE_COLORS,
+  statusBadge: STATUS_BADGE_COLORS,
+  changeTypeBadge: CHANGE_TYPE_BADGE_COLORS,
 } as const;

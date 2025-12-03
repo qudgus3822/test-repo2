@@ -1,9 +1,29 @@
 import { User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import logoBlack from "@/assets/images/bithumb_logo_black_vertical.png";
 import { useCurrentDate } from "@/hooks";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Header() {
   const currentDate = useCurrentDate();
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const setLoggedOut = useAuthStore((state) => state.setLoggedOut);
+
+  const handleProfileClick = () => {
+    if (user) {
+      // 로그인 상태: 로그아웃 확인
+      if (window.confirm("로그아웃 하시겠습니까?")) {
+        setLoggedOut();
+        navigate("/login");
+      }
+    } else {
+      // 비로그인 상태: 로그인 페이지 이동 확인
+      if (window.confirm("로그인 페이지로 이동하시겠습니까?")) {
+        navigate("/login");
+      }
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-[#E2E8F0] z-10">
@@ -42,12 +62,19 @@ export default function Header() {
           </button> */}
 
           {/* 사용자 프로필 */}
-          <div className="flex items-center gap-2">
+          <button
+            onClick={handleProfileClick}
+            className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <div className="w-8 h-8 bg-[#E2E8F0] rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-gray-600" />
             </div>
-            {/* <span className="text-sm font-medium text-gray-900">홍길동</span> */}
-          </div>
+            {user && (
+              <span className="text-sm font-medium text-gray-900">
+                {user.name}
+              </span>
+            )}
+          </button>
         </div>
       </div>
     </header>

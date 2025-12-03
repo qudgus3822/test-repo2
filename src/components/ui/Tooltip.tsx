@@ -37,7 +37,7 @@ export const Tooltip = ({
   children,
   content,
   color = "#374151",
-  maxWidth = 175,
+  maxWidth,
   arrowPosition = "top-1/2",
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -71,12 +71,12 @@ export const Tooltip = ({
       {isVisible &&
         createPortal(
           <div
-            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg break-words pointer-events-none"
+            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg break-words pointer-events-none whitespace-pre-line"
             style={{
               backgroundColor: color,
               top: `${position.top - 8}px`,
               left: `${position.left}px`,
-              maxWidth: `${maxWidth}px`,
+              ...(maxWidth !== undefined && { maxWidth: `${maxWidth}px` }),
             }}
           >
             {content}

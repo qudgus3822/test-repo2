@@ -1,12 +1,77 @@
 import { MetricCategory, MetricStatus } from "@/types/metrics.types";
 import type { ThresholdType } from "@/types/serviceStability.types";
-import {
-  CheckCircle2,
-  AlertCircle,
-  CircleX,
-} from "lucide-react";
+import { CheckCircle2, AlertCircle, CircleX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { STATUS_COLORS, TEXT_COLORS } from "@/styles/colors";
+
+// ================================
+// 지표 코드 → 지표명 매핑
+// ================================
+
+/**
+ * 지표 코드를 `화면 노출 지표명`으로 매핑하는 객체
+ *
+ * @example
+ * ```typescript
+ * import { METRIC_CODE_NAMES } from "@/utils/metrics";
+ *
+ * const name = METRIC_CODE_NAMES["TECH_DEBT"];
+ * // Returns: "기술부채"
+ * ```
+ */
+export const METRIC_CODE_NAMES: Record<string, string> = {
+  // 코드품질 (9개)
+  TECH_DEBT: "기술부채",
+  CODE_COMPLEXITY: "코드복잡도",
+  CODE_DUPLICATION: "코드중복률",
+  CODE_SMELL: "코드스멜",
+  TEST_COVERAGE: "테스트커버리지",
+  SECURITY_VULNERABILITIES: "보안취약점수",
+  CODE_COUPLING: "코드결함밀도",
+  BUG_COUNT: "버그 발생 수",
+  INCIDENT_COUNT: "장애 발생 수",
+  // 리뷰품질 (12개)
+  REVIEW_SPEED: "리뷰 속도",
+  REVIEW_RESPONSE_RATE: "요청응답률",
+  REVIEW_PARTICIPATION_RATE: "리뷰 참여율",
+  REVIEW_ACCEPTANCE_RATE: "제안수용률",
+  REVIEW_FEEDBACK_CONCRETENESS: "피드백구체성",
+  REVIEW_REVIEWER_DIVERSE: "리뷰어 다양성",
+  REVIEW_REQUEST_COUNT: "리뷰요청수",
+  REVIEW_PARTICIPATION_COUNT: "리뷰참여수",
+  REVIEW_PASS_RATE: "초회통과율",
+  REVIEW_PARTICIPATION_NUMBER: "코드리뷰 참여수치",
+  REVIEW_FEEDBACK_TIME: "피드백반영시간",
+  REVIEW_COMPLETION_TIME: "리뷰완료시간",
+  // 개발효율 (9개)
+  DEPLOYMENT_FREQUENCY: "배포빈도",
+  COMMIT_FREQUENCY: "커밋빈도",
+  LEAD_TIME: "평균장애해결시간",
+  FAILURE_DETECTION_TIME: "장애탐지시간",
+  FAILURE_DIAGNOSIS_TIME: "장애진단시간",
+  FAILURE_RECOVERY_TIME: "장애복구시간",
+  DEPLOYMENT_SUCCESS_RATE: "배포성공률",
+  MR_SIZE: "MR크기",
+  CODE_LINE_COUNT_PER_COMMIT: "커밋당 라인수",
+};
+
+/**
+ * 지표 코드를 한글 지표명으로 변환합니다.
+ *
+ * @param metricCode - 지표 코드 (예: "TECH_DEBT")
+ * @returns 한글 지표명 또는 원본 코드 (매핑이 없는 경우)
+ *
+ * @example
+ * ```typescript
+ * import { getMetricName } from "@/utils/metrics";
+ *
+ * const name = getMetricName("TECH_DEBT");
+ * // Returns: "기술부채"
+ * ```
+ */
+export const getMetricName = (metricCode: string): string => {
+  return METRIC_CODE_NAMES[metricCode] || metricCode;
+};
 
 /**
  * MetricCategory enum을 한글 라벨로 변환합니다.
@@ -205,7 +270,7 @@ export const getStatusIconConfig = (status: StatusType): StatusIconConfig => {
 export const calculateMetricStatus = (
   achievementRate: number,
   excellentThreshold: number,
-  dangerThreshold: number
+  dangerThreshold: number,
 ): MetricStatus => {
   if (achievementRate >= excellentThreshold) {
     return MetricStatus.EXCELLENT;
