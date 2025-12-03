@@ -69,6 +69,25 @@ export const TEXT_COLORS = {
   disabled: "#9CA3AF", // 비활성화 텍스트
 } as const;
 
+// 프로필 아바타 색상 (이름 기반 색상 결정에 사용)
+export const AVATAR_COLORS = {
+  amber: "#F59E0B",
+  emerald: "#10B981",
+  blue: "#3B82F6",
+  violet: "#8B5CF6",
+  pink: "#EC4899",
+  cyan: "#06B6D4",
+} as const;
+
+// 아바타 색상 배열 (순환 참조용)
+export const AVATAR_COLOR_ARRAY = Object.values(AVATAR_COLORS);
+
+// 이름에서 아바타 색상 결정 헬퍼 함수
+export const getAvatarColor = (name: string): string => {
+  const index = name.charCodeAt(0) % AVATAR_COLOR_ARRAY.length;
+  return AVATAR_COLOR_ARRAY[index];
+};
+
 // 조직비교 점수 색상 (달성률 기반)
 export const SCORE_COLORS = {
   excellent: "#91D470", // 80% 이상 (초록)
@@ -122,6 +141,7 @@ export const COLORS = {
   trend: TREND_COLORS,
   status: STATUS_COLORS,
   text: TEXT_COLORS,
+  avatar: AVATAR_COLORS,
   score: SCORE_COLORS,
   statusBadge: STATUS_BADGE_COLORS,
   changeTypeBadge: CHANGE_TYPE_BADGE_COLORS,
