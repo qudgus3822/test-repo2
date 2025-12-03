@@ -1,4 +1,9 @@
-import { ChevronRight, ChevronDown, Search as SearchIcon } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Search as SearchIcon,
+  Loader2,
+} from "lucide-react";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import {
@@ -27,6 +32,7 @@ import {
 } from "@/utils/organization";
 import { METRIC_CODE_NAMES } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 
 // 탭 타입 → 지표 카테고리 매핑
 const TAB_TO_CATEGORY: Record<
@@ -91,7 +97,7 @@ const getMetricsByCategory = (
 };
 
 interface OrganizationTableProps {
-  organizations: ApiOrganizationDepartment[];
+  month: string; // YYYY-MM 형식
 }
 
 // 점수에 따른 배경색 결정
@@ -467,10 +473,43 @@ const OrganizationRow = ({
   );
 };
 
-export const OrganizationTable = ({
-  organizations,
-}: OrganizationTableProps) => {
+export const OrganizationTable = ({ month }: OrganizationTableProps) => {
   const { activeTab } = useOrganizationStore();
+
+  // API에서 조직 트리 가져오기
+  const { data, isLoading, isError, error } = useOrganizationTree(month);
+  const organizations = data?.tree ?? [];
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 border border-gray-200 rounded-lg">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <span className="ml-2 text-gray-500">조직 데이터 로딩 중...</span>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-red-500 border border-gray-200 rounded-lg">
+        <span className="text-lg font-medium">데이터 로딩 실패</span>
+        <span className="text-sm mt-1">
+          {error?.message || "조직 데이터를 불러오는데 실패했습니다."}
+        </span>
+      </div>
+    );
+  }
+
+  // 빈 데이터 상태
+  if (organizations.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-20 text-gray-500 border border-gray-200 rounded-lg">
+        <span>해당 기간의 조직 데이터가 없습니다.</span>
+      </div>
+    );
+  }
 
   // 공통 th 스타일
   const thStyle = "px-3 py-3 text-center text-sm font-medium text-gray-700";

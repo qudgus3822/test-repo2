@@ -9,7 +9,7 @@ import {
   ScoreLegend,
 } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
-import { mockApiOrganizationCompare } from "@/mocks/organization.mock";
+import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import type { ApiOrganizationDepartment } from "@/types/organization.types";
 
 // Level 3(팀)까지의 조직 코드 수집 (부문 + 실 + 팀)
@@ -44,8 +44,15 @@ const OrganizationPage = () => {
     isTeamsExpanded,
   } = useOrganizationStore();
 
-  // 새로운 API 구조에서 조직 트리 가져오기
-  const organizations = mockApiOrganizationCompare.tree;
+  // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
+  const yearMonth = `${currentDate.getFullYear()}-${String(
+    currentDate.getMonth() + 1,
+  ).padStart(2, "0")}`;
+
+  // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
+  const { data } = useOrganizationTree(yearMonth);
+  const organizations = data?.tree ?? [];
+
   console.log("organizations", organizations);
   const handleToggleTeams = () => {
     if (isTeamsExpanded) {
@@ -109,7 +116,7 @@ const OrganizationPage = () => {
 
         {/* 조직 테이블 */}
         <div className="p-4">
-          <OrganizationTable organizations={organizations} />
+          <OrganizationTable month={yearMonth} />
         </div>
 
         {/* 범례 */}
