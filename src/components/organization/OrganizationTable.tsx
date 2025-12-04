@@ -1,9 +1,4 @@
-import {
-  ChevronRight,
-  ChevronDown,
-  Search as SearchIcon,
-  Loader2,
-} from "lucide-react";
+import { ChevronRight, ChevronDown, Search as SearchIcon } from "lucide-react";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import {
@@ -34,9 +29,10 @@ import {
   formatChangeDate,
   getMemberEmail,
 } from "@/utils/organization";
-import { METRIC_CODE_NAMES } from "@/utils/metrics";
+import { METRIC_CODE_NAMES, getMetricOrder } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // 탭 타입 → 지표 카테고리 매핑
 const TAB_TO_CATEGORY: Record<
@@ -48,7 +44,7 @@ const TAB_TO_CATEGORY: Record<
   developmentEfficiency: "development_efficiency",
 };
 
-// 카테고리별 지표 코드 목록 (METRIC_CODE_NAMES 기준, 순서 유지)
+// 카테고리별 지표 코드 목록 (METRIC_CODE_ORDER 순서로 정렬)
 const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
   code_quality: [
     "TECH_DEBT",
@@ -60,7 +56,7 @@ const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
     "CODE_COUPLING",
     "BUG_COUNT",
     "INCIDENT_COUNT",
-  ],
+  ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
   review_quality: [
     "REVIEW_SPEED",
     "REVIEW_RESPONSE_RATE",
@@ -74,7 +70,7 @@ const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
     "REVIEW_PARTICIPATION_NUMBER",
     "REVIEW_FEEDBACK_TIME",
     "REVIEW_COMPLETION_TIME",
-  ],
+  ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
   development_efficiency: [
     "DEPLOYMENT_FREQUENCY",
     "COMMIT_FREQUENCY",
@@ -85,7 +81,7 @@ const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
     "DEPLOYMENT_SUCCESS_RATE",
     "MR_SIZE",
     "CODE_LINE_COUNT_PER_COMMIT",
-  ],
+  ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
 };
 
 // BDPI 탭용 metrics인지 확인하는 타입 가드
@@ -195,7 +191,9 @@ const ScoreCell = ({
         !isNoData && getScoreTextColor(score),
       )}
       style={{
-        backgroundColor: isNoData ? SCORE_COLORS.noData : getScoreBgColor(score),
+        backgroundColor: isNoData
+          ? SCORE_COLORS.noData
+          : getScoreBgColor(score),
         color: isNoData ? SCORE_COLORS.noDataText : undefined,
       }}
     >
@@ -521,43 +519,21 @@ export const OrganizationTable = ({
   activeTab,
 }: OrganizationTableProps) => {
   // API에서 조직 트리 가져오기 (탭별로 다른 API 호출)
-  const { data, isLoading, isError, error } = useOrganizationTree(
-    month,
-    activeTab,
-  );
+  const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   // isEvaluationTarget: true인 조직만 필터링 후 sortOrder로 정렬
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  console.log("organizations", organizations);
-  // 로딩 상태
-  if (isLoading) {
+  // 로딩, 에러, 데이터 없음 상태
+  if (isLoading || isError || organizations.length === 0) {
     return (
-      <div className="flex items-center justify-center py-20 border border-gray-200 rounded-lg">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-        <span className="ml-2 text-gray-500">조직 데이터 로딩 중...</span>
-      </div>
-    );
-  }
-
-  // 에러 상태
-  if (isError) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-red-500 border border-gray-200 rounded-lg">
-        <span className="text-lg font-medium">데이터 로딩 실패</span>
-        <span className="text-sm mt-1">
-          {error?.message || "조직 데이터를 불러오는데 실패했습니다."}
-        </span>
-      </div>
-    );
-  }
-
-  // 빈 데이터 상태
-  if (organizations.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-20 text-gray-500 border border-gray-200 rounded-lg">
-        <span>해당 기간의 조직 데이터가 없습니다.</span>
+      <div className="flex items-center justify-center min-h-[510px]">
+        {isLoading ? (
+          <LoadingSpinner />
+        ) : (
+          <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+        )}
       </div>
     );
   }

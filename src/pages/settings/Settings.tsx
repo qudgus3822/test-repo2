@@ -13,7 +13,7 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("organization");
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50">
       {/* 탭 네비게이션 */}
       <div className="mb-6 border-b border-gray-200">
         <nav className="flex gap-8">

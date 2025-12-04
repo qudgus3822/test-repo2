@@ -3,6 +3,7 @@ import { TREND_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import { useMetricRankings } from "@/api/hooks/useMetricRankings";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface MetricsRankingProps {
   month: string;
@@ -45,25 +46,18 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
     [metricRankingsData],
   );
 
-  // 로딩 상태
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  // 에러 상태 또는 데이터가 없는 경우
+  // 로딩, 에러, 데이터 없음 상태
   const hasNoData = topGainers.length === 0 && topLosers.length === 0;
-  if (error || hasNoData) {
+  if (isLoading || error || hasNoData) {
     return (
       <>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">지표 순위</h3>
-        <div className="grid grid-cols-1">
-          <div className="flex items-center justify-center min-h-[260px]">
+        <div className="flex items-center justify-center min-h-[257px]">
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
             <p className="text-gray-500">수집된 데이터가 없습니다.</p>
-          </div>
+          )}
         </div>
       </>
     );

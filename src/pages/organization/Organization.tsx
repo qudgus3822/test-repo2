@@ -61,8 +61,17 @@ const OrganizationPage = () => {
   ).padStart(2, "0")}`;
 
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
-  const { data } = useOrganizationTree(yearMonth, activeTab);
+  const { data, isLoading, isError } = useOrganizationTree(
+    yearMonth,
+    activeTab,
+  );
   const organizations = data?.tree ?? [];
+
+  // 데이터가 있는지 확인 (isEvaluationTarget: true인 조직이 있는지)
+  const hasData =
+    !isLoading &&
+    !isError &&
+    organizations.filter((org) => org.isEvaluationTarget).length > 0;
 
   // 화면 진입 시 Level 1(부문)까지 펼침 상태로 초기화
   useEffect(() => {
@@ -122,10 +131,10 @@ const OrganizationPage = () => {
         </div>
 
         {/* 두 번째 줄: 비교 그룹 + 비교 입력 (추후 고도화 예정) */}
-        <div className="h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200 opacity-60 cursor-not-allowed select-none">
+        <div className="h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200 opacity-99 cursor-not-allowed select-none">
           <CompareGroupSelector />
           {/* 추후 개발 예정 안내 */}
-          <span className="absolute left-1/2 -translate-x-1/2 text-sm text-gray-700 font-medium">
+          <span className="absolute left-1/2 -translate-x-1/2 text-sm text-gray-400 font-medium">
             추후 개발 예정
           </span>
           {/* 비교 입력 버튼 */}
@@ -134,15 +143,16 @@ const OrganizationPage = () => {
           </Button>
         </div>
 
-        {/* 조직 테이블 */}
-        <div className="p-4">
+        {/* 조직 테이블 + 범례 (데이터가 있을 때만 범례 표시) */}
+        <div className="p-4 border-b border-gray-200">
           <OrganizationTable month={yearMonth} activeTab={activeTab} />
         </div>
 
-        {/* 범례 */}
-        <div className="border-t border-gray-200">
-          <ScoreLegend />
-        </div>
+        {hasData && (
+          <div>
+            <ScoreLegend />
+          </div>
+        )}
       </Card>
     </div>
   );

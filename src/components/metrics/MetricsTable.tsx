@@ -26,6 +26,7 @@ import {
   calculateMetricStatus,
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -56,6 +57,8 @@ const getCategoryStyle = (category: MetricCategory) => {
 
 interface MetricsTableProps {
   metrics: MetricItem[];
+  isLoading?: boolean;
+  isError?: boolean;
 }
 
 interface Tab {
@@ -65,7 +68,11 @@ interface Tab {
   category?: MetricCategory;
 }
 
-export const MetricsTable = ({ metrics }: MetricsTableProps) => {
+export const MetricsTable = ({
+  metrics,
+  isLoading = false,
+  isError = false,
+}: MetricsTableProps) => {
   const {
     activeTab,
     setActiveTab,
@@ -129,6 +136,11 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
 
   // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
   const getTableHeight = () => {
+    // 데이터가 없는 경우 최소 높이 반환
+    if (isLoading || isError || metrics.length === 0) {
+      return 225;
+    }
+
     let count = 0;
     switch (activeTab) {
       case "all":
@@ -225,6 +237,9 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
     setIsMetricsDetailModalOpen(true);
   };
 
+  // 로딩, 에러, 데이터 없음 상태 여부
+  const isEmptyState = isLoading || isError || metrics.length === 0;
+
   return (
     <div className="space-y-4">
       {/* Tabs와 달성률 필터 */}
@@ -266,177 +281,188 @@ export const MetricsTable = ({ metrics }: MetricsTableProps) => {
 
       {/* Table */}
       <div className="overflow-x-auto" style={{ height: `${tableHeight}px` }}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-              <th className="px-4 py-3 w-[25%]">지표명</th>
-              <th className="px-4 py-3 w-[12%] text-center">범주</th>
-              <th className="px-4 py-3 w-[12%]">현재값</th>
-
-              <th className="px-4 py-3 w-[12%]">
-                <div className="flex items-center gap-1.5">
-                  목표값
-                  {isCurrentMonth && (
-                    <span className="flex items-center cursor-pointer">
-                      <Tooltip
-                        content="지표의 목표값을 수정할 수 있습니다."
-                        color="#6B7280"
-                      >
-                        <Pencil
-                          className="w-4 h-4"
-                          id="목표값 설정 아이콘"
-                          onClick={() => setIsTargetValueSettingModalOpen(true)}
-                        />
-                      </Tooltip>
-                    </span>
-                  )}
-                </div>
-              </th>
-              <th className="px-4 py-3 w-[12%]">
-                <div className="flex items-center gap-1.5">
-                  달성률
-                  {isCurrentMonth && (
-                    <span className="flex items-center cursor-pointer">
-                      <Tooltip
-                        content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                        // content="달성률 설정 팝업을 엽니다."
-                        color="#6B7280"
-                      >
-                        <Pencil
-                          className="w-4 h-4"
-                          id="달성률 설정 아이콘"
-                          onClick={() =>
-                            setIsAchievementRateSettingModalOpen(true)
-                          }
-                        />
-                      </Tooltip>
-                    </span>
-                  )}
-                </div>
-              </th>
-              <th className="px-4 py-3 w-[12%]">
-                <div className="flex items-center gap-1.5">
-                  비율
-                  <span
-                    className="flex items-center cursor-pointer"
-                    onClick={handleRatioSort}
-                  >
-                    <Tooltip
-                      content={"비율의 정렬을 변경합니다."}
-                      color="#6B7280"
-                    >
-                      {ratioSortOrder === null ? (
-                        <ArrowDownUp
-                          className="w-4 h-4 text-gray-400"
-                          id="비율 정렬 아이콘"
-                        />
-                      ) : ratioSortOrder === "asc" ? (
-                        <ArrowUp
-                          className="w-4 h-4 text-blue-600"
-                          id="비율 오름차순 정렬 아이콘"
-                        />
-                      ) : (
-                        <ArrowDown
-                          className="w-4 h-4 text-blue-600"
-                          id="비율 내림차순 정렬 아이콘"
-                        />
-                      )}
-                    </Tooltip>
-                  </span>
-                </div>
-              </th>
-              <th className="px-4 py-3 w-[12%]">상세</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedMetrics.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-4 py-16 text-center text-gray-500"
-                >
-                  선택된 범주에 해당하는 지표가 없습니다.
-                </td>
-              </tr>
+        {isEmptyState ? (
+          <div className="flex items-center justify-center h-full">
+            {isLoading ? (
+              <LoadingSpinner />
             ) : (
-              sortedMetrics.map((metric, index) => (
-                <tr
-                  key={metric.metricCode || index}
-                  className="border-b border-gray-100 hover:bg-gray-50 whitespace-nowrap overflow-x-auto"
-                >
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    <div className="flex items-center space-x-2">
-                      <span>{metric.name}</span>
-                      {metric.description && (
-                        <Tooltip content={metric.description} color="#6B7280">
-                          <Info className="text-gray-400 w-4 h-4 cursor-pointer" />
-                        </Tooltip>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-center">
-                    {(() => {
-                      const style = getCategoryStyle(metric.category);
-                      return (
-                        <span
-                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
-                          style={{
-                            color: style.color,
-                            borderColor: style.borderColor,
-                            backgroundColor: style.bgColor,
-                          }}
+              <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+            )}
+          </div>
+        ) : (
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
+                <th className="px-4 py-3 w-[25%]">지표명</th>
+                <th className="px-4 py-3 w-[12%] text-center">범주</th>
+                <th className="px-4 py-3 w-[12%]">현재값</th>
+
+                <th className="px-4 py-3 w-[12%]">
+                  <div className="flex items-center gap-1.5">
+                    목표값
+                    {isCurrentMonth && (
+                      <span className="flex items-center cursor-pointer">
+                        <Tooltip
+                          content="지표의 목표값을 수정할 수 있습니다."
+                          color="#6B7280"
                         >
-                          {getCategoryLabel(metric.category)}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    {metric.currentValue}
-                    {metric.unit}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {metric.targetValue}
-                    {metric.unit}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center space-x-2">
-                      {(() => {
-                        const Icon = getStatusIcon(metric.status);
-                        const iconColor = getStatusColor(metric.status);
-                        return (
-                          <>
-                            <Icon
-                              className="w-5 h-5"
-                              style={{ color: iconColor }}
-                            />
-                            <span
-                              className="text-sm font-medium"
-                              style={{ color: iconColor }}
-                            >
-                              {metric.achievementRate}%
-                            </span>
-                          </>
-                        );
-                      })()}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {metric.ratio}%
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      className="text-gray-400 hover:text-gray-600 cursor-pointer"
-                      onClick={() => handleMetricsDetailClick(metric)}
+                          <Pencil
+                            className="w-4 h-4"
+                            id="목표값 설정 아이콘"
+                            onClick={() =>
+                              setIsTargetValueSettingModalOpen(true)
+                            }
+                          />
+                        </Tooltip>
+                      </span>
+                    )}
+                  </div>
+                </th>
+                <th className="px-4 py-3 w-[12%]">
+                  <div className="flex items-center gap-1.5">
+                    달성률
+                    {isCurrentMonth && (
+                      <span className="flex items-center cursor-pointer">
+                        <Tooltip
+                          content="지표의 달성률을 평가하는 기준값을 설정합니다."
+                          color="#6B7280"
+                        >
+                          <Pencil
+                            className="w-4 h-4"
+                            id="달성률 설정 아이콘"
+                            onClick={() =>
+                              setIsAchievementRateSettingModalOpen(true)
+                            }
+                          />
+                        </Tooltip>
+                      </span>
+                    )}
+                  </div>
+                </th>
+                <th className="px-4 py-3 w-[12%]">
+                  <div className="flex items-center gap-1.5">
+                    비율
+                    <span
+                      className="flex items-center cursor-pointer"
+                      onClick={handleRatioSort}
                     >
-                      <Search className="w-5 h-5" />
-                    </button>
+                      <Tooltip
+                        content={"비율의 정렬을 변경합니다."}
+                        color="#6B7280"
+                      >
+                        {ratioSortOrder === null ? (
+                          <ArrowDownUp
+                            className="w-4 h-4 text-gray-400"
+                            id="비율 정렬 아이콘"
+                          />
+                        ) : ratioSortOrder === "asc" ? (
+                          <ArrowUp
+                            className="w-4 h-4 text-blue-600"
+                            id="비율 오름차순 정렬 아이콘"
+                          />
+                        ) : (
+                          <ArrowDown
+                            className="w-4 h-4 text-blue-600"
+                            id="비율 내림차순 정렬 아이콘"
+                          />
+                        )}
+                      </Tooltip>
+                    </span>
+                  </div>
+                </th>
+                <th className="px-4 py-3 w-[12%]">상세</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedMetrics.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-4 py-16 text-center text-gray-500"
+                  >
+                    선택된 범주에 해당하는 지표가 없습니다.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                sortedMetrics.map((metric, index) => (
+                  <tr
+                    key={metric.metricCode || index}
+                    className="border-b border-gray-100 hover:bg-gray-50 whitespace-nowrap overflow-x-auto"
+                  >
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      <div className="flex items-center space-x-2">
+                        <span>{metric.name}</span>
+                        {metric.description && (
+                          <Tooltip content={metric.description} color="#6B7280">
+                            <Info className="text-gray-400 w-4 h-4 cursor-pointer" />
+                          </Tooltip>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-center">
+                      {(() => {
+                        const style = getCategoryStyle(metric.category);
+                        return (
+                          <span
+                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                            style={{
+                              color: style.color,
+                              borderColor: style.borderColor,
+                              backgroundColor: style.bgColor,
+                            }}
+                          >
+                            {getCategoryLabel(metric.category)}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {metric.currentValue}
+                      {metric.unit}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {metric.targetValue}
+                      {metric.unit}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center space-x-2">
+                        {(() => {
+                          const Icon = getStatusIcon(metric.status);
+                          const iconColor = getStatusColor(metric.status);
+                          return (
+                            <>
+                              <Icon
+                                className="w-5 h-5"
+                                style={{ color: iconColor }}
+                              />
+                              <span
+                                className="text-sm font-medium"
+                                style={{ color: iconColor }}
+                              >
+                                {metric.achievementRate}%
+                              </span>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {metric.ratio}%
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                        onClick={() => handleMetricsDetailClick(metric)}
+                      >
+                        <Search className="w-5 h-5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
