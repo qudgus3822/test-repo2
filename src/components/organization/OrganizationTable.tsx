@@ -7,13 +7,13 @@ import {
   SCORE_GOOD_THRESHOLD,
 } from "@/store/useOrganizationStore";
 import type {
-  ApiOrganizationDepartment,
-  ApiOrganizationMember,
-  ApiOrganizationNode,
-  OrganizationTabType,
+  OrganizationDepartment,
+  OrganizationMember,
+  OrganizationNode,
+  TabType,
   ScoreLevel,
   ChangeInfo,
-  OrganizationMetricCategory,
+  MetricCategoryKey,
   OrganizationMetrics,
   BdpiMetrics,
   MetricScoreValue,
@@ -34,18 +34,15 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-// 탭 타입 → 지표 카테고리 매핑
-const TAB_TO_CATEGORY: Record<
-  Exclude<OrganizationTabType, "bdpi">,
-  OrganizationMetricCategory
-> = {
+// 탭 타입 → 지표 카테고리 키 매핑
+const TAB_TO_CATEGORY: Record<Exclude<TabType, "bdpi">, MetricCategoryKey> = {
   codeQuality: "code_quality",
   reviewQuality: "review_quality",
   developmentEfficiency: "development_efficiency",
 };
 
 // 카테고리별 지표 코드 목록 (METRIC_CODE_ORDER 순서로 정렬)
-const CATEGORY_METRIC_CODES: Record<OrganizationMetricCategory, string[]> = {
+const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
   code_quality: [
     "TECH_DEBT",
     "CODE_COMPLEXITY",
@@ -94,7 +91,7 @@ const isBdpiMetrics = (
 // metrics 객체에서 특정 카테고리의 지표들을 순서대로 가져오기
 const getMetricsByCategory = (
   metrics: OrganizationMetrics | undefined,
-  category: OrganizationMetricCategory,
+  category: MetricCategoryKey,
 ): (MetricScoreValue | null)[] => {
   if (!metrics || isBdpiMetrics(metrics)) {
     // BDPI metrics이거나 없으면 빈 배열 반환
@@ -111,7 +108,7 @@ const getMetricsByCategory = (
 
 interface OrganizationTableProps {
   month: string; // YYYY-MM 형식
-  activeTab: OrganizationTabType;
+  activeTab: TabType;
 }
 
 // 점수에 따른 배경색 결정
@@ -262,14 +259,25 @@ const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
 };
 
 // 상태 뱃지 컴포넌트 (배열 지원, 통합 Tooltip)
+// 최대 4개까지만 표시, changeDate 기준 최신순 정렬
+const MAX_BADGE_COUNT = 4;
+
 const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
   if (!hasChangeInfo(change)) return null;
 
-  const tooltipContent = getCombinedTooltipContent(change!);
+  // changeDate 기준 최신순 정렬 후 최대 4개까지만 표시
+  const sortedChanges = [...change!].sort((a, b) => {
+    const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
+    const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
+    return dateB - dateA;
+  });
+  const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
+
+  const tooltipContent = getCombinedTooltipContent(displayChanges);
 
   const badges = (
     <div className="inline-flex items-center">
-      {change!.map((item, index) => (
+      {displayChanges.map((item, index) => (
         <SingleBadge key={`${item.changeType}-${index}`} change={item} />
       ))}
     </div>
@@ -288,9 +296,9 @@ const MemberRow = ({
   depth,
   activeTab,
 }: {
-  member: ApiOrganizationMember;
+  member: OrganizationMember;
   depth: number;
-  activeTab: OrganizationTabType;
+  activeTab: TabType;
 }) => {
   const paddingLeft = 24 + depth * 24;
 
@@ -377,9 +385,9 @@ const OrganizationRow = ({
   depth,
   activeTab,
 }: {
-  org: ApiOrganizationDepartment;
+  org: OrganizationDepartment;
   depth: number;
-  activeTab: OrganizationTabType;
+  activeTab: TabType;
 }) => {
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
@@ -388,10 +396,10 @@ const OrganizationRow = ({
   const paddingLeft = 16 + depth * 24;
 
   // children을 부서와 멤버로 분리 (isEvaluationTarget: true인 것만 필터링 후 sortOrder로 정렬)
-  const childDepartments: ApiOrganizationDepartment[] = [];
-  const childMembers: ApiOrganizationMember[] = [];
+  const childDepartments: OrganizationDepartment[] = [];
+  const childMembers: OrganizationMember[] = [];
 
-  org.children?.forEach((child: ApiOrganizationNode) => {
+  org.children?.forEach((child: OrganizationNode) => {
     if (!child.isEvaluationTarget) return; // 평가 대상이 아니면 제외
     if (child.type === "department") {
       childDepartments.push(child);

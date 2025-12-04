@@ -1,8 +1,8 @@
 import { useOrganizationStore } from "@/store/useOrganizationStore";
-import type { OrganizationTabType } from "@/types/organization.types";
+import type { TabType } from "@/types/organization.types";
 
 interface Tab {
-  id: OrganizationTabType;
+  id: TabType;
   label: string;
 }
 

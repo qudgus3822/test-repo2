@@ -1,4 +1,6 @@
 import { SCORE_COLORS } from "@/styles/colors";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { Info } from "lucide-react";
 
 /**
  * 점수 범례 컴포넌트
@@ -12,8 +14,19 @@ export const ScoreLegend = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-6 py-4">
-      <span className="text-sm text-gray-600 font-medium">달성률</span>
+    <div className="flex items-center justify-center gap-6 py-8">
+      <span className="text-sm text-gray-600 font-medium flex items-center gap-1.5">
+        달성률
+        <Tooltip
+          content="달성률은 지표관리 화면에서 설정된 값을 기준으로 반영합니다."
+          color="#6B7280"
+          maxWidth={250}
+          arrowPosition="top-[15px]"
+        >
+          <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
+        </Tooltip>
+      </span>
+
       {legends.map((legend, index) => (
         <div key={index} className="flex items-center gap-2">
           <div

@@ -143,7 +143,7 @@ export const MetricsTable = ({
 
     let count = 0;
     switch (activeTab) {
-      case "all":
+      case "bdpi":
         count = achievementRateFilteredAllMetrics.length;
         break;
       case "codeQuality":
@@ -166,7 +166,7 @@ export const MetricsTable = ({
 
   const tabs: Tab[] = [
     {
-      id: "all",
+      id: "bdpi",
       label: "전체",
       count: achievementRateFilteredAllMetrics.length,
     },
@@ -192,7 +192,7 @@ export const MetricsTable = ({
 
   // 활성 탭에 따라 지표 필터링 (이미 달성률 필터가 적용된 metrics 사용)
   const filteredMetrics =
-    activeTab === "all"
+    activeTab === "bdpi"
       ? achievementRateFilteredAllMetrics
       : achievementRateFilteredAllMetrics.filter((m) => {
           const activeTabData = tabs.find((t) => t.id === activeTab);
@@ -261,7 +261,7 @@ export const MetricsTable = ({
         </div>
         <div className="flex items-center gap-3">
           {/* 비율 설정 버튼 (전체 탭 제외) */}
-          {activeTab !== "all" && (
+          {activeTab !== "bdpi" && (
             <Button
               variant="setting"
               size="sm"

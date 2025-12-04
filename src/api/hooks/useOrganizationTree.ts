@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchOrganizationByTab } from "@/api/organization";
 import type {
-  ApiOrganizationCompareResponse,
-  OrganizationTabType,
+  OrganizationCompareResponse,
+  TabType,
 } from "@/types/organization.types";
 
 // Query Keys
@@ -10,7 +10,7 @@ export const organizationTreeKeys = {
   all: ["organizationTree"] as const,
   byMonth: (yearMonth: string) =>
     [...organizationTreeKeys.all, yearMonth] as const,
-  byMonthAndTab: (yearMonth: string, tab: OrganizationTabType) =>
+  byMonthAndTab: (yearMonth: string, tab: TabType) =>
     [...organizationTreeKeys.all, yearMonth, tab] as const,
 };
 
@@ -23,10 +23,10 @@ export const organizationTreeKeys = {
  */
 export const useOrganizationTree = (
   yearMonth: string,
-  tab: OrganizationTabType = "bdpi",
+  tab: TabType = "bdpi",
   enabled: boolean = true,
 ) => {
-  return useQuery<ApiOrganizationCompareResponse, Error>({
+  return useQuery<OrganizationCompareResponse, Error>({
     queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab),
     queryFn: async () => {
       return fetchOrganizationByTab(yearMonth, tab);

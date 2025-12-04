@@ -1,14 +1,14 @@
 import type {
-  ApiMemberStatus,
-  ApiMemberRole,
-  ApiMemberPosition,
-  ApiDepartmentStatus,
+  MemberStatus,
+  MemberRole,
+  MemberPosition,
+  DepartmentStatus,
   ChangeInfo,
 } from "@/types/organization.types";
 import {
-  ApiMemberStatusLabel,
-  ApiDepartmentStatusLabel,
-  ApiPolicyStatusLabel,
+  MemberStatusLabel,
+  DepartmentStatusLabel,
+  PolicyStatusLabel,
 } from "@/types/organization.types";
 import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
 
@@ -19,7 +19,7 @@ import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
 /**
  * 멤버 상태(status)를 한글 라벨로 변환합니다.
  *
- * @param status - ApiMemberStatus 값
+ * @param status - MemberStatus 값
  * @returns 한글 라벨 문자열
  *
  * @example
@@ -33,8 +33,8 @@ import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
  * // Returns: "승진"
  * ```
  */
-export const getMemberStatusLabel = (status: ApiMemberStatus): string => {
-  const labels: Record<ApiMemberStatus, string> = {
+export const getMemberStatusLabel = (status: MemberStatus): string => {
+  const labels: Record<MemberStatus, string> = {
     ACTIVE: "재직",
     TRANSFERRED_IN: "이동후",
     TRANSFERRED_OUT: "이동전",
@@ -51,7 +51,7 @@ export const getMemberStatusLabel = (status: ApiMemberStatus): string => {
 /**
  * 직급(role)을 한글 라벨로 변환합니다.
  *
- * @param role - ApiMemberRole 값
+ * @param role - MemberRole 값
  * @returns 한글 라벨 문자열
  *
  * @example
@@ -65,8 +65,8 @@ export const getMemberStatusLabel = (status: ApiMemberStatus): string => {
  * // Returns: "부장"
  * ```
  */
-export const getMemberRoleLabel = (role: ApiMemberRole): string => {
-  const labels: Record<ApiMemberRole, string> = {
+export const getMemberRoleLabel = (role: MemberRole): string => {
+  const labels: Record<MemberRole, string> = {
     STAFF: "사원",
     ASSISTANT_MANAGER: "대리",
     MANAGER: "과장",
@@ -79,7 +79,7 @@ export const getMemberRoleLabel = (role: ApiMemberRole): string => {
 /**
  * 직책(position)을 한글 라벨로 변환합니다.
  *
- * @param position - ApiMemberPosition 값
+ * @param position - MemberPosition 값
  * @returns 한글 라벨 문자열
  *
  * @example
@@ -94,10 +94,10 @@ export const getMemberRoleLabel = (role: ApiMemberRole): string => {
  * ```
  */
 export const getMemberPositionLabel = (
-  position?: ApiMemberPosition,
+  position?: MemberPosition,
 ): string => {
   if (!position) return "";
-  const labels: Record<ApiMemberPosition, string> = {
+  const labels: Record<MemberPosition, string> = {
     TEAM_LEADER: "팀장",
     DEPARTMENT_HEAD: "실장",
     OVERALL_MANAGER: "총괄",
@@ -109,8 +109,8 @@ export const getMemberPositionLabel = (
  * 직급과 직책을 조합하여 표시 라벨을 반환합니다.
  * 직책이 있으면 "직책 | 직급" 형태로, 없으면 직급만 반환합니다.
  *
- * @param role - ApiMemberRole 값 또는 한글 직급
- * @param position - ApiMemberPosition 값 또는 한글 직책 (optional)
+ * @param role - MemberRole 값 또는 한글 직급
+ * @param position - MemberPosition 값 또는 한글 직책 (optional)
  * @returns 한글 라벨 문자열
  *
  * @example
@@ -128,12 +128,12 @@ export const getMemberPositionLabel = (
  * ```
  */
 export const getMemberRoleOrPositionLabel = (
-  role: ApiMemberRole | string,
-  position?: ApiMemberPosition | string,
+  role: MemberRole | string,
+  position?: MemberPosition | string,
 ): string => {
-  const roleLabel = getMemberRoleLabel(role as ApiMemberRole);
+  const roleLabel = getMemberRoleLabel(role as MemberRole);
   if (position) {
-    const positionLabel = getMemberPositionLabel(position as ApiMemberPosition);
+    const positionLabel = getMemberPositionLabel(position as MemberPosition);
     return `${positionLabel} | ${roleLabel}`;
   }
   return roleLabel;
@@ -142,7 +142,7 @@ export const getMemberRoleOrPositionLabel = (
 /**
  * 부서 상태(deptStatus)를 한글 라벨로 변환합니다.
  *
- * @param deptStatus - ApiDepartmentStatus 값
+ * @param deptStatus - DepartmentStatus 값
  * @returns 한글 라벨 문자열
  *
  * @example
@@ -157,9 +157,9 @@ export const getMemberRoleOrPositionLabel = (
  * ```
  */
 export const getDepartmentStatusLabel = (
-  deptStatus: ApiDepartmentStatus,
+  deptStatus: DepartmentStatus,
 ): string => {
-  const labels: Record<ApiDepartmentStatus, string> = {
+  const labels: Record<DepartmentStatus, string> = {
     ACTIVE: "활성",
     CREATED: "생성",
     DELETED: "삭제",
@@ -172,7 +172,7 @@ export const getDepartmentStatusLabel = (
  * 멤버의 표시명을 생성합니다. (이름 + 직급)
  *
  * @param name - 멤버 이름
- * @param role - 직급 (ApiMemberRole)
+ * @param role - 직급 (MemberRole)
  * @returns 표시명 문자열 (예: "홍길동 팀장", "김철수 대리")
  *
  * @example
@@ -188,7 +188,7 @@ export const getDepartmentStatusLabel = (
  */
 export const getMemberDisplayName = (
   name: string,
-  role: ApiMemberRole,
+  role: MemberRole,
 ): string => {
   return `${name} ${getMemberRoleLabel(role)}`;
 };
@@ -206,7 +206,7 @@ export const hasChangeInfo = (change?: ChangeInfo[]): boolean => {
 
 /**
  * changeType에 따른 뱃지 배경색을 반환합니다.
- * ApiMemberStatus, ApiDepartmentStatus, ApiPolicyStatus 모두 지원합니다.
+ * MemberStatus, DepartmentStatus, PolicyStatus 모두 지원합니다.
  *
  * @param type - changeType 값
  * @returns 색상 코드 문자열
@@ -221,26 +221,26 @@ export const getChangeTypeBadgeColor = (type?: string): string => {
 
 /**
  * changeType을 한글 라벨로 변환합니다.
- * ApiMemberStatus, ApiDepartmentStatus, ApiPolicyStatus 모두 지원합니다.
+ * MemberStatus, DepartmentStatus, PolicyStatus 모두 지원합니다.
  *
  * @param type - changeType 값
  * @returns 한글 라벨 문자열
  */
 export const getChangeTypeLabel = (type?: string): string => {
   if (!type) return "";
-  // ApiMemberStatusLabel에서 찾기
-  if (type in ApiMemberStatusLabel) {
-    return ApiMemberStatusLabel[type as keyof typeof ApiMemberStatusLabel];
+  // MemberStatusLabel에서 찾기
+  if (type in MemberStatusLabel) {
+    return MemberStatusLabel[type as keyof typeof MemberStatusLabel];
   }
-  // ApiDepartmentStatusLabel에서 찾기
-  if (type in ApiDepartmentStatusLabel) {
-    return ApiDepartmentStatusLabel[
-      type as keyof typeof ApiDepartmentStatusLabel
+  // DepartmentStatusLabel에서 찾기
+  if (type in DepartmentStatusLabel) {
+    return DepartmentStatusLabel[
+      type as keyof typeof DepartmentStatusLabel
     ];
   }
-  // ApiPolicyStatusLabel에서 찾기
-  if (type in ApiPolicyStatusLabel) {
-    return ApiPolicyStatusLabel[type as keyof typeof ApiPolicyStatusLabel];
+  // PolicyStatusLabel에서 찾기
+  if (type in PolicyStatusLabel) {
+    return PolicyStatusLabel[type as keyof typeof PolicyStatusLabel];
   }
   return type;
 };

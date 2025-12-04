@@ -6,8 +6,8 @@
 // 새로운 API 구조 타입 정의
 // ================================
 
-// 멤버 상태 타입 (API: status)
-export type ApiMemberStatus =
+// 멤버 상태 타입
+export type MemberStatus =
   | "ACTIVE" // 재직
   | "TRANSFERRED_IN" // 이동 전
   | "TRANSFERRED_OUT" // 이동 후
@@ -18,7 +18,7 @@ export type ApiMemberStatus =
   | "CHANGED_ROLE" // 직급변경
   | "CHANGED_POSITION"; // 직책변경
 
-export const ApiMemberStatusLabel = {
+export const MemberStatusLabel = {
   ACTIVE: "재직",
   TRANSFERRED_IN: "이동 전",
   TRANSFERRED_OUT: "이동 후",
@@ -29,15 +29,15 @@ export const ApiMemberStatusLabel = {
   CHANGED_ROLE: "직급",
   CHANGED_POSITION: "직책",
 };
-// 직급 타입 (API: role)
-export type ApiMemberRole =
+// 직급 타입
+export type MemberRole =
   | "STAFF" // 사원
   | "ASSISTANT_MANAGER" // 대리
   | "MANAGER" // 과장
   | "DEPUTY_MANAGER" // 차장
   | "GENERAL_MANAGER"; // 부장
 
-export const ApiMemberRoleLabel = {
+export const MemberRoleLabel = {
   STAFF: "사원",
   ASSISTANT_MANAGER: "대리",
   MANAGER: "과장",
@@ -45,26 +45,26 @@ export const ApiMemberRoleLabel = {
   GENERAL_MANAGER: "부장",
 };
 
-// 직책 타입 (API: position)
-export type ApiMemberPosition =
+// 직책 타입
+export type MemberPosition =
   | "TEAM_LEADER" // 팀장
   | "DEPARTMENT_HEAD" // 실장
   | "OVERALL_MANAGER"; // 총괄
 
-export const ApiMemberPositionLabel = {
+export const MemberPositionLabel = {
   TEAM_LEADER: "팀장",
   DEPARTMENT_HEAD: "실장",
   OVERALL_MANAGER: "총괄",
 };
 
-// 부서 상태 타입 (API: deptStatus)
-export type ApiDepartmentStatus =
+// 부서 상태 타입
+export type DepartmentStatus =
   | "ACTIVE" // 활성
   | "CREATED" // 생성
   | "DELETED" // 삭제
   | "RENAMED"; // 변경
 
-export const ApiDepartmentStatusLabel = {
+export const DepartmentStatusLabel = {
   ACTIVE: "활성",
   CREATED: "조직생성",
   DELETED: "조직삭제",
@@ -72,17 +72,17 @@ export const ApiDepartmentStatusLabel = {
 };
 
 // 정책 변경 타입
-export type ApiPolicyStatus =
+export type PolicyStatus =
   | "ADD" // 유형추가
   | "EXCLUDE"; // 유형제외
 
-export const ApiPolicyStatusLabel = {
+export const PolicyStatusLabel = {
   ADD: "유형추가",
   EXCLUDE: "유형제외",
 };
 
-// 지표 카테고리 타입 (metrics.types.ts의 MetricCategory와 동일)
-export type OrganizationMetricCategory =
+// 지표 카테고리 키 타입 (API metrics 객체의 키로 사용)
+export type MetricCategoryKey =
   | "code_quality"
   | "review_quality"
   | "development_efficiency";
@@ -174,57 +174,54 @@ export type ChangeCategory = "HR" | "GROUP" | "POLICY";
 
 // 변경 사항 정보
 export interface ChangeInfo {
-  changeType?: string; // 변경 유형 (입사, 퇴사, 팀 삭제, 개발조직 추가 등)
-  changeDate?: string; // 변경 일자 (ISO 8601 형식)
+  changeType: string; // 변경 유형 (입사, 퇴사, 팀 삭제, 개발조직 추가 등)
+  changeDate: string; // 변경 일자 (ISO 8601 형식)
   changeEndDate?: string; // 변경 종료 일자 (RETURNED 등 기간 표시 필요시만 사용)
-  category?: ChangeCategory; // 카테고리 (인사, 조직, 정책)
-  classification?: string; // 분류 (조직/정책 변경 시)
-  changeDetail?: string; // 변경 상세
-  processedBy?: string; // 처리자 (자동(LDAP), 수동 등)
+  category: ChangeCategory; // 카테고리 (인사, 조직, 정책)
+  changeDetail: string; // 변경 상세
+  processedBy: string; // 처리자 (자동(LDAP), 수동 등)
 }
 
-// 조직 멤버 정보 (API: type === "member")
-export interface ApiOrganizationMember extends ScoreMetrics {
+// 조직 멤버 정보
+export interface OrganizationMember extends ScoreMetrics {
   type: "member";
-  name: string;
+  name: string; // 멤버 이름
   employeeID: string; // 직원 고유 ID
-  title: ApiMemberRole; // 직급 (사원, 대리, 과장, 차장, 부장) - API 필드명: title
-  personalTitle?: ApiMemberPosition; // 직책 (팀장, 실장) - API 필드명: personalTitle, 빈값이 아니면 isManager=true
-  status: ApiMemberStatus;
-  departmentCode: string;
-  departmentName: string;
+  title: MemberRole; // 직급 (사원, 대리, 과장, 차장, 부장)
+  personalTitle: MemberPosition; // 직책 (팀장, 실장)
+  status: MemberStatus; // 상태 (재직, 이동 전, 이동 후, 입사, 퇴사, 휴직, 복직, 직급변경, 직책변경)
+  departmentCode: string; // 소속 부서 코드
+  departmentName: string; // 소속 부서 이름
   level: number; // 조직 레벨 (소속 부서와 동일)
-  isEvaluationTarget: boolean;
-  isManager: boolean; // personalTitle이 빈값이 아니면 true
-  changeDate?: string; // 상태 변경일 (yyyy-MM-dd)
-  previousTitle?: ApiMemberRole; // 이전 직급 (승진 시) - API 필드명: previousTitle
+  isEvaluationTarget: boolean; // 평가 대상 여부
+  isManager: boolean; // 실장/팀장 여부 (personalTitle 코드로 넘어오는 값과 동일)
+  changes?: ChangeInfo[]; // 변경 사항 (인사 변경 등) - 복수 가능
   // 화면 표시용 추가 필드
   email?: string; // 이메일 주소
-  changes?: ChangeInfo[]; // 변경 사항 (인사 변경 등) - 복수 가능
 }
 
-// 조직(팀/부서) 정보 (API: type === "department")
-export interface ApiOrganizationDepartment extends ScoreMetrics {
+// 조직(팀/부서) 정보
+export interface OrganizationDepartment extends ScoreMetrics {
   type: "department";
-  name: string;
+  name: string; // 부서 이름
   code: string; // 부서 코드
-  level: number; // 조직 레벨 (2: 부문, 3: 실, 4: 팀)
+  level: number; // 조직 레벨 (1: 부문, 2: 실, 3: 팀 추후 파트 추가 가능성 있음)
   displayName: string; // 표시명 (예: "IT부문[3000]")
   parentCode?: string; // 상위 부서 코드
   sortOrder: number; // 정렬 순서
-  isEvaluationTarget: boolean;
-  deptStatus: ApiDepartmentStatus;
+  isEvaluationTarget: boolean; // 평가 대상 여부
+  deptStatus: DepartmentStatus; // 부서 상태 (활성, 생성, 삭제, 변경)
   existedDays: number; // 해당 월에 존재한 일수
-  memberCount: number;
-  children?: ApiOrganizationNode[]; // 하위 조직 또는 멤버
+  memberCount: number; // 멤버 수
+  children?: OrganizationNode[]; // 하위 조직 또는 멤버
   isExpanded?: boolean; // UI 상태 (클라이언트 전용)
   changes?: ChangeInfo[]; // 변경 사항 (조직 변경, 정책 변경 등) - 복수 가능
 }
 
 // 조직 트리 노드 (부서 또는 멤버)
-export type ApiOrganizationNode =
-  | ApiOrganizationDepartment
-  | ApiOrganizationMember;
+export type OrganizationNode =
+  | OrganizationDepartment
+  | OrganizationMember;
 
 // 기간 정보
 export interface Period {
@@ -237,19 +234,22 @@ export interface OrganizationCompareRequest {
   yearMonth: string; // "yyyy-MM" 형식
 }
 
-// 조직 비교 API 응답 타입 (새로운 구조)
-export interface ApiOrganizationCompareResponse {
+// 조직 비교 API 응답 타입
+export interface OrganizationCompareResponse {
   period: Period;
-  tree: ApiOrganizationDepartment[];
+  tree: OrganizationDepartment[];
 }
 
 // ================================
 // UI/공통 타입 정의
 // ================================
 
-// 조직 비교 탭 타입
-export type OrganizationTabType =
-  | "bdpi"
+/**
+ * 통합 탭 타입
+ * - 조직비교/지표 공통: bdpi(전체), codeQuality, reviewQuality, developmentEfficiency
+ */
+export type TabType =
+  | "bdpi" // BDPI (전체)
   | "codeQuality"
   | "reviewQuality"
   | "developmentEfficiency";
@@ -266,82 +266,3 @@ export type ScoreLevel = "excellent" | "good" | "danger";
 
 // 조직 비교 필터 타입
 export type OrganizationFilterType = "all" | "excellent" | "good" | "danger";
-
-/**
- * 조직도 관리 관련 타입 정의
- */
-
-// 직급/직책 타입
-export type PositionLevel = "팀장" | "책임" | "선임" | "주임" | "사원";
-
-// 역할 타입
-export type RoleType = "개발" | "비개발";
-
-// 조직 유형
-export type OrganizationType = "개발실" | "비개발실";
-
-// 멤버 상태
-export type MemberStatus = "active" | "inactive" | "leave";
-
-// 개인 정보
-export interface Member {
-  id: string;
-  name: string;
-  email: string;
-  position: PositionLevel;
-  role?: RoleType;
-  profileImage?: string;
-  isNew?: boolean; // 신규 입사자 여부
-  joinDate?: string; // 입사일 또는 팀 합류일
-  leaveDate?: string; // 퇴사 예정일 (있는 경우)
-  status: MemberStatus;
-}
-
-// 팀 정보
-export interface Team {
-  id: string;
-  name: string;
-  type: RoleType;
-  memberCount: number;
-  members: Member[];
-}
-
-// 실(부서) 정보
-export interface Department {
-  id: string;
-  name: string;
-  type: OrganizationType;
-  leader: string; // 실장 이름
-  teamCount: number;
-  memberCount: number;
-  teams: Team[];
-}
-
-// 조직도 전체 데이터
-export interface OrganizationData {
-  departments: Department[];
-  totalDepartments: number;
-  totalTeams: number;
-  totalMembers: number;
-  lastSyncDate: string; // 마지막 동기화 일시
-  syncSource: string; // 동기화 소스 (예: "LDAP AD기준")
-}
-
-// 변경 이력
-export interface ChangeHistory {
-  id: string;
-  date: string;
-  type: "create" | "update" | "delete" | "move";
-  targetType: "department" | "team" | "member";
-  targetName: string;
-  description: string;
-  changedBy?: string;
-}
-
-// 조직도 관리 상태
-export interface OrganizationState {
-  selectedDepartmentId: string | null;
-  selectedTeamId: string | null;
-  selectedMemberId: string | null;
-  isAutoSyncEnabled: boolean;
-}

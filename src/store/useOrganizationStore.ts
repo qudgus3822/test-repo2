@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { PeriodType } from "@/components/ui/DateFilter";
 import type {
-  OrganizationTabType,
+  TabType,
   CompareGroup,
   OrganizationFilterType,
 } from "@/types/organization.types";
@@ -14,7 +14,7 @@ interface OrganizationStore {
   /**
    * 현재 활성화된 탭 (BDPI, 코드품질, 리뷰품질, 개발효율)
    */
-  activeTab: OrganizationTabType;
+  activeTab: TabType;
   /**
    * 기간 유형 (월별/분기별/반기별)
    */
@@ -53,7 +53,7 @@ interface OrganizationAction {
   /**
    * 활성 탭 설정
    */
-  setActiveTab: (tab: OrganizationTabType) => void;
+  setActiveTab: (tab: TabType) => void;
   /**
    * 기간 유형 설정
    */
@@ -128,7 +128,7 @@ export const useOrganizationStore = create<
   OrganizationStore & OrganizationAction
 >((set) => ({
   ...initState,
-  setActiveTab: (tab: OrganizationTabType) => set({ activeTab: tab }),
+  setActiveTab: (tab: TabType) => set({ activeTab: tab }),
   setPeriod: (period: PeriodType) => set({ period }),
   setCurrentDate: (date: Date) => set({ currentDate: date }),
   addCompareGroup: (group: CompareGroup) =>

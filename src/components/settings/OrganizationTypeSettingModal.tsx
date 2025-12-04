@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { mockOrganizationData } from "@/mocks/organization.mock";
-import type { Department } from "@/types/organization.types";
+import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import type {
+  OrganizationDepartment,
+  OrganizationNode,
+} from "@/types/organization.types";
 
 interface OrganizationTypeSettingModalProps {
   isOpen: boolean;
@@ -191,6 +195,88 @@ const OrgItemRow = ({
   );
 };
 
+// 현재 월과 전월 YYYY-MM 형식으로 가져오기
+const getYearMonths = (): { currentMonth: string; prevMonth: string } => {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonthNum = now.getMonth() + 1;
+
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1);
+  const prevYear = prevDate.getFullYear();
+  const prevMonthNum = prevDate.getMonth() + 1;
+
+  return {
+    currentMonth: `${currentYear}-${String(currentMonthNum).padStart(2, "0")}`,
+    prevMonth: `${prevYear}-${String(prevMonthNum).padStart(2, "0")}`,
+  };
+};
+
+// API 데이터를 OrgItemState로 변환하는 함수
+const convertApiToOrgItemState = (
+  tree: OrganizationDepartment[]
+): OrgItemState[] => {
+  const convertNode = (
+    node: OrganizationNode,
+    isFirstLevel = false
+  ): OrgItemState => {
+    if (node.type === "member") {
+      // 멤버는 제외 (조직 유형 설정에서는 부서/팀만 표시)
+      return {
+        id: node.employeeID,
+        name: node.name,
+        type: node.isEvaluationTarget ? "개발" : "비개발",
+        changeType: null,
+        isExpanded: false,
+        children: [],
+      };
+    }
+
+    // department 노드
+    const dept = node as OrganizationDepartment;
+
+    // 변경 유형 결정
+    let changeType: ChangeType = null;
+    let changeDate: string | undefined;
+
+    if (dept.changes && dept.changes.length > 0) {
+      const latestChange = dept.changes[0];
+      if (latestChange.changeType === "CREATED") {
+        changeType = "신설";
+        changeDate = new Date(latestChange.changeDate).toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).replace(/\. /g, ".").replace(/\.$/, "");
+      } else if (latestChange.changeType === "DELETED") {
+        changeType = "삭제";
+        changeDate = new Date(latestChange.changeDate).toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).replace(/\. /g, ".").replace(/\.$/, "");
+      }
+    }
+
+    // children 중 department만 필터링하여 변환
+    const childDepts = (dept.children || [])
+      .filter((child): child is OrganizationDepartment => child.type === "department")
+      .map((child) => convertNode(child));
+
+    return {
+      id: dept.code,
+      name: dept.name,
+      type: dept.isEvaluationTarget ? "개발" : "비개발",
+      changeType,
+      changeDate,
+      isExpanded: isFirstLevel || dept.level === 1,
+      children: childDepts,
+    };
+  };
+
+  // Level 1 (부문)부터 시작
+  return tree.map((root) => convertNode(root, true));
+};
+
 export const OrganizationTypeSettingModal = ({
   isOpen,
   onClose,
@@ -202,51 +288,34 @@ export const OrganizationTypeSettingModal = ({
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // 목업 데이터를 OrgItemState로 변환
-  const convertToOrgItemState = (
-    departments: Department[],
-    withChanges = false
-  ): OrgItemState[] => {
-    return [
-      {
-        id: "it-group",
-        name: "IT 총괄",
-        type: "개발" as OrganizationType,
-        changeType: null,
-        isExpanded: true,
-        children: departments.map((dept) => ({
-          id: dept.id,
-          name: dept.name,
-          type: (dept.type === "개발실" ? "개발" : "비개발") as OrganizationType,
-          changeType: withChanges && dept.id === "dept-4" ? "삭제" as ChangeType : null,
-          changeDate: withChanges && dept.id === "dept-4" ? "2025.11.23" : undefined,
-          isExpanded: dept.id === "dept-3",
-          children: dept.teams.map((team) => ({
-            id: team.id,
-            name: team.name,
-            type: (team.type === "개발" ? "개발" : "비개발") as OrganizationType,
-            changeType:
-              withChanges && team.id === "team-4-2"
-                ? ("신설" as ChangeType)
-                : null,
-            changeDate:
-              withChanges && team.id === "team-4-2" ? "2025.11.25" : undefined,
-            isExpanded: false,
-            children: [],
-          })),
-        })),
-      },
-    ];
-  };
+  // 전월/당월 계산
+  const { currentMonth, prevMonth } = useMemo(() => getYearMonths(), []);
 
-  // 초기 데이터 설정
+  // API에서 전월/당월 조직 데이터 조회
+  const {
+    data: currentMonthApiData,
+    isLoading: isCurrentLoading,
+  } = useOrganizationTree(currentMonth, "bdpi", isOpen);
+
+  const {
+    data: prevMonthApiData,
+    isLoading: isPrevLoading,
+  } = useOrganizationTree(prevMonth, "bdpi", isOpen);
+
+  const isLoading = isCurrentLoading || isPrevLoading;
+
+  // API 데이터를 OrgItemState로 변환
   useEffect(() => {
-    if (isOpen) {
-      const { departments } = mockOrganizationData;
-      setPrevMonthData(convertToOrgItemState(departments, false));
-      setCurrentMonthData(convertToOrgItemState(departments, true));
+    if (isOpen && currentMonthApiData?.tree) {
+      setCurrentMonthData(convertApiToOrgItemState(currentMonthApiData.tree));
     }
-  }, [isOpen]);
+  }, [isOpen, currentMonthApiData]);
+
+  useEffect(() => {
+    if (isOpen && prevMonthApiData?.tree) {
+      setPrevMonthData(convertApiToOrgItemState(prevMonthApiData.tree));
+    }
+  }, [isOpen, prevMonthApiData]);
 
   // 애니메이션 처리
   useEffect(() => {
@@ -311,11 +380,16 @@ export const OrganizationTypeSettingModal = ({
 
   if (!shouldRender) return null;
 
-  // 현재 날짜 기준 전월/당월 계산
+  // 현재 날짜 기준 전월/당월 라벨
   const now = new Date();
-  const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
-  const prevMonthLabel = `${prevMonth.getFullYear()}년 ${prevMonth.getMonth() + 1}월`;
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
+  const prevMonthLabel = `${prevMonthDate.getFullYear()}년 ${prevMonthDate.getMonth() + 1}월`;
   const currentMonthLabel = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
+
+  // 마지막 동기화 일자
+  const lastSyncDate = currentMonthApiData
+    ? `${currentMonthApiData.period.year}.${String(currentMonthApiData.period.month).padStart(2, "0")}.01`
+    : "";
 
   return (
     <>
@@ -344,7 +418,7 @@ export const OrganizationTypeSettingModal = ({
                 조직 유형 수정
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                LDAP 자동 동기화 {mockOrganizationData.lastSyncDate}
+                LDAP 자동 동기화 {lastSyncDate}
               </p>
             </div>
             <button
@@ -389,16 +463,26 @@ export const OrganizationTypeSettingModal = ({
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {prevMonthData.map((item) => (
-                  <OrgItemRow
-                    key={item.id}
-                    item={item}
-                    onToggle={(id) =>
-                      handleToggle(prevMonthData, setPrevMonthData, id)
-                    }
-                    showCheckbox={false}
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-full py-8">
+                    <LoadingSpinner />
+                  </div>
+                ) : prevMonthData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full py-8">
+                    <p className="text-gray-500 text-sm">조직 데이터가 없습니다.</p>
+                  </div>
+                ) : (
+                  prevMonthData.map((item) => (
+                    <OrgItemRow
+                      key={item.id}
+                      item={item}
+                      onToggle={(id) =>
+                        handleToggle(prevMonthData, setPrevMonthData, id)
+                      }
+                      showCheckbox={false}
+                    />
+                  ))
+                )}
               </div>
             </div>
 
@@ -413,17 +497,27 @@ export const OrganizationTypeSettingModal = ({
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto">
-                {currentMonthData.map((item) => (
-                  <OrgItemRow
-                    key={item.id}
-                    item={item}
-                    onToggle={(id) =>
-                      handleToggle(currentMonthData, setCurrentMonthData, id)
-                    }
-                    onTypeChange={handleTypeChange}
-                    showCheckbox={true}
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="flex items-center justify-center h-full py-8">
+                    <LoadingSpinner />
+                  </div>
+                ) : currentMonthData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full py-8">
+                    <p className="text-gray-500 text-sm">조직 데이터가 없습니다.</p>
+                  </div>
+                ) : (
+                  currentMonthData.map((item) => (
+                    <OrgItemRow
+                      key={item.id}
+                      item={item}
+                      onToggle={(id) =>
+                        handleToggle(currentMonthData, setCurrentMonthData, id)
+                      }
+                      onTypeChange={handleTypeChange}
+                      showCheckbox={true}
+                    />
+                  ))
+                )}
               </div>
             </div>
           </div>

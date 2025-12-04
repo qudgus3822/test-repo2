@@ -11,21 +11,21 @@ import {
 } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
-import type { ApiOrganizationDepartment } from "@/types/organization.types";
+import type { OrganizationDepartment } from "@/types/organization.types";
 
 // Level 1(부문) 조직 코드만 수집
 // 초기 화면 진입 시 사용 → 실 단위까지 보임
 const getLevel1DepartmentCodes = (
-  orgs: ApiOrganizationDepartment[],
+  orgs: OrganizationDepartment[],
 ): string[] => {
   return orgs.filter((org) => org.level === 1).map((org) => org.code);
 };
 
 // Level 3(팀)까지의 조직 코드 수집 (부문 + 실 + 팀)
 // 전체 팀 열기 클릭 시 사용 → 팀 멤버까지 보임
-const getDepartmentCodes = (orgs: ApiOrganizationDepartment[]): string[] => {
+const getDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   const codes: string[] = [];
-  const collect = (org: ApiOrganizationDepartment) => {
+  const collect = (org: OrganizationDepartment) => {
     codes.push(org.code);
     // Level 1(부문), Level 2(실), Level 3(팀)까지 수집
     if (org.level <= 3 && org.children) {
@@ -148,11 +148,7 @@ const OrganizationPage = () => {
           <OrganizationTable month={yearMonth} activeTab={activeTab} />
         </div>
 
-        {hasData && (
-          <div>
-            <ScoreLegend />
-          </div>
-        )}
+        {hasData && <ScoreLegend />}
       </Card>
     </div>
   );

@@ -1,13 +1,13 @@
 import { env } from "@/env";
 import type {
-  ApiOrganizationCompareResponse,
-  OrganizationTabType,
+  OrganizationCompareResponse,
+  TabType,
 } from "@/types/organization.types";
 
 /**
  * 탭 타입별 API 엔드포인트 매핑
  */
-const TAB_ENDPOINT_MAP: Record<OrganizationTabType, string> = {
+const TAB_ENDPOINT_MAP: Record<TabType, string> = {
   bdpi: "bdpi",
   codeQuality: "code-quality",
   reviewQuality: "review-quality",
@@ -21,7 +21,7 @@ const TAB_ENDPOINT_MAP: Record<OrganizationTabType, string> = {
  */
 export const fetchOrganizationTree = async (
   yearMonth: string,
-): Promise<ApiOrganizationCompareResponse> => {
+): Promise<OrganizationCompareResponse> => {
   const response = await fetch(
     `${env.apiBaseUrl}/departments/monthly/tree?yearMonth=${yearMonth}`,
     {
@@ -46,8 +46,8 @@ export const fetchOrganizationTree = async (
  */
 export const fetchOrganizationByTab = async (
   yearMonth: string,
-  tab: OrganizationTabType,
-): Promise<ApiOrganizationCompareResponse> => {
+  tab: TabType,
+): Promise<OrganizationCompareResponse> => {
   const endpoint = TAB_ENDPOINT_MAP[tab];
   const response = await fetch(
     `${env.apiBaseUrl}/departments/monthly/${endpoint}?yearMonth=${yearMonth}`,

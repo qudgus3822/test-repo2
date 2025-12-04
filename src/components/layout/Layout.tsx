@@ -13,7 +13,7 @@ export default function Layout() {
 
       {/* Main Content */}
       <main className="ml-16 lg:ml-[200px] xl:ml-[260px] pt-20 transition-all duration-300 min-h-screen">
-        <div className="p-8 h-[calc(100vh-5rem)]">
+        <div className="p-8 min-h-[calc(100vh-5rem)]">
           <Outlet />
         </div>
       </main>
