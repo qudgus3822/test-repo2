@@ -94,6 +94,8 @@ export const SCORE_COLORS = {
   good: "#FBFFBD", // 70% ~ 80% 미만 (연한 노란색)
   danger: "#F38752", // 70% 미만 (주황)
   none: "#F3F4F6", // 데이터 없음 (회색)
+  noData: "#7A7F85", // 수집 불가 지표 (진회색)
+  noDataText: "#C9CCD1", // 수집 불가 지표 텍스트 (연회색)
 } as const;
 
 // 조직비교 상태 뱃지 색상 (ApiMemberStatus 기준)

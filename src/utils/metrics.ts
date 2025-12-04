@@ -27,7 +27,7 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   CODE_SMELL: "코드스멜",
   TEST_COVERAGE: "테스트커버리지",
   SECURITY_VULNERABILITIES: "보안취약점수",
-  CODE_COUPLING: "코드결함밀도",
+  CODE_DEFECT_DENSITY: "코드 결함밀도",
   BUG_COUNT: "버그 발생 수",
   INCIDENT_COUNT: "장애 발생 수",
   // 리뷰품질 (12개)

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +12,14 @@ import {
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import type { ApiOrganizationDepartment } from "@/types/organization.types";
+
+// Level 1(부문) 조직 코드만 수집
+// 초기 화면 진입 시 사용 → 실 단위까지 보임
+const getLevel1DepartmentCodes = (
+  orgs: ApiOrganizationDepartment[],
+): string[] => {
+  return orgs.filter((org) => org.level === 1).map((org) => org.code);
+};
 
 // Level 3(팀)까지의 조직 코드 수집 (부문 + 실 + 팀)
 // 전체 팀 열기 클릭 시 사용 → 팀 멤버까지 보임
@@ -33,6 +42,7 @@ const getDepartmentCodes = (orgs: ApiOrganizationDepartment[]): string[] => {
 
 const OrganizationPage = () => {
   const {
+    activeTab,
     period,
     setPeriod,
     currentDate,
@@ -40,6 +50,7 @@ const OrganizationPage = () => {
     searchKeyword,
     setSearchKeyword,
     expandAllTeams,
+    expandAll,
     collapseToDefault,
     isTeamsExpanded,
   } = useOrganizationStore();
@@ -50,10 +61,19 @@ const OrganizationPage = () => {
   ).padStart(2, "0")}`;
 
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
-  const { data } = useOrganizationTree(yearMonth);
+  const { data } = useOrganizationTree(yearMonth, activeTab);
   const organizations = data?.tree ?? [];
 
-  console.log("organizations", organizations);
+  // 화면 진입 시 Level 1(부문)까지 펼침 상태로 초기화
+  useEffect(() => {
+    if (organizations.length > 0) {
+      const level1Codes = getLevel1DepartmentCodes(organizations);
+      if (level1Codes.length > 0) {
+        expandAll(level1Codes);
+      }
+    }
+  }, [organizations, expandAll]);
+
   const handleToggleTeams = () => {
     if (isTeamsExpanded) {
       // 접기: IT부문만 펼침 → 실 단위까지 보임
@@ -116,7 +136,7 @@ const OrganizationPage = () => {
 
         {/* 조직 테이블 */}
         <div className="p-4">
-          <OrganizationTable month={yearMonth} />
+          <OrganizationTable month={yearMonth} activeTab={activeTab} />
         </div>
 
         {/* 범례 */}

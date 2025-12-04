@@ -80,7 +80,10 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           개발생산성 트렌드
         </h3>
-        <div className="flex items-center justify-center" style={{ height: 350 }}>
+        <div
+          className="flex items-center justify-center"
+          style={{ height: 50 }}
+        >
           <p className="text-gray-500">수집된 데이터가 없습니다.</p>
         </div>
       </Card>

@@ -61,7 +61,7 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
       <>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">지표 순위</h3>
         <div className="grid grid-cols-1">
-          <div className="flex items-center justify-center min-h-[264px]">
+          <div className="flex items-center justify-center min-h-[260px]">
             <p className="text-gray-500">수집된 데이터가 없습니다.</p>
           </div>
         </div>

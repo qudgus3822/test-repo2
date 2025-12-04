@@ -87,24 +87,86 @@ export type OrganizationMetricCategory =
   | "review_quality"
   | "development_efficiency";
 
-// 개별 지표 값 타입
-export interface OrganizationMetricValue {
-  metricCode: string; // 지표 코드 (예: "TECH_DEBT")
-  category: OrganizationMetricCategory; // 지표 카테고리
-  isUse: boolean; // 지표 사용 여부 (false면 데이터 없음)
-  value: number | null; // 현재값
-  targetValue?: number | null; // 목표값
-  achievementRate?: number | null; // 달성률 (%)
+// 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
+export interface MetricScoreValue {
+  score: number;
+  isUsed: boolean;
 }
+
+// 카테고리 점수 타입 (BDPI 탭용)
+export interface CategoryScoreValue {
+  score: number;
+}
+
+// 전월대비 타입
+export type MonthlyComparisonDirection = "up" | "down" | "same";
+
+export interface MonthlyComparison {
+  changePercent: number;
+  direction: MonthlyComparisonDirection;
+}
+
+// BDPI 탭용 metrics 타입
+export interface BdpiMetrics {
+  codeQuality: CategoryScoreValue;
+  reviewQuality: CategoryScoreValue;
+  efficiency: CategoryScoreValue;
+  bdpi: CategoryScoreValue;
+  monthlyComparison: MonthlyComparison; // 전월대비
+}
+
+// 코드품질 탭용 metrics 타입
+export interface CodeQualityMetrics {
+  TECH_DEBT: MetricScoreValue;
+  CODE_COMPLEXITY: MetricScoreValue;
+  CODE_DUPLICATION: MetricScoreValue;
+  CODE_SMELL: MetricScoreValue;
+  TEST_COVERAGE: MetricScoreValue;
+  SECURITY_VULNERABILITIES: MetricScoreValue;
+  CODE_COUPLING: MetricScoreValue;
+  BUG_COUNT: MetricScoreValue;
+  INCIDENT_COUNT: MetricScoreValue;
+}
+
+// 리뷰품질 탭용 metrics 타입
+export interface ReviewQualityMetrics {
+  REVIEW_SPEED: MetricScoreValue;
+  REVIEW_RESPONSE_RATE: MetricScoreValue;
+  REVIEW_PARTICIPATION_RATE: MetricScoreValue;
+  REVIEW_ACCEPTANCE_RATE: MetricScoreValue;
+  REVIEW_FEEDBACK_CONCRETENESS: MetricScoreValue;
+  REVIEW_REVIEWER_DIVERSE: MetricScoreValue;
+  REVIEW_REQUEST_COUNT: MetricScoreValue;
+  REVIEW_PARTICIPATION_COUNT: MetricScoreValue;
+  REVIEW_PASS_RATE: MetricScoreValue;
+  REVIEW_PARTICIPATION_NUMBER: MetricScoreValue;
+  REVIEW_FEEDBACK_TIME: MetricScoreValue;
+  REVIEW_COMPLETION_TIME: MetricScoreValue;
+}
+
+// 개발효율 탭용 metrics 타입
+export interface DevelopmentEfficiencyMetrics {
+  DEPLOYMENT_FREQUENCY: MetricScoreValue;
+  COMMIT_FREQUENCY: MetricScoreValue;
+  LEAD_TIME: MetricScoreValue;
+  FAILURE_DETECTION_TIME: MetricScoreValue;
+  FAILURE_DIAGNOSIS_TIME: MetricScoreValue;
+  FAILURE_RECOVERY_TIME: MetricScoreValue;
+  DEPLOYMENT_SUCCESS_RATE: MetricScoreValue;
+  MR_SIZE: MetricScoreValue;
+  CODE_LINE_COUNT_PER_COMMIT: MetricScoreValue;
+}
+
+// 통합 metrics 타입 (API 응답에서 탭에 따라 다른 구조)
+export type OrganizationMetrics =
+  | BdpiMetrics
+  | CodeQualityMetrics
+  | ReviewQualityMetrics
+  | DevelopmentEfficiencyMetrics;
 
 // 점수 메트릭 (부서/멤버 공통)
 export interface ScoreMetrics {
-  codeQuality: number | null;
-  reviewQuality: number | null;
-  developmentEfficiency: number | null;
-  bdpi: number | null;
-  changeRate: number | null; // 전월비교 (%)
-  metrics?: OrganizationMetricValue[]; // 30개 개별 지표 값
+  metrics: OrganizationMetrics; // 탭에 따라 다른 구조의 metrics (monthlyComparison 포함)
 }
 
 // 변경 카테고리 타입
@@ -126,19 +188,19 @@ export interface ApiOrganizationMember extends ScoreMetrics {
   type: "member";
   name: string;
   employeeID: string; // 직원 고유 ID
-  role: ApiMemberRole; // 직급 (사원, 대리, 과장, 차장, 부장)
-  position?: ApiMemberPosition; // 직책 (팀장, 실장)
+  title: ApiMemberRole; // 직급 (사원, 대리, 과장, 차장, 부장) - API 필드명: title
+  personalTitle?: ApiMemberPosition; // 직책 (팀장, 실장) - API 필드명: personalTitle, 빈값이 아니면 isManager=true
   status: ApiMemberStatus;
   departmentCode: string;
   departmentName: string;
   level: number; // 조직 레벨 (소속 부서와 동일)
   isEvaluationTarget: boolean;
-  isManager: boolean;
+  isManager: boolean; // personalTitle이 빈값이 아니면 true
   changeDate?: string; // 상태 변경일 (yyyy-MM-dd)
-  previousRole?: ApiMemberRole; // 이전 직급 (승진 시)
+  previousTitle?: ApiMemberRole; // 이전 직급 (승진 시) - API 필드명: previousTitle
   // 화면 표시용 추가 필드
   email?: string; // 이메일 주소
-  change?: ChangeInfo[]; // 변경 사항 (인사 변경 등) - 복수 가능
+  changes?: ChangeInfo[]; // 변경 사항 (인사 변경 등) - 복수 가능
 }
 
 // 조직(팀/부서) 정보 (API: type === "department")
@@ -156,7 +218,7 @@ export interface ApiOrganizationDepartment extends ScoreMetrics {
   memberCount: number;
   children?: ApiOrganizationNode[]; // 하위 조직 또는 멤버
   isExpanded?: boolean; // UI 상태 (클라이언트 전용)
-  change?: ChangeInfo[]; // 변경 사항 (조직 변경, 정책 변경 등) - 복수 가능
+  changes?: ChangeInfo[]; // 변경 사항 (조직 변경, 정책 변경 등) - 복수 가능
 }
 
 // 조직 트리 노드 (부서 또는 멤버)

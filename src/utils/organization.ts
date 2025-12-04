@@ -107,10 +107,10 @@ export const getMemberPositionLabel = (
 
 /**
  * 직급과 직책을 조합하여 표시 라벨을 반환합니다.
- * 직책이 있으면 직책을, 없으면 직급을 반환합니다.
+ * 직책이 있으면 "직책 | 직급" 형태로, 없으면 직급만 반환합니다.
  *
- * @param role - ApiMemberRole 값
- * @param position - ApiMemberPosition 값 (optional)
+ * @param role - ApiMemberRole 값 또는 한글 직급
+ * @param position - ApiMemberPosition 값 또는 한글 직책 (optional)
  * @returns 한글 라벨 문자열
  *
  * @example
@@ -118,20 +118,25 @@ export const getMemberPositionLabel = (
  * import { getMemberRoleOrPositionLabel } from "@/utils/organization";
  *
  * const label = getMemberRoleOrPositionLabel("MANAGER", "TEAM_LEADER");
- * // Returns: "팀장"
+ * // Returns: "팀장 | 과장"
  *
  * const label2 = getMemberRoleOrPositionLabel("MANAGER");
  * // Returns: "과장"
+ *
+ * const label3 = getMemberRoleOrPositionLabel("부장", "팀장");
+ * // Returns: "팀장 | 부장"
  * ```
  */
 export const getMemberRoleOrPositionLabel = (
-  role: ApiMemberRole,
-  position?: ApiMemberPosition,
+  role: ApiMemberRole | string,
+  position?: ApiMemberPosition | string,
 ): string => {
+  const roleLabel = getMemberRoleLabel(role as ApiMemberRole);
   if (position) {
-    return getMemberPositionLabel(position);
+    const positionLabel = getMemberPositionLabel(position as ApiMemberPosition);
+    return `${positionLabel} | ${roleLabel}`;
   }
-  return getMemberRoleLabel(role);
+  return roleLabel;
 };
 
 /**
@@ -253,4 +258,23 @@ export const formatChangeDate = (dateString?: string): string => {
     2,
     "0",
   )}-${String(date.getDate()).padStart(2, "0")}`;
+};
+
+/**
+ * employeeID로부터 이메일 주소를 생성합니다.
+ *
+ * @param employeeID - 직원 ID
+ * @returns 이메일 주소 문자열
+ *
+ * @example
+ * ```typescript
+ * import { getMemberEmail } from "@/utils/organization";
+ *
+ * const email = getMemberEmail("gildong.hong");
+ * // Returns: "gildong.hong@bithumbcorp.com"
+ * ```
+ */
+export const getMemberEmail = (employeeID: string): string => {
+  if (!employeeID) return "";
+  return `${employeeID}@bithumbcorp.com`;
 };
