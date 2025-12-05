@@ -2,16 +2,14 @@ import { create } from "zustand";
 import type { PeriodType } from "@/components/ui/DateFilter";
 import type { MetricItem } from "@/types/metrics.types";
 import type { AchievementRateFilterType } from "@/components/ui/AchievementRateFilter";
+import type { TabType } from "@/types/organization.types";
 
 // 달성률 기본값 상수
 export const DEFAULT_EXCELLENT_THRESHOLD = 80;
 export const DEFAULT_DANGER_THRESHOLD = 70;
 
-export type TabType =
-  | "all"
-  | "codeQuality"
-  | "reviewQuality"
-  | "developmentEfficiency";
+// TabType을 re-export (하위 호환성)
+export type { TabType } from "@/types/organization.types";
 
 interface MetricsStore {
   /**
@@ -124,7 +122,7 @@ interface MetricsAction {
 const initState: MetricsStore = {
   period: "monthly",
   currentDate: new Date(),
-  activeTab: "all",
+  activeTab: "bdpi",
   achievementRateFilter: "all",
   isTargetValueSettingModalOpen: false,
   isAchievementRateSettingModalOpen: false,

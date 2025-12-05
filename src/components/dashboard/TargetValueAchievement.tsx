@@ -1,5 +1,6 @@
 import { DonutChart } from "@/libs/chart";
 import { useGoalAchievement } from "@/api/hooks/useGoalAchievement";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // 목표 달성률 그라데이션 색상 (Cyan -> Purple)
 const ACHIEVEMENT_GRADIENT = {
@@ -33,9 +34,7 @@ type TargetValueAchievementProps =
  * // 직접 데이터 전달 방식
  * <TargetValueAchievement achieved={15} total={20} />
  */
-export const TargetValueAchievement = (
-  props: TargetValueAchievementProps,
-) => {
+export const TargetValueAchievement = (props: TargetValueAchievementProps) => {
   // API 모드 여부 판단
   const isApiMode = "month" in props && !!props.month;
 
@@ -51,27 +50,25 @@ export const TargetValueAchievement = (
 
   // API 호출 방식
   if (isApiMode) {
-    // 로딩 상태
-    if (isLoading) {
+    // 로딩, 에러, 데이터 없음 상태
+    if (isLoading || error || !goalAchievementData) {
       return (
-        <div className="flex items-center justify-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        </div>
+        <>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            목표 달성률
+          </h3>
+          <div
+            className="flex items-center justify-center"
+            style={{ minHeight: 240 }}
+          >
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+            )}
+          </div>
+        </>
       );
-    }
-
-    // 에러 상태
-    if (error) {
-      return (
-        <p className="text-red-500">
-          {error.message || "목표 달성률 데이터를 불러오는데 실패했습니다."}
-        </p>
-      );
-    }
-
-    // 데이터가 없는 경우
-    if (!goalAchievementData) {
-      return <p className="text-gray-500">목표 달성률 데이터가 없습니다.</p>;
     }
 
     const { achievedMetrics, totalMetrics } = goalAchievementData;

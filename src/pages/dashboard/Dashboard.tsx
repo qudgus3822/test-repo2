@@ -12,8 +12,9 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { usePdfDownload } from "@/hooks";
 
 const DashboardPage = () => {
-  const { period, setPeriod, currentDate, setCurrentDate } =
-    useDashboardStore((state) => state);
+  const { period, setPeriod, currentDate, setCurrentDate } = useDashboardStore(
+    (state) => state,
+  );
   const { downloadPdf, isGenerating } = usePdfDownload();
 
   // 날짜를 YYYY-MM 형식으로 변환
@@ -27,7 +28,6 @@ const DashboardPage = () => {
       "BarcodePlus_Monitoring_Dashboard_2025.pdf",
     );
   };
-
 
   return (
     <div className="space-y-6">

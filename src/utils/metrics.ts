@@ -27,20 +27,20 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   CODE_SMELL: "코드스멜",
   TEST_COVERAGE: "테스트커버리지",
   SECURITY_VULNERABILITIES: "보안취약점수",
-  CODE_COUPLING: "코드결함밀도",
-  BUG_COUNT: "버그 발생 수",
-  INCIDENT_COUNT: "장애 발생 수",
+  CODE_DEFECT_DENSITY: "코드결함밀도",
+  BUG_COUNT: "버그발생수",
+  INCIDENT_COUNT: "장애발생수",
   // 리뷰품질 (12개)
-  REVIEW_SPEED: "리뷰 속도",
-  REVIEW_RESPONSE_RATE: "요청응답률",
-  REVIEW_PARTICIPATION_RATE: "리뷰 참여율",
-  REVIEW_ACCEPTANCE_RATE: "제안수용률",
+  REVIEW_SPEED: "리뷰속도",
+  REVIEW_RESPONSE_RATE: "리뷰요청응답률",
+  REVIEW_PARTICIPATION_RATE: "리뷰참여율",
+  REVIEW_ACCEPTANCE_RATE: "리뷰제안수용률",
   REVIEW_FEEDBACK_CONCRETENESS: "피드백구체성",
-  REVIEW_REVIEWER_DIVERSE: "리뷰어 다양성",
+  REVIEW_REVIEWER_DIVERSE: "리뷰어다양성",
   REVIEW_REQUEST_COUNT: "리뷰요청수",
   REVIEW_PARTICIPATION_COUNT: "리뷰참여수",
   REVIEW_PASS_RATE: "초회통과율",
-  REVIEW_PARTICIPATION_NUMBER: "코드리뷰 참여수치",
+  REVIEW_PARTICIPATION_NUMBER: "코드리뷰참여수치",
   REVIEW_FEEDBACK_TIME: "피드백반영시간",
   REVIEW_COMPLETION_TIME: "리뷰완료시간",
   // 개발효율 (9개)
@@ -52,7 +52,100 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   FAILURE_RECOVERY_TIME: "장애복구시간",
   DEPLOYMENT_SUCCESS_RATE: "배포성공률",
   MR_SIZE: "MR크기",
-  CODE_LINE_COUNT_PER_COMMIT: "커밋당 라인수",
+  CODE_LINE_COUNT_PER_COMMIT: "커밋당라인수",
+};
+
+/**
+ * 지표 코드별 정렬 순서를 정의하는 객체
+ * 숫자가 작을수록 먼저 표시됩니다.
+ *
+ * @example
+ * ```typescript
+ * import { METRIC_CODE_ORDER } from "@/utils/metrics";
+ *
+ * const order = METRIC_CODE_ORDER["TECH_DEBT"];
+ * // Returns: 1
+ * ```
+ */
+export const METRIC_CODE_ORDER: Record<string, number> = {
+  // 코드품질 (1-9)
+  TECH_DEBT: 1, // 기술부채
+  CODE_COMPLEXITY: 2, // 코드복잡도
+  CODE_DUPLICATION: 3, // 코드중복률
+  CODE_SMELL: 4, // 코드스멜
+  SECURITY_VULNERABILITIES: 5, // 보안취약점수
+  BUG_COUNT: 6, // 버그발생수
+  INCIDENT_COUNT: 7, // 장애발생수
+  TEST_COVERAGE: 8, // 테스트커버리지
+  CODE_DEFECT_DENSITY: 9, // 코드결함밀도
+  // 리뷰품질 (10-21)
+  REVIEW_SPEED: 10, // 리뷰속도
+  REVIEW_RESPONSE_RATE: 11, // 리뷰요청응답률
+  REVIEW_PARTICIPATION_RATE: 12, // 리뷰참여율
+  REVIEW_ACCEPTANCE_RATE: 13, // 리뷰제안수용률
+  REVIEW_FEEDBACK_CONCRETENESS: 14, // 피드백구체성
+  REVIEW_REQUEST_COUNT: 15, // 리뷰요청수
+  REVIEW_PARTICIPATION_COUNT: 16, // 리뷰참여수
+  REVIEW_PASS_RATE: 17, // 초회통과율
+  REVIEW_PARTICIPATION_NUMBER: 18, // 코드리뷰참여수치
+  REVIEW_FEEDBACK_TIME: 19, // 피드백반영시간
+  REVIEW_COMPLETION_TIME: 20, // 리뷰완료시간
+  REVIEW_REVIEWER_DIVERSE: 21, // 리뷰어다양성
+  // 개발효율 (22-30)
+  MR_SIZE: 22, // MR크기
+  COMMIT_FREQUENCY: 23, // 커밋빈도
+  CODE_LINE_COUNT_PER_COMMIT: 24, // 커밋당라인수
+  LEAD_TIME: 25, // 평균장애해결시간
+  FAILURE_DETECTION_TIME: 26, // 장애탐지시간
+  FAILURE_DIAGNOSIS_TIME: 27, // 장애진단시간
+  FAILURE_RECOVERY_TIME: 28, // 장애복구시간
+  DEPLOYMENT_FREQUENCY: 29, // 배포빈도
+  DEPLOYMENT_SUCCESS_RATE: 30, // 배포성공률
+};
+
+/**
+ * 지표 코드의 정렬 순서를 반환합니다.
+ *
+ * @param metricCode - 지표 코드 (예: "TECH_DEBT")
+ * @returns 정렬 순서 (매핑이 없는 경우 999 반환)
+ *
+ * @example
+ * ```typescript
+ * import { getMetricOrder } from "@/utils/metrics";
+ *
+ * const order = getMetricOrder("TECH_DEBT");
+ * // Returns: 1
+ * ```
+ */
+export const getMetricOrder = (metricCode: string): number => {
+  return METRIC_CODE_ORDER[metricCode] ?? 999;
+};
+
+/**
+ * 지표 배열을 정의된 순서대로 정렬합니다.
+ *
+ * @param metrics - 정렬할 지표 배열
+ * @param getCode - 지표 객체에서 코드를 추출하는 함수 (기본값: item.metricCode)
+ * @returns 정렬된 지표 배열
+ *
+ * @example
+ * ```typescript
+ * import { sortMetricsByOrder } from "@/utils/metrics";
+ *
+ * const sorted = sortMetricsByOrder(metrics);
+ * // 또는 커스텀 키 사용
+ * const sorted = sortMetricsByOrder(metrics, (item) => item.code);
+ * ```
+ */
+export const sortMetricsByOrder = <T extends { metricCode?: string }>(
+  metrics: T[],
+  getCode?: (item: T) => string,
+): T[] => {
+  return [...metrics].sort((a, b) => {
+    const codeA = getCode ? getCode(a) : a.metricCode ?? "";
+    const codeB = getCode ? getCode(b) : b.metricCode ?? "";
+    return getMetricOrder(codeA) - getMetricOrder(codeB);
+  });
 };
 
 /**

@@ -7,6 +7,7 @@ import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import { useCompanyQuality } from "@/api/hooks/useCompanyQuality";
 import { Tooltip } from "../ui/Tooltip";
+import { LoadingSpinner } from "../ui/LoadingSpinner";
 
 interface MetricsOverviewProps {
   month: string; // YYYY-MM 형식
@@ -73,34 +74,19 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
     [companyQualityData],
   );
 
-  // 로딩 중일 때
-  if (isLoading) {
+  // 로딩, 에러, 데이터 없음 상태
+  if (isLoading || error || !bdpiAverage || !chartMetrics) {
     return (
       <Card className="w-full h-auto">
         <div className="flex items-center justify-center h-40">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
-            <p className="text-gray-600">데이터를 불러오는 중...</p>
-          </div>
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <p className="text-gray-500">수집된 전사 BDPI 데이터가 없습니다.</p>
+          )}
         </div>
       </Card>
     );
-  }
-
-  // 에러가 발생했을 때
-  if (error) {
-    return (
-      <Card className="w-full h-auto">
-        <p className="text-red-500">
-          전사 BDPI 데이터를 불러오는데 실패했습니다.
-        </p>
-      </Card>
-    );
-  }
-
-  // 데이터가 없을 때
-  if (!bdpiAverage || !chartMetrics) {
-    return null;
   }
 
   return (

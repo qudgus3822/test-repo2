@@ -108,7 +108,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       description: "보안 취약점",
     },
     {
-      name: "코드결함밀도",
+      name: "코드결합밀도",
       category: MetricCategory.CODE_QUALITY,
       currentValue: "15",
       targetValue: "20",

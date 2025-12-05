@@ -5,6 +5,7 @@ import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import { getStatusIcon, getStatusColor } from "@/utils/metrics";
 import { useServiceStability } from "@/api/hooks/useServiceStability";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface ServiceStabilityProps {
   month: string;
@@ -14,7 +15,11 @@ interface ServiceStabilityProps {
  * 서비스 안정성 메트릭 컴포넌트
  */
 export const ServiceStability = ({ month }: ServiceStabilityProps) => {
-  const { data: serviceStabilityData, isLoading, error } = useServiceStability(month);
+  const {
+    data: serviceStabilityData,
+    isLoading,
+    error,
+  } = useServiceStability(month);
 
   // 서비스 안정성 데이터 가공
   const metrics = useMemo(
@@ -67,7 +72,8 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
                 isPositive: serviceStabilityData.mttr.changeRate > 0,
               },
               status: serviceStabilityData.mttr.threshold,
-              iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttr.threshold],
+              iconColor:
+                GOAL_STATUS_COLORS[serviceStabilityData.mttr.threshold],
             },
             {
               id: "mttd",
@@ -79,7 +85,8 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
                 isPositive: serviceStabilityData.mttd.changeRate > 0,
               },
               status: serviceStabilityData.mttd.threshold,
-              iconColor: GOAL_STATUS_COLORS[serviceStabilityData.mttd.threshold],
+              iconColor:
+                GOAL_STATUS_COLORS[serviceStabilityData.mttd.threshold],
             },
             {
               id: "incidents",
@@ -92,40 +99,29 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
               },
               status: serviceStabilityData.incidentCount.threshold,
               iconColor:
-                GOAL_STATUS_COLORS[serviceStabilityData.incidentCount.threshold],
+                GOAL_STATUS_COLORS[
+                  serviceStabilityData.incidentCount.threshold
+                ],
             },
           ]
         : [],
     [serviceStabilityData],
   );
 
-  // 로딩 상태
-  if (isLoading) {
+  // 로딩, 에러, 데이터 없음 상태
+  if (isLoading || error || !metrics || metrics.length === 0) {
     return (
       <Card className="w-full h-auto">
-        <div className="flex items-center justify-center py-8">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          서비스 안정성
+        </h3>
+        <div className="flex items-center justify-center min-h-[152px]">
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+          )}
         </div>
-      </Card>
-    );
-  }
-
-  // 에러 상태
-  if (error) {
-    return (
-      <Card className="w-full">
-        <p className="text-red-500">
-          {error.message || "서비스 안정성 데이터를 불러오는데 실패했습니다."}
-        </p>
-      </Card>
-    );
-  }
-
-  // 데이터가 없는 경우
-  if (!metrics || metrics.length === 0) {
-    return (
-      <Card className="w-full">
-        <p className="text-gray-500">서비스 안정성 데이터가 없습니다.</p>
       </Card>
     );
   }
