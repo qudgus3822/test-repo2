@@ -45,7 +45,9 @@ export const mockCodeQualityMetrics: MetricsListData = {
       ratio: 3.33,
       metricCode: "TECH_DEBT",
       unit: "일",
-      description: "기술부채 시간",
+      description:
+        "코드 품질 문제를 해결하는데 필요한 예상시간을 나타내는 지표입니다. 수치가 낮을수록 우수하며, 규모 대비 일정 비율 이하로 목표하는 것을 권장합니다.",
+      dataSource: "Sonarqube",
     },
     {
       name: "코드복잡도",
@@ -57,7 +59,9 @@ export const mockCodeQualityMetrics: MetricsListData = {
       ratio: 3.33,
       metricCode: "CODE_COMPLEXITY",
       unit: "",
-      description: "평균 복잡도",
+      description:
+        "코드의 복잡성을 나타내는 지표입니다. 수치가 낮을수록 이해하기 쉽고 유지보수가 용이합니다.",
+      dataSource: "Sonarqube",
     },
     {
       name: "코드중복률",
@@ -70,6 +74,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "CODE_DUPLICATION",
       unit: "%",
       description: "중복 비율",
+      dataSource: "Sonarqube",
     },
     {
       name: "코드스멜",
@@ -82,6 +87,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "CODE_SMELL",
       unit: "개",
       description: "코드스멜 개수",
+      dataSource: "Sonarqube",
     },
     {
       name: "테스트커버리지",
@@ -94,6 +100,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "TEST_COVERAGE",
       unit: "%",
       description: "테스트 커버리지",
+      dataSource: "Sonarqube",
     },
     {
       name: "보안취약점수",
@@ -106,6 +113,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "SECURITY_VULNERABILITIES",
       unit: "개",
       description: "보안 취약점",
+      dataSource: "Sonarqube",
     },
     {
       name: "코드결합밀도",
@@ -118,6 +126,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "CODE_DEFECT_DENSITY",
       unit: "/KLOC",
       description: "결합도",
+      dataSource: "Sonarqube",
     },
     {
       name: "버그 발생 건수",
@@ -130,6 +139,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "BUG_COUNT",
       unit: "건",
       description: "버그 건수",
+      dataSource: "Sonarqube",
     },
     {
       name: "장애 발생 건수",
@@ -142,6 +152,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "INCIDENT_COUNT",
       unit: "건",
       description: "장애 건수",
+      dataSource: "Sonarqube",
     },
     // 리뷰 품질 (12개)
     {
@@ -155,6 +166,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_SPEED",
       unit: "h",
       description: "평균 리뷰 시간",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰요청응답률",
@@ -167,6 +179,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_RESPONSE_RATE",
       unit: "%",
       description: "리뷰 응답률",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰 참여율",
@@ -179,6 +192,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_PARTICIPATION_RATE",
       unit: "%",
       description: "리뷰 참여율",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰제안수용률",
@@ -191,6 +205,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_ACCEPTANCE_RATE",
       unit: "%",
       description: "제안 수용률",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰피드백구체성",
@@ -203,6 +218,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_FEEDBACK_CONCRETENESS",
       unit: "%",
       description: "피드백 구체성",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰어다양성",
@@ -215,6 +231,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_REVIEWER_DIVERSE",
       unit: "%",
       description: "리뷰어 다양성",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰요청건수",
@@ -227,6 +244,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_REQUEST_COUNT",
       unit: "건",
       description: "요청 건수",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰참여건수",
@@ -239,6 +257,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_PARTICIPATION_COUNT",
       unit: "건",
       description: "참여 건수",
+      dataSource: "Gitlab",
     },
     {
       name: "초회통과율",
@@ -251,6 +270,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_PASS_RATE",
       unit: "%",
       description: "초회 통과율",
+      dataSource: "Gitlab",
     },
     {
       name: "코드리뷰참여수치",
@@ -263,6 +283,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_PARTICIPATION_NUMBER",
       unit: "",
       description: "참여 수치",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰피드백반영시간",
@@ -275,6 +296,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_FEEDBACK_TIME",
       unit: "h",
       description: "피드백 반영 시간",
+      dataSource: "Gitlab",
     },
     {
       name: "리뷰완료시간",
@@ -287,6 +309,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "REVIEW_COMPLETION_TIME",
       unit: "h",
       description: "리뷰 완료 시간",
+      dataSource: "Gitlab",
     },
     // 개발 효율성 (9개)
     {
@@ -300,6 +323,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "DEPLOYMENT_FREQUENCY",
       unit: "회",
       description: "주간 배포 수",
+      dataSource: "Gitlab",
     },
     {
       name: "커밋빈도",
@@ -312,6 +336,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "COMMIT_FREQUENCY",
       unit: "회/일",
       description: "주간 커밋 수",
+      dataSource: "Gitlab",
     },
     {
       name: "평균장애해결시간",
@@ -324,6 +349,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "LEAD_TIME",
       unit: "h",
       description: "평균 장애 해결 시간",
+      dataSource: "Gitlab",
     },
     {
       name: "장애탐지시간",
@@ -336,6 +362,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "FAILURE_DETECTION_TIME",
       unit: "분",
       description: "장애 탐지 시간",
+      dataSource: "Gitlab",
     },
     {
       name: "장애진단시간",
@@ -348,6 +375,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "FAILURE_DIAGNOSIS_TIME",
       unit: "분",
       description: "장애 진단 시간",
+      dataSource: "Gitlab",
     },
     {
       name: "장애복구시간",
@@ -360,6 +388,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "FAILURE_RECOVERY_TIME",
       unit: "분",
       description: "장애 복구 시간",
+      dataSource: "Gitlab",
     },
     {
       name: "배포성공률",
@@ -372,6 +401,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "DEPLOYMENT_SUCCESS_RATE",
       unit: "%",
       description: "배포 성공률",
+      dataSource: "Gitlab",
     },
     {
       name: "MR크기",
@@ -384,6 +414,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "MR_SIZE",
       unit: "lines",
       description: "MR 크기",
+      dataSource: "Gitlab",
     },
     {
       name: "커밋당 코드라인수",
@@ -396,6 +427,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       metricCode: "CODE_LINE_COUNT_PER_COMMIT",
       unit: "lines",
       description: "커밋당 코드 라인수",
+      dataSource: "Gitlab",
     },
   ],
 };

@@ -58,6 +58,7 @@ export interface MetricItem {
   unit?: string; // 단위 (일, %, 개)
   // 25.11.10 API 응답 형태 변경됨. 확인필요. unit: string; // 단위 (hour, count, percent)
   description?: string; // 설명
+  dataSource?: string; // 데이터 소스 (예: "Sonarqube", "Gitlab")
 }
 
 // ==================== API 응답 형태의 지표 아이템 ====================

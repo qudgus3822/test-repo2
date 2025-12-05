@@ -2,7 +2,7 @@ import { MetricCategory, MetricStatus } from "@/types/metrics.types";
 import type { ThresholdType } from "@/types/serviceStability.types";
 import { CheckCircle2, AlertCircle, CircleX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { STATUS_COLORS, TEXT_COLORS } from "@/styles/colors";
+import { STATUS_COLORS, TEXT_COLORS, PALETTE_COLORS } from "@/styles/colors";
 
 // ================================
 // 지표 코드 → 지표명 매핑
@@ -191,6 +191,50 @@ export const getCategoryLabel = (category: MetricCategory | string): string => {
     development_efficiency: "개발효율",
   };
   return labels[category] || category;
+};
+
+/**
+ * MetricCategory에 따른 스타일(색상, 테두리, 배경색)을 반환합니다.
+ *
+ * @param category - MetricCategory enum 값
+ * @returns 스타일 객체 (color, borderColor, bgColor)
+ *
+ * @example
+ * ```typescript
+ * import { getCategoryStyle } from "@/utils/metrics";
+ * import { MetricCategory } from "@/types/metrics.types";
+ *
+ * const style = getCategoryStyle(MetricCategory.CODE_QUALITY);
+ * // Returns: { color: "#3B82F6", borderColor: "#3B82F6", bgColor: "#EFF6FF" }
+ * ```
+ */
+export const getCategoryStyle = (category: MetricCategory) => {
+  switch (category) {
+    case MetricCategory.CODE_QUALITY:
+      return {
+        color: PALETTE_COLORS.blue,
+        borderColor: PALETTE_COLORS.blue,
+        //bgColor: "#EFF6FF",
+      };
+    case MetricCategory.REVIEW_QUALITY:
+      return {
+        color: PALETTE_COLORS.orange,
+        borderColor: PALETTE_COLORS.orange,
+        //bgColor: "#FFF7ED",
+      };
+    case MetricCategory.DEVELOPMENT_EFFICIENCY:
+      return {
+        color: PALETTE_COLORS.purple,
+        borderColor: PALETTE_COLORS.purple,
+        //bgColor: "#FAF5FF",
+      };
+    default:
+      return {
+        color: "#6B7280",
+        borderColor: "#D1D5DB",
+        //bgColor: "#F9FAFB",
+      };
+  }
 };
 
 /**

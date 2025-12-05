@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { flushSync } from "react-dom";
 import type { MetricItem } from "@/types/metrics.types";
 import { X } from "lucide-react";
-import { LineChart } from "@/libs/chart";
-import { getCategoryLabel, getStatusIconConfig } from "@/utils/metrics";
+import { getCategoryLabel, getCategoryStyle } from "@/utils/metrics";
 
 interface MetricsDetailModalProps {
   isOpen: boolean;
@@ -34,17 +33,20 @@ export const MetricsDetailModal = ({
 
   if (!shouldRender || !metric) return null;
 
-  const statusConfig = getStatusIconConfig(metric.status);
+  {
+    /* 추후 개발 예정 기능 주석 처리 */
+  }
+  // const statusConfig = getStatusIconConfig(metric.status);
 
-  // 6개월 추이 목업 데이터 (실제로는 API에서 받아와야 함)
-  const trendData = [
-    { month: "2024.06", 목표값: metric.targetValue, 달성값: 75, 기준값: 80 },
-    { month: "2024.07", 목표값: metric.targetValue, 달성값: 77, 기준값: 80 },
-    { month: "2024.08", 목표값: metric.targetValue, 달성값: 79, 기준값: 80 },
-    { month: "2024.09", 목표값: metric.targetValue, 달성값: 80, 기준값: 80 },
-    { month: "2024.10", 목표값: metric.targetValue, 달성값: 82, 기준값: 80 },
-    { month: "2024.11", 목표값: metric.targetValue, 달성값: 85, 기준값: 80 },
-  ];
+  // // 6개월 추이 목업 데이터 (실제로는 API에서 받아와야 함)
+  // const trendData = [
+  //   { month: "2024.06", 목표값: metric.targetValue, 달성값: 75, 기준값: 80 },
+  //   { month: "2024.07", 목표값: metric.targetValue, 달성값: 77, 기준값: 80 },
+  //   { month: "2024.08", 목표값: metric.targetValue, 달성값: 79, 기준값: 80 },
+  //   { month: "2024.09", 목표값: metric.targetValue, 달성값: 80, 기준값: 80 },
+  //   { month: "2024.10", 목표값: metric.targetValue, 달성값: 82, 기준값: 80 },
+  //   { month: "2024.11", 목표값: metric.targetValue, 달성값: 85, 기준값: 80 },
+  // ];
 
   return (
     <>
@@ -58,7 +60,7 @@ export const MetricsDetailModal = ({
 
       {/* 슬라이드 패널 */}
       <div
-        className={`fixed top-0 right-0 h-full w-[800px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-[600px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -83,23 +85,36 @@ export const MetricsDetailModal = ({
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 기본 정보
               </h3>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
-                  <div className="text-xs text-gray-500 mb-1">카테고리</div>
+                  <div className="text-xs text-gray-500 mb-1">범주</div>
                   <div className="text-sm font-medium text-gray-900">
-                    {getCategoryLabel(metric.category)}
+                    {(() => {
+                      const style = getCategoryStyle(metric.category);
+                      return (
+                        <span
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                          style={{
+                            color: style.color,
+                            borderColor: style.borderColor,
+                          }}
+                        >
+                          {getCategoryLabel(metric.category)}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
                   <div className="text-xs text-gray-500 mb-1">데이터 소스</div>
                   <div className="text-sm font-medium text-gray-900">
-                    {"현재 데이터 없음"}
+                    {metric.dataSource || "현재 데이터 없음"}
                   </div>
                 </div>
               </div>
             </div>
-            {/* 현재 성과 */}
-            <div className="mb-6">
+            {/* 현재 성과 (추후 개발 예정 기능 주석 처리) */}
+            {/*<div className="mb-6">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 현재 성과
               </h3>
@@ -116,7 +131,7 @@ export const MetricsDetailModal = ({
                     {metric.targetValue}
                   </div>
                 </div>
-                <div
+                 <div
                   className="rounded-lg px-4 py-3"
                   style={{
                     backgroundColor: statusConfig.bgColor,
@@ -129,9 +144,9 @@ export const MetricsDetailModal = ({
                   >
                     {metric.achievementRate}%
                   </div>
-                </div>
+                </div> 
               </div>
-            </div>
+            </div>*/}
 
             {/* 지표 설명 */}
             <div className="mb-6">
@@ -144,8 +159,8 @@ export const MetricsDetailModal = ({
               </p>
             </div>
 
-            {/* 6개월 추세 및 이동 평균 차트 */}
-            <div>
+            {/* 6개월 추세 및 이동 평균 차트 (추후 개발 예정) */}
+            {/* <div>
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 6개월 추세 및 이동 평균
               </h3>
@@ -160,7 +175,7 @@ export const MetricsDetailModal = ({
                   showLegend={true}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

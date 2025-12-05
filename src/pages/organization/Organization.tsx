@@ -17,9 +17,7 @@ import type { OrganizationDepartment } from "@/types/organization.types";
 
 // Level 1(부문) 조직 코드만 수집
 // 초기 화면 진입 시 사용 → 실 단위까지 보임
-const getLevel1DepartmentCodes = (
-  orgs: OrganizationDepartment[],
-): string[] => {
+const getLevel1DepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   return orgs.filter((org) => org.level === 1).map((org) => org.code);
 };
 
@@ -61,6 +59,9 @@ const OrganizationPage = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedDetailItem, setSelectedDetailItem] =
     useState<OrganizationDetailItem | null>(null);
+
+  // 추후 개발 예정 기능 표시 여부
+  const [isFunctionEnabled] = useState(false);
 
   // 상세 버튼 클릭 핸들러
   const handleDetailClick = (item: OrganizationDetailItem) => {
@@ -120,7 +121,7 @@ const OrganizationPage = () => {
         <OrganizationTabs />
 
         {/* 첫 번째 줄: 기간 선택 + 통합검색 + 전체 팀 열기 */}
-        <div className="h-[84px] flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-5">
             <DateFilter
               period={period}
@@ -129,17 +130,20 @@ const OrganizationPage = () => {
               onDateChange={setCurrentDate}
             />
           </div>
-          {/* 통합검색 + 전체 팀 열기 버튼 */}
+          {/* 통합검색 (추후 개발 예정) + 전체 팀 열기 버튼 */}
           <div className="flex items-center gap-2">
             {/* 통합검색 */}
-            <div className="relative">
+            <div
+              className={`relative ${!isFunctionEnabled ? "opacity-40" : ""}`}
+            >
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="통합검색"
+                placeholder="추후 개발 예정"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                className="pl-10 pr-4 py-2 w-[200px] border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!isFunctionEnabled}
+                className="pl-10 pr-4 py-2 w-[200px] border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:placeholder-gray-700"
               />
             </div>
             {/* 전체 팀 열기/접기 버튼 */}
@@ -149,15 +153,21 @@ const OrganizationPage = () => {
           </div>
         </div>
 
-        {/* 두 번째 줄: 비교 그룹 + 비교 입력 (추후 고도화 예정) */}
-        <div className="h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200 opacity-99 cursor-not-allowed select-none">
+        {/* 두 번째 줄: 비교 그룹 + 비교 입력 (추후 개발 예정) */}
+        <div
+          className={`h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200 ${
+            !isFunctionEnabled ? "cursor-not-allowed select-none" : ""
+          }`}
+        >
           <CompareGroupSelector />
           {/* 추후 개발 예정 안내 */}
-          <span className="absolute left-1/2 -translate-x-1/2 text-sm text-gray-400 font-medium">
-            추후 개발 예정
-          </span>
+          {!isFunctionEnabled && (
+            <span className="absolute left-1/2 -translate-x-1/2 text-sm text-gray-400 font-medium">
+              추후 개발 예정
+            </span>
+          )}
           {/* 비교 입력 버튼 */}
-          <Button variant="primary" size="sm" disabled>
+          <Button variant="primary" size="sm" disabled={!isFunctionEnabled}>
             비교 입력
           </Button>
         </div>
