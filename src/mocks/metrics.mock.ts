@@ -115,7 +115,7 @@ export const mockCodeQualityMetrics: MetricsListData = {
       achievementRate: 133,
       status: MetricStatus.EXCELLENT,
       ratio: 3.33,
-      metricCode: "CODE_COUPLING",
+      metricCode: "CODE_DEFECT_DENSITY",
       unit: "/KLOC",
       description: "결합도",
     },

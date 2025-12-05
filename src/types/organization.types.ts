@@ -123,7 +123,7 @@ export interface CodeQualityMetrics {
   CODE_SMELL: MetricScoreValue;
   TEST_COVERAGE: MetricScoreValue;
   SECURITY_VULNERABILITIES: MetricScoreValue;
-  CODE_COUPLING: MetricScoreValue;
+  CODE_DEFECT_DENSITY: MetricScoreValue;
   BUG_COUNT: MetricScoreValue;
   INCIDENT_COUNT: MetricScoreValue;
 }
@@ -219,9 +219,7 @@ export interface OrganizationDepartment extends ScoreMetrics {
 }
 
 // 조직 트리 노드 (부서 또는 멤버)
-export type OrganizationNode =
-  | OrganizationDepartment
-  | OrganizationMember;
+export type OrganizationNode = OrganizationDepartment | OrganizationMember;
 
 // 기간 정보
 export interface Period {

@@ -50,7 +50,7 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
     "CODE_SMELL",
     "TEST_COVERAGE",
     "SECURITY_VULNERABILITIES",
-    "CODE_COUPLING",
+    "CODE_DEFECT_DENSITY",
     "BUG_COUNT",
     "INCIDENT_COUNT",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
@@ -195,7 +195,7 @@ const ScoreCell = ({
         color: isNoData ? SCORE_COLORS.noDataText : undefined,
       }}
     >
-      {score !== null ? score.toFixed(1) : "--"}
+      {isNoData ? "N/A" : score !== null ? score.toFixed(1) : "--"}
     </td>
   );
 };
