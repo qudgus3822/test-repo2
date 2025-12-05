@@ -109,6 +109,7 @@ const getMetricsByCategory = (
 interface OrganizationTableProps {
   month: string; // YYYY-MM 형식
   activeTab: TabType;
+  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
 }
 
 // 점수에 따른 배경색 결정
@@ -295,10 +296,12 @@ const MemberRow = ({
   member,
   depth,
   activeTab,
+  onDetailClick,
 }: {
   member: OrganizationMember;
   depth: number;
   activeTab: TabType;
+  onDetailClick?: (item: OrganizationMember) => void;
 }) => {
   const paddingLeft = 24 + depth * 24;
 
@@ -371,7 +374,10 @@ const MemberRow = ({
         </td>
       )}
       <td className="px-3 text-center align-middle">
-        <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
+        <button
+          className="text-gray-400 hover:text-gray-600 cursor-pointer"
+          onClick={() => onDetailClick?.(member)}
+        >
           <SearchIcon className="w-5 h-5" />
         </button>
       </td>
@@ -384,10 +390,12 @@ const OrganizationRow = ({
   org,
   depth,
   activeTab,
+  onDetailClick,
 }: {
   org: OrganizationDepartment;
   depth: number;
   activeTab: TabType;
+  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
 }) => {
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
@@ -488,7 +496,10 @@ const OrganizationRow = ({
           </td>
         )}
         <td className="px-3 text-center align-middle">
-          <button className="text-gray-400 hover:text-gray-600 cursor-pointer">
+          <button
+            className="text-gray-400 hover:text-gray-600 cursor-pointer"
+            onClick={() => onDetailClick?.(org)}
+          >
             <SearchIcon className="w-5 h-5" />
           </button>
         </td>
@@ -505,6 +516,7 @@ const OrganizationRow = ({
                 member={member}
                 depth={depth + 1}
                 activeTab={activeTab}
+                onDetailClick={onDetailClick}
               />
             ))}
           {/* 하위 조직 렌더링 */}
@@ -514,6 +526,7 @@ const OrganizationRow = ({
               org={child}
               depth={depth + 1}
               activeTab={activeTab}
+              onDetailClick={onDetailClick}
             />
           ))}
         </>
@@ -525,6 +538,7 @@ const OrganizationRow = ({
 export const OrganizationTable = ({
   month,
   activeTab,
+  onDetailClick,
 }: OrganizationTableProps) => {
   // API에서 조직 트리 가져오기 (탭별로 다른 API 호출)
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
@@ -629,6 +643,7 @@ export const OrganizationTable = ({
               org={org}
               depth={0}
               activeTab={activeTab}
+              onDetailClick={onDetailClick}
             />
           ))}
         </tbody>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -8,7 +8,9 @@ import {
   CompareGroupSelector,
   OrganizationTable,
   ScoreLegend,
+  OrganizationDetailModal,
 } from "@/components/organization";
+import type { OrganizationDetailItem } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import type { OrganizationDepartment } from "@/types/organization.types";
@@ -54,6 +56,23 @@ const OrganizationPage = () => {
     collapseToDefault,
     isTeamsExpanded,
   } = useOrganizationStore();
+
+  // 상세 모달 상태
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedDetailItem, setSelectedDetailItem] =
+    useState<OrganizationDetailItem | null>(null);
+
+  // 상세 버튼 클릭 핸들러
+  const handleDetailClick = (item: OrganizationDetailItem) => {
+    setSelectedDetailItem(item);
+    setIsDetailModalOpen(true);
+  };
+
+  // 상세 모달 닫기 핸들러
+  const handleDetailModalClose = () => {
+    setIsDetailModalOpen(false);
+    setSelectedDetailItem(null);
+  };
 
   // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
   const yearMonth = `${currentDate.getFullYear()}-${String(
@@ -145,11 +164,22 @@ const OrganizationPage = () => {
 
         {/* 조직 테이블 + 범례 (데이터가 있을 때만 범례 표시) */}
         <div className="p-4 border-b border-gray-200">
-          <OrganizationTable month={yearMonth} activeTab={activeTab} />
+          <OrganizationTable
+            month={yearMonth}
+            activeTab={activeTab}
+            onDetailClick={handleDetailClick}
+          />
         </div>
 
         {hasData && <ScoreLegend />}
       </Card>
+
+      {/* 조직/멤버 상세 모달 */}
+      <OrganizationDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={handleDetailModalClose}
+        item={selectedDetailItem}
+      />
     </div>
   );
 };
