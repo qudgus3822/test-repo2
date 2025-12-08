@@ -1,10 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
-import {
-  useMetricsStore,
-  DEFAULT_EXCELLENT_THRESHOLD,
-  DEFAULT_DANGER_THRESHOLD,
-} from "@/store/useMetricsStore";
 import { MetricStatus } from "@/types/metrics.types";
 import { getStatusIconConfig } from "@/utils/metrics";
 
@@ -17,6 +12,8 @@ export type AchievementRateFilterType =
 interface AchievementRateFilterProps {
   value: AchievementRateFilterType;
   onChange: (value: AchievementRateFilterType) => void;
+  excellentThreshold: number;
+  dangerThreshold: number;
 }
 
 /**
@@ -33,17 +30,11 @@ interface AchievementRateFilterProps {
 export const AchievementRateFilter = ({
   value,
   onChange,
+  excellentThreshold,
+  dangerThreshold,
 }: AchievementRateFilterProps) => {
-  const { achievementRateExcellentThreshold, achievementRateDangerThreshold } =
-    useMetricsStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // 기본값 설정
-  const excellentThreshold =
-    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD;
-  const dangerThreshold =
-    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD;
 
   // 아이콘 설정
   const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);

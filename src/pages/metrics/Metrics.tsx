@@ -9,10 +9,12 @@ import { TargetValueSettingModal } from "@/components/metrics/TargetValueSetting
 import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
-import type { MetricItem } from "@/types/metrics.types";
+import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { Button } from "@/components/ui";
+import { FileText } from "lucide-react";
 
 const MetricsPage = () => {
   const {
@@ -30,6 +32,7 @@ const MetricsPage = () => {
     isMetricRateSettingModalOpen,
     setIsMetricRateSettingModalOpen,
     activeTab,
+    isSettingsChanged,
   } = useMetricsStore((state) => state);
 
   // 현재 선택된 월
@@ -90,18 +93,32 @@ const MetricsPage = () => {
     isMetricRateSettingModalOpen,
   ]);
 
+  const handleSaveChanges = () => {
+    console.log("Save changes");
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* 헤더 - 날짜 필터 */}
       <div>
         <Card className="w-full">
-          <div className="w-full flex">
+          <div className="w-full flex items-center justify-between gap-4">
             <DateFilter
               period={period}
               onPeriodChange={setPeriod}
               currentDate={currentDate}
               onDateChange={setCurrentDate}
             />
+            {/* 변경사항 반영 버튼 */}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={handleSaveChanges}
+              disabled={!isSettingsChanged}
+            >
+              <FileText className="w-4 h-4 mr-1.5" />
+              변경사항 반영
+            </Button>
           </div>
         </Card>
       </div>
@@ -132,7 +149,8 @@ const MetricsPage = () => {
         isOpen={isTargetValueSettingModalOpen}
         onClose={() => setIsTargetValueSettingModalOpen(false)}
         metrics={metrics}
-        onSave={(updatedMetrics: MetricItem[]) => {
+        month={month}
+        onSave={(updatedMetrics: TargetValueMetric[]) => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated metrics:", updatedMetrics);
         }}
@@ -144,7 +162,6 @@ const MetricsPage = () => {
         onClose={() => setIsAchievementRateSettingModalOpen(false)}
         metrics={metrics}
         onSave={(updatedMetrics: MetricItem[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated achievement rates:", updatedMetrics);
         }}
       />

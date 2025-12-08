@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchGoalAchievement } from "@/api/dashboard";
+import { fetchGoalAchievement } from "@/api/metrics";
 import type { GoalAchievementRate } from "@/types/goalAchievement.types";
 
 // Query Keys

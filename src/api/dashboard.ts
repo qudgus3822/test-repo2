@@ -1,7 +1,6 @@
 import type { CompanyQualityMetrics } from "@/types/companyQuality.types";
 import type { ServiceStabilityMetrics } from "@/types/serviceStability.types";
 import type { ProductionTrendResponse } from "@/types/productionTrend.types";
-import type { GoalAchievementRate } from "@/types/goalAchievement.types";
 import type { MetricRankings } from "@/types/metricRankings.types";
 import { apiGet } from "@/libs/fetch";
 
@@ -14,7 +13,9 @@ import { apiGet } from "@/libs/fetch";
 export const fetchCompanyQuality = async (
   month: string,
 ): Promise<CompanyQualityMetrics> => {
-  return apiGet<CompanyQualityMetrics>(`/dashboard/company-quality?month=${month}`);
+  return apiGet<CompanyQualityMetrics>(
+    `/dashboard/company-quality?month=${month}`,
+  );
 };
 
 /**
@@ -26,7 +27,9 @@ export const fetchCompanyQuality = async (
 export const fetchServiceStability = async (
   month: string,
 ): Promise<ServiceStabilityMetrics> => {
-  return apiGet<ServiceStabilityMetrics>(`/dashboard/service-stability?month=${month}`);
+  return apiGet<ServiceStabilityMetrics>(
+    `/dashboard/service-stability?month=${month}`,
+  );
 };
 
 /**
@@ -38,19 +41,9 @@ export const fetchServiceStability = async (
 export const fetchDeveloperProductivity = async (
   month: string,
 ): Promise<ProductionTrendResponse> => {
-  return apiGet<ProductionTrendResponse>(`/dashboard/developer-productivity?month=${month}`);
-};
-
-/**
- * 목표 달성률 조회
- * @param {string} month - YYYY-MM 형식의 월
- * @returns {Promise<GoalAchievementRate>} 목표 달성률 데이터
- * @throws {Error} 데이터 조회 실패 시 에러
- */
-export const fetchGoalAchievement = async (
-  month: string,
-): Promise<GoalAchievementRate> => {
-  return apiGet<GoalAchievementRate>(`/dashboard/goal-achievement?month=${month}`);
+  return apiGet<ProductionTrendResponse>(
+    `/dashboard/developer-productivity?month=${month}`,
+  );
 };
 
 /**
@@ -64,5 +57,7 @@ export const fetchMetricRankings = async (
   month: string,
   type: string = "all",
 ): Promise<MetricRankings> => {
-  return apiGet<MetricRankings>(`/dashboard/metric-rankings?month=${month}&type=${type}`);
+  return apiGet<MetricRankings>(
+    `/dashboard/metric-rankings?month=${month}&type=${type}`,
+  );
 };

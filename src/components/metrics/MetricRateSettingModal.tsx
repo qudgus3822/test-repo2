@@ -116,9 +116,9 @@ export const MetricRateSettingModal = ({
       return;
     }
 
-    // weight를 ratio로 변환하여 저장
+    // weight를 weightRatio로 변환하여 저장
     const currentCategoryMetrics = editedMetrics.map((m) => {
-      const ratio = totalWeight > 0 ? (m.weight / totalWeight) * 100 : 0;
+      const weightRatio = totalWeight > 0 ? (m.weight / totalWeight) * 100 : 0;
 
       return {
         name: m.name,
@@ -127,7 +127,7 @@ export const MetricRateSettingModal = ({
         targetValue: m.targetValue,
         achievementRate: m.achievementRate,
         status: m.status,
-        ratio: parseFloat(ratio.toFixed(1)),
+        weightRatio: parseFloat(weightRatio.toFixed(1)),
         metricCode: m.metricCode,
         unit: m.unit,
         description: m.description,

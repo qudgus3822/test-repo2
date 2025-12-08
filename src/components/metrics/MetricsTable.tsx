@@ -10,15 +10,10 @@ import {
   ArrowDown,
   Settings,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
-import {
-  useMetricsStore,
-  type TabType,
-  DEFAULT_EXCELLENT_THRESHOLD,
-  DEFAULT_DANGER_THRESHOLD,
-} from "@/store/useMetricsStore";
+import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
 import {
   getCategoryLabel,
   getStatusIcon,
@@ -28,6 +23,7 @@ import {
 import { PALETTE_COLORS } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -75,6 +71,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
     setAchievementRateFilter,
     achievementRateExcellentThreshold,
     achievementRateDangerThreshold,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
     setIsTargetValueSettingModalOpen,
     setIsAchievementRateSettingModalOpen,
     setIsMetricsDetailModalOpen,
@@ -86,6 +84,21 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const { data, isLoading, error } = useMetricsList(month);
   const metrics = data?.metrics ?? [];
 
+  // 달성률 기준 API 조회
+  const { data: criteriaData } = useAchievementCriteria(month);
+
+  // API 데이터가 로드되면 store에 저장
+  useEffect(() => {
+    if (criteriaData) {
+      setAchievementRateExcellentThreshold(criteriaData.thresholds.excellent);
+      setAchievementRateDangerThreshold(criteriaData.thresholds.danger);
+    }
+  }, [
+    criteriaData,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
+  ]);
+
   // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
   const [ratioSortOrder, setRatioSortOrder] = useState<"asc" | "desc" | null>(
     null,
@@ -96,11 +109,9 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const isCurrentMonth = month === currentYearMonth;
 
-  // 달성률 기준값
-  const excellentThreshold =
-    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD;
-  const dangerThreshold =
-    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD;
+  // 달성률 기준값 (store 값 사용)
+  const excellentThreshold = achievementRateExcellentThreshold;
+  const dangerThreshold = achievementRateDangerThreshold;
 
   // 먼저 달성률 필터 적용
   const achievementRateFilteredAllMetrics = metrics.filter((m) => {
@@ -223,9 +234,9 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const sortedMetrics = [...metricsWithCalculatedStatus].sort((a, b) => {
     if (ratioSortOrder === null) return 0;
     if (ratioSortOrder === "asc") {
-      return a.ratio - b.ratio;
+      return a.weightRatio - b.weightRatio;
     }
-    return b.ratio - a.ratio;
+    return b.weightRatio - a.weightRatio;
   });
 
   // 지표 상세보기 모달 열기
@@ -272,6 +283,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
           <AchievementRateFilter
             value={achievementRateFilter}
             onChange={setAchievementRateFilter}
+            excellentThreshold={excellentThreshold}
+            dangerThreshold={dangerThreshold}
           />
         </div>
       </div>
@@ -444,7 +457,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {metric.ratio}%
+                      {metric.weightRatio}%
                     </td>
                     <td className="px-4 py-3">
                       <button

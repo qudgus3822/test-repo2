@@ -22,7 +22,11 @@ interface TargetValueAchievementProps {
 export const TargetValueAchievement = ({
   month,
 }: TargetValueAchievementProps) => {
-  const { data: goalAchievementData, isLoading, error } = useGoalAchievement(month);
+  const {
+    data: goalAchievementData,
+    isLoading,
+    error,
+  } = useGoalAchievement(month);
 
   // 로딩, 에러, 데이터 없음 상태
   if (isLoading || error || !goalAchievementData) {

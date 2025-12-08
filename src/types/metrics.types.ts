@@ -25,14 +25,6 @@ export interface MetricOverview {
   developmentEfficiencyIcon?: string; // 개발효율 아이콘 (lucide-react icon name)
 }
 
-// ==================== 목표 달성률 ====================
-export interface MetricsTargetValueAchievement {
-  month: string; // 'YYYY-MM' 형식
-  achievementRate: number; // 달성률 (76.7%)
-  achievedMetrics: number; // 달성한 지표 수 (23개)
-  totalMetrics: number; // 전체 지표 수 (30개)
-}
-
 // ==================== 지표 리스트 전체 데이터 ====================
 export interface MetricsListData {
   month: string; // 'YYYY-MM' 형식
@@ -47,30 +39,48 @@ export interface MetricsListData {
 // ==================== 지표 아이템 ====================
 export interface MetricItem {
   name: string; // 지표명 (예: "기술부채", "코드복잡도")
-  category: MetricCategory; // 범주
-  // 25.11.10 API 응답 형태 변경됨. 확인필요. category: "quality" | "review" | "efficiency"; // 범주 (문자열 리터럴)
+  category: MetricCategory; // 범주 ("quality" | "review" | "efficiency")
   currentValue: string; // 현재값 (8.2일, 15.2, 3.5%, 125개, 68%)
   targetValue: string; // 목표값 (10일, 12, 5%, 100개, 80%)
   achievementRate: number; // 달성률 (%)
-  status: MetricStatus; // 상태 (달성/주의/미달성)
-  ratio: number; // 비율 (11.1%, 11.2%)
-  metricCode?: string; // 지표 코드 (예: "TECH_DEBT")
-  unit?: string; // 단위 (일, %, 개)
-  // 25.11.10 API 응답 형태 변경됨. 확인필요. unit: string; // 단위 (hour, count, percent)
+  status: MetricStatus; // 상태 (excellent/warning/danger)
+  weightRatio: number; // 비율 (11.1%, 11.2%)
+  metricCode: string; // 지표 코드 (예: "TECH_DEBT")
+  unit: string; // 단위 (hour, count, percent, %, 건, 분 등)
   description?: string; // 설명
   dataSource?: string; // 데이터 소스 (예: "Sonarqube", "Gitlab")
 }
 
-// ==================== API 응답 형태의 지표 아이템 ====================
-// export interface MetricItemResponse {
-//   name: string; // 지표명
-//   category: "quality" | "review" | "efficiency"; // 범주 (문자열 리터럴)
-//   currentValue: string; // 현재값
-//   targetValue: string; // 목표값
-//   achievementRate: number; // 달성률 (%)
-//   status: "achieved" | "warning" | "not_achieved"; // 상태 (문자열 리터럴)
-//   ratio: number; // 비율
-//   metricCode: string; // 지표 코드
-//   unit: string; // 단위 (hour, count, percent)
-//   description: string; // 설명
-// }
+// ==================== 달성률 기준 설정 ====================
+export interface AchievementCriteria {
+  appliedMonth: string; // 적용 월 (YYYY-MM 형식)
+  thresholds: {
+    excellent: number; // 우수 기준 (%)
+    danger: number; // 위험 기준 (%)
+  };
+  updatedAt: string; // 수정일시 (ISO 8601 형식)
+}
+
+export interface AchievementCriteriaUpdateRequest {
+  month: string; // 적용 월 (YYYY-MM 형식)
+  excellent: number; // 우수 기준 (%)
+  danger: number; // 위험 기준 (%)
+}
+
+// ==================== 목표값 설정 ====================
+export interface TargetValueMetric {
+  metricName: string; // 지표명
+  category: string; // 범주
+  targetValue: string; // 목표값
+  unit: string; // 단위
+  metricCode: string; // 지표 코드
+}
+
+export interface TargetValuesResponse {
+  category: string; // 범주 코드
+  appliedMonth: string; // 적용 월 (YYYY-MM 형식)
+  categoryName: string; // 범주명
+  metrics: TargetValueMetric[]; // 지표 목록
+  updatedBy: string; // 수정자
+  updatedAt: string; // 수정일시 (ISO 8601 형식)
+}

@@ -60,6 +60,10 @@ interface MetricsStore {
    * 선택된 지표입니다.
    */
   selectedMetric: MetricItem | null;
+  /**
+   * 목표값 / 달성률 / 비율 설정에서 변경사항이 있는지 여부입니다. (변경사항 반영 버튼 활성화 여부)
+   */
+  isSettingsChanged: boolean;
 }
 
 interface MetricsAction {
@@ -117,6 +121,10 @@ interface MetricsAction {
    * 선택된 지표를 설정합니다.
    */
   setSelectedMetric: (metric: MetricItem | null) => void;
+  /**
+   * 변경사항이 있는지 여부를 설정합니다.
+   */
+  setIsSettingsChanged: (isSettingsChanged: boolean) => void;
 }
 
 const initState: MetricsStore = {
@@ -132,6 +140,7 @@ const initState: MetricsStore = {
   achievementRateDangerThreshold: DEFAULT_DANGER_THRESHOLD,
   isMetricsDetailModalOpen: false,
   selectedMetric: null,
+  isSettingsChanged: false,
 };
 
 export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
@@ -158,4 +167,6 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
     set({ isMetricsDetailModalOpen }),
   setSelectedMetric: (metric: MetricItem | null) =>
     set({ selectedMetric: metric }),
+  setIsSettingsChanged: (isSettingsChanged: boolean) =>
+    set({ isSettingsChanged }),
 }));
