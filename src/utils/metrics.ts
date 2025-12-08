@@ -186,9 +186,9 @@ export const getMetricName = (metricCode: string): string => {
  */
 export const getCategoryLabel = (category: MetricCategory | string): string => {
   const labels: Record<string, string> = {
-    code_quality: "코드품질",
-    review_quality: "리뷰품질",
-    development_efficiency: "개발효율",
+    quality: "코드품질",
+    review: "리뷰품질",
+    efficiency: "개발효율",
   };
   return labels[category] || category;
 };

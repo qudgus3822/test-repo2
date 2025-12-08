@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode } from "react";
+import { setQueryClient } from "@/libs/fetch";
 
 // QueryClient 설정
 const queryClient = new QueryClient({
@@ -19,6 +20,9 @@ const queryClient = new QueryClient({
 interface QueryProviderProps {
   children: ReactNode;
 }
+
+// apiFetch에서 401 에러 시 캐시 초기화를 위해 QueryClient 인스턴스 등록
+setQueryClient(queryClient);
 
 export const QueryProvider = ({ children }: QueryProviderProps) => {
   return (

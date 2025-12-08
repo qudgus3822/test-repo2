@@ -4,11 +4,6 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
 import { TargetValueAchievement } from "@/components/dashboard/TargetValueAchievement";
 import { MetricsTable } from "@/components/metrics/MetricsTable";
-import {
-  mockMetricOverview,
-  mockMetricsTargetValueAchievement,
-  mockCodeQualityMetrics,
-} from "@/mocks/metrics.mock";
 import { useMetricsStore } from "@/store/useMetricsStore";
 import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
 import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
@@ -16,6 +11,8 @@ import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
+import { formatYearMonth } from "@/utils";
+import { useMetricsList } from "@/api/hooks/useMetricsList";
 
 const MetricsPage = () => {
   const {
@@ -34,6 +31,13 @@ const MetricsPage = () => {
     setIsMetricRateSettingModalOpen,
     activeTab,
   } = useMetricsStore((state) => state);
+
+  // 현재 선택된 월
+  const month = formatYearMonth(currentDate);
+
+  // 지표 리스트 API 호출 (모달에서 사용)
+  const { data: metricsListData } = useMetricsList(month);
+  const metrics = metricsListData?.metrics ?? [];
 
   // activeTab을 MetricCategory로 변환
   const getSelectedCategory = (): MetricCategory => {
@@ -106,32 +110,28 @@ const MetricsPage = () => {
         {/* 지표 현황 */}
         <div className="w-2/3 h-full">
           <Card className="h-full w-full flex items-center">
-            <MetricsSummary data={mockMetricOverview} />
+            <MetricsSummary month={month} />
           </Card>
         </div>
 
         {/* 목표 달성률 */}
         <div className="w-1/3 h-full">
           <Card className="w-full h-full">
-            {/* 목표 달성률 */}
-            <TargetValueAchievement
-              achieved={mockMetricsTargetValueAchievement.achievedMetrics}
-              total={mockMetricsTargetValueAchievement.totalMetrics}
-            />
+            <TargetValueAchievement month={month} />
           </Card>
         </div>
       </div>
 
       {/* 지표 리스트 */}
       <Card className="w-full">
-        <MetricsTable metrics={mockCodeQualityMetrics.metrics} />
+        <MetricsTable month={month} />
       </Card>
 
       {/* 지표 리스트 - 목표값 설정 모달 */}
       <TargetValueSettingModal
         isOpen={isTargetValueSettingModalOpen}
         onClose={() => setIsTargetValueSettingModalOpen(false)}
-        metrics={mockCodeQualityMetrics.metrics}
+        metrics={metrics}
         onSave={(updatedMetrics: MetricItem[]) => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated metrics:", updatedMetrics);
@@ -142,7 +142,7 @@ const MetricsPage = () => {
       <AchievementRateSettingModal
         isOpen={isAchievementRateSettingModalOpen}
         onClose={() => setIsAchievementRateSettingModalOpen(false)}
-        metrics={mockCodeQualityMetrics.metrics}
+        metrics={metrics}
         onSave={(updatedMetrics: MetricItem[]) => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated achievement rates:", updatedMetrics);
@@ -160,7 +160,7 @@ const MetricsPage = () => {
       <MetricRateSettingModal
         isOpen={isMetricRateSettingModalOpen}
         onClose={() => setIsMetricRateSettingModalOpen(false)}
-        metrics={mockCodeQualityMetrics.metrics}
+        metrics={metrics}
         category={getSelectedCategory()}
         onSave={(updatedMetrics: MetricItem[]) => {
           // TODO: API 연동 시 실제 저장 로직 구현

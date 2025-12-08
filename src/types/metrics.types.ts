@@ -7,9 +7,9 @@ export enum MetricStatus {
 }
 
 export enum MetricCategory {
-  CODE_QUALITY = "code_quality", // 코드품질
-  REVIEW_QUALITY = "review_quality", // 리뷰품질
-  DEVELOPMENT_EFFICIENCY = "development_efficiency", // 개발효율
+  CODE_QUALITY = "quality", // 코드품질
+  REVIEW_QUALITY = "review", // 리뷰품질
+  DEVELOPMENT_EFFICIENCY = "efficiency", // 개발효율
 }
 
 // ==================== 지표 총 현황 ====================

@@ -14,6 +14,7 @@ import type { OrganizationDetailItem } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import type { OrganizationDepartment } from "@/types/organization.types";
+import { formatYearMonth } from "@/utils";
 
 // Level 1(부문) 조직 코드만 수집
 // 초기 화면 진입 시 사용 → 실 단위까지 보임
@@ -76,9 +77,7 @@ const OrganizationPage = () => {
   };
 
   // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
-  const yearMonth = `${currentDate.getFullYear()}-${String(
-    currentDate.getMonth() + 1,
-  ).padStart(2, "0")}`;
+  const yearMonth = formatYearMonth(currentDate);
 
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
   const { data, isLoading, isError } = useOrganizationTree(

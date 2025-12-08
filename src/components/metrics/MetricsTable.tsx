@@ -27,6 +27,7 @@ import {
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useMetricsList } from "@/api/hooks/useMetricsList";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -56,9 +57,7 @@ const getCategoryStyle = (category: MetricCategory) => {
 };
 
 interface MetricsTableProps {
-  metrics: MetricItem[];
-  isLoading?: boolean;
-  isError?: boolean;
+  month: string;
 }
 
 interface Tab {
@@ -68,11 +67,7 @@ interface Tab {
   category?: MetricCategory;
 }
 
-export const MetricsTable = ({
-  metrics,
-  isLoading = false,
-  isError = false,
-}: MetricsTableProps) => {
+export const MetricsTable = ({ month }: MetricsTableProps) => {
   const {
     activeTab,
     setActiveTab,
@@ -85,8 +80,11 @@ export const MetricsTable = ({
     setIsMetricsDetailModalOpen,
     setIsMetricRateSettingModalOpen,
     setSelectedMetric,
-    currentDate,
   } = useMetricsStore((state) => state);
+
+  // API 호출
+  const { data, isLoading, error } = useMetricsList(month);
+  const metrics = data?.metrics ?? [];
 
   // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
   const [ratioSortOrder, setRatioSortOrder] = useState<"asc" | "desc" | null>(
@@ -95,9 +93,8 @@ export const MetricsTable = ({
 
   // 현재 날짜와 선택된 날짜의 년/월 비교 (같은 월인지 확인)
   const now = new Date();
-  const isCurrentMonth =
-    currentDate.getFullYear() === now.getFullYear() &&
-    currentDate.getMonth() === now.getMonth();
+  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const isCurrentMonth = month === currentYearMonth;
 
   // 달성률 기준값
   const excellentThreshold =
@@ -137,7 +134,7 @@ export const MetricsTable = ({
   // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
   const getTableHeight = () => {
     // 데이터가 없는 경우 최소 높이 반환
-    if (isLoading || isError || metrics.length === 0) {
+    if (isLoading || error || metrics.length === 0) {
       return 225;
     }
 
@@ -238,7 +235,7 @@ export const MetricsTable = ({
   };
 
   // 로딩, 에러, 데이터 없음 상태 여부
-  const isEmptyState = isLoading || isError || metrics.length === 0;
+  const isEmptyState = isLoading || error || metrics.length === 0;
 
   return (
     <div className="space-y-4">

@@ -3,7 +3,7 @@ import type { ServiceStabilityMetrics } from "@/types/serviceStability.types";
 import type { ProductionTrendResponse } from "@/types/productionTrend.types";
 import type { GoalAchievementRate } from "@/types/goalAchievement.types";
 import type { MetricRankings } from "@/types/metricRankings.types";
-import { env } from "@/env";
+import { apiGet } from "@/libs/fetch";
 
 /**
  * 전사 BDPI 대시보드 데이터 조회
@@ -14,25 +14,7 @@ import { env } from "@/env";
 export const fetchCompanyQuality = async (
   month: string,
 ): Promise<CompanyQualityMetrics> => {
-  try {
-    const response = await fetch(
-      `${env.apiBaseUrl}/dashboard/company-quality?month=${month}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("전사 BDPI 조회 실패");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("전사 BDPI 조회 실패:", error);
-    throw error;
-  }
+  return apiGet<CompanyQualityMetrics>(`/dashboard/company-quality?month=${month}`);
 };
 
 /**
@@ -44,25 +26,7 @@ export const fetchCompanyQuality = async (
 export const fetchServiceStability = async (
   month: string,
 ): Promise<ServiceStabilityMetrics> => {
-  try {
-    const response = await fetch(
-      `${env.apiBaseUrl}/dashboard/service-stability?month=${month}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("서비스 안정성 메트릭 조회 실패");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("서비스 안정성 메트릭 조회 실패:", error);
-    throw error;
-  }
+  return apiGet<ServiceStabilityMetrics>(`/dashboard/service-stability?month=${month}`);
 };
 
 /**
@@ -74,25 +38,7 @@ export const fetchServiceStability = async (
 export const fetchDeveloperProductivity = async (
   month: string,
 ): Promise<ProductionTrendResponse> => {
-  try {
-    const response = await fetch(
-      `${env.apiBaseUrl}/dashboard/developer-productivity?month=${month}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("개발 생산성 트렌드 조회 실패");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("개발 생산성 트렌드 조회 실패:", error);
-    throw error;
-  }
+  return apiGet<ProductionTrendResponse>(`/dashboard/developer-productivity?month=${month}`);
 };
 
 /**
@@ -104,25 +50,7 @@ export const fetchDeveloperProductivity = async (
 export const fetchGoalAchievement = async (
   month: string,
 ): Promise<GoalAchievementRate> => {
-  try {
-    const response = await fetch(
-      `${env.apiBaseUrl}/dashboard/goal-achievement?month=${month}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("목표 달성률 조회 실패");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("목표 달성률 조회 실패:", error);
-    throw error;
-  }
+  return apiGet<GoalAchievementRate>(`/dashboard/goal-achievement?month=${month}`);
 };
 
 /**
@@ -136,23 +64,5 @@ export const fetchMetricRankings = async (
   month: string,
   type: string = "all",
 ): Promise<MetricRankings> => {
-  try {
-    const response = await fetch(
-      `${env.apiBaseUrl}/dashboard/metric-rankings?month=${month}&type=${type}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("지표 순위 조회 실패");
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("지표 순위 조회 실패:", error);
-    throw error;
-  }
+  return apiGet<MetricRankings>(`/dashboard/metric-rankings?month=${month}&type=${type}`);
 };

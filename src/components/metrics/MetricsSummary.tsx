@@ -1,12 +1,32 @@
 import { BarChart3 } from "lucide-react";
 import { PALETTE_COLORS } from "@/styles/colors";
-import type { MetricOverview } from "@/types/metrics.types";
+import { useMetricsOverview } from "@/api/hooks/useMetricsOverview";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 interface MetricsSummaryProps {
-  data: MetricOverview;
+  month: string;
 }
 
-export const MetricsSummary = ({ data }: MetricsSummaryProps) => {
+export const MetricsSummary = ({ month }: MetricsSummaryProps) => {
+  const { data, isLoading, error } = useMetricsOverview(month);
+
+  // 로딩, 에러, 데이터 없음 상태
+  const hasNoData = !data;
+  if (isLoading || error || hasNoData) {
+    return (
+      <div className="w-full h-full flex flex-col">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">지표 현황</h3>
+        <div className="flex-1 flex items-center justify-center">
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   const summaryItems = [
     {
       label: "전체 지표",

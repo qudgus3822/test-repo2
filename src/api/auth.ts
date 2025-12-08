@@ -1,5 +1,5 @@
 import type { User } from "@/types/auth";
-import { env } from "@/env";
+import { apiFetch } from "@/libs/fetch";
 
 export interface LoginRequest {
   email: string;
@@ -18,9 +18,9 @@ export interface LoginResponse {
  */
 export const checkBackendHealth = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/health`, {
+    const response = await apiFetch("/health", {
       method: "GET",
-      credentials: "include",
+      skipAuthRedirect: true, // 헬스체크는 인증 불필요
     });
     return response.ok;
   } catch {
@@ -34,9 +34,9 @@ export const checkBackendHealth = async (): Promise<boolean> => {
  */
 export const checkAuthStatus = async (): Promise<User | null> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/users/me`, {
+    const response = await apiFetch("/users/me", {
       method: "GET",
-      credentials: "include", // 쿠키 포함
+      skipAuthRedirect: true, // 인증 상태 확인은 401 시 리다이렉트하지 않음
     });
 
     if (response.status === 401) return null; // 인증되지 않음
@@ -66,16 +66,13 @@ export const loginToServer = async (
   credentials: LoginRequest,
 ): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/auth/signin`, {
+    const response = await apiFetch("/auth/signin", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // 쿠키 포함
       body: JSON.stringify({
         email: credentials.email,
         password: credentials.password,
       }),
+      skipAuthRedirect: true, // 로그인은 401 시 리다이렉트하지 않음
     });
 
     if (!response.ok) {
@@ -115,9 +112,9 @@ export const loginToServer = async (
  */
 export const logoutFromServer = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/auth/logout`, {
+    const response = await apiFetch("/auth/logout", {
       method: "POST",
-      credentials: "include",
+      skipAuthRedirect: true, // 로그아웃은 401 시 리다이렉트하지 않음
     });
 
     if (!response.ok) {

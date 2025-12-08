@@ -1,8 +1,8 @@
-import { env } from "@/env";
 import type {
   OrganizationCompareResponse,
   TabType,
 } from "@/types/organization.types";
+import { apiGet } from "@/libs/fetch";
 
 /**
  * 탭 타입별 API 엔드포인트 매핑
@@ -22,20 +22,7 @@ const TAB_ENDPOINT_MAP: Record<TabType, string> = {
 export const fetchOrganizationTree = async (
   yearMonth: string,
 ): Promise<OrganizationCompareResponse> => {
-  const response = await fetch(
-    `${env.apiBaseUrl}/departments/monthly/tree?yearMonth=${yearMonth}`,
-    {
-      method: "GET",
-      credentials: "include",
-    },
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || "조직도 조회 실패");
-  }
-
-  return response.json();
+  return apiGet<OrganizationCompareResponse>(`/departments/monthly/tree?yearMonth=${yearMonth}`);
 };
 
 /**
@@ -49,18 +36,5 @@ export const fetchOrganizationByTab = async (
   tab: TabType,
 ): Promise<OrganizationCompareResponse> => {
   const endpoint = TAB_ENDPOINT_MAP[tab];
-  const response = await fetch(
-    `${env.apiBaseUrl}/departments/monthly/${endpoint}?yearMonth=${yearMonth}`,
-    {
-      method: "GET",
-      credentials: "include",
-    },
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `${tab} 데이터 조회 실패`);
-  }
-
-  return response.json();
+  return apiGet<OrganizationCompareResponse>(`/departments/monthly/${endpoint}?yearMonth=${yearMonth}`);
 };
