@@ -25,7 +25,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -35,7 +35,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 0,
       reviewApproval: 1,
       mrReopen: 1,
-      status: "진행",
+      status: "NOT_STARTED",
     },
     {
       date: "2025-11-10",
@@ -45,7 +45,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -55,7 +55,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -65,7 +65,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 0,
       reviewApproval: 1,
       mrReopen: 1,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -75,7 +75,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -85,7 +85,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -95,7 +95,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -105,7 +105,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -115,7 +115,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -125,7 +125,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -135,7 +135,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -145,7 +145,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -155,7 +155,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
     {
       date: "2025-11-10",
@@ -165,7 +165,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "진행",
+      status: "IN_PROGRESS",
     },
   ],
 };
@@ -187,7 +187,8 @@ const authors = [
 // 랜덤 데이터 생성 함수
 export function generateRandomReviewItem(index: number): ReviewItem {
   const randomAuthor = authors[Math.floor(Math.random() * authors.length)];
-  const randomStatus: ReviewStatus = Math.random() > 0.3 ? "진행" : "완료";
+  const randomStatus: ReviewStatus =
+    Math.random() > 0.3 ? "IN_PROGRESS" : "NOT_STARTED";
 
   return {
     date: "2025-11-10",
@@ -211,18 +212,22 @@ export function generateMockReviewData(
     items.push(generateRandomReviewItem(i));
   }
 
-  const inProgressCount = items.filter((item) => item.status === "진행").length;
-  const completedCount = items.filter((item) => item.status === "완료").length;
+  const inProgressCount = items.filter(
+    (item) => item.status === "IN_PROGRESS",
+  ).length;
+  const notStartedCount = items.filter(
+    (item) => item.status === "NOT_STARTED",
+  ).length;
 
   return {
     totalMR: totalItems,
     inProgressCount,
-    completedCount,
+    completedCount: notStartedCount,
     inProgressPercentage: Number(
       ((inProgressCount / totalItems) * 100).toFixed(1),
     ),
     completedPercentage: Number(
-      ((completedCount / totalItems) * 100).toFixed(1),
+      ((notStartedCount / totalItems) * 100).toFixed(1),
     ),
     currentPage: 1,
     totalPages: Math.ceil(totalItems / 15),

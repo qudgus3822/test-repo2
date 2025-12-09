@@ -18,3 +18,28 @@ export const formatYearMonth = (date: Date): string => {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
 };
+
+/**
+ * 날짜 문자열을 지정된 형식으로 변환합니다.
+ *
+ * @param dateString - 변환할 날짜 문자열 (YYYY-MM-DD 형식)
+ * @param separator - 구분자 (기본값: ".")
+ * @returns 변환된 날짜 문자열 (예: "2025.01.15")
+ *
+ * @example
+ * ```typescript
+ * import { formatDateString } from "@/utils/date";
+ *
+ * formatDateString("2025-01-15");       // Returns: "2025.01.15"
+ * formatDateString("2025-01-15", "/");  // Returns: "2025/01/15"
+ * formatDateString("2025-01-15", "-");  // Returns: "2025-01-15"
+ * ```
+ */
+export const formatDateString = (
+  dateString: string,
+  separator: string = "."
+): string => {
+  if (!dateString) return "";
+  const [year, month, day] = dateString.split("-");
+  return `${year}${separator}${month}${separator}${day}`;
+};

@@ -1,7 +1,13 @@
 // types/codeReview.ts
 
-// 진행 상태
-export type ReviewStatus = "진행" | "완료";
+// 진행 상태 코드
+export type ReviewStatus = "IN_PROGRESS" | "NOT_STARTED";
+
+// 상태 코드 → 라벨 매핑
+export const REVIEW_STATUS_LABEL: Record<ReviewStatus, string> = {
+  IN_PROGRESS: "진행",
+  NOT_STARTED: "미진행",
+};
 
 // 전행 항목 목록 데이터
 export interface ReviewItem {

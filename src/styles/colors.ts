@@ -134,6 +134,20 @@ export const CHANGE_TYPE_BADGE_COLORS = {
   default: "#6B7280", // 기본 (회색)
 } as const;
 
+// 코드 리뷰 진행률 색상
+export const CODE_REVIEW_COLORS = {
+  completed: "#22C55E", // 완료 (green-500)
+  completedText: "#FFFFFF", // 완료 텍스트 (white)
+  incomplete: "#D1D5DB", // 미완료 (gray-300)
+  incompleteText: "#374151", // 미완료 텍스트 (gray-700)
+} as const;
+
+// 코드 리뷰 상태 뱃지 색상 (ReviewStatus 기준)
+export const REVIEW_STATUS_BADGE_COLORS = {
+  IN_PROGRESS: { bg: "#E8F5E9", text: "#008236" }, // 진행 (초록)
+  NOT_STARTED: { bg: "#E5E7EB", text: "#7B7B7B" }, // 미진행 (회색)
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -147,4 +161,6 @@ export const COLORS = {
   score: SCORE_COLORS,
   statusBadge: STATUS_BADGE_COLORS,
   changeTypeBadge: CHANGE_TYPE_BADGE_COLORS,
+  codeReview: CODE_REVIEW_COLORS,
+  reviewStatusBadge: REVIEW_STATUS_BADGE_COLORS,
 } as const;

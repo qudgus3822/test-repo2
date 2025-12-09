@@ -2,16 +2,29 @@ import { useMemo } from "react";
 import { DonutChart } from "@/libs/chart";
 import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { TREND_COLORS, BRAND_COLORS, CHART_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import { useCompanyQuality } from "@/api/hooks/useCompanyQuality";
 import { Tooltip } from "../ui/Tooltip";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { CodeReviewStatusModal } from "./CodeReviewStatusModal";
+import { useDashboardStore } from "@/store/useDashboardStore";
 
 interface MetricsOverviewProps {
   month: string; // YYYY-MM 형식
 }
+
+// TODO: API 연동 후 제거 - 임시 목업 데이터
+const MOCK_COMPANY_QUALITY_DATA = {
+  month: "",
+  bdpiAverage: 78.5,
+  bdpiChange: 2.3,
+  codeQuality: { score: 82, achievedMetrics: 4, totalMetrics: 5 },
+  reviewQuality: { score: 75, achievedMetrics: 3, totalMetrics: 4 },
+  developmentEfficiency: { score: 79, achievedMetrics: 5, totalMetrics: 6 },
+};
 
 /**
  * 메트릭 개요 컴포넌트
@@ -25,57 +38,65 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
     error,
   } = useCompanyQuality(month);
 
+  // 코드 리뷰 현황 모달 상태
+  const openCodeReviewModal = useDashboardStore(
+    (state) => state.openCodeReviewModal,
+  );
+
+  // API 에러 시 목업 데이터 사용
+  const data = error ? MOCK_COMPANY_QUALITY_DATA : companyQualityData;
+
   // 전사 BDPI 평균 계산
   const bdpiAverage = useMemo(
     () =>
-      companyQualityData
+      data
         ? {
-            value: companyQualityData.bdpiAverage,
+            value: data.bdpiAverage,
             label: "전사 BDPI 평균",
             sublabel: "평균 확보율",
             color: BRAND_COLORS.secondary,
             trend: {
-              value: Math.abs(companyQualityData.bdpiChange),
-              isPositive: companyQualityData.bdpiChange > 0,
+              value: Math.abs(data.bdpiChange),
+              isPositive: data.bdpiChange > 0,
             },
           }
         : null,
-    [companyQualityData],
+    [data],
   );
 
   // 차트 메트릭 계산
   const chartMetrics = useMemo(
     () =>
-      companyQualityData
+      data
         ? [
             {
               id: "code",
-              value: companyQualityData.codeQuality.score,
+              value: data.codeQuality.score,
               label: "코드 품질",
-              sublabel: `${companyQualityData.codeQuality.achievedMetrics}/${companyQualityData.codeQuality.totalMetrics}건 달성`,
+              sublabel: `${data.codeQuality.achievedMetrics}/${data.codeQuality.totalMetrics}건 달성`,
               color: CHART_COLORS.blue,
             },
             {
               id: "review",
-              value: companyQualityData.reviewQuality.score,
+              value: data.reviewQuality.score,
               label: "리뷰 품질",
-              sublabel: `${companyQualityData.reviewQuality.achievedMetrics}/${companyQualityData.reviewQuality.totalMetrics}건 달성`,
+              sublabel: `${data.reviewQuality.achievedMetrics}/${data.reviewQuality.totalMetrics}건 달성`,
               color: CHART_COLORS.yellow,
             },
             {
               id: "efficiency",
-              value: companyQualityData.developmentEfficiency.score,
+              value: data.developmentEfficiency.score,
               label: "개발 효율",
-              sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
+              sublabel: `${data.developmentEfficiency.achievedMetrics}/${data.developmentEfficiency.totalMetrics}건 달성`,
               color: CHART_COLORS.lightYellow,
             },
           ]
         : null,
-    [companyQualityData],
+    [data],
   );
 
-  // 로딩, 에러, 데이터 없음 상태
-  if (isLoading || error || !bdpiAverage || !chartMetrics) {
+  // 로딩 또는 데이터 없음 상태
+  if (isLoading || !bdpiAverage || !chartMetrics) {
     return (
       <Card className="w-full h-auto">
         <div className="flex items-center justify-center h-40">
@@ -147,17 +168,33 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
 
         {/* 차트 메트릭 (도넛 차트 표시) */}
         {chartMetrics.map((metric) => (
-          <div key={metric.id} className="flex items-center justify-center">
-            <DonutChart
-              value={metric.value}
-              maxValue={100}
-              color={metric.color}
-              label={metric.label}
-              sublabel={metric.sublabel}
-            />
+          <div key={metric.id}>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <DonutChart
+                value={metric.value}
+                maxValue={100}
+                color={metric.color}
+                label={metric.label}
+                sublabel={metric.sublabel}
+              />
+            </div>
+            <div className="flex justify-center pt-1">
+              {metric.id === "review" && (
+                <Button
+                  variant="normal"
+                  size="sm"
+                  onClick={openCodeReviewModal}
+                >
+                  상세보기
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </div>
+
+      {/* 코드 리뷰 현황 모달 */}
+      <CodeReviewStatusModal />
     </Card>
   );
 };
