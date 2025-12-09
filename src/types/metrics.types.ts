@@ -62,9 +62,10 @@ export interface AchievementCriteria {
 }
 
 export interface AchievementCriteriaUpdateRequest {
-  month: string; // 적용 월 (YYYY-MM 형식)
-  excellent: number; // 우수 기준 (%)
-  danger: number; // 위험 기준 (%)
+  thresholds: {
+    excellent: number; // 우수 기준 (%)
+    danger: number; // 위험 기준 (%)
+  };
 }
 
 // ==================== 목표값 설정 ====================
@@ -83,6 +84,46 @@ export interface TargetValuesResponse {
   metrics: TargetValueMetric[]; // 지표 목록
   updatedBy: string; // 수정자
   updatedAt: string; // 수정일시 (ISO 8601 형식)
+}
+
+export interface TargetValueUpdateItem {
+  metricCode: string; // 지표 코드
+  targetValue: string; // 목표값
+}
+
+export interface TargetValuesUpdateRequest {
+  month: string; // 적용 월 (YYYY-MM 형식)
+  metrics: TargetValueUpdateItem[]; // 지표 목록
+}
+
+// ==================== 비율 설정 ====================
+export interface WeightSettingMetric {
+  metricCode: string; // 지표 코드
+  metricName: string; // 지표명
+  weight: number; // 가중치
+}
+
+export interface WeightSettingCategory {
+  category: string; // 범주 코드 (quality | review | efficiency)
+  appliedMonth: string; // 적용 월 (YYYY-MM 형식)
+  categoryName: string; // 범주명
+  metrics: WeightSettingMetric[]; // 지표 목록
+  updatedBy: string; // 수정자
+  updatedAt: string; // 수정일시 (ISO 8601 형식)
+}
+
+export interface WeightSettingsResponse {
+  settings: WeightSettingCategory[]; // 범주별 비율 설정 목록
+}
+
+export interface WeightSettingUpdateItem {
+  metricCode: string; // 지표 코드
+  weight: number; // 가중치
+}
+
+export interface WeightSettingsUpdateRequest {
+  month: string; // 적용 월 (YYYY-MM 형식)
+  metrics: WeightSettingUpdateItem[]; // 지표 목록
 }
 
 // ==================== 변경내역 조회 (Pending Summary) ====================

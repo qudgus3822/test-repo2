@@ -191,6 +191,7 @@ const MetricsPage = () => {
         onClose={() => setIsMetricRateSettingModalOpen(false)}
         metrics={metrics}
         category={getSelectedCategory()}
+        month={month}
         onSave={(updatedMetrics: MetricItem[]) => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated metric rates:", updatedMetrics);

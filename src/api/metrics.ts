@@ -4,6 +4,9 @@ import type {
   AchievementCriteria,
   AchievementCriteriaUpdateRequest,
   TargetValuesResponse,
+  TargetValuesUpdateRequest,
+  WeightSettingsResponse,
+  WeightSettingsUpdateRequest,
   PendingSummaryResponse,
 } from "@/types/metrics.types";
 import type { GoalAchievementRate } from "@/types/goalAchievement.types";
@@ -75,6 +78,41 @@ export const fetchTargetValues = async (
   month: string,
 ): Promise<TargetValuesResponse> => {
   return apiGet<TargetValuesResponse>(`/metrics/target-values?category=${category}&month=${month}`);
+};
+
+/**
+ * 목표값 업데이트 API
+ * @param category - 범주 (quality | review | efficiency)
+ * @param data - 업데이트할 목표값 데이터
+ */
+export const updateTargetValues = async (
+  category: string,
+  data: TargetValuesUpdateRequest,
+): Promise<void> => {
+  return apiPut<void>(`/metrics/target-values/${category}`, data);
+};
+
+/**
+ * 비율 설정 조회 API
+ * @param month - 조회 연월 (YYYY-MM 형식)
+ * @returns 비율 설정 데이터
+ */
+export const fetchWeightSettings = async (
+  month: string,
+): Promise<WeightSettingsResponse> => {
+  return apiGet<WeightSettingsResponse>(`/metrics/weight-settings?month=${month}`);
+};
+
+/**
+ * 비율 설정 업데이트 API
+ * @param category - 범주 (quality | review | efficiency)
+ * @param data - 업데이트할 비율 설정 데이터
+ */
+export const updateWeightSettings = async (
+  category: string,
+  data: WeightSettingsUpdateRequest,
+): Promise<void> => {
+  return apiPut<void>(`/metrics/weight-settings/${category}`, data);
 };
 
 /**

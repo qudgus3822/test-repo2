@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
-import { flushSync } from "react-dom";
 import type { MetricItem } from "@/types/metrics.types";
 import { X } from "lucide-react";
-import { getCategoryLabel, getCategoryStyle } from "@/utils/metrics";
+import { getCategoryLabel, getCategoryStyle, getMetricName } from "@/utils/metrics";
+import { useModalAnimation } from "@/hooks";
 
 interface MetricsDetailModalProps {
   isOpen: boolean;
@@ -15,21 +14,8 @@ export const MetricsDetailModal = ({
   onClose,
   metric,
 }: MetricsDetailModalProps) => {
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  // 애니메이션을 위한 지연된 unmount
-  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
-  useEffect(() => {
-    if (isOpen) {
-      flushSync(() => setShouldRender(true));
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
 
   if (!shouldRender || !metric) return null;
 
@@ -68,7 +54,7 @@ export const MetricsDetailModal = ({
           {/* 헤더 */}
           <div className="flex items-start justify-between p-6 border-b border-gray-200 ">
             <h2 className="text-lg font-semibold text-gray-900">
-              {metric.name} 상세 정보
+              {getMetricName(metric.metricCode)} 상세 정보
             </h2>
             <button
               onClick={onClose}

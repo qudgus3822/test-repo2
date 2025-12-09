@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { flushSync } from "react-dom";
 import { X } from "lucide-react";
 import type {
   OrganizationDepartment,
@@ -16,6 +15,7 @@ import {
   SCORE_EXCELLENT_THRESHOLD,
   SCORE_GOOD_THRESHOLD,
 } from "@/store/useOrganizationStore";
+import { useModalAnimation } from "@/hooks";
 
 // 선택된 항목 타입 (조직 또는 멤버)
 export type OrganizationDetailItem =
@@ -61,22 +61,11 @@ export const OrganizationDetailModal = ({
   onClose,
   item,
 }: OrganizationDetailModalProps) => {
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   // 상세 내용 표시 여부 (추후 개발 시 true로 변경)
   const [isDetailVisible] = useState(false);
 
-  // 애니메이션을 위한 지연된 unmount
-  useEffect(() => {
-    if (isOpen) {
-      flushSync(() => setShouldRender(true));
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
 
   // 모달이 열려있을 때 body 스크롤 방지
   useEffect(() => {

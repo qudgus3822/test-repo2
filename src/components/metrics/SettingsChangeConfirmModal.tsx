@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { flushSync } from "react-dom";
+import { useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { usePendingSummary } from "@/api/hooks/usePendingSummary";
 import { applySettingsChanges, cancelPendingChanges } from "@/api/metrics";
+import { useModalAnimation } from "@/hooks";
 
 interface SettingsChangeConfirmModalProps {
   isOpen: boolean;
@@ -17,25 +17,14 @@ export const SettingsChangeConfirmModal = ({
   onClose,
   onConfirm,
 }: SettingsChangeConfirmModalProps) => {
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
 
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen, { duration: 200 });
+
   // 변경내역 조회 API - 모달이 열릴 때만 호출
   const { data: pendingSummary, isLoading } = usePendingSummary(isOpen);
-
-  // 애니메이션을 위한 지연된 unmount
-  useEffect(() => {
-    if (isOpen) {
-      flushSync(() => setShouldRender(true));
-      requestAnimationFrame(() => setIsAnimating(true));
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 200);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
 
   if (!shouldRender) return null;
 

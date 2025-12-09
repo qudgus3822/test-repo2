@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { flushSync } from "react-dom";
 import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
@@ -7,7 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { getCategoryLabel, getMetricUnit, getMetricName } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { useTargetValues } from "@/api/hooks/useTargetValues";
+import { updateTargetValues } from "@/api/metrics";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useModalAnimation } from "@/hooks";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -97,9 +98,11 @@ export const TargetValueSettingModal = ({
   onSave,
 }: TargetValueSettingModalProps) => {
   const [editedMetrics, setEditedMetrics] = useState<TargetValueMetric[]>([]);
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [errors, setErrors] = useState<Record<number, ValidationError>>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
 
   // 3개 범주의 목표값 조회
   const { data: qualityData, isLoading: isLoadingQuality } = useTargetValues(
@@ -132,19 +135,10 @@ export const TargetValueSettingModal = ({
     }
   }, [qualityData, reviewData, efficiencyData]);
 
-  // 애니메이션을 위한 지연된 unmount
-  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
+  // 모달 열릴 때 에러 초기화
   useEffect(() => {
     if (isOpen) {
-      flushSync(() => {
-        setShouldRender(true);
-        setErrors({}); // 모달 열릴 때 에러 초기화
-      });
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timer);
+      setErrors({});
     }
   }, [isOpen]);
 
@@ -166,7 +160,7 @@ export const TargetValueSettingModal = ({
     return error !== null;
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // 저장 전 전체 유효성 검사
     const newErrors: Record<number, ValidationError> = {};
     let hasValidationError = false;
@@ -184,8 +178,60 @@ export const TargetValueSettingModal = ({
       return;
     }
 
-    onSave(editedMetrics);
-    onClose();
+    setIsSaving(true);
+    try {
+      // 범주별로 그룹핑하여 API 호출
+      const qualityMetrics = editedMetrics.filter((m) => m.category === "quality");
+      const reviewMetrics = editedMetrics.filter((m) => m.category === "review");
+      const efficiencyMetrics = editedMetrics.filter((m) => m.category === "efficiency");
+
+      const updatePromises = [];
+
+      if (qualityMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("quality", {
+            month,
+            metrics: qualityMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          })
+        );
+      }
+
+      if (reviewMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("review", {
+            month,
+            metrics: reviewMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          })
+        );
+      }
+
+      if (efficiencyMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("efficiency", {
+            month,
+            metrics: efficiencyMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          })
+        );
+      }
+
+      await Promise.all(updatePromises);
+      onSave(editedMetrics);
+      onClose();
+    } catch {
+      // API가 없거나 에러 발생 시 confirm 메시지 표시
+      window.confirm("현재 서버에 해당 API가 없습니다.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -357,9 +403,9 @@ export const TargetValueSettingModal = ({
               variant="primary"
               size="sm"
               onClick={handleSave}
-              disabled={hasErrors}
+              disabled={hasErrors || isSaving}
             >
-              저장
+              {isSaving ? "저장 중..." : "저장"}
             </Button>
           </div>
         </div>
