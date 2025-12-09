@@ -4,7 +4,7 @@ import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getCategoryLabel } from "@/utils/metrics";
+import { getCategoryLabel, getMetricUnit, getMetricName } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { useTargetValues } from "@/api/hooks/useTargetValues";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -287,7 +287,7 @@ export const TargetValueSettingModal = ({
                           <React.Fragment key={metric.metricCode || index}>
                             <tr className={hasError ? "" : "border-b border-gray-100"}>
                               <td className="px-4 py-3 text-sm text-gray-900">
-                                {metric.metricName}
+                                {getMetricName(metric.metricCode)}
                               </td>
                               <td className="px-4 py-3 text-sm text-center">
                                 {(() => {
@@ -307,7 +307,7 @@ export const TargetValueSettingModal = ({
                               </td>
                               <td className="px-4 py-3 text-sm text-gray-900">
                                 {getCurrentValue(metric.metricCode)}
-                                {metric.unit && `${metric.unit}`}
+                                {getMetricUnit(metric.metricCode)}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export const TargetValueSettingModal = ({
                                     }`}
                                   />
                                   <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
-                                    {metric.unit && `${metric.unit}`}
+                                    {getMetricUnit(metric.metricCode)}
                                   </span>
                                 </div>
                               </td>

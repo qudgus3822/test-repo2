@@ -9,6 +9,7 @@ import { TargetValueSettingModal } from "@/components/metrics/TargetValueSetting
 import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
+import { SettingsChangeConfirmModal } from "@/components/metrics/SettingsChangeConfirmModal";
 import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
@@ -33,6 +34,8 @@ const MetricsPage = () => {
     setIsMetricRateSettingModalOpen,
     activeTab,
     isSettingsChanged,
+    isSettingsChangeConfirmModalOpen,
+    setIsSettingsChangeConfirmModalOpen,
   } = useMetricsStore((state) => state);
 
   // 현재 선택된 월
@@ -62,7 +65,8 @@ const MetricsPage = () => {
       isTargetValueSettingModalOpen ||
       isAchievementRateSettingModalOpen ||
       isMetricsDetailModalOpen ||
-      isMetricRateSettingModalOpen;
+      isMetricRateSettingModalOpen ||
+      isSettingsChangeConfirmModalOpen;
 
     if (!isAnyModalOpen) return;
 
@@ -91,10 +95,18 @@ const MetricsPage = () => {
     isAchievementRateSettingModalOpen,
     isMetricsDetailModalOpen,
     isMetricRateSettingModalOpen,
+    isSettingsChangeConfirmModalOpen,
   ]);
 
+  // 변경사항 반영 버튼 클릭
   const handleSaveChanges = () => {
-    console.log("Save changes");
+    setIsSettingsChangeConfirmModalOpen(true);
+  };
+
+  // 변경사항 확정
+  const handleConfirmChanges = () => {
+    // TODO: API 연동 시 실제 저장 로직 구현
+    console.log("Changes confirmed");
   };
 
   return (
@@ -183,6 +195,13 @@ const MetricsPage = () => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated metric rates:", updatedMetrics);
         }}
+      />
+
+      {/* 변경사항 반영 확인 모달 */}
+      <SettingsChangeConfirmModal
+        isOpen={isSettingsChangeConfirmModalOpen}
+        onClose={() => setIsSettingsChangeConfirmModalOpen(false)}
+        onConfirm={handleConfirmChanges}
       />
     </div>
   );

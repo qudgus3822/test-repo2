@@ -84,3 +84,18 @@ export interface TargetValuesResponse {
   updatedBy: string; // 수정자
   updatedAt: string; // 수정일시 (ISO 8601 형식)
 }
+
+// ==================== 변경내역 조회 (Pending Summary) ====================
+export interface PendingSummaryCategoryCount {
+  quality: number; // 코드품질 개수
+  review: number; // 리뷰품질 개수
+  efficiency: number; // 개발효율 개수
+  total: number; // 전체 개수
+}
+
+export interface PendingSummaryResponse {
+  hasPending: boolean; // 변경 대기 항목 존재 여부
+  targetValue: PendingSummaryCategoryCount; // 목표값 변경 개수
+  achievementCriteria: number; // 달성률 기준 변경 개수
+  weight: PendingSummaryCategoryCount; // 비율설정 변경 개수
+}

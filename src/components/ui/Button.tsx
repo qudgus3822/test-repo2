@@ -54,7 +54,7 @@ export const Button = ({
     <button
       className={clsx(
         "flex cursor-pointer items-center justify-center rounded-[8px] font-medium text-[#000000]",
-        "focus:outline-none focus:ring-1 focus:ring-offset-1",
+        "focus:outline-none",
         "disabled:cursor-not-allowed disabled:opacity-50 disabled:border-none",
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],

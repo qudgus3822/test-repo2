@@ -64,6 +64,26 @@ interface MetricsStore {
    * 목표값 / 달성률 / 비율 설정에서 변경사항이 있는지 여부입니다. (변경사항 반영 버튼 활성화 여부)
    */
   isSettingsChanged: boolean;
+  /**
+   * 변경사항 반영 확인 모달이 열려있는지 여부입니다.
+   */
+  isSettingsChangeConfirmModalOpen: boolean;
+  /**
+   * 변경된 목표값 개수입니다.
+   */
+  changedTargetValueCount: number;
+  /**
+   * 변경된 달성률 개수입니다.
+   */
+  changedAchievementRateCount: number;
+  /**
+   * 변경된 비율설정 개수입니다. (코드품질, 리뷰품질, 개발효율)
+   */
+  changedRatioCount: {
+    codeQuality: number;
+    reviewQuality: number;
+    developmentEfficiency: number;
+  };
 }
 
 interface MetricsAction {
@@ -125,6 +145,28 @@ interface MetricsAction {
    * 변경사항이 있는지 여부를 설정합니다.
    */
   setIsSettingsChanged: (isSettingsChanged: boolean) => void;
+  /**
+   * 변경사항 반영 확인 모달을 엽니다.
+   */
+  setIsSettingsChangeConfirmModalOpen: (
+    isSettingsChangeConfirmModalOpen: boolean,
+  ) => void;
+  /**
+   * 변경된 목표값 개수를 설정합니다.
+   */
+  setChangedTargetValueCount: (count: number) => void;
+  /**
+   * 변경된 달성률 개수를 설정합니다.
+   */
+  setChangedAchievementRateCount: (count: number) => void;
+  /**
+   * 변경된 비율설정 개수를 설정합니다.
+   */
+  setChangedRatioCount: (ratioCount: {
+    codeQuality: number;
+    reviewQuality: number;
+    developmentEfficiency: number;
+  }) => void;
 }
 
 const initState: MetricsStore = {
@@ -141,6 +183,14 @@ const initState: MetricsStore = {
   isMetricsDetailModalOpen: false,
   selectedMetric: null,
   isSettingsChanged: false,
+  isSettingsChangeConfirmModalOpen: false,
+  changedTargetValueCount: 0,
+  changedAchievementRateCount: 0,
+  changedRatioCount: {
+    codeQuality: 0,
+    reviewQuality: 0,
+    developmentEfficiency: 0,
+  },
 };
 
 export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
@@ -169,4 +219,16 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
     set({ selectedMetric: metric }),
   setIsSettingsChanged: (isSettingsChanged: boolean) =>
     set({ isSettingsChanged }),
+  setIsSettingsChangeConfirmModalOpen: (
+    isSettingsChangeConfirmModalOpen: boolean,
+  ) => set({ isSettingsChangeConfirmModalOpen }),
+  setChangedTargetValueCount: (count: number) =>
+    set({ changedTargetValueCount: count }),
+  setChangedAchievementRateCount: (count: number) =>
+    set({ changedAchievementRateCount: count }),
+  setChangedRatioCount: (ratioCount: {
+    codeQuality: number;
+    reviewQuality: number;
+    developmentEfficiency: number;
+  }) => set({ changedRatioCount: ratioCount }),
 }));

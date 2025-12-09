@@ -153,3 +153,23 @@ export const apiPut = async <T>(
 
   return response.json();
 };
+
+/**
+ * JSON 응답을 반환하는 DELETE 요청
+ */
+export const apiDelete = async <T>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<T> => {
+  const response = await apiFetch(endpoint, {
+    ...options,
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `요청 실패 (${response.status})`);
+  }
+
+  return response.json();
+};

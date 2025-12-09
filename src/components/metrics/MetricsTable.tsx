@@ -19,6 +19,8 @@ import {
   getStatusIcon,
   getStatusColor,
   calculateMetricStatus,
+  getMetricUnit,
+  getMetricName,
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -106,7 +108,9 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
 
   // 현재 날짜와 선택된 날짜의 년/월 비교 (같은 월인지 확인)
   const now = new Date();
-  const currentYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentYearMonth = `${now.getFullYear()}-${String(
+    now.getMonth() + 1,
+  ).padStart(2, "0")}`;
   const isCurrentMonth = month === currentYearMonth;
 
   // 달성률 기준값 (store 값 사용)
@@ -401,7 +405,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                   >
                     <td className="px-4 py-3 text-sm text-gray-900">
                       <div className="flex items-center space-x-2">
-                        <span>{metric.name}</span>
+                        <span>{getMetricName(metric.metricCode)}</span>
                         {metric.description && (
                           <Tooltip content={metric.description} color="#6B7280">
                             <Info className="text-gray-400 w-4 h-4 cursor-pointer" />
@@ -428,11 +432,11 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {metric.currentValue}
-                      {metric.unit}
+                      {getMetricUnit(metric.metricCode)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {metric.targetValue}
-                      {metric.unit}
+                      {getMetricUnit(metric.metricCode)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">
