@@ -81,8 +81,8 @@ export const useBackendHealth = () => {
   return useQuery({
     queryKey: authKeys.health(),
     queryFn: checkBackendHealth,
-    staleTime: 1 * 60 * 1000, // 1분
-    refetchInterval: 5 * 60 * 1000, // 5분마다 자동 체크
+    staleTime: 4 * 60 * 60 * 1000, // 4시간
+    refetchInterval: 4 * 60 * 60 * 1000, // 4시간마다 자동 체크
   });
 };
 

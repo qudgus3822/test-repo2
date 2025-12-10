@@ -8,8 +8,8 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1, // 실패 시 1번만 재시도
       refetchOnWindowFocus: false, // 윈도우 포커스 시 자동 refetch 비활성화
-      staleTime: 1000 * 60 * 5, // 5분간 데이터를 fresh 상태로 유지
-      gcTime: 1000 * 60 * 10, // 10분간 캐시 유지 (구 cacheTime)
+      staleTime: 1000 * 60 * 60 * 4, // 4시간 데이터를 fresh 상태로 유지
+      gcTime: 1000 * 60 * 60 * 4, // 4시간 캐시 유지 (구 cacheTime)
     },
     mutations: {
       retry: 0, // mutation은 재시도 안함
