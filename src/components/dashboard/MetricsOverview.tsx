@@ -19,11 +19,11 @@ interface MetricsOverviewProps {
 // TODO: API 연동 후 제거 - 임시 목업 데이터
 const MOCK_COMPANY_QUALITY_DATA = {
   month: "",
-  bdpiAverage: 78.5,
-  bdpiChange: 2.3,
-  codeQuality: { score: 82, achievedMetrics: 4, totalMetrics: 5 },
-  reviewQuality: { score: 75, achievedMetrics: 3, totalMetrics: 4 },
-  developmentEfficiency: { score: 79, achievedMetrics: 5, totalMetrics: 6 },
+  bdpiAverage: 0.0,
+  bdpiChange: 0.0,
+  codeQuality: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
+  reviewQuality: { score: 0, achievedMetrics: 0, totalMetrics: 12 },
+  developmentEfficiency: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
 };
 
 /**
@@ -56,8 +56,10 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
             sublabel: "평균 확보율",
             color: BRAND_COLORS.secondary,
             trend: {
-              value: Math.abs(data.bdpiChange),
+              value: data.bdpiChange,
               isPositive: data.bdpiChange > 0,
+              hasData:
+                data.bdpiChange !== null && data.bdpiChange !== undefined,
             },
           }
         : null,
@@ -73,21 +75,21 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               id: "code",
               value: data.codeQuality.score,
               label: "코드 품질",
-              sublabel: `${data.codeQuality.achievedMetrics}/${data.codeQuality.totalMetrics}건 달성`,
+              sublabel: `${data.codeQuality.achievedMetrics}/${data.codeQuality.totalMetrics}개 달성`,
               color: CHART_COLORS.blue,
             },
             {
               id: "review",
               value: data.reviewQuality.score,
               label: "리뷰 품질",
-              sublabel: `${data.reviewQuality.achievedMetrics}/${data.reviewQuality.totalMetrics}건 달성`,
+              sublabel: `${data.reviewQuality.achievedMetrics}/${data.reviewQuality.totalMetrics}개 달성`,
               color: CHART_COLORS.yellow,
             },
             {
               id: "efficiency",
               value: data.developmentEfficiency.score,
               label: "개발 효율",
-              sublabel: `${data.developmentEfficiency.achievedMetrics}/${data.developmentEfficiency.totalMetrics}건 달성`,
+              sublabel: `${data.developmentEfficiency.achievedMetrics}/${data.developmentEfficiency.totalMetrics}개 달성`,
               color: CHART_COLORS.lightYellow,
             },
           ]
@@ -118,7 +120,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
           <div className="flex flex-col items-center w-full">
             <div className="text-center mb-2">
               <div className="text-4xl font-bold text-gray-900 mb-2">
-                {bdpiAverage.value}
+                {bdpiAverage.value.toFixed(1)}
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-sm font-medium text-gray-700">
@@ -144,23 +146,31 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                 <span className="text-sm font-medium text-gray-700">
                   전월대비
                 </span>
-                <div
-                  className="flex items-center gap-1 text-sm font-medium"
-                  style={{
-                    color: bdpiAverage.trend.isPositive
-                      ? TREND_COLORS.increase
-                      : TREND_COLORS.decrease,
-                  }}
-                >
-                  <span>
-                    {bdpiAverage.trend.isPositive ? (
-                      <img src={upIcon} alt="up" />
-                    ) : (
-                      <img src={downIcon} alt="down" />
-                    )}
+                {!bdpiAverage.trend.hasData ? (
+                  <span className="text-sm font-medium text-gray-500">-</span>
+                ) : bdpiAverage.trend.value === 0 ? (
+                  <span className="text-sm font-medium text-gray-500">
+                    0.0%
                   </span>
-                  <span>{Math.abs(bdpiAverage.trend.value)}%</span>
-                </div>
+                ) : (
+                  <div
+                    className="flex items-center gap-1 text-sm font-medium"
+                    style={{
+                      color: bdpiAverage.trend.isPositive
+                        ? TREND_COLORS.increase
+                        : TREND_COLORS.decrease,
+                    }}
+                  >
+                    <span>
+                      {bdpiAverage.trend.isPositive ? (
+                        <img src={upIcon} alt="up" />
+                      ) : (
+                        <img src={downIcon} alt="down" />
+                      )}
+                    </span>
+                    <span>{Math.abs(bdpiAverage.trend.value).toFixed(1)}%</span>
+                  </div>
+                )}
               </div>
             )}{" "}
           </div>
