@@ -25,7 +25,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -35,7 +35,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 0,
       reviewApproval: 1,
       mrReopen: 1,
-      status: "NOT_STARTED",
+      status: "NOT_COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -45,7 +45,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -55,7 +55,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -65,7 +65,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 0,
       reviewApproval: 1,
       mrReopen: 1,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -75,7 +75,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -85,7 +85,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -95,7 +95,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -105,7 +105,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -115,7 +115,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -125,7 +125,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -135,7 +135,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -145,7 +145,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -155,7 +155,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
     {
       date: "2025-11-10",
@@ -165,7 +165,7 @@ export const mockCodeReviewData: CodeReviewData = {
       reviewRequest: 2,
       reviewApproval: 2,
       mrReopen: 2,
-      status: "IN_PROGRESS",
+      status: "COMPLETED",
     },
   ],
 };
@@ -188,7 +188,7 @@ const authors = [
 export function generateRandomReviewItem(index: number): ReviewItem {
   const randomAuthor = authors[Math.floor(Math.random() * authors.length)];
   const randomStatus: ReviewStatus =
-    Math.random() > 0.3 ? "IN_PROGRESS" : "NOT_STARTED";
+    Math.random() > 0.3 ? "COMPLETED" : "NOT_COMPLETED";
 
   return {
     date: "2025-11-10",
@@ -212,22 +212,22 @@ export function generateMockReviewData(
     items.push(generateRandomReviewItem(i));
   }
 
-  const inProgressCount = items.filter(
-    (item) => item.status === "IN_PROGRESS",
+  const completedCount = items.filter(
+    (item) => item.status === "COMPLETED",
   ).length;
-  const notStartedCount = items.filter(
-    (item) => item.status === "NOT_STARTED",
+  const notCompletedCount = items.filter(
+    (item) => item.status === "NOT_COMPLETED",
   ).length;
 
   return {
     totalMR: totalItems,
-    inProgressCount,
-    completedCount: notStartedCount,
+    inProgressCount: notCompletedCount,
+    completedCount: completedCount,
     inProgressPercentage: Number(
-      ((inProgressCount / totalItems) * 100).toFixed(1),
+      ((notCompletedCount / totalItems) * 100).toFixed(1),
     ),
     completedPercentage: Number(
-      ((notStartedCount / totalItems) * 100).toFixed(1),
+      ((completedCount / totalItems) * 100).toFixed(1),
     ),
     currentPage: 1,
     totalPages: Math.ceil(totalItems / 15),

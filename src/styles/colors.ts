@@ -144,8 +144,8 @@ export const CODE_REVIEW_COLORS = {
 
 // 코드 리뷰 상태 뱃지 색상 (ReviewStatus 기준)
 export const REVIEW_STATUS_BADGE_COLORS = {
-  IN_PROGRESS: { bg: "#E8F5E9", text: "#008236" }, // 진행 (초록)
-  NOT_STARTED: { bg: "#E5E7EB", text: "#7B7B7B" }, // 미진행 (회색)
+  COMPLETED: { bg: "#E8F5E9", text: "#008236" }, // 완료 (초록)
+  NOT_COMPLETED: { bg: "#E5E7EB", text: "#7B7B7B" }, // 미완료 (회색)
 } as const;
 
 // 모든 색상 통합 export
