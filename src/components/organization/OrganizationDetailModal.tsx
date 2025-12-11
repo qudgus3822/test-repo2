@@ -122,10 +122,10 @@ export const OrganizationDetailModal = ({
     },
     {
       month: "2024.11",
-      코드품질: bdpiMetrics.codeQuality.score,
-      리뷰품질: bdpiMetrics.reviewQuality.score,
-      개발효율: bdpiMetrics.efficiency.score,
-      BDPI: bdpiMetrics.bdpi.score,
+      코드품질: bdpiMetrics?.quality?.score ?? 0,
+      리뷰품질: bdpiMetrics?.review?.score ?? 0,
+      개발효율: bdpiMetrics?.efficiency?.score ?? 0,
+      BDPI: bdpiMetrics?.bdpi?.score ?? 0,
     },
   ];
 
@@ -394,7 +394,7 @@ export const OrganizationDetailModal = ({
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.codeQuality.score,
+                          bdpiMetrics?.quality?.score ?? 0,
                         ),
                       }}
                     >
@@ -402,17 +402,17 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.codeQuality.score),
+                          color: getScoreTextColor(bdpiMetrics?.quality?.score ?? 0),
                         }}
                       >
-                        {bdpiMetrics.codeQuality.score.toFixed(1)}
+                        {(bdpiMetrics?.quality?.score ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.reviewQuality.score,
+                          bdpiMetrics?.review?.score ?? 0,
                         ),
                       }}
                     >
@@ -420,17 +420,17 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.reviewQuality.score),
+                          color: getScoreTextColor(bdpiMetrics?.review?.score ?? 0),
                         }}
                       >
-                        {bdpiMetrics.reviewQuality.score.toFixed(1)}
+                        {(bdpiMetrics?.review?.score ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.efficiency.score,
+                          bdpiMetrics?.efficiency?.score ?? 0,
                         ),
                       }}
                     >

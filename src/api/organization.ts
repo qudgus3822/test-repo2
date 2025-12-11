@@ -6,11 +6,12 @@ import { apiGet } from "@/libs/fetch";
 
 /**
  * 탭 타입별 API 엔드포인트 매핑
+ * - UI 탭 ID (codeQuality 등) → API 엔드포인트 (quality 등)
  */
 const TAB_ENDPOINT_MAP: Record<TabType, string> = {
   bdpi: "bdpi",
-  codeQuality: "code-quality",
-  reviewQuality: "review-quality",
+  codeQuality: "quality",
+  reviewQuality: "review",
   developmentEfficiency: "efficiency",
 };
 

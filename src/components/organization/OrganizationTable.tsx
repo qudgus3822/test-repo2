@@ -34,16 +34,17 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-// 탭 타입 → 지표 카테고리 키 매핑
+// 탭 타입 → API 카테고리 키 매핑
+// - UI 탭 ID (codeQuality 등) → API 카테고리 키 (quality 등)
 const TAB_TO_CATEGORY: Record<Exclude<TabType, "bdpi">, MetricCategoryKey> = {
-  codeQuality: "code_quality",
-  reviewQuality: "review_quality",
-  developmentEfficiency: "development_efficiency",
+  codeQuality: "quality",
+  reviewQuality: "review",
+  developmentEfficiency: "efficiency",
 };
 
 // 카테고리별 지표 코드 목록 (METRIC_CODE_ORDER 순서로 정렬)
 const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
-  code_quality: [
+  quality: [
     "TECH_DEBT",
     "CODE_COMPLEXITY",
     "CODE_DUPLICATION",
@@ -54,7 +55,7 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
     "BUG_COUNT",
     "INCIDENT_COUNT",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-  review_quality: [
+  review: [
     "REVIEW_SPEED",
     "REVIEW_RESPONSE_RATE",
     "REVIEW_PARTICIPATION_RATE",
@@ -68,7 +69,7 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
     "REVIEW_FEEDBACK_TIME",
     "REVIEW_COMPLETION_TIME",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-  development_efficiency: [
+  efficiency: [
     "DEPLOYMENT_FREQUENCY",
     "COMMIT_FREQUENCY",
     "LEAD_TIME",
@@ -85,7 +86,7 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
 const isBdpiMetrics = (
   metrics: OrganizationMetrics,
 ): metrics is BdpiMetrics => {
-  return "bdpi" in metrics && "codeQuality" in metrics;
+  return "bdpi" in metrics && "quality" in metrics;
 };
 
 // metrics 객체에서 특정 카테고리의 지표들을 순서대로 가져오기
@@ -311,10 +312,10 @@ const MemberRow = ({
       const bdpiMetrics = member.metrics as BdpiMetrics;
       return (
         <>
-          <ScoreCell score={bdpiMetrics.codeQuality.score} isFirst />
-          <ScoreCell score={bdpiMetrics.reviewQuality.score} />
-          <ScoreCell score={bdpiMetrics.efficiency.score} />
-          <ScoreCell score={bdpiMetrics.bdpi.score} />
+          <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
+          <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
         </>
       );
     }
@@ -425,10 +426,10 @@ const OrganizationRow = ({
       const bdpiMetrics = org.metrics as BdpiMetrics;
       return (
         <>
-          <ScoreCell score={bdpiMetrics.codeQuality.score} isFirst />
-          <ScoreCell score={bdpiMetrics.reviewQuality.score} />
-          <ScoreCell score={bdpiMetrics.efficiency.score} />
-          <ScoreCell score={bdpiMetrics.bdpi.score} />
+          <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
+          <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
         </>
       );
     }

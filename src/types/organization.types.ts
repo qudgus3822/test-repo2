@@ -82,10 +82,7 @@ export const PolicyStatusLabel = {
 };
 
 // 지표 카테고리 키 타입 (API metrics 객체의 키로 사용)
-export type MetricCategoryKey =
-  | "code_quality"
-  | "review_quality"
-  | "development_efficiency";
+export type MetricCategoryKey = "quality" | "review" | "efficiency";
 
 // 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
 export interface MetricScoreValue {
@@ -99,7 +96,7 @@ export interface CategoryScoreValue {
 }
 
 // 전월대비 타입
-export type MonthlyComparisonDirection = "up" | "down" | "same";
+export type MonthlyComparisonDirection = "up" | "down" | "same" | "new";
 
 export interface MonthlyComparison {
   changePercent: number;
@@ -108,10 +105,10 @@ export interface MonthlyComparison {
 
 // BDPI 탭용 metrics 타입
 export interface BdpiMetrics {
-  codeQuality: CategoryScoreValue;
-  reviewQuality: CategoryScoreValue;
-  efficiency: CategoryScoreValue;
-  bdpi: CategoryScoreValue;
+  quality: CategoryScoreValue; // 코드품질
+  review: CategoryScoreValue; // 리뷰품질
+  efficiency: CategoryScoreValue; // 개발효율
+  bdpi: CategoryScoreValue; // BDPI 총점
   monthlyComparison: MonthlyComparison; // 전월대비
 }
 
