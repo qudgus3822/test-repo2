@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ChevronRight, Users, Clock, History, Settings } from "lucide-react";
@@ -7,10 +7,13 @@ import type {
   OrganizationMember,
   OrganizationNode,
 } from "@/types/organization.types";
-import { MemberRoleLabel, MemberPositionLabel } from "@/types/organization.types";
-import { PALETTE_COLORS, getAvatarColor } from "@/styles/colors";
+import {
+  MemberRoleLabel,
+  MemberPositionLabel,
+} from "@/types/organization.types";
+import { getAvatarColor } from "@/styles/colors";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
-import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import { useOrganizationTreeBasic } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 // 조직 유형 배지 컴포넌트
@@ -46,7 +49,7 @@ const findLeader = (children?: OrganizationNode[]): string => {
   if (!children) return "";
   const leader = children.find(
     (child): child is OrganizationMember =>
-      child.type === "member" && child.isManager
+      child.type === "member" && child.isManager,
   );
   if (leader) {
     const position = leader.personalTitle
@@ -86,17 +89,19 @@ const DepartmentList = ({
             return (
               <div
                 key={dept.code}
-                className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 ${
                   selectedCode === dept.code
-                    ? "bg-blue-50 border-l-4 border-l-blue-500"
-                    : ""
+                    ? "bg-blue-50 border-l-blue-500"
+                    : "border-l-transparent"
                 }`}
                 onClick={() => onSelect(dept.code)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <TypeBadge type={dept.isEvaluationTarget ? "개발" : "비개발"} />
+                      <TypeBadge
+                        type={dept.isEvaluationTarget ? "개발" : "비개발"}
+                      />
                       <span className="font-medium text-gray-900 text-sm">
                         {dept.name}
                       </span>
@@ -133,10 +138,7 @@ const TeamList = ({
     <Card padding="none" className="h-full">
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
-          <span
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: PALETTE_COLORS.orange }}
-          />
+          <Users className="w-5 h-5 text-gray-500" />
           <span className="font-medium text-gray-900">팀 목록</span>
         </div>
       </div>
@@ -149,16 +151,18 @@ const TeamList = ({
           teams.map((team) => (
             <div
               key={team.code}
-              className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+              className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 ${
                 selectedCode === team.code
-                  ? "bg-orange-50 border-l-4 border-l-orange-400"
-                  : ""
+                  ? "bg-orange-50 border-l-orange-400"
+                  : "border-l-transparent"
               }`}
               onClick={() => onSelect(team.code)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TypeBadge type={team.isEvaluationTarget ? "개발" : "비개발"} />
+                  <TypeBadge
+                    type={team.isEvaluationTarget ? "개발" : "비개발"}
+                  />
                   <span className="font-medium text-gray-900 text-sm">
                     {team.name}
                   </span>
@@ -226,13 +230,13 @@ const MemberList = ({
                       <span className="font-medium text-gray-900 text-sm">
                         {member.name}
                       </span>
-                      <span className="text-gray-500 text-sm">
-                        {roleLabel}
-                      </span>
+                      <span className="text-gray-500 text-sm">{roleLabel}</span>
                       {isNew && <NewBadge />}
                       {isNonDev && <NonDevBadge />}
                     </div>
-                    <p className="text-xs text-gray-500">{member.email || member.employeeID}</p>
+                    <p className="text-xs text-gray-500">
+                      {member.email || member.employeeID}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -278,9 +282,20 @@ export const OrganizationManagement = () => {
   const [isAutoSyncEnabled] = useState(true);
   const [isOrgTypeModalOpen, setIsOrgTypeModalOpen] = useState(false);
 
-  // API에서 조직 데이터 조회 (현재 월 기준, bdpi 탭)
+  // API에서 조직 데이터 조회 (현재 월 기준, 기본 tree 엔드포인트)
   const yearMonth = getCurrentYearMonth();
-  const { data: organizationData, isLoading, error } = useOrganizationTree(yearMonth, "bdpi");
+  const {
+    data: organizationData,
+    isLoading,
+    error,
+  } = useOrganizationTreeBasic(yearMonth);
+
+  // API 에러 시 confirm 메시지 표시
+  useEffect(() => {
+    if (error) {
+      window.confirm("현재 서버에 해당 API가 없습니다.");
+    }
+  }, [error]);
 
   // 조직 트리에서 Level 2 (실) 목록 추출
   const departments = useMemo<OrganizationDepartment[]>(() => {
@@ -312,8 +327,9 @@ export const OrganizationManagement = () => {
     if (!selectedDepartment?.children) return [];
 
     return selectedDepartment.children
-      .filter((child): child is OrganizationDepartment =>
-        child.type === "department" && child.level === 3
+      .filter(
+        (child): child is OrganizationDepartment =>
+          child.type === "department" && child.level === 3,
       )
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [selectedDepartment]);
@@ -328,7 +344,7 @@ export const OrganizationManagement = () => {
     if (!selectedTeam?.children) return [];
 
     return selectedTeam.children.filter(
-      (child): child is OrganizationMember => child.type === "member"
+      (child): child is OrganizationMember => child.type === "member",
     );
   }, [selectedTeam]);
 
@@ -354,7 +370,7 @@ export const OrganizationManagement = () => {
     if (dept?.children) {
       const firstTeam = dept.children.find(
         (child): child is OrganizationDepartment =>
-          child.type === "department" && child.level === 3
+          child.type === "department" && child.level === 3,
       );
       setSelectedTeamCode(firstTeam?.code || null);
     } else {
@@ -386,7 +402,9 @@ export const OrganizationManagement = () => {
   }
 
   // 마지막 동기화 일자 (현재 월 기준으로 표시)
-  const lastSyncDate = `${organizationData.period.year}.${String(organizationData.period.month).padStart(2, "0")}.01`;
+  const lastSyncDate = `${organizationData.period.year}.${String(
+    organizationData.period.month,
+  ).padStart(2, "0")}.01`;
   const syncSource = "LDAP AD기준";
 
   return (
@@ -448,10 +466,7 @@ export const OrganizationManagement = () => {
         />
 
         {/* 개인 목록 */}
-        <MemberList
-          members={members}
-          teamName={selectedTeam?.name || ""}
-        />
+        <MemberList members={members} teamName={selectedTeam?.name || ""} />
       </div>
 
       {/* 하단 영역 */}

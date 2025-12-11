@@ -148,6 +148,13 @@ export const REVIEW_STATUS_BADGE_COLORS = {
   NOT_COMPLETED: { bg: "#E5E7EB", text: "#7B7B7B" }, // 미완료 (회색)
 } as const;
 
+// 달성률 상태 색상 (아이콘 배경/텍스트)
+export const ACHIEVEMENT_COLORS = {
+  excellent: { bg: "#DCFCE7", text: "#16A34A" }, // 우수 (green-100, green-600)
+  warning: { bg: "#FEF3C7", text: "#D97706" }, // 경고 (amber-100, amber-600)
+  danger: { bg: "#FEE2E2", text: "#DC2626" }, // 위험 (red-100, red-600)
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -163,4 +170,5 @@ export const COLORS = {
   changeTypeBadge: CHANGE_TYPE_BADGE_COLORS,
   codeReview: CODE_REVIEW_COLORS,
   reviewStatusBadge: REVIEW_STATUS_BADGE_COLORS,
+  achievement: ACHIEVEMENT_COLORS,
 } as const;

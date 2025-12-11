@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchOrganizationByTab } from "@/api/organization";
+import { fetchOrganizationByTab, fetchOrganizationTree } from "@/api/organization";
 import type {
   OrganizationCompareResponse,
   TabType,
@@ -12,6 +12,8 @@ export const organizationTreeKeys = {
     [...organizationTreeKeys.all, yearMonth] as const,
   byMonthAndTab: (yearMonth: string, tab: TabType) =>
     [...organizationTreeKeys.all, yearMonth, tab] as const,
+  tree: (yearMonth: string) =>
+    [...organizationTreeKeys.all, "tree", yearMonth] as const,
 };
 
 /**
@@ -30,6 +32,26 @@ export const useOrganizationTree = (
     queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab),
     queryFn: async () => {
       return fetchOrganizationByTab(yearMonth, tab);
+    },
+    enabled: enabled && !!yearMonth,
+    staleTime: 2 * 60 * 1000, // 2분
+  });
+};
+
+/**
+ * 월별 조직도 트리 조회 Hook (설정 화면용 - 기본 tree 엔드포인트)
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @param enabled - 쿼리 활성화 여부 (기본값: true)
+ * @returns React Query 결과 객체
+ */
+export const useOrganizationTreeBasic = (
+  yearMonth: string,
+  enabled: boolean = true,
+) => {
+  return useQuery<OrganizationCompareResponse, Error>({
+    queryKey: organizationTreeKeys.tree(yearMonth),
+    queryFn: async () => {
+      return fetchOrganizationTree(yearMonth);
     },
     enabled: enabled && !!yearMonth,
     staleTime: 2 * 60 * 1000, // 2분

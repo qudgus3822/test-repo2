@@ -34,7 +34,6 @@ export const AchievementRateSettingModal = ({
     achievementRateDangerThreshold,
     setAchievementRateExcellentThreshold,
     setAchievementRateDangerThreshold,
-    setIsSettingsChanged,
   } = useMetricsStore();
 
   const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
@@ -107,8 +106,6 @@ export const AchievementRateSettingModal = ({
       // Store에 threshold 값들 저장
       setAchievementRateExcellentThreshold(excellentThreshold);
       setAchievementRateDangerThreshold(dangerThreshold);
-      // 변경사항 플래그 설정
-      setIsSettingsChanged(true);
 
       onSave(editedMetrics);
       onClose();
