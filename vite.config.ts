@@ -22,7 +22,11 @@ export default defineConfig({
     host: "0.0.0.0", // ngrok 사용을 위해 모든 네트워크 인터페이스에서 수신
     port: 5173,
     strictPort: true, // 포트가 이미 사용 중이면 실패
-    allowedHosts: [".ngrok-free.dev", ".ngrok.io"], // ngrok 도메인 허용
+    allowedHosts: [
+      ".ngrok-free.dev",
+      ".ngrok.io",
+      "plus-front-dev.barcode-sw.io",
+    ], // ngrok/azure 도메인 허용
     hmr: {
       // ngrok 사용 시에만 clientPort: 443 설정
       // 로컬 개발 시에는 기본값(5173) 사용

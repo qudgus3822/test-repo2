@@ -18,7 +18,7 @@ export const useMetricsOverview = (month: string, enabled: boolean = true) => {
   return useQuery<MetricOverview, Error>({
     queryKey: metricsOverviewKeys.byMonth(month),
     queryFn: async () => {
-      return fetchMetricsOverview("2025-11");
+      return fetchMetricsOverview(month);
     },
     enabled: enabled && !!month,
     staleTime: 2 * 60 * 1000, // 2분

@@ -37,6 +37,8 @@ export const checkAuthStatus = async (): Promise<User | null> => {
     const response = await apiFetch("/users/me", {
       method: "GET",
       skipAuthRedirect: true, // 인증 상태 확인은 401 시 리다이렉트하지 않음
+      // 브라우저 캐시 사용하지 않도록 설정 (304 응답 방지)
+      cache: "no-store",
     });
 
     if (response.status === 401) return null; // 인증되지 않음
