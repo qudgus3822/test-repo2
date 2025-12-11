@@ -453,7 +453,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                                 className="text-sm font-medium"
                                 style={{ color: iconColor }}
                               >
-                                {metric.achievementRate}%
+                                {Math.round(metric.achievementRate)}%
                               </span>
                             </>
                           );
@@ -461,7 +461,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {metric.weightRatio}%
+                      {metric.weightRatio.toFixed(1)}%
                     </td>
                     <td className="px-4 py-3">
                       <button
