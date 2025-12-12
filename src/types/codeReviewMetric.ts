@@ -9,14 +9,24 @@ export const REVIEW_STATUS_LABEL: Record<ReviewStatus, string> = {
   NOT_COMPLETED: "미완료",
 };
 
+// 리뷰어/참여자/기여자 상세 정보
+export interface ReviewerInfo {
+  name: string; // 이름
+  team: string; // 소속팀
+}
+
 // 전행 항목 목록 데이터
 export interface ReviewItem {
   date: string; // 날짜 (YYYY-MM-DD)
   mrId: string; // MR ID
   author: string; // 작성자
+  authorEmail: string; // 작성자 이메일
   mrApproval: number; // MR Approval 횟수
+  mrApprovalList: ReviewerInfo[]; // 등록된 리뷰어 목록
   reviewRequest: number; // 리뷰 요청 횟수
+  reviewRequestList: ReviewerInfo[]; // 실리뷰 참여자 목록
   reviewApproval: number; // 리뷰 승인 횟수
+  reviewApprovalList: ReviewerInfo[]; // MR 기여자 목록
   mrReopen: number; // MR 재오픈 횟수
   status: ReviewStatus; // 상태
 }

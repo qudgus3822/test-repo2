@@ -1,9 +1,12 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+type ButtonDisplayMode = "both" | "icon" | "text";
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  displayMode?: ButtonDisplayMode; // 버튼 표시 모드 (기본값: "both")
 }
 
 /**
@@ -17,11 +20,30 @@ interface PaginationProps {
  *   totalPages={10}
  *   onPageChange={setCurrentPage}
  * />
+ *
+ * @example
+ * // 화살표 아이콘만 표시
+ * <Pagination
+ *   currentPage={1}
+ *   totalPages={10}
+ *   onPageChange={setCurrentPage}
+ *   displayMode="icon"
+ * />
+ *
+ * @example
+ * // 텍스트만 표시
+ * <Pagination
+ *   currentPage={1}
+ *   totalPages={10}
+ *   onPageChange={setCurrentPage}
+ *   displayMode="text"
+ * />
  */
 export const Pagination = ({
   currentPage,
   totalPages,
   onPageChange,
+  displayMode = "both",
 }: PaginationProps) => {
   const isPrevDisabled = currentPage === 1;
   const isNextDisabled = currentPage === totalPages;
@@ -50,14 +72,22 @@ export const Pagination = ({
         }`}
         aria-label="이전"
       >
-        <ChevronLeft
-          className={`w-4 h-4 ${isPrevDisabled ? "text-gray-400" : "text-gray-600"}`}
-        />
-        <span
-          className={`text-sm ${isPrevDisabled ? "text-gray-400" : "text-gray-600"}`}
-        >
-          이전
-        </span>
+        {(displayMode === "both" || displayMode === "icon") && (
+          <ChevronLeft
+            className={`w-4 h-4 ${
+              isPrevDisabled ? "text-gray-400" : "text-gray-600"
+            }`}
+          />
+        )}
+        {(displayMode === "both" || displayMode === "text") && (
+          <span
+            className={`text-sm ${
+              isPrevDisabled ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
+            이전
+          </span>
+        )}
       </button>
       <span className="text-sm text-gray-600">
         {currentPage} / {totalPages}
@@ -72,14 +102,22 @@ export const Pagination = ({
         }`}
         aria-label="다음"
       >
-        <span
-          className={`text-sm ${isNextDisabled ? "text-gray-400" : "text-gray-600"}`}
-        >
-          다음
-        </span>
-        <ChevronRight
-          className={`w-4 h-4 ${isNextDisabled ? "text-gray-400" : "text-gray-600"}`}
-        />
+        {(displayMode === "both" || displayMode === "text") && (
+          <span
+            className={`text-sm ${
+              isNextDisabled ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
+            다음
+          </span>
+        )}
+        {(displayMode === "both" || displayMode === "icon") && (
+          <ChevronRight
+            className={`w-4 h-4 ${
+              isNextDisabled ? "text-gray-400" : "text-gray-600"
+            }`}
+          />
+        )}
       </button>
     </div>
   );

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, ChevronsUpDown } from "lucide-react";
+import { X, ChevronsUpDown, ChevronUp, ChevronDown } from "lucide-react";
 import { useModalAnimation } from "@/hooks";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { mockCodeReviewData } from "@/mocks/codeReviewData.mock";
@@ -9,9 +9,11 @@ import {
   REVIEW_STATUS_BADGE_COLORS,
 } from "@/styles/colors";
 import { Pagination } from "@/components/ui/Pagination";
+import { Tooltip } from "@/components/ui/Tooltip";
 import {
   REVIEW_STATUS_LABEL,
   type ReviewItem,
+  type ReviewerInfo,
   type ReviewStatus,
 } from "@/types/codeReviewMetric";
 
@@ -67,13 +69,14 @@ const SortableHeader = ({
     >
       <div className="flex items-center justify-center gap-1">
         <span>{label}</span>
-        <ChevronsUpDown
-          className={`w-3 h-3 ${isActive ? "text-blue-600" : "text-gray-400"}`}
-        />
-        {isActive && (
-          <span className="text-[10px] text-blue-600">
-            {currentDirection === "asc" ? "↑" : "↓"}
-          </span>
+        {isActive ? (
+          currentDirection === "asc" ? (
+            <ChevronUp className="w-4 h-4 text-blue-600" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-blue-600" />
+          )
+        ) : (
+          <ChevronsUpDown className="w-4 h-4 text-gray-400" />
         )}
       </div>
     </th>
@@ -141,6 +144,17 @@ export const CodeReviewStatusModal = () => {
     setCurrentPage(page);
   };
 
+  // MR 링크 클릭 핸들러
+  const handleMrClick = (mrId: string) => {
+    window.open(`https://gitlab.example.com/merge_requests/${mrId}`, "_blank");
+  };
+
+  // 리뷰어 목록을 툴팁 문자열로 변환
+  const formatReviewerListTooltip = (list: ReviewerInfo[]): string => {
+    if (list.length === 0) return "";
+    return list.map((r) => `• ${r.name}(${r.team})`).join("\n");
+  };
+
   if (!shouldRender) return null;
 
   return (
@@ -159,7 +173,7 @@ export const CodeReviewStatusModal = () => {
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
-        <div className="bg-white rounded-lg shadow-xl w-[750px] max-h-[80vh] flex flex-col">
+        <div className="bg-white rounded-lg shadow-xl w-[900px] flex flex-col">
           {/* 헤더 */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -174,21 +188,21 @@ export const CodeReviewStatusModal = () => {
           </div>
 
           {/* 본문 */}
-          <div className="flex-1 overflow-hidden px-6 py-4 flex flex-col">
+          <div className="flex-1 overflow-hidden px-6 py-3 flex flex-col gap-3">
             {/* 총 MR 수 */}
-            <div className="mb-4 gap-4 flex items-center">
-              <span className="text-gray-600">총 MR 수 </span>
+            <div className="gap-4 flex items-center">
+              <span className="text-gray-700">총 MR 수 </span>
               <span className="text-2xl font-bold text-gray-900">
                 {data.totalMR}건
               </span>
             </div>
 
             {/* 리뷰 진행률 */}
-            <div className="mb-4">
-              <div className="text-gray-600 mb-2 flex items-center gap-2">
+            <div className="gap-2 flex flex-col">
+              <div className="text-gray-700 flex items-center gap-2">
                 리뷰 진행률
               </div>
-              <div className="flex h-10 rounded-lg overflow-hidden">
+              <div className="flex h-9 rounded-md overflow-hidden text-sm">
                 <div
                   className="flex items-center justify-center font-medium"
                   style={{
@@ -197,7 +211,8 @@ export const CodeReviewStatusModal = () => {
                     color: CODE_REVIEW_COLORS.completedText,
                   }}
                 >
-                  완료 {data.inProgressCount}개 ({data.inProgressPercentage}%)
+                  완료 {data.inProgressCount}개 (
+                  {Math.round(data.inProgressPercentage)}%)
                 </div>
                 <div
                   className="flex items-center justify-center font-medium"
@@ -207,29 +222,28 @@ export const CodeReviewStatusModal = () => {
                     color: CODE_REVIEW_COLORS.incompleteText,
                   }}
                 >
-                  미완료 {data.completedCount}개 ({data.completedPercentage}%)
+                  미완료 {data.completedCount}개 (
+                  {Math.round(data.completedPercentage)}%)
                 </div>
               </div>
             </div>
 
-            {/* 리뷰 완료 목록 */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <div className="font-medium text-gray-700 mb-2">
-                리뷰 완료 목록
-              </div>
+            {/* 리뷰 현황 목록 */}
+            <div className="flex-1 flex flex-col gap-2 min-h-0">
+              <div className="text-gray-700">리뷰 현황 목록</div>
 
               {/* 테이블 */}
               <div className="flex-1 flex flex-col overflow-hidden border border-gray-200 rounded-lg">
-                {/* 고정 헤더 */}
-                <div className="bg-gray-50 [scrollbar-gutter:stable] pr-[15px]">
+                {/* 테이블 헤더 */}
+                <div className="bg-gray-50">
                   <table className="w-full table-fixed">
                     <colgroup>
                       <col className="w-[14%]" />
-                      <col className="w-[12%]" />
+                      <col className="w-[11%]" />
                       <col className="w-[14%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[12%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
                       <col className="w-[11%]" />
                     </colgroup>
                     <thead>
@@ -248,43 +262,25 @@ export const CodeReviewStatusModal = () => {
                           currentDirection={sortDirection}
                           onSort={handleSort}
                         />
-                        <th className="px-3 py-3 text-center font-medium text-gray-500">
-                          MR Author
+                        <th className="px-3 py-1 text-center font-medium text-gray-500">
+                          MR 작성자
                         </th>
                         <SortableHeader
-                          label={
-                            <>
-                              등록된
-                              <br />
-                              리뷰어
-                            </>
-                          }
+                          label={"등록된 리뷰어"}
                           column="mrApproval"
                           currentSort={sortColumn}
                           currentDirection={sortDirection}
                           onSort={handleSort}
                         />
                         <SortableHeader
-                          label={
-                            <>
-                              실리뷰
-                              <br />
-                              참여자
-                            </>
-                          }
+                          label={"실리뷰 참여자"}
                           column="reviewRequest"
                           currentSort={sortColumn}
                           currentDirection={sortDirection}
                           onSort={handleSort}
                         />
                         <SortableHeader
-                          label={
-                            <>
-                              MR
-                              <br />
-                              기여자
-                            </>
-                          }
+                          label={"MR 기여자"}
                           column="reviewApproval"
                           currentSort={sortColumn}
                           currentDirection={sortDirection}
@@ -301,16 +297,16 @@ export const CodeReviewStatusModal = () => {
                     </thead>
                   </table>
                 </div>
-                {/* 스크롤 영역 */}
-                <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+                {/* 테이블 본문 - 15행 기준 높이 고정 */}
+                <div className="min-h-[554px]">
                   <table className="w-full table-fixed">
                     <colgroup>
                       <col className="w-[14%]" />
-                      <col className="w-[12%]" />
+                      <col className="w-[11%]" />
                       <col className="w-[14%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[12%]" />
-                      <col className="w-[12%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
                       <col className="w-[11%]" />
                     </colgroup>
                     <tbody className="divide-y divide-gray-100">
@@ -319,25 +315,62 @@ export const CodeReviewStatusModal = () => {
                           key={`${item.mrId}-${index}`}
                           className="hover:bg-gray-50"
                         >
-                          <td className="px-3 py-3 text-gray-900 text-center">
+                          <td className="px-3 py-1 text-gray-900 text-center">
                             {formatDateString(item.date)}
                           </td>
-                          <td className="px-3 py-3 text-blue-600 text-center">
+                          <td
+                            className="px-3 py-1 text-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                            onClick={() => handleMrClick(item.mrId)}
+                          >
                             {item.mrId}
                           </td>
-                          <td className="px-3 py-3 text-gray-900 text-center">
-                            {item.author}
+                          <td className="px-3 py-1 text-gray-900 text-center">
+                            <Tooltip
+                              content={item.authorEmail}
+                              direction="bottom"
+                            >
+                              <span className="cursor-default">
+                                {item.author}
+                              </span>
+                            </Tooltip>
                           </td>
-                          <td className="px-3 py-3 text-gray-900 text-center">
-                            {item.mrApproval}명
+                          <td className="px-3 py-1 text-gray-900 text-center">
+                            <Tooltip
+                              content={formatReviewerListTooltip(
+                                item.mrApprovalList,
+                              )}
+                              direction="bottom"
+                            >
+                              <span className="cursor-default">
+                                {item.mrApproval}명
+                              </span>
+                            </Tooltip>
                           </td>
-                          <td className="px-3 py-3 text-gray-900 text-center">
-                            {item.reviewRequest}명
+                          <td className="px-3 py-1 text-gray-900 text-center">
+                            <Tooltip
+                              content={formatReviewerListTooltip(
+                                item.reviewRequestList,
+                              )}
+                              direction="bottom"
+                            >
+                              <span className="cursor-default">
+                                {item.reviewRequest}명
+                              </span>
+                            </Tooltip>
                           </td>
-                          <td className="px-3 py-3 text-gray-900 text-center">
-                            {item.reviewApproval}명
+                          <td className="px-3 py-1 text-gray-900 text-center">
+                            <Tooltip
+                              content={formatReviewerListTooltip(
+                                item.reviewApprovalList,
+                              )}
+                              direction="bottom"
+                            >
+                              <span className="cursor-default">
+                                {item.reviewApproval}명
+                              </span>
+                            </Tooltip>
                           </td>
-                          <td className="px-3 py-3 text-center">
+                          <td className="px-3 py-1 text-center">
                             <StatusBadge status={item.status} />
                           </td>
                         </tr>
@@ -356,6 +389,7 @@ export const CodeReviewStatusModal = () => {
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
+              displayMode="text"
             />
             <div className="text-gray-500">{itemsPerPage}개씩 노출</div>
           </div>
