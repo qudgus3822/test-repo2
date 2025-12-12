@@ -172,8 +172,12 @@ export const CodeReviewStatusModal = () => {
         className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-200 ${
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
+        onClick={closeCodeReviewModal}
       >
-        <div className="bg-white rounded-lg shadow-xl w-[900px] flex flex-col">
+        <div
+          className="bg-white rounded-lg shadow-xl w-[900px] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* 헤더 */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">
