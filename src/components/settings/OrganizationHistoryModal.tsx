@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, ChevronDown } from "lucide-react";
+import { X } from "lucide-react";
 import { useModalAnimation } from "@/hooks";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useOrgChangeHistory } from "@/api/hooks/useOrganizationTree";
@@ -8,16 +8,9 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import type {
   OrgHistoryItem,
-  OrgHistoryChangeType,
-  ChangeCategory,
   OrgHistoryFilterType,
-  PolicyStatus,
 } from "@/types/organization.types";
-import {
-  OrgHistoryChangeTypeLabel,
-  ChangeCategoryLabel,
-  PolicyStatusLabel,
-} from "@/types/organization.types";
+import { ChangeCategoryLabel } from "@/types/organization.types";
 
 // 현재 월 가져오기 (YYYY-MM 형식)
 const getCurrentYearMonth = (): string => {
@@ -36,93 +29,6 @@ const formatDateTime = (isoDate: string): string => {
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${year}.${month}.${day} ${hours}:${minutes}`;
-};
-
-// 유형 필터 옵션 (OrgHistoryChangeTypeLabel + PolicyStatusLabel 기반 생성)
-const TYPE_FILTER_OPTIONS: { value: OrgHistoryFilterType; label: string }[] = [
-  { value: "ALL", label: "전체" },
-  ...(
-    Object.entries(OrgHistoryChangeTypeLabel) as [
-      OrgHistoryChangeType,
-      string,
-    ][]
-  ).map(([value, label]) => ({ value, label })),
-  ...(Object.entries(PolicyStatusLabel) as [PolicyStatus, string][]).map(
-    ([value, label]) => ({ value, label }),
-  ),
-];
-
-// 카테고리 필터 옵션 (ChangeCategoryLabel 기반 생성)
-const CATEGORY_FILTER_OPTIONS: {
-  value: "ALL" | ChangeCategory;
-  label: string;
-}[] = [
-  { value: "ALL", label: "전체" },
-  ...(Object.entries(ChangeCategoryLabel) as [ChangeCategory, string][]).map(
-    ([value, label]) => ({ value, label }),
-  ),
-];
-
-// 드롭다운 Select 컴포넌트
-const SelectDropdown = ({
-  value,
-  options,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  options: { value: string; label: string }[];
-  onChange: (value: string) => void;
-  placeholder?: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const selectedOption = options.find((opt) => opt.value === value);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        className="flex items-center justify-between w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="text-gray-700">
-          {selectedOption?.label || placeholder}
-        </span>
-        <ChevronDown
-          className={`w-4 h-4 text-gray-400 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-            {options.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg ${
-                  option.value === value
-                    ? "bg-blue-50 text-blue-700"
-                    : "text-gray-700"
-                }`}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
 };
 
 export const OrganizationHistoryModal = () => {
@@ -153,11 +59,9 @@ export const OrganizationHistoryModal = () => {
     }
   }, [error]);
 
-  // API 데이터 또는 빈 배열
-  const historyItems = data?.changes ?? [];
-
   // 필터링된 데이터
   const filteredData = useMemo(() => {
+    const historyItems = data?.changes ?? [];
     let result = [...historyItems];
 
     // 유형 필터
@@ -171,7 +75,7 @@ export const OrganizationHistoryModal = () => {
     }
 
     return result;
-  }, [historyItems, selectedType, selectedCategory]);
+  }, [data?.changes, selectedType, selectedCategory]);
 
   // 페이지네이션 계산
   // const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -179,17 +83,6 @@ export const OrganizationHistoryModal = () => {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
-
-  // 필터 변경 시 페이지 초기화
-  const handleTypeChange = (value: string) => {
-    setSelectedType(value as OrgHistoryFilterType);
-    setCurrentPage(1);
-  };
-
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    setCurrentPage(1);
-  };
 
   const handleClose = () => {
     closeOrgHistoryModal();

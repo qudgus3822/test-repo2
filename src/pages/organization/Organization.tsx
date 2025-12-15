@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -84,7 +84,7 @@ const OrganizationPage = () => {
     yearMonth,
     activeTab,
   );
-  const organizations = data?.tree ?? [];
+  const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
   // 데이터가 있는지 확인 (isEvaluationTarget: true인 조직이 있는지)
   const hasData =
