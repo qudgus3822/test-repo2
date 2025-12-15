@@ -4,18 +4,19 @@ import { X, ChevronDown } from "lucide-react";
 import { useModalAnimation } from "@/hooks";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useOrgChangeHistory } from "@/api/hooks/useOrganizationTree";
-// import { Pagination } from "@/components/ui/Pagination";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
+import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import type {
   OrgHistoryItem,
   OrgHistoryChangeType,
   ChangeCategory,
   OrgHistoryFilterType,
+  PolicyStatus,
 } from "@/types/organization.types";
 import {
   OrgHistoryChangeTypeLabel,
   ChangeCategoryLabel,
+  PolicyStatusLabel,
 } from "@/types/organization.types";
 
 // 현재 월 가져오기 (YYYY-MM 형식)
@@ -26,7 +27,7 @@ const getCurrentYearMonth = (): string => {
   return `${year}-${month}`;
 };
 
-// ISO 날짜를 표시 형식으로 변환
+// ISO 날짜를 표시 형식으로 변환 (2025.12.15 17:25)
 const formatDateTime = (isoDate: string): string => {
   const date = new Date(isoDate);
   const year = date.getFullYear();
@@ -34,90 +35,33 @@ const formatDateTime = (isoDate: string): string => {
   const day = String(date.getDate()).padStart(2, "0");
   const hours = String(date.getHours()).padStart(2, "0");
   const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
+  return `${year}.${month}.${day} ${hours}:${minutes}`;
 };
 
-// 유형 필터 옵션
+// 유형 필터 옵션 (OrgHistoryChangeTypeLabel + PolicyStatusLabel 기반 생성)
 const TYPE_FILTER_OPTIONS: { value: OrgHistoryFilterType; label: string }[] = [
   { value: "ALL", label: "전체" },
-  { value: "JOINED", label: "입사" },
-  { value: "RESIGNED", label: "퇴사" },
-  { value: "TRANSFERRED", label: "이동" },
-  { value: "CHANGED_ROLE", label: "직급변경" },
-  { value: "CHANGED_POSITION", label: "직책변경" },
-  { value: "ON_LEAVE", label: "휴직" },
-  { value: "RETURNED", label: "복직" },
-  { value: "CREATED", label: "조직생성" },
-  { value: "DELETED", label: "조직삭제" },
-  { value: "RENAMED", label: "정보변경" },
+  ...(
+    Object.entries(OrgHistoryChangeTypeLabel) as [
+      OrgHistoryChangeType,
+      string,
+    ][]
+  ).map(([value, label]) => ({ value, label })),
+  ...(Object.entries(PolicyStatusLabel) as [PolicyStatus, string][]).map(
+    ([value, label]) => ({ value, label }),
+  ),
 ];
 
-// 카테고리 필터 옵션
-const CATEGORY_FILTER_OPTIONS: { value: string; label: string }[] = [
+// 카테고리 필터 옵션 (ChangeCategoryLabel 기반 생성)
+const CATEGORY_FILTER_OPTIONS: {
+  value: "ALL" | ChangeCategory;
+  label: string;
+}[] = [
   { value: "ALL", label: "전체" },
-  { value: "HR", label: "인사" },
-  { value: "GROUP", label: "조직" },
-  { value: "POLICY", label: "정책" },
+  ...(Object.entries(ChangeCategoryLabel) as [ChangeCategory, string][]).map(
+    ([value, label]) => ({ value, label }),
+  ),
 ];
-
-// 유형 배지 색상 매핑
-const getTypeBadgeColor = (type: OrgHistoryChangeType): string => {
-  switch (type) {
-    case "JOINED":
-      return CHANGE_TYPE_BADGE_COLORS.JOINED;
-    case "RESIGNED":
-      return CHANGE_TYPE_BADGE_COLORS.RESIGNED;
-    case "TRANSFERRED":
-      return CHANGE_TYPE_BADGE_COLORS.TRANSFERRED_IN;
-    case "CHANGED_ROLE":
-      return CHANGE_TYPE_BADGE_COLORS.CHANGED_ROLE;
-    case "CHANGED_POSITION":
-      return CHANGE_TYPE_BADGE_COLORS.CHANGED_POSITION;
-    case "ON_LEAVE":
-      return CHANGE_TYPE_BADGE_COLORS.ON_LEAVE;
-    case "RETURNED":
-      return CHANGE_TYPE_BADGE_COLORS.RETURNED;
-    case "CREATED":
-      return CHANGE_TYPE_BADGE_COLORS.CREATED;
-    case "DELETED":
-      return CHANGE_TYPE_BADGE_COLORS.DELETED;
-    case "RENAMED":
-      return CHANGE_TYPE_BADGE_COLORS.RENAMED;
-    default:
-      return CHANGE_TYPE_BADGE_COLORS.default;
-  }
-};
-
-// 유형 뱃지 컴포넌트
-const TypeBadge = ({ type }: { type: OrgHistoryChangeType }) => {
-  const color = getTypeBadgeColor(type);
-  return (
-    <span
-      className="inline-block px-2 py-0.5 rounded text-xs font-medium text-white"
-      style={{ backgroundColor: color }}
-    >
-      {OrgHistoryChangeTypeLabel[type] || type}
-    </span>
-  );
-};
-
-// 카테고리 뱃지 컴포넌트
-const CategoryBadge = ({ category }: { category: ChangeCategory }) => {
-  const colorMap: Record<ChangeCategory, string> = {
-    HR: "bg-blue-100 text-blue-700",
-    GROUP: "bg-purple-100 text-purple-700",
-    POLICY: "bg-amber-100 text-amber-700",
-  };
-  return (
-    <span
-      className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-        colorMap[category] || "bg-gray-100 text-gray-700"
-      }`}
-    >
-      {ChangeCategoryLabel[category] || category}
-    </span>
-  );
-};
 
 // 드롭다운 Select 컴포넌트
 const SelectDropdown = ({
@@ -269,7 +213,7 @@ export const OrganizationHistoryModal = () => {
 
       {/* 슬라이드 패널 */}
       <div
-        className={`fixed top-0 right-0 h-screen w-[900px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-screen w-[800px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -287,33 +231,17 @@ export const OrganizationHistoryModal = () => {
             </button>
           </div>
 
-          {/* 필터 영역 */}
-          <div className="flex items-center gap-4 px-6 py-3 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">팀 선택</span>
-              <SelectDropdown
-                value="ALL"
-                options={[{ value: "ALL", label: "전체" }]}
-                onChange={() => {}}
-              />
-            </div>
+          {/* 필터 영역 - 추후 개발 예정*/}
+          {/* <div className="flex items-center gap-4 px-6 py-3 border-b border-gray-100">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">유형</span>
-              <SelectDropdown
-                value={selectedType}
-                options={TYPE_FILTER_OPTIONS}
-                onChange={handleTypeChange}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">카테고리</span>
               <SelectDropdown
                 value={selectedCategory}
                 options={CATEGORY_FILTER_OPTIONS}
                 onChange={handleCategoryChange}
               />
             </div>
-          </div>
+          </div> */}
 
           {/* 테이블 */}
           <div className="flex-1 flex flex-col overflow-hidden px-6 py-6 min-h-0">
@@ -322,11 +250,11 @@ export const OrganizationHistoryModal = () => {
               <table className="w-full table-fixed">
                 <colgroup>
                   <col className="w-[18%]" />
+                  <col className="w-[9%]" />
                   <col className="w-[12%]" />
-                  <col className="w-[10%]" />
                   <col className="w-[12%]" />
-                  <col className="w-[30%]" />
-                  <col className="w-[18%]" />
+                  <col className="w-[29%]" />
+                  <col className="w-[20%]" />
                 </colgroup>
                 <thead>
                   <tr className="border-b border-gray-200 text-sm text-gray-600">
@@ -334,9 +262,7 @@ export const OrganizationHistoryModal = () => {
                       변경일시
                     </th>
                     <th className="px-3 py-3 text-center font-medium">유형</th>
-                    <th className="px-3 py-3 text-center font-medium">
-                      카테고리
-                    </th>
+                    <th className="px-3 py-3 text-center font-medium">분류</th>
                     <th className="px-3 py-3 text-center font-medium">대상</th>
                     <th className="px-3 py-3 text-left font-medium">
                       변경내역
@@ -359,11 +285,11 @@ export const OrganizationHistoryModal = () => {
                 <table className="w-full table-fixed">
                   <colgroup>
                     <col className="w-[18%]" />
+                    <col className="w-[9%]" />
                     <col className="w-[12%]" />
-                    <col className="w-[10%]" />
                     <col className="w-[12%]" />
-                    <col className="w-[30%]" />
-                    <col className="w-[18%]" />
+                    <col className="w-[29%]" />
+                    <col className="w-[20%]" />
                   </colgroup>
                   <tbody>
                     {paginatedData.length === 0 ? (
@@ -385,19 +311,37 @@ export const OrganizationHistoryModal = () => {
                             <td className="px-3 py-2.5 text-sm text-gray-900">
                               {formatDateTime(item.changeDate)}
                             </td>
-                            <td className="px-3 py-2.5 text-center">
-                              <TypeBadge type={item.changeType} />
+                            <td className="px-3 py-2.5 text-center text-sm">
+                              {ChangeCategoryLabel[item.category] ||
+                                item.category}
                             </td>
                             <td className="px-3 py-2.5 text-center">
-                              <CategoryBadge category={item.category} />
+                              <ChangeTypeBadge
+                                type={item.changeType}
+                                fixedWidth
+                              />
                             </td>
-                            <td className="px-3 py-2.5 text-sm text-gray-900 text-center">
-                              {item.name}
+                            <td
+                              className="px-3 py-2.5 text-sm text-gray-900 text-center truncate"
+                              title={item.name}
+                            >
+                              {item.name || "-"}
                             </td>
-                            <td className="px-3 py-2.5 text-sm text-gray-700 truncate">
+                            <td
+                              className="px-3 py-2.5 text-sm text-gray-700 truncate"
+                              title={item.changeDetail}
+                            >
                               {item.changeDetail || "-"}
                             </td>
-                            <td className="px-3 py-2.5 text-sm text-center text-gray-600">
+                            <td
+                              className={`px-3 py-2.5 text-sm text-center truncate ${
+                                item.processedBy &&
+                                item.processedBy !== "자동(LDAP)"
+                                  ? "text-blue-600 font-medium"
+                                  : "text-gray-600"
+                              }`}
+                              title={item.processedBy}
+                            >
                               {item.processedBy || "-"}
                             </td>
                           </tr>

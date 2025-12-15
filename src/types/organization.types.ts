@@ -296,7 +296,7 @@ export const OrgHistoryChangeTypeLabel: Record<OrgHistoryChangeType, string> = {
 
 // 조직도 변경 히스토리 항목 (API 응답)
 export interface OrgHistoryItem {
-  changeType: OrgHistoryChangeType; // 변경 유형
+  changeType: OrgHistoryChangeType | PolicyStatus; // 변경 유형 (PolicyStatus 포함)
   changeDate: string; // 변경일시 (ISO 8601)
   category: ChangeCategory; // 카테고리
   target: string; // 대상 ID
@@ -306,7 +306,7 @@ export interface OrgHistoryItem {
 }
 
 // 조직도 변경 히스토리 필터 타입
-export type OrgHistoryFilterType = "ALL" | OrgHistoryChangeType;
+export type OrgHistoryFilterType = "ALL" | OrgHistoryChangeType | PolicyStatus;
 
 // 조직도 변경 히스토리 API 응답 타입
 export interface OrgHistoryResponse {

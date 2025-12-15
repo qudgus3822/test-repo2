@@ -2,18 +2,13 @@ import { useState, useEffect, useMemo } from "react";
 import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
+import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { useOrgTypeSettings } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import type {
   OrgTypeSettingsNode,
   OrgTypeSettingsChange,
-  OrgTypeSettingsChangeType,
 } from "@/types/organization.types";
-import {
-  OrgHistoryChangeTypeLabel,
-  PolicyStatusLabel,
-} from "@/types/organization.types";
-import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
 
 interface OrganizationTypeSettingModalProps {
   isOpen: boolean;
@@ -35,7 +30,7 @@ interface OrgItemState {
   changes?: OrgTypeSettingsChange[];
 }
 
-// 변경 유형 배지 컴포넌트 (changeType에 따라 라벨 및 색상 표시)
+// 변경 유형 배지 컴포넌트 (GROUP, POLICY 카테고리만 표시)
 const ChangesCategoryBadge = ({
   changes,
 }: {
@@ -43,69 +38,22 @@ const ChangesCategoryBadge = ({
 }) => {
   if (!changes || changes.length === 0) return null;
 
-  // 테두리 스타일 적용 대상 타입 (DELETED, CREATED, RENAMED, ADD, EXCLUDE)
-  const outlineTypes: OrgTypeSettingsChangeType[] = [
-    "DELETED",
-    "CREATED",
-    "RENAMED",
-    "ADD",
-    "EXCLUDE",
-  ];
-
-  // changeType별 색상 가져오기
-  const getBadgeColor = (changeType: OrgTypeSettingsChangeType): string => {
-    // TRANSFERRED는 TRANSFERRED_IN으로 처리
-    const colorKey =
-      changeType === "TRANSFERRED" ? "TRANSFERRED_IN" : changeType;
-    return (
-      CHANGE_TYPE_BADGE_COLORS[
-        colorKey as keyof typeof CHANGE_TYPE_BADGE_COLORS
-      ] || CHANGE_TYPE_BADGE_COLORS.default
-    );
-  };
-
-  // 테두리 스타일 여부 확인
-  const isOutlineStyle = (changeType: OrgTypeSettingsChangeType): boolean => {
-    return outlineTypes.includes(changeType);
-  };
-
-  // changeType별 라벨 가져오기 (OrgHistoryChangeTypeLabel 또는 PolicyStatusLabel)
-  const getLabel = (changeType: OrgTypeSettingsChangeType): string => {
-    if (changeType === "ADD" || changeType === "EXCLUDE") {
-      return PolicyStatusLabel[changeType];
-    }
-    return OrgHistoryChangeTypeLabel[
-      changeType as keyof typeof OrgHistoryChangeTypeLabel
-    ];
-  };
-
   // GROUP, POLICY 카테고리만 필터링
   const filteredChanges = changes.filter(
     (c) => c.category === "GROUP" || c.category === "POLICY"
   );
 
+  if (filteredChanges.length === 0) return null;
+
   return (
     <span className="flex items-center gap-1">
-      {filteredChanges.map((change, index) => {
-        const color = getBadgeColor(change.changeType);
-        const useOutline = isOutlineStyle(change.changeType);
-
-        return (
-          <span
-            key={`${change.category}-${change.changeType}-${index}`}
-            className={`px-1.5 py-0.5 text-xs rounded ${
-              useOutline ? "bg-white border" : "text-white"
-            }`}
-            style={
-              useOutline
-                ? { color: color, borderColor: color }
-                : { backgroundColor: color }
-            }
-          >
-            {getLabel(change.changeType)}
-          </span>
-        );
-      })}
+      {filteredChanges.map((change, index) => (
+        <ChangeTypeBadge
+          key={`${change.category}-${change.changeType}-${index}`}
+          type={change.changeType}
+          fixedWidth
+        />
+      ))}
     </span>
   );
 };

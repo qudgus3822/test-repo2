@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
+import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { ChevronRight, Users, Clock, History, Settings } from "lucide-react";
 import type {
   OrganizationDepartment,
@@ -12,7 +13,6 @@ import type {
 import {
   MemberRoleLabel,
   MemberPositionLabel,
-  OrgHistoryChangeTypeLabel,
 } from "@/types/organization.types";
 import { getAvatarColor } from "@/styles/colors";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
@@ -240,13 +240,29 @@ const MemberList = ({
   );
 };
 
-// 날짜 포맷 함수
-const formatChangeDate = (isoDate: string): string => {
+// 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
+const formatChangeDateTime = (isoDate: string): string => {
   const date = new Date(isoDate);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}.${month}.${day}`;
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+};
+
+// 카테고리 배지 컴포넌트
+const CategoryBadge = ({ category }: { category: string }) => {
+  const isGroup = category === "GROUP";
+  return (
+    <span
+      className={`px-1.5 py-0.5 text-[11px] rounded ${
+        isGroup ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+      }`}
+    >
+      {isGroup ? "개발" : "정책"}
+    </span>
+  );
 };
 
 // 변경 이력 컴포넌트
@@ -257,13 +273,13 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
   const filteredData = useMemo<OrgHistoryItem[]>(() => {
     if (!data?.changes) return [];
     return data.changes.filter(
-      (item) => item.category === "GROUP" || item.category === "POLICY"
+      (item) => item.category === "GROUP" || item.category === "POLICY",
     );
   }, [data]);
-
+  console.log(filteredData);
   return (
     <Card padding="sm" className="mt-4">
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-2 mb-3">
         <ChevronRight className="w-4 h-4 text-gray-500 rotate-90" />
         <span className="font-medium text-gray-700 text-sm">
           실/팀 변경 이력
@@ -278,16 +294,40 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
           <li>변경 이력이 없습니다.</li>
         </ul>
       ) : (
-        <ul className="list-disc list-inside text-sm text-gray-600 pl-2 space-y-1">
+        <ul className="space-y-1.5 pl-2">
           {filteredData.map((item, index) => (
-            <li key={`${item.changeDate}-${index}`}>
-              <span className="text-gray-400 mr-2">
-                [{formatChangeDate(item.changeDate)}]
+            <li
+              key={`${item.changeDate}-${index}`}
+              className="flex items-center gap-2 text-sm"
+            >
+              <span className="w-[1%] text-gray-400">•</span>
+              <span className="w-[13%] text-gray-600">
+                {formatChangeDateTime(item.changeDate)}
               </span>
-              <span className="text-gray-500 mr-1">
-                {OrgHistoryChangeTypeLabel[item.changeType]}:
+              <span className="w-[1%] text-gray-400">|</span>
+              <span
+                className={`w-[16%] truncate ${
+                  item.processedBy && item.processedBy !== "자동(LDAP)"
+                    ? "text-blue-600 font-medium"
+                    : "text-gray-600"
+                }`}
+                title={item.processedBy}
+              >
+                {item.processedBy || "-"}
               </span>
-              <span>{item.changeDetail}</span>
+              <span className="w-[8%]">
+                <ChangeTypeBadge type={item.changeType} fixedWidth />
+              </span>
+              <span className="w-[6%]">
+                <CategoryBadge category={item.category} />
+              </span>
+              <span
+                className="w-[25%] text-gray-700 truncate"
+                title={item.changeDetail}
+              >
+                {item.changeDetail || "-"}
+              </span>
+              <span className="w-[31%]"></span>
             </li>
           ))}
         </ul>

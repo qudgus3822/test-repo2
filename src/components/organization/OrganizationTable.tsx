@@ -24,8 +24,6 @@ import { clsx } from "clsx";
 import {
   getMemberRoleOrPositionLabel,
   hasChangeInfo,
-  getChangeTypeBadgeColor,
-  getChangeTypeLabel,
   formatChangeDate,
   getMemberEmail,
 } from "@/utils/organization";
@@ -33,6 +31,7 @@ import { METRIC_CODE_NAMES, getMetricOrder } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 
 // 탭 타입 → API 카테고리 키 매핑
 // - UI 탭 ID (codeQuality 등) → API 카테고리 키 (quality 등)
@@ -230,29 +229,6 @@ const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
     : formattedDate;
 };
 
-// 단일 상태 뱃지 컴포넌트 (툴팁 없이 뱃지만 렌더링)
-const SingleBadge = ({ change }: { change: ChangeInfo }) => {
-  const { changeType, category } = change;
-  const color = getChangeTypeBadgeColor(changeType);
-
-  // category에 따라 variant 결정: GROUP은 outlined, HR/POLICY는 filled
-  const variant = category === "GROUP" ? "outlined" : "filled";
-
-  const style =
-    variant === "filled"
-      ? { backgroundColor: color, color: "#E7E7E7" }
-      : { border: `1px solid ${color}`, color };
-
-  return (
-    <span
-      className="ml-2 px-2 py-0.5 text-xs font-medium rounded-xl cursor-default"
-      style={style}
-    >
-      {getChangeTypeLabel(changeType)}
-    </span>
-  );
-};
-
 // 여러 변경이력의 툴팁 내용을 하나로 합치는 함수
 const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
   return changes
@@ -280,7 +256,12 @@ const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
   const badges = (
     <div className="inline-flex items-center">
       {displayChanges.map((item, index) => (
-        <SingleBadge key={`${item.changeType}-${index}`} change={item} />
+        <ChangeTypeBadge
+          key={`${item.changeType}-${index}`}
+          type={item.changeType}
+          category={item.category}
+          className="ml-2 cursor-default"
+        />
       ))}
     </div>
   );
