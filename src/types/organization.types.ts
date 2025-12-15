@@ -169,6 +169,12 @@ export interface ScoreMetrics {
 // 변경 카테고리 타입
 export type ChangeCategory = "HR" | "GROUP" | "POLICY";
 
+export const ChangeCategoryLabel: Record<ChangeCategory, string> = {
+  HR: "인사",
+  GROUP: "조직",
+  POLICY: "정책",
+};
+
 // 변경 사항 정보
 export interface ChangeInfo {
   changeType: string; // 변경 유형 (입사, 퇴사, 팀 삭제, 개발조직 추가 등)
@@ -261,3 +267,83 @@ export type ScoreLevel = "excellent" | "good" | "danger";
 
 // 조직 비교 필터 타입
 export type OrganizationFilterType = "all" | "excellent" | "good" | "danger";
+
+// ================================
+// 조직도 변경 히스토리 타입 정의
+// ================================
+
+// 히스토리 변경 유형 타입 (MemberStatus, DepartmentStatus에서 파생)
+export type OrgHistoryChangeType =
+  | Exclude<MemberStatus, "ACTIVE" | "TRANSFERRED_IN" | "TRANSFERRED_OUT">
+  | "TRANSFERRED" // 이동 (TRANSFERRED_IN/OUT 통합)
+  | Exclude<DepartmentStatus, "ACTIVE">;
+
+export const OrgHistoryChangeTypeLabel: Record<OrgHistoryChangeType, string> = {
+  // MemberStatus 기반
+  JOINED: MemberStatusLabel.JOINED,
+  RESIGNED: MemberStatusLabel.RESIGNED,
+  ON_LEAVE: MemberStatusLabel.ON_LEAVE,
+  RETURNED: MemberStatusLabel.RETURNED,
+  CHANGED_ROLE: `${MemberStatusLabel.CHANGED_ROLE}변경`,
+  CHANGED_POSITION: `${MemberStatusLabel.CHANGED_POSITION}변경`,
+  // 통합 이동 타입
+  TRANSFERRED: "이동",
+  // DepartmentStatus 기반
+  CREATED: DepartmentStatusLabel.CREATED,
+  DELETED: DepartmentStatusLabel.DELETED,
+  RENAMED: DepartmentStatusLabel.RENAMED,
+};
+
+// 조직도 변경 히스토리 항목 (API 응답)
+export interface OrgHistoryItem {
+  changeType: OrgHistoryChangeType; // 변경 유형
+  changeDate: string; // 변경일시 (ISO 8601)
+  category: ChangeCategory; // 카테고리
+  target: string; // 대상 ID
+  name: string; // 대상 이름
+  changeDetail: string; // 변경내역
+  processedBy: string; // 처리자
+}
+
+// 조직도 변경 히스토리 필터 타입
+export type OrgHistoryFilterType = "ALL" | OrgHistoryChangeType;
+
+// 조직도 변경 히스토리 API 응답 타입
+export interface OrgHistoryResponse {
+  period: {
+    year: number;
+    month: number;
+  };
+  totalCount: number;
+  changes: OrgHistoryItem[];
+}
+
+// ================================
+// 조직 유형 설정 타입 정의
+// ================================
+
+// 조직 유형 설정 변경 타입 (OrgHistoryChangeType + PolicyStatus)
+export type OrgTypeSettingsChangeType = OrgHistoryChangeType | PolicyStatus;
+
+// 조직 유형 설정 변경 정보
+export interface OrgTypeSettingsChange {
+  changeType: OrgTypeSettingsChangeType;
+  category: ChangeCategory;
+}
+
+// 조직 유형 설정 트리 노드
+export interface OrgTypeSettingsNode {
+  code: string;
+  name: string;
+  level: number;
+  isEvaluationTarget: boolean;
+  isBlacklisted: boolean;
+  children: OrgTypeSettingsNode[];
+  changes?: OrgTypeSettingsChange[];
+}
+
+// 조직 유형 설정 API 응답 타입
+export interface OrgTypeSettingsResponse {
+  timestamp: string;
+  tree: OrgTypeSettingsNode[];
+}

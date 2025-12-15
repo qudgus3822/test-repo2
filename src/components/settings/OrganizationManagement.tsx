@@ -1,34 +1,28 @@
 import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChevronRight, Users, Clock, History, Settings } from "lucide-react";
 import type {
   OrganizationDepartment,
   OrganizationMember,
   OrganizationNode,
+  OrgHistoryItem,
 } from "@/types/organization.types";
 import {
   MemberRoleLabel,
   MemberPositionLabel,
+  OrgHistoryChangeTypeLabel,
 } from "@/types/organization.types";
 import { getAvatarColor } from "@/styles/colors";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
-import { useOrganizationTreeBasic } from "@/api/hooks/useOrganizationTree";
+import { OrganizationHistoryModal } from "./OrganizationHistoryModal";
+import {
+  useOrganizationTreeBasic,
+  useOrgChangeHistory,
+} from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-
-// 조직 유형 배지 컴포넌트
-const TypeBadge = ({ type }: { type: string }) => {
-  const isDevType = type === "개발실" || type === "개발";
-  return (
-    <span
-      className={`px-2 py-0.5 text-xs rounded-full ${
-        isDevType ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
-      }`}
-    >
-      {isDevType ? "개발" : "비개발"}
-    </span>
-  );
-};
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 // 신규 배지 컴포넌트
 const NewBadge = () => (
@@ -99,8 +93,8 @@ const DepartmentList = ({
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <TypeBadge
-                        type={dept.isEvaluationTarget ? "개발" : "비개발"}
+                      <OrgTypeBadge
+                        isEvaluationTarget={dept.isEvaluationTarget}
                       />
                       <span className="font-medium text-gray-900 text-sm">
                         {dept.name}
@@ -160,9 +154,7 @@ const TeamList = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <TypeBadge
-                    type={team.isEvaluationTarget ? "개발" : "비개발"}
-                  />
+                  <OrgTypeBadge isEvaluationTarget={team.isEvaluationTarget} />
                   <span className="font-medium text-gray-900 text-sm">
                     {team.name}
                   </span>
@@ -248,8 +240,27 @@ const MemberList = ({
   );
 };
 
+// 날짜 포맷 함수
+const formatChangeDate = (isoDate: string): string => {
+  const date = new Date(isoDate);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}.${month}.${day}`;
+};
+
 // 변경 이력 컴포넌트
-const ChangeHistorySection = () => {
+const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
+  const { data, isLoading } = useOrgChangeHistory(yearMonth);
+
+  // GROUP, POLICY 카테고리만 필터링
+  const filteredData = useMemo<OrgHistoryItem[]>(() => {
+    if (!data?.changes) return [];
+    return data.changes.filter(
+      (item) => item.category === "GROUP" || item.category === "POLICY"
+    );
+  }, [data]);
+
   return (
     <Card padding="sm" className="mt-4">
       <div className="flex items-center gap-2 mb-2">
@@ -258,9 +269,29 @@ const ChangeHistorySection = () => {
           실/팀 변경 이력
         </span>
       </div>
-      <ul className="list-disc list-inside text-sm text-gray-500 pl-2">
-        <li>변경 이력이 없습니다.</li>
-      </ul>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-4">
+          <LoadingSpinner />
+        </div>
+      ) : filteredData.length === 0 ? (
+        <ul className="list-disc list-inside text-sm text-gray-500 pl-2">
+          <li>변경 이력이 없습니다.</li>
+        </ul>
+      ) : (
+        <ul className="list-disc list-inside text-sm text-gray-600 pl-2 space-y-1">
+          {filteredData.map((item, index) => (
+            <li key={`${item.changeDate}-${index}`}>
+              <span className="text-gray-400 mr-2">
+                [{formatChangeDate(item.changeDate)}]
+              </span>
+              <span className="text-gray-500 mr-1">
+                {OrgHistoryChangeTypeLabel[item.changeType]}:
+              </span>
+              <span>{item.changeDetail}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </Card>
   );
 };
@@ -281,6 +312,7 @@ export const OrganizationManagement = () => {
   const [selectedTeamCode, setSelectedTeamCode] = useState<string | null>(null);
   const [isAutoSyncEnabled] = useState(true);
   const [isOrgTypeModalOpen, setIsOrgTypeModalOpen] = useState(false);
+  const { openOrgHistoryModal } = useSettingsStore();
 
   // API에서 조직 데이터 조회 (현재 월 기준, 기본 tree 엔드포인트)
   const yearMonth = getCurrentYearMonth();
@@ -430,11 +462,8 @@ export const OrganizationManagement = () => {
             <Clock className="w-4 h-4" />
             <span>최종변경일자</span>
             <span className="text-gray-700">{lastSyncDate}</span>
-            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">
-              최신
-            </span>
           </div>
-          <Button variant="normal" size="sm">
+          <Button variant="normal" size="sm" onClick={openOrgHistoryModal}>
             <History className="w-4 h-4 mr-1" />
             히스토리
           </Button>
@@ -470,12 +499,10 @@ export const OrganizationManagement = () => {
       </div>
 
       {/* 하단 영역 */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span>
-            마지막 동기화: {lastSyncDate} ({syncSource})
-          </span>
-        </div>
+      <div className="flex items-center justify-end gap-4">
+        <span className="text-sm text-gray-500">
+          마지막 동기화: {lastSyncDate} ({syncSource})
+        </span>
         <div className="flex items-center gap-2">
           <span
             className={`w-2 h-2 rounded-full ${
@@ -489,7 +516,7 @@ export const OrganizationManagement = () => {
       </div>
 
       {/* 변경 이력 */}
-      <ChangeHistorySection />
+      <ChangeHistorySection yearMonth={yearMonth} />
 
       {/* 조직 유형 설정 모달 */}
       <OrganizationTypeSettingModal
@@ -500,6 +527,9 @@ export const OrganizationManagement = () => {
           console.log("조직 유형 설정 저장");
         }}
       />
+
+      {/* 조직도 변경 히스토리 모달 */}
+      <OrganizationHistoryModal />
     </div>
   );
 };

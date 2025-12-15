@@ -1,7 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchOrganizationByTab, fetchOrganizationTree } from "@/api/organization";
+import {
+  fetchOrganizationByTab,
+  fetchOrganizationTree,
+  fetchOrgChangeHistory,
+  fetchOrgTypeSettings,
+} from "@/api/organization";
 import type {
   OrganizationCompareResponse,
+  OrgHistoryResponse,
+  OrgTypeSettingsResponse,
   TabType,
 } from "@/types/organization.types";
 
@@ -14,6 +21,10 @@ export const organizationTreeKeys = {
     [...organizationTreeKeys.all, yearMonth, tab] as const,
   tree: (yearMonth: string) =>
     [...organizationTreeKeys.all, "tree", yearMonth] as const,
+  changeHistory: (yearMonth: string) =>
+    [...organizationTreeKeys.all, "changeHistory", yearMonth] as const,
+  orgTypeSettings: (yearMonth: string) =>
+    [...organizationTreeKeys.all, "orgTypeSettings", yearMonth] as const,
 };
 
 /**
@@ -52,6 +63,46 @@ export const useOrganizationTreeBasic = (
     queryKey: organizationTreeKeys.tree(yearMonth),
     queryFn: async () => {
       return fetchOrganizationTree(yearMonth);
+    },
+    enabled: enabled && !!yearMonth,
+    staleTime: 2 * 60 * 1000, // 2분
+  });
+};
+
+/**
+ * 조직도 변경 이력 조회 Hook
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @param enabled - 쿼리 활성화 여부 (기본값: true)
+ * @returns React Query 결과 객체
+ */
+export const useOrgChangeHistory = (
+  yearMonth: string,
+  enabled: boolean = true,
+) => {
+  return useQuery<OrgHistoryResponse, Error>({
+    queryKey: organizationTreeKeys.changeHistory(yearMonth),
+    queryFn: async () => {
+      return fetchOrgChangeHistory(yearMonth);
+    },
+    enabled: enabled && !!yearMonth,
+    staleTime: 2 * 60 * 1000, // 2분
+  });
+};
+
+/**
+ * 조직 유형 설정 조회 Hook
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @param enabled - 쿼리 활성화 여부 (기본값: true)
+ * @returns React Query 결과 객체
+ */
+export const useOrgTypeSettings = (
+  yearMonth: string,
+  enabled: boolean = true,
+) => {
+  return useQuery<OrgTypeSettingsResponse, Error>({
+    queryKey: organizationTreeKeys.orgTypeSettings(yearMonth),
+    queryFn: async () => {
+      return fetchOrgTypeSettings(yearMonth);
     },
     enabled: enabled && !!yearMonth,
     staleTime: 2 * 60 * 1000, // 2분

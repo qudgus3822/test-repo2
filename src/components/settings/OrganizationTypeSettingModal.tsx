@@ -1,12 +1,19 @@
 import { useState, useEffect, useMemo } from "react";
 import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
+import { useOrgTypeSettings } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import type {
-  OrganizationDepartment,
-  OrganizationNode,
+  OrgTypeSettingsNode,
+  OrgTypeSettingsChange,
+  OrgTypeSettingsChangeType,
 } from "@/types/organization.types";
+import {
+  OrgHistoryChangeTypeLabel,
+  PolicyStatusLabel,
+} from "@/types/organization.types";
+import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
 
 interface OrganizationTypeSettingModalProps {
   isOpen: boolean;
@@ -14,35 +21,96 @@ interface OrganizationTypeSettingModalProps {
   onSave: () => void;
 }
 
-type OrganizationType = "개발" | "비개발";
 type ChangeType = "신설" | "삭제" | null;
 
 interface OrgItemState {
   id: string;
   name: string;
-  type: OrganizationType;
+  isEvaluationTarget: boolean;
+  isBlacklisted: boolean;
   changeType: ChangeType;
   changeDate?: string;
   isExpanded?: boolean;
   children?: OrgItemState[];
+  changes?: OrgTypeSettingsChange[];
 }
 
-// 조직 유형 배지 컴포넌트
-const TypeBadge = ({ type }: { type: OrganizationType }) => {
+// 변경 유형 배지 컴포넌트 (changeType에 따라 라벨 및 색상 표시)
+const ChangesCategoryBadge = ({
+  changes,
+}: {
+  changes?: OrgTypeSettingsChange[];
+}) => {
+  if (!changes || changes.length === 0) return null;
+
+  // 테두리 스타일 적용 대상 타입 (DELETED, CREATED, RENAMED, ADD, EXCLUDE)
+  const outlineTypes: OrgTypeSettingsChangeType[] = [
+    "DELETED",
+    "CREATED",
+    "RENAMED",
+    "ADD",
+    "EXCLUDE",
+  ];
+
+  // changeType별 색상 가져오기
+  const getBadgeColor = (changeType: OrgTypeSettingsChangeType): string => {
+    // TRANSFERRED는 TRANSFERRED_IN으로 처리
+    const colorKey =
+      changeType === "TRANSFERRED" ? "TRANSFERRED_IN" : changeType;
+    return (
+      CHANGE_TYPE_BADGE_COLORS[
+        colorKey as keyof typeof CHANGE_TYPE_BADGE_COLORS
+      ] || CHANGE_TYPE_BADGE_COLORS.default
+    );
+  };
+
+  // 테두리 스타일 여부 확인
+  const isOutlineStyle = (changeType: OrgTypeSettingsChangeType): boolean => {
+    return outlineTypes.includes(changeType);
+  };
+
+  // changeType별 라벨 가져오기 (OrgHistoryChangeTypeLabel 또는 PolicyStatusLabel)
+  const getLabel = (changeType: OrgTypeSettingsChangeType): string => {
+    if (changeType === "ADD" || changeType === "EXCLUDE") {
+      return PolicyStatusLabel[changeType];
+    }
+    return OrgHistoryChangeTypeLabel[
+      changeType as keyof typeof OrgHistoryChangeTypeLabel
+    ];
+  };
+
+  // GROUP, POLICY 카테고리만 필터링
+  const filteredChanges = changes.filter(
+    (c) => c.category === "GROUP" || c.category === "POLICY"
+  );
+
   return (
-    <span
-      className={`px-2 py-0.5 text-xs rounded ${
-        type === "개발"
-          ? "bg-blue-100 text-blue-700"
-          : "bg-gray-100 text-gray-600"
-      }`}
-    >
-      {type}
+    <span className="flex items-center gap-1">
+      {filteredChanges.map((change, index) => {
+        const color = getBadgeColor(change.changeType);
+        const useOutline = isOutlineStyle(change.changeType);
+
+        return (
+          <span
+            key={`${change.category}-${change.changeType}-${index}`}
+            className={`px-1.5 py-0.5 text-xs rounded ${
+              useOutline ? "bg-white border" : "text-white"
+            }`}
+            style={
+              useOutline
+                ? { color: color, borderColor: color }
+                : { backgroundColor: color }
+            }
+          >
+            {getLabel(change.changeType)}
+          </span>
+        );
+      })}
     </span>
   );
 };
 
-// 변경 유형 배지 컴포넌트
+// 변경 유형 배지 컴포넌트 (신설/삭제)
 const ChangeBadge = ({
   changeType,
   date,
@@ -67,44 +135,6 @@ const ChangeBadge = ({
   );
 };
 
-// 구분 필터 라디오 버튼
-const FilterRadio = ({
-  label,
-  value,
-  checked,
-  onChange,
-  color,
-}: {
-  label: string;
-  value: string;
-  checked: boolean;
-  onChange: (value: string) => void;
-  color: string;
-}) => {
-  return (
-    <label className="flex items-center gap-2 cursor-pointer">
-      <input
-        type="radio"
-        name="orgFilter"
-        value={value}
-        checked={checked}
-        onChange={() => onChange(value)}
-        className="sr-only"
-      />
-      <span
-        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-          checked ? "border-blue-500" : "border-gray-300"
-        }`}
-      >
-        {checked && (
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-        )}
-      </span>
-      <span className="text-sm text-gray-700">{label}</span>
-    </label>
-  );
-};
-
 // 조직 아이템 행 컴포넌트
 const OrgItemRow = ({
   item,
@@ -116,17 +146,19 @@ const OrgItemRow = ({
   item: OrgItemState;
   depth?: number;
   onToggle?: (id: string) => void;
-  onTypeChange?: (id: string, type: OrganizationType) => void;
+  onTypeChange?: (id: string, isEvaluationTarget: boolean) => void;
   showCheckbox?: boolean;
 }) => {
   const hasChildren = item.children && item.children.length > 0;
   const paddingLeft = depth * 20 + 12;
+  const hasDeletedChange = item.changes?.some((c) => c.changeType === "DELETED");
+  const isDisabled = item.isBlacklisted || hasDeletedChange;
 
   return (
     <>
       <div
-        className={`flex items-center justify-between py-2 px-3 hover:bg-gray-50 border-b border-gray-100 ${
-          item.changeType === "삭제" ? "bg-blue-50" : ""
+        className={`flex items-center justify-between py-2 px-3 border-b border-gray-100 ${
+          isDisabled ? "bg-gray-100" : "hover:bg-gray-50"
         }`}
         style={{ paddingLeft }}
       >
@@ -146,13 +178,16 @@ const OrgItemRow = ({
             <span className="w-5" />
           )}
 
-          {showCheckbox && (
-            <TypeBadge type={item.type} />
+          {showCheckbox && !item.isBlacklisted && (
+            <OrgTypeBadge
+              isEvaluationTarget={item.isEvaluationTarget}
+              fixedWidth
+            />
           )}
 
           <span
             className={`text-sm ${
-              item.changeType === "삭제" ? "text-gray-400" : "text-gray-900"
+              isDisabled ? "text-gray-400" : "text-gray-900"
             }`}
           >
             {item.name}
@@ -163,18 +198,22 @@ const OrgItemRow = ({
           )}
 
           <ChangeBadge changeType={item.changeType} date={item.changeDate} />
+          <ChangesCategoryBadge changes={item.changes} />
         </div>
 
-        {showCheckbox && (
-          <input
-            type="checkbox"
-            checked={item.type === "개발"}
-            onChange={() =>
-              onTypeChange?.(item.id, item.type === "개발" ? "비개발" : "개발")
-            }
-            className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-          />
-        )}
+        {showCheckbox &&
+          (isDisabled ? (
+            <div className="w-4.5 h-4.5 flex items-center justify-center border border-gray-300 rounded bg-gray-100">
+              <X className="w-5 h-5 text-gray-300" />
+            </div>
+          ) : (
+            <input
+              type="checkbox"
+              checked={item.isEvaluationTarget}
+              onChange={() => onTypeChange?.(item.id, !item.isEvaluationTarget)}
+              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+          ))}
       </div>
 
       {hasChildren && item.isExpanded && (
@@ -213,63 +252,56 @@ const getYearMonths = (): { currentMonth: string; prevMonth: string } => {
 
 // API 데이터를 OrgItemState로 변환하는 함수
 const convertApiToOrgItemState = (
-  tree: OrganizationDepartment[]
+  tree: OrgTypeSettingsNode[],
 ): OrgItemState[] => {
+  let nodeIndex = 0;
+
   const convertNode = (
-    node: OrganizationNode,
-    isFirstLevel = false
+    node: OrgTypeSettingsNode,
+    isFirstLevel = false,
   ): OrgItemState => {
-    if (node.type === "member") {
-      // 멤버는 제외 (조직 유형 설정에서는 부서/팀만 표시)
-      return {
-        id: node.employeeID,
-        name: node.name,
-        type: node.isEvaluationTarget ? "개발" : "비개발",
-        changeType: null,
-        isExpanded: false,
-        children: [],
-      };
-    }
+    // children 변환
+    const childNodes = (node.children || []).map((child) => convertNode(child));
 
-    // department 노드
-    const dept = node as OrganizationDepartment;
-
-    // 변경 유형 결정
-    let changeType: ChangeType = null;
-    let changeDate: string | undefined;
-
-    if (dept.changes && dept.changes.length > 0) {
-      const latestChange = dept.changes[0];
-      if (latestChange.changeType === "CREATED") {
-        changeType = "신설";
-        changeDate = new Date(latestChange.changeDate).toLocaleDateString("ko-KR", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }).replace(/\. /g, ".").replace(/\.$/, "");
-      } else if (latestChange.changeType === "DELETED") {
-        changeType = "삭제";
-        changeDate = new Date(latestChange.changeDate).toLocaleDateString("ko-KR", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-        }).replace(/\. /g, ".").replace(/\.$/, "");
+    // TODO: 임시 테스트 데이터 - API 연동 후 삭제 필요
+    const testChanges: OrgTypeSettingsChange[] | undefined = (() => {
+      nodeIndex++;
+      // 3번째 노드: 정보변경 (outline)
+      if (nodeIndex === 3) {
+        return [
+          { changeType: "RENAMED" as const, category: "GROUP" as const },
+        ];
       }
-    }
-
-    // children 중 department만 필터링하여 변환
-    const childDepts = (dept.children || [])
-      .filter((child): child is OrganizationDepartment => child.type === "department")
-      .map((child) => convertNode(child));
+      // 5번째 노드: 조직생성 (outline)
+      if (nodeIndex === 5) {
+        return [
+          { changeType: "CREATED" as const, category: "GROUP" as const },
+        ];
+      }
+      // 7번째 노드: 조직삭제 (outline)
+      if (nodeIndex === 7) {
+        return [{ changeType: "DELETED" as const, category: "GROUP" as const }];
+      }
+      // 9번째 노드: 유형추가 (outline)
+      if (nodeIndex === 9) {
+        return [{ changeType: "ADD" as const, category: "POLICY" as const }];
+      }
+      // 11번째 노드: 유형제외 (outline)
+      if (nodeIndex === 11) {
+        return [{ changeType: "EXCLUDE" as const, category: "POLICY" as const }];
+      }
+      return node.changes;
+    })();
 
     return {
-      id: dept.code,
-      name: dept.name,
-      type: dept.isEvaluationTarget ? "개발" : "비개발",
-      changeType,
-      changeDate,
-      isExpanded: isFirstLevel || dept.level === 1,
-      children: childDepts,
+      id: node.code,
+      name: node.name,
+      isEvaluationTarget: node.isEvaluationTarget,
+      isBlacklisted: node.isBlacklisted ?? false,
+      changeType: null,
+      isExpanded: isFirstLevel || node.level === 1,
+      children: childNodes,
+      changes: testChanges,
     };
   };
 
@@ -282,7 +314,6 @@ export const OrganizationTypeSettingModal = ({
   onClose,
   onSave,
 }: OrganizationTypeSettingModalProps) => {
-  const [filter, setFilter] = useState<string>("all");
   const [prevMonthData, setPrevMonthData] = useState<OrgItemState[]>([]);
   const [currentMonthData, setCurrentMonthData] = useState<OrgItemState[]>([]);
   const [shouldRender, setShouldRender] = useState(false);
@@ -292,15 +323,11 @@ export const OrganizationTypeSettingModal = ({
   const { currentMonth, prevMonth } = useMemo(() => getYearMonths(), []);
 
   // API에서 전월/당월 조직 데이터 조회
-  const {
-    data: currentMonthApiData,
-    isLoading: isCurrentLoading,
-  } = useOrganizationTree(currentMonth, "bdpi", isOpen);
+  const { data: currentMonthApiData, isLoading: isCurrentLoading } =
+    useOrgTypeSettings(currentMonth, isOpen);
 
-  const {
-    data: prevMonthApiData,
-    isLoading: isPrevLoading,
-  } = useOrganizationTree(prevMonth, "bdpi", isOpen);
+  const { data: prevMonthApiData, isLoading: isPrevLoading } =
+    useOrgTypeSettings(prevMonth, isOpen);
 
   const isLoading = isCurrentLoading || isPrevLoading;
 
@@ -337,7 +364,7 @@ export const OrganizationTypeSettingModal = ({
   const handleToggle = (
     data: OrgItemState[],
     setData: React.Dispatch<React.SetStateAction<OrgItemState[]>>,
-    id: string
+    id: string,
   ) => {
     const toggleItem = (items: OrgItemState[]): OrgItemState[] => {
       return items.map((item) => {
@@ -354,11 +381,11 @@ export const OrganizationTypeSettingModal = ({
   };
 
   // 타입 변경 핸들러
-  const handleTypeChange = (id: string, newType: OrganizationType) => {
+  const handleTypeChange = (id: string, isEvaluationTarget: boolean) => {
     const updateType = (items: OrgItemState[]): OrgItemState[] => {
       return items.map((item) => {
         if (item.id === id) {
-          return { ...item, type: newType };
+          return { ...item, isEvaluationTarget };
         }
         if (item.children) {
           return { ...item, children: updateType(item.children) };
@@ -383,12 +410,22 @@ export const OrganizationTypeSettingModal = ({
   // 현재 날짜 기준 전월/당월 라벨
   const now = new Date();
   const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1);
-  const prevMonthLabel = `${prevMonthDate.getFullYear()}년 ${prevMonthDate.getMonth() + 1}월`;
+  const prevMonthLabel = `${prevMonthDate.getFullYear()}년 ${
+    prevMonthDate.getMonth() + 1
+  }월`;
   const currentMonthLabel = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
 
   // 마지막 동기화 일자
-  const lastSyncDate = currentMonthApiData
-    ? `${currentMonthApiData.period.year}.${String(currentMonthApiData.period.month).padStart(2, "0")}.01`
+  const lastSyncDate = currentMonthApiData?.timestamp
+    ? (() => {
+        const date = new Date(currentMonthApiData.timestamp);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+        return `${year}.${month}.${day} ${hours}:${minutes}`;
+      })()
     : "";
 
   return (
@@ -408,45 +445,54 @@ export const OrganizationTypeSettingModal = ({
         }`}
       >
         <div
-          className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col"
+          className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[649px] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 헤더 */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
-                조직 유형 수정
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                LDAP 자동 동기화 {lastSyncDate}
-              </p>
+          <div className="p-4 border-b border-gray-200">
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  조직 유형 수정
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  LDAP 자동 동기화 {lastSyncDate}
+                </p>
+              </div>
+              <button
+                onClick={handleCancel}
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* 필터 */}
-          <div className="flex items-center gap-6 px-4 py-3 border-b border-gray-100">
-            <span className="text-sm text-gray-600">구분</span>
-            <div className="flex items-center gap-4">
-              <FilterRadio
-                label="개발조직 포함"
-                value="dev"
-                checked={filter === "dev" || filter === "all"}
-                onChange={() => setFilter(filter === "dev" ? "nondev" : "dev")}
-                color="#1E54B8"
-              />
-              <FilterRadio
-                label="개발조직 제외"
-                value="nondev"
-                checked={filter === "nondev"}
-                onChange={() => setFilter("nondev")}
-                color="#6B7280"
-              />
+            {/* 범례 */}
+            <div className="flex items-center justify-end gap-4 mt-3">
+              <span className="text-sm text-gray-600">구분</span>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={true}
+                    readOnly
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 pointer-events-none"
+                  />
+                  <span className="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">
+                    개발조직 포함
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={false}
+                    readOnly
+                    className="w-4 h-4 rounded border-gray-300 text-blue-600 pointer-events-none"
+                  />
+                  <span className="px-2 py-0.5 text-xs rounded bg-gray-100 text-gray-600">
+                    개발조직 제외
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -469,7 +515,9 @@ export const OrganizationTypeSettingModal = ({
                   </div>
                 ) : prevMonthData.length === 0 ? (
                   <div className="flex items-center justify-center h-full py-8">
-                    <p className="text-gray-500 text-sm">조직 데이터가 없습니다.</p>
+                    <p className="text-gray-500 text-sm">
+                      조직 데이터가 없습니다.
+                    </p>
                   </div>
                 ) : (
                   prevMonthData.map((item) => (
@@ -503,7 +551,9 @@ export const OrganizationTypeSettingModal = ({
                   </div>
                 ) : currentMonthData.length === 0 ? (
                   <div className="flex items-center justify-center h-full py-8">
-                    <p className="text-gray-500 text-sm">조직 데이터가 없습니다.</p>
+                    <p className="text-gray-500 text-">
+                      조직 데이터가 없습니다.
+                    </p>
                   </div>
                 ) : (
                   currentMonthData.map((item) => (

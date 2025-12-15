@@ -1,5 +1,7 @@
 import type {
   OrganizationCompareResponse,
+  OrgHistoryResponse,
+  OrgTypeSettingsResponse,
   TabType,
 } from "@/types/organization.types";
 import { apiGet } from "@/libs/fetch";
@@ -38,4 +40,26 @@ export const fetchOrganizationByTab = async (
 ): Promise<OrganizationCompareResponse> => {
   const endpoint = TAB_ENDPOINT_MAP[tab];
   return apiGet<OrganizationCompareResponse>(`/departments/monthly/${endpoint}?yearMonth=${yearMonth}`);
+};
+
+/**
+ * 조직도 변경 이력 조회 API
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @returns 변경 이력 데이터
+ */
+export const fetchOrgChangeHistory = async (
+  yearMonth: string,
+): Promise<OrgHistoryResponse> => {
+  return apiGet<OrgHistoryResponse>(`/departments/change-history?yearMonth=${yearMonth}`);
+};
+
+/**
+ * 조직 유형 설정 조회 API
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @returns 조직 유형 설정 트리 데이터
+ */
+export const fetchOrgTypeSettings = async (
+  yearMonth: string,
+): Promise<OrgTypeSettingsResponse> => {
+  return apiGet<OrgTypeSettingsResponse>(`/departments/org-type-settings?yearMonth=${yearMonth}`);
 };

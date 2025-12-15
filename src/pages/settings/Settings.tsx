@@ -12,7 +12,7 @@ const SettingsPage = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="overflow-hidden min-h-screen">
+      <Card className="overflow-hidden min-h-[700px]">
         {/* 탭 네비게이션 */}
         <div className="mb-6">
           <SettingsTabs activeTab={activeTab} onTabChange={setActiveTab} />
