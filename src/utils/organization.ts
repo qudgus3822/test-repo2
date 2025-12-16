@@ -278,3 +278,53 @@ export const getMemberEmail = (employeeID: string): string => {
   if (!employeeID) return "";
   return `${employeeID}@bithumbcorp.com`;
 };
+
+/**
+ * 변경 상세 내용에 자동/수동 텍스트를 추가합니다.
+ * - POLICY 카테고리: (수동)
+ * - GROUP 카테고리 && CREATED/DELETED: (자동)
+ * - GROUP 카테고리 && RENAMED: suffix 없음
+ *
+ * @param changeDetail - 변경 상세 내용
+ * @param category - 변경 카테고리 (GROUP, POLICY, HR 등)
+ * @param changeType - 변경 유형 (CREATED, DELETED, RENAMED 등)
+ * @returns suffix가 추가된 변경 상세 내용
+ *
+ * @example
+ * ```typescript
+ * import { getChangeDetailWithSuffix } from "@/utils/organization";
+ *
+ * getChangeDetailWithSuffix("조직 생성됨", "GROUP", "CREATED");
+ * // Returns: "조직 생성됨 (자동)"
+ *
+ * getChangeDetailWithSuffix("유형 추가됨", "POLICY", "ADD");
+ * // Returns: "유형 추가됨 (수동)"
+ *
+ * getChangeDetailWithSuffix("명칭 변경됨", "GROUP", "RENAMED");
+ * // Returns: "명칭 변경됨"
+ * ```
+ */
+export const getChangeDetailWithSuffix = (
+  changeDetail: string | undefined,
+  category: string,
+  changeType: string,
+): string => {
+  const detail = changeDetail || "-";
+
+  // POLICY 카테고리는 수동
+  if (category === "POLICY") {
+    return `${detail} (수동)`;
+  }
+
+  // GROUP 카테고리
+  if (category === "GROUP") {
+    // CREATED, DELETED는 자동
+    if (changeType === "CREATED" || changeType === "DELETED") {
+      return `${detail} (자동)`;
+    }
+    // RENAMED는 suffix 없음
+    return detail;
+  }
+
+  return detail;
+};

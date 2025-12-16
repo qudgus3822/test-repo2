@@ -26,6 +26,7 @@ import {
   hasChangeInfo,
   formatChangeDate,
   getMemberEmail,
+  getChangeDetailWithSuffix,
 } from "@/utils/organization";
 import { METRIC_CODE_NAMES, getMetricOrder } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -202,27 +203,22 @@ const ScoreCell = ({
 
 // 단일 변경이력 툴팁 내용 생성 함수
 // 형식: 날짜 상세내용 (이동전/이동후는 detail 앞에 줄바꿈 추가)
-// GROUP: (자동), POLICY: (수동) 텍스트 추가
+// GROUP && (CREATED/DELETED): (자동), POLICY: (수동) 텍스트 추가
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
-  const { changeDate, changeEndDate, changeDetail, category } = change;
+  const { changeDate, changeEndDate, changeDetail, changeType, category } =
+    change;
 
   // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
   const formattedDate = changeEndDate
     ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
     : formatChangeDate(changeDate);
 
-  // 이동전/이동후는 detail 앞에 줄바꿈 추가
-  // const isTransfer =
-  //   changeType === "TRANSFERRED_IN" || changeType === "TRANSFERRED_OUT";
-  // const separator = isTransfer && changeDetail ? "\n" : " ";
   const separator = " ";
 
-  // category에 따라 suffix 결정
-  const suffix =
-    category === "GROUP" ? " (자동)" : category === "POLICY" ? " (수동)" : "";
-
-  // changeDetail에 suffix 추가
-  const detailWithSuffix = changeDetail ? `${changeDetail}${suffix}` : "";
+  // 공통 util 함수를 사용하여 suffix가 추가된 상세 내용 생성
+  const detailWithSuffix = changeDetail
+    ? getChangeDetailWithSuffix(changeDetail, category, changeType)
+    : "";
 
   return detailWithSuffix
     ? `${formattedDate}${separator}${detailWithSuffix}`

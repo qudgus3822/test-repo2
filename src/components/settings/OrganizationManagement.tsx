@@ -23,7 +23,10 @@ import {
   MemberPositionLabel,
 } from "@/types/organization.types";
 import { formatDisplayDateTime } from "@/utils/date";
-import { getMemberEmail } from "@/utils/organization";
+import {
+  getMemberEmail,
+  getChangeDetailWithSuffix,
+} from "@/utils/organization";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
 import { OrganizationHistoryModal } from "./OrganizationHistoryModal";
 import {
@@ -32,13 +35,6 @@ import {
 } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSettingsStore } from "@/store/useSettingsStore";
-
-// 신규 배지 컴포넌트
-const NewBadge = () => (
-  <span className="px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded ml-1">
-    신규
-  </span>
-);
 
 // 실장/팀장 찾기 헬퍼 함수
 const findLeader = (children?: OrganizationNode[]): string => {
@@ -54,6 +50,34 @@ const findLeader = (children?: OrganizationNode[]): string => {
     return `${leader.name} ${position}`;
   }
   return "";
+};
+
+// 변경 유형 배지 컴포넌트 (GROUP, POLICY 카테고리만 표시)
+const ChangesBadgeGroup = ({
+  changes,
+}: {
+  changes?: { changeType: string; category: string }[];
+}) => {
+  if (!changes || changes.length === 0) return null;
+
+  // GROUP, POLICY 카테고리만 필터링
+  const filteredChanges = changes.filter(
+    (c) => c.category === "GROUP" || c.category === "POLICY",
+  );
+
+  if (filteredChanges.length === 0) return null;
+
+  return (
+    <span className="flex items-center gap-1">
+      {filteredChanges.map((change, index) => (
+        <ChangeTypeBadge
+          key={`${change.category}-${change.changeType}-${index}`}
+          type={change.changeType}
+          fixedWidth
+        />
+      ))}
+    </span>
+  );
 };
 
 // 실 목록 컴포넌트
@@ -102,6 +126,7 @@ const DepartmentList = ({
                       <span className="font-medium text-gray-900 text-sm">
                         {dept.name}
                       </span>
+                      <ChangesBadgeGroup changes={dept.changes} />
                     </div>
                     <p className="text-xs text-gray-500">{leader}</p>
                   </div>
@@ -210,7 +235,6 @@ const MemberList = ({
         ) : (
           members.map((member) => {
             const roleLabel = MemberRoleLabel[member.title] || member.title;
-            const isNew = member.status === "JOINED";
 
             return (
               <div
@@ -229,7 +253,6 @@ const MemberList = ({
                         {member.name}
                       </span>
                       <span className="text-gray-500 text-sm">{roleLabel}</span>
-                      {isNew && <NewBadge />}
                     </div>
                     <p className="text-xs text-gray-500">
                       {member.email || getMemberEmail(member.employeeID)}
@@ -247,6 +270,7 @@ const MemberList = ({
 
 // 변경 이력 컴포넌트
 const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const { data, isLoading } = useOrgChangeHistory(yearMonth);
 
   // GROUP, POLICY 카테고리만 필터링
@@ -256,63 +280,89 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
       (item) => item.category === "GROUP" || item.category === "POLICY",
     );
   }, [data]);
+
   return (
     <Card padding="sm" className="mt-4">
-      <div className="flex items-center gap-2 mb-3">
-        <ChevronRight className="w-4 h-4 text-gray-500 rotate-90" />
+      <div
+        className="flex items-center gap-2 cursor-pointer select-none"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <ChevronRight
+          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
+            isExpanded ? "rotate-90" : ""
+          }`}
+        />
         <span className="font-medium text-gray-700 text-sm">
           실/팀 변경 이력
         </span>
       </div>
-      {isLoading ? (
-        <div className="flex items-center justify-center py-4">
-          <LoadingSpinner />
+      {isExpanded && (
+        <div className="mt-3">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <LoadingSpinner />
+            </div>
+          ) : filteredData.length === 0 ? (
+            <ul className="list-disc list-inside text-sm text-gray-500 pl-2">
+              <li>변경 이력이 없습니다.</li>
+            </ul>
+          ) : (
+            <ul className="space-y-1.5 pl-2 max-h-[139px] overflow-y-auto">
+              {filteredData.map((item, index) => (
+                <li
+                  key={`${item.changeDate}-${index}`}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <span className="w-[1%] text-gray-400">•</span>
+                  <span className="w-[11%] text-gray-600">
+                    {formatDisplayDateTime(item.changeDate)}
+                  </span>
+                  <span className="w-[1%] text-gray-400">|</span>
+                  <span
+                    className={`w-[11%] truncate ${
+                      item.processedBy && item.processedBy !== "자동(LDAP)"
+                        ? "text-blue-600 font-medium"
+                        : "text-gray-600"
+                    }`}
+                    title={item.processedBy}
+                  >
+                    {item.processedBy || "-"}
+                  </span>
+                  <span className="w-[6%]">
+                    <ChangeTypeBadge type={item.changeType} fixedWidth />
+                  </span>
+                  <span className="w-[6%]">
+                    <OrgTypeBadge
+                      isEvaluationTarget={item.isEvaluationTarget}
+                      fixedWidth
+                    />
+                  </span>
+                  <span
+                    className="w-[14%] text-gray-700 truncate"
+                    title={item.name || "-"}
+                  >
+                    {item.name || "-"}
+                  </span>
+                  <span
+                    className="w-[25%] text-gray-700 truncate"
+                    title={getChangeDetailWithSuffix(
+                      item.changeDetail,
+                      item.category,
+                      item.changeType,
+                    )}
+                  >
+                    {getChangeDetailWithSuffix(
+                      item.changeDetail,
+                      item.category,
+                      item.changeType,
+                    )}
+                  </span>
+                  <span className="w-[10%]"></span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
-      ) : filteredData.length === 0 ? (
-        <ul className="list-disc list-inside text-sm text-gray-500 pl-2">
-          <li>변경 이력이 없습니다.</li>
-        </ul>
-      ) : (
-        <ul className="space-y-1.5 pl-2">
-          {filteredData.map((item, index) => (
-            <li
-              key={`${item.changeDate}-${index}`}
-              className="flex items-center gap-2 text-sm"
-            >
-              <span className="w-[1%] text-gray-400">•</span>
-              <span className="w-[13%] text-gray-600">
-                {formatDisplayDateTime(item.changeDate)}
-              </span>
-              <span className="w-[1%] text-gray-400">|</span>
-              <span
-                className={`w-[14%] truncate ${
-                  item.processedBy && item.processedBy !== "자동(LDAP)"
-                    ? "text-blue-600 font-medium"
-                    : "text-gray-600"
-                }`}
-                title={item.processedBy}
-              >
-                {item.processedBy || "-"}
-              </span>
-              <span className="w-[8%]">
-                <ChangeTypeBadge type={item.changeType} fixedWidth />
-              </span>
-              <span className="w-[5%]">
-                <OrgTypeBadge
-                  isEvaluationTarget={item.isEvaluationTarget}
-                  fixedWidth
-                />
-              </span>
-              <span
-                className="w-[25%] text-gray-700 truncate"
-                title={item.changeDetail}
-              >
-                {item.changeDetail || "-"}
-              </span>
-              <span className="w-[35%]"></span>
-            </li>
-          ))}
-        </ul>
       )}
     </Card>
   );
@@ -472,8 +522,10 @@ export const OrganizationManagement = () => {
               {totalStats.totalMembers}명)
             </span>
             <div className="flex items-center gap-2 text-xs text-gray-500">
-              <span className="w-1 h-1 rounded-full bg-gray-400" />
-              <span className="text-sm">구분</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-gray-400" />
+                <span className="text-sm text-gray-600">구분</span>
+              </div>
               <div className="flex items-center gap-1">
                 <span className="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">
                   개발

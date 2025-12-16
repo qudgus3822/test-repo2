@@ -3,7 +3,6 @@ import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
-import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrgTypeSettings,
   useUpdateEvaluationTargetsBulk,
@@ -51,17 +50,11 @@ const ChangesCategoryBadge = ({
   return (
     <span className="flex items-center gap-1">
       {filteredChanges.map((change, index) => (
-        <Tooltip
+        <ChangeTypeBadge
           key={`${change.category}-${change.changeType}-${index}`}
-          content={change.changeDetail}
-          color="#6B7280"
-        >
-          <ChangeTypeBadge
-            type={change.changeType}
-            fixedWidth
-            className="cursor-default"
-          />
-        </Tooltip>
+          type={change.changeType}
+          fixedWidth
+        />
       ))}
     </span>
   );
@@ -74,12 +67,18 @@ const OrgItemRow = ({
   onToggle,
   onTypeChange,
   showCheckbox = false,
+  parentIsEvaluationTarget = true,
 }: {
   item: OrgItemState;
   depth?: number;
   onToggle?: (id: string) => void;
-  onTypeChange?: (id: string, isEvaluationTarget: boolean) => void;
+  onTypeChange?: (
+    id: string,
+    isEvaluationTarget: boolean,
+    level: number,
+  ) => void;
   showCheckbox?: boolean;
+  parentIsEvaluationTarget?: boolean;
 }) => {
   const hasChildren = item.children && item.children.length > 0;
   const paddingLeft = depth * 20 + 12;
@@ -88,6 +87,9 @@ const OrgItemRow = ({
   );
   const isDisabled = item.isBlacklisted || hasDeletedChange;
   const isDepartment: boolean = item.level === 2;
+  const isTeam: boolean = item.level === 3;
+  // 팀인 경우, 상위 실이 체크 해제 상태면 체크박스 비활성화
+  const isTeamDisabledByParent = isTeam && !parentIsEvaluationTarget;
 
   return (
     <>
@@ -132,7 +134,7 @@ const OrgItemRow = ({
         </div>
 
         {showCheckbox &&
-          (isDisabled ? (
+          (isDisabled || isTeamDisabledByParent ? (
             <div className="w-4.5 h-4.5 flex items-center justify-center border border-gray-300 rounded bg-gray-100">
               <X className="w-5 h-5 text-gray-300" />
             </div>
@@ -140,7 +142,9 @@ const OrgItemRow = ({
             <input
               type="checkbox"
               checked={item.isEvaluationTarget}
-              onChange={() => onTypeChange?.(item.id, !item.isEvaluationTarget)}
+              onChange={() =>
+                onTypeChange?.(item.id, !item.isEvaluationTarget, item.level)
+              }
               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
           ))}
@@ -156,6 +160,11 @@ const OrgItemRow = ({
               onToggle={onToggle}
               onTypeChange={onTypeChange}
               showCheckbox={showCheckbox}
+              parentIsEvaluationTarget={
+                isDepartment
+                  ? item.isEvaluationTarget
+                  : parentIsEvaluationTarget
+              }
             />
           ))}
         </>
@@ -308,10 +317,24 @@ export const OrganizationTypeSettingModal = ({
   };
 
   // 타입 변경 핸들러
-  const handleTypeChange = (id: string, isEvaluationTarget: boolean) => {
+  const handleTypeChange = (
+    id: string,
+    isEvaluationTarget: boolean,
+    level: number,
+  ) => {
     const updateType = (items: OrgItemState[]): OrgItemState[] => {
       return items.map((item) => {
         if (item.id === id) {
+          // 실(level 2)인 경우, 하위 팀(level 3)도 함께 변경
+          if (level === 2 && item.children) {
+            const updatedChildren = item.children.map((child) => {
+              if (child.level === 3 && !child.isBlacklisted) {
+                return { ...child, isEvaluationTarget };
+              }
+              return child;
+            });
+            return { ...item, isEvaluationTarget, children: updatedChildren };
+          }
           return { ...item, isEvaluationTarget };
         }
         if (item.children) {
@@ -402,7 +425,11 @@ export const OrganizationTypeSettingModal = ({
             </div>
             {/* 범례 */}
             <div className="flex items-center justify-end gap-4 mt-3">
-              <span className="text-sm text-gray-600">구분</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1 h-1 rounded-full bg-gray-400" />
+                <span className="text-sm text-gray-600">구분</span>
+              </div>
+
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <input
