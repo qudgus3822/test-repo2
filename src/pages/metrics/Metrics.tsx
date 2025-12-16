@@ -34,7 +34,6 @@ const MetricsPage = () => {
     isMetricRateSettingModalOpen,
     setIsMetricRateSettingModalOpen,
     activeTab,
-    isSettingsChanged,
     isSettingsChangeConfirmModalOpen,
     setIsSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
@@ -102,11 +101,6 @@ const MetricsPage = () => {
     isSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
   ]);
-
-  // 변경사항 반영 버튼 클릭
-  const handleSaveChanges = () => {
-    setIsSettingsChangeConfirmModalOpen(true);
-  };
 
   // 변경사항 확정
   const handleConfirmChanges = () => {
