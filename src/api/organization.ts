@@ -4,7 +4,17 @@ import type {
   OrgTypeSettingsResponse,
   TabType,
 } from "@/types/organization.types";
-import { apiGet } from "@/libs/fetch";
+import { apiGet, apiPut } from "@/libs/fetch";
+
+// 개발조직 일괄 변경 요청 타입
+export interface EvaluationTargetChange {
+  code: string;
+  isEvaluationTarget: boolean;
+}
+
+export interface BulkEvaluationTargetRequest {
+  changes: EvaluationTargetChange[];
+}
 
 /**
  * 탭 타입별 API 엔드포인트 매핑
@@ -62,4 +72,15 @@ export const fetchOrgTypeSettings = async (
   yearMonth: string,
 ): Promise<OrgTypeSettingsResponse> => {
   return apiGet<OrgTypeSettingsResponse>(`/departments/org-type-settings?yearMonth=${yearMonth}`);
+};
+
+/**
+ * 개발조직 포함/제외 일괄 변경 API
+ * @param request - 변경할 조직 목록
+ * @returns 성공 여부
+ */
+export const updateEvaluationTargetsBulk = async (
+  request: BulkEvaluationTargetRequest,
+): Promise<void> => {
+  return apiPut<void>(`/departments/evaluation-targets/bulk`, request);
 };

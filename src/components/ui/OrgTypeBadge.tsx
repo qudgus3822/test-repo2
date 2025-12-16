@@ -10,7 +10,7 @@ export const OrgTypeBadge = ({
   return (
     <span
       className={`${
-        fixedWidth ? "w-[46px] text-center" : "px-2"
+        fixedWidth ? "inline-block w-[46px] text-center" : "px-2"
       } py-0.5 text-xs rounded ${
         isEvaluationTarget
           ? "bg-blue-100 text-blue-700"

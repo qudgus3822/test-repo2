@@ -3,7 +3,15 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
-import { ChevronRight, Users, Clock, History, Settings } from "lucide-react";
+import {
+  ChevronRight,
+  Users,
+  Clock,
+  History,
+  Settings,
+  User,
+  Building2,
+} from "lucide-react";
 import type {
   OrganizationDepartment,
   OrganizationMember,
@@ -14,7 +22,8 @@ import {
   MemberRoleLabel,
   MemberPositionLabel,
 } from "@/types/organization.types";
-import { getAvatarColor } from "@/styles/colors";
+import { formatDisplayDateTime } from "@/utils/date";
+import { getMemberEmail } from "@/utils/organization";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
 import { OrganizationHistoryModal } from "./OrganizationHistoryModal";
 import {
@@ -28,13 +37,6 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 const NewBadge = () => (
   <span className="px-1.5 py-0.5 text-[10px] bg-blue-500 text-white rounded ml-1">
     신규
-  </span>
-);
-
-// 비개발 배지 컴포넌트
-const NonDevBadge = () => (
-  <span className="px-1.5 py-0.5 text-[10px] bg-purple-100 text-purple-700 rounded ml-1">
-    비개발
   </span>
 );
 
@@ -68,7 +70,7 @@ const DepartmentList = ({
     <Card padding="none" className="h-full">
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-gray-500" />
+          <Building2 className="w-5 h-5 text-gray-500" />
           <span className="font-medium text-gray-900">실 목록</span>
         </div>
       </div>
@@ -95,6 +97,7 @@ const DepartmentList = ({
                     <div className="flex items-center gap-2 mb-1">
                       <OrgTypeBadge
                         isEvaluationTarget={dept.isEvaluationTarget}
+                        fixedWidth
                       />
                       <span className="font-medium text-gray-900 text-sm">
                         {dept.name}
@@ -123,10 +126,12 @@ const TeamList = ({
   teams,
   selectedCode,
   onSelect,
+  isDepartmentSelected,
 }: {
   teams: OrganizationDepartment[];
   selectedCode: string | null;
   onSelect: (code: string) => void;
+  isDepartmentSelected: boolean;
 }) => {
   return (
     <Card padding="none" className="h-full">
@@ -139,7 +144,9 @@ const TeamList = ({
       <div className="overflow-y-auto max-h-[400px]">
         {teams.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
-            실을 선택해주세요
+            {isDepartmentSelected
+              ? "해당 실에 팀 정보가 없습니다."
+              : "실을 선택하면 팀 목록이 표시됩니다."}
           </div>
         ) : (
           teams.map((team) => (
@@ -154,7 +161,10 @@ const TeamList = ({
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <OrgTypeBadge isEvaluationTarget={team.isEvaluationTarget} />
+                  <OrgTypeBadge
+                    isEvaluationTarget={team.isEvaluationTarget}
+                    fixedWidth
+                  />
                   <span className="font-medium text-gray-900 text-sm">
                     {team.name}
                   </span>
@@ -177,31 +187,30 @@ const TeamList = ({
 // 멤버 목록 컴포넌트
 const MemberList = ({
   members,
-  teamName,
+  isTeamSelected,
 }: {
   members: OrganizationMember[];
-  teamName: string;
+  isTeamSelected: boolean;
 }) => {
   return (
     <Card padding="none" className="h-full">
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-gray-500" />
-          <span className="font-medium text-gray-900">
-            {teamName ? `${teamName} - 개인 목록` : "개인 목록"}
-          </span>
+          <span className="font-medium text-gray-900">개인 목록</span>
         </div>
       </div>
       <div className="overflow-y-auto max-h-[400px]">
         {members.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
-            팀을 선택해주세요
+            {isTeamSelected
+              ? "해당 팀 내 개인 정보가 없습니다."
+              : "팀을 선택하면 개인 목록이 표시됩니다."}
           </div>
         ) : (
           members.map((member) => {
             const roleLabel = MemberRoleLabel[member.title] || member.title;
             const isNew = member.status === "JOINED";
-            const isNonDev = !member.isEvaluationTarget;
 
             return (
               <div
@@ -210,11 +219,8 @@ const MemberList = ({
               >
                 <div className="flex items-center gap-3">
                   {/* 프로필 아바타 */}
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm"
-                    style={{ backgroundColor: getAvatarColor(member.name) }}
-                  >
-                    {member.name.charAt(0)}
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200">
+                    <User className="w-5 h-5 text-gray-500" />
                   </div>
                   {/* 멤버 정보 */}
                   <div className="flex-1">
@@ -224,10 +230,9 @@ const MemberList = ({
                       </span>
                       <span className="text-gray-500 text-sm">{roleLabel}</span>
                       {isNew && <NewBadge />}
-                      {isNonDev && <NonDevBadge />}
                     </div>
                     <p className="text-xs text-gray-500">
-                      {member.email || member.employeeID}
+                      {member.email || getMemberEmail(member.employeeID)}
                     </p>
                   </div>
                 </div>
@@ -237,31 +242,6 @@ const MemberList = ({
         )}
       </div>
     </Card>
-  );
-};
-
-// 날짜 포맷 함수 (YYYY-MM-DD HH:mm)
-const formatChangeDateTime = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
-};
-
-// 카테고리 배지 컴포넌트
-const CategoryBadge = ({ category }: { category: string }) => {
-  const isGroup = category === "GROUP";
-  return (
-    <span
-      className={`px-1.5 py-0.5 text-[11px] rounded ${
-        isGroup ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
-      }`}
-    >
-      {isGroup ? "개발" : "정책"}
-    </span>
   );
 };
 
@@ -276,7 +256,6 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
       (item) => item.category === "GROUP" || item.category === "POLICY",
     );
   }, [data]);
-  console.log(filteredData);
   return (
     <Card padding="sm" className="mt-4">
       <div className="flex items-center gap-2 mb-3">
@@ -302,11 +281,11 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
             >
               <span className="w-[1%] text-gray-400">•</span>
               <span className="w-[13%] text-gray-600">
-                {formatChangeDateTime(item.changeDate)}
+                {formatDisplayDateTime(item.changeDate)}
               </span>
               <span className="w-[1%] text-gray-400">|</span>
               <span
-                className={`w-[16%] truncate ${
+                className={`w-[14%] truncate ${
                   item.processedBy && item.processedBy !== "자동(LDAP)"
                     ? "text-blue-600 font-medium"
                     : "text-gray-600"
@@ -318,8 +297,11 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
               <span className="w-[8%]">
                 <ChangeTypeBadge type={item.changeType} fixedWidth />
               </span>
-              <span className="w-[6%]">
-                <CategoryBadge category={item.category} />
+              <span className="w-[5%]">
+                <OrgTypeBadge
+                  isEvaluationTarget={item.isEvaluationTarget}
+                  fixedWidth
+                />
               </span>
               <span
                 className="w-[25%] text-gray-700 truncate"
@@ -327,7 +309,7 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
               >
                 {item.changeDetail || "-"}
               </span>
-              <span className="w-[31%]"></span>
+              <span className="w-[35%]"></span>
             </li>
           ))}
         </ul>
@@ -473,35 +455,45 @@ export const OrganizationManagement = () => {
     );
   }
 
-  // 마지막 동기화 일자 (현재 월 기준으로 표시)
-  const lastSyncDate = `${organizationData.period.year}.${String(
-    organizationData.period.month,
-  ).padStart(2, "0")}.01`;
-  const syncSource = "LDAP AD기준";
+  // 최종변경일자 및 마지막 동기화 일자
+  const lastChangeDate = formatDisplayDateTime(organizationData.lastChangeAt);
+  const lastSyncDate = formatDisplayDateTime(organizationData.lastLdapSyncAt);
 
   return (
     <div className="space-y-4">
       {/* 헤더 영역 */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold text-gray-900">조직도 관리</h2>
-          <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-            <span className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
+          <div className="flex items-center gap-7">
+            <span className="text-sm text-gray-500 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4" />
               전체 (총 {totalStats.totalDepartments}개 실 /{" "}
               {totalStats.totalMembers}명)
             </span>
-            <span className="text-gray-300">•</span>
-            <span>개발실</span>
-            <span className="text-gray-300">•</span>
-            <span>비개발실</span>
-          </p>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="w-1 h-1 rounded-full bg-gray-400" />
+              <span className="text-sm">구분</span>
+              <div className="flex items-center gap-1">
+                <span className="px-2 py-0.5 text-xs rounded bg-blue-100 text-blue-700">
+                  개발
+                </span>
+                <span>개발조직</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="px-2 py-0.5 text-xs rounded bg-gray-100">
+                  비개발
+                </span>
+                <span>비개발조직</span>
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Clock className="w-4 h-4" />
             <span>최종변경일자</span>
-            <span className="text-gray-700">{lastSyncDate}</span>
+            <span>{lastChangeDate}</span>
           </div>
           <Button variant="normal" size="sm" onClick={openOrgHistoryModal}>
             <History className="w-4 h-4 mr-1" />
@@ -532,17 +524,23 @@ export const OrganizationManagement = () => {
           teams={teams}
           selectedCode={selectedTeamCode}
           onSelect={handleTeamSelect}
+          isDepartmentSelected={selectedDepartmentCode !== null}
         />
 
         {/* 개인 목록 */}
-        <MemberList members={members} teamName={selectedTeam?.name || ""} />
+        <MemberList
+          members={members}
+          isTeamSelected={selectedTeamCode !== null}
+        />
       </div>
 
       {/* 하단 영역 */}
       <div className="flex items-center justify-end gap-4">
-        <span className="text-sm text-gray-500">
-          마지막 동기화: {lastSyncDate} ({syncSource})
-        </span>
+        <p className="text-sm text-gray-500 mt-1 gap-1 flex items-center">
+          <span>마지막 동기화</span>
+          <span>{lastSyncDate}</span>
+          <span>(LDAP AD기준)</span>
+        </p>
         <div className="flex items-center gap-2">
           <span
             className={`w-2 h-2 rounded-full ${

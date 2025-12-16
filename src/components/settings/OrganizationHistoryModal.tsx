@@ -11,6 +11,7 @@ import type {
   OrgHistoryFilterType,
 } from "@/types/organization.types";
 import { ChangeCategoryLabel } from "@/types/organization.types";
+import { formatDisplayDateTime } from "@/utils/date";
 
 // 현재 월 가져오기 (YYYY-MM 형식)
 const getCurrentYearMonth = (): string => {
@@ -18,17 +19,6 @@ const getCurrentYearMonth = (): string => {
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
-};
-
-// ISO 날짜를 표시 형식으로 변환 (2025.12.15 17:25)
-const formatDateTime = (isoDate: string): string => {
-  const date = new Date(isoDate);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}.${month}.${day} ${hours}:${minutes}`;
 };
 
 export const OrganizationHistoryModal = () => {
@@ -106,7 +96,7 @@ export const OrganizationHistoryModal = () => {
 
       {/* 슬라이드 패널 */}
       <div
-        className={`fixed top-0 right-0 h-screen w-[800px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-screen w-[900px] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${
           isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -142,12 +132,12 @@ export const OrganizationHistoryModal = () => {
             <div className="[scrollbar-gutter:stable] pr-[15px]">
               <table className="w-full table-fixed">
                 <colgroup>
-                  <col className="w-[18%]" />
-                  <col className="w-[9%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[12%]" />
-                  <col className="w-[29%]" />
-                  <col className="w-[20%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[11%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[30%]" />
+                  <col className="w-[19%]" />
                 </colgroup>
                 <thead>
                   <tr className="border-b border-gray-200 text-sm text-gray-600">
@@ -177,12 +167,12 @@ export const OrganizationHistoryModal = () => {
               ) : (
                 <table className="w-full table-fixed">
                   <colgroup>
-                    <col className="w-[18%]" />
-                    <col className="w-[9%]" />
-                    <col className="w-[12%]" />
-                    <col className="w-[12%]" />
-                    <col className="w-[29%]" />
-                    <col className="w-[20%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[8%]" />
+                    <col className="w-[11%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[30%]" />
+                    <col className="w-[19%]" />
                   </colgroup>
                   <tbody>
                     {paginatedData.length === 0 ? (
@@ -202,7 +192,7 @@ export const OrganizationHistoryModal = () => {
                             className="border-b border-gray-100 hover:bg-gray-50"
                           >
                             <td className="px-3 py-2.5 text-sm text-gray-900">
-                              {formatDateTime(item.changeDate)}
+                              {formatDisplayDateTime(item.changeDate)}
                             </td>
                             <td className="px-3 py-2.5 text-center text-sm">
                               {ChangeCategoryLabel[item.category] ||

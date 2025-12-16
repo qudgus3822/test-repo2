@@ -1,10 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchOrganizationByTab,
   fetchOrganizationTree,
   fetchOrgChangeHistory,
   fetchOrgTypeSettings,
+  updateEvaluationTargetsBulk,
 } from "@/api/organization";
+import type { BulkEvaluationTargetRequest } from "@/api/organization";
 import type {
   OrganizationCompareResponse,
   OrgHistoryResponse,
@@ -106,5 +108,21 @@ export const useOrgTypeSettings = (
     },
     enabled: enabled && !!yearMonth,
     staleTime: 2 * 60 * 1000, // 2분
+  });
+};
+
+/**
+ * 개발조직 포함/제외 일괄 변경 Mutation Hook
+ * @returns React Query Mutation 결과 객체
+ */
+export const useUpdateEvaluationTargetsBulk = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, BulkEvaluationTargetRequest>({
+    mutationFn: updateEvaluationTargetsBulk,
+    onSuccess: () => {
+      // 조직 관련 쿼리 무효화하여 최신 데이터 다시 조회
+      queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
+    },
   });
 };

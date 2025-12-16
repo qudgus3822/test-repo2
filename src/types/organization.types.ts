@@ -238,6 +238,8 @@ export interface OrganizationCompareRequest {
 // 조직 비교 API 응답 타입
 export interface OrganizationCompareResponse {
   period: Period;
+  lastLdapSyncAt?: string; // 마지막 LDAP 동기화 시간 (ISO 8601)
+  lastChangeAt?: string; // 마지막 변경 이력 시간 (ISO 8601)
   tree: OrganizationDepartment[];
 }
 
@@ -303,6 +305,7 @@ export interface OrgHistoryItem {
   name: string; // 대상 이름
   changeDetail: string; // 변경내역
   processedBy: string; // 처리자
+  isEvaluationTarget: boolean; // 개발조직 여부
 }
 
 // 조직도 변경 히스토리 필터 타입
@@ -329,6 +332,9 @@ export type OrgTypeSettingsChangeType = OrgHistoryChangeType | PolicyStatus;
 export interface OrgTypeSettingsChange {
   changeType: OrgTypeSettingsChangeType;
   category: ChangeCategory;
+  changeDate: string; // 변경일 (YYYY-MM-DD)
+  changeDetail: string; // 변경 상세 내용
+  processedBy: string; // 처리자 (자동/수동)
 }
 
 // 조직 유형 설정 트리 노드
@@ -336,6 +342,7 @@ export interface OrgTypeSettingsNode {
   code: string;
   name: string;
   level: number;
+  sortOrder: number;
   isEvaluationTarget: boolean;
   isBlacklisted: boolean;
   children: OrgTypeSettingsNode[];

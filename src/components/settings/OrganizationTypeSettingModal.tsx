@@ -3,8 +3,14 @@ import { X, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
-import { useOrgTypeSettings } from "@/api/hooks/useOrganizationTree";
+import { Tooltip } from "@/components/ui/Tooltip";
+import {
+  useOrgTypeSettings,
+  useUpdateEvaluationTargetsBulk,
+} from "@/api/hooks/useOrganizationTree";
+import type { EvaluationTargetChange } from "@/api/organization";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { formatDisplayDateTime } from "@/utils/date";
 import type {
   OrgTypeSettingsNode,
   OrgTypeSettingsChange,
@@ -16,16 +22,13 @@ interface OrganizationTypeSettingModalProps {
   onSave: () => void;
 }
 
-type ChangeType = "신설" | "삭제" | null;
-
 interface OrgItemState {
   id: string;
   name: string;
   isEvaluationTarget: boolean;
   isBlacklisted: boolean;
-  changeType: ChangeType;
-  changeDate?: string;
   isExpanded?: boolean;
+  level: number;
   children?: OrgItemState[];
   changes?: OrgTypeSettingsChange[];
 }
@@ -40,7 +43,7 @@ const ChangesCategoryBadge = ({
 
   // GROUP, POLICY 카테고리만 필터링
   const filteredChanges = changes.filter(
-    (c) => c.category === "GROUP" || c.category === "POLICY"
+    (c) => c.category === "GROUP" || c.category === "POLICY",
   );
 
   if (filteredChanges.length === 0) return null;
@@ -48,37 +51,18 @@ const ChangesCategoryBadge = ({
   return (
     <span className="flex items-center gap-1">
       {filteredChanges.map((change, index) => (
-        <ChangeTypeBadge
+        <Tooltip
           key={`${change.category}-${change.changeType}-${index}`}
-          type={change.changeType}
-          fixedWidth
-        />
+          content={change.changeDetail}
+          color="#6B7280"
+        >
+          <ChangeTypeBadge
+            type={change.changeType}
+            fixedWidth
+            className="cursor-default"
+          />
+        </Tooltip>
       ))}
-    </span>
-  );
-};
-
-// 변경 유형 배지 컴포넌트 (신설/삭제)
-const ChangeBadge = ({
-  changeType,
-  date,
-}: {
-  changeType: ChangeType;
-  date?: string;
-}) => {
-  if (!changeType) return null;
-
-  const isNew = changeType === "신설";
-  return (
-    <span className="flex items-center gap-1 text-xs">
-      <span
-        className={`px-1.5 py-0.5 rounded ${
-          isNew ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-        }`}
-      >
-        {changeType}
-      </span>
-      {date && <span className="text-gray-500">{date}</span>}
     </span>
   );
 };
@@ -99,8 +83,11 @@ const OrgItemRow = ({
 }) => {
   const hasChildren = item.children && item.children.length > 0;
   const paddingLeft = depth * 20 + 12;
-  const hasDeletedChange = item.changes?.some((c) => c.changeType === "DELETED");
+  const hasDeletedChange = item.changes?.some(
+    (c) => c.changeType === "DELETED",
+  );
   const isDisabled = item.isBlacklisted || hasDeletedChange;
+  const isDepartment: boolean = item.level === 2;
 
   return (
     <>
@@ -141,11 +128,6 @@ const OrgItemRow = ({
             {item.name}
           </span>
 
-          {item.changeType === "신설" && (
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-          )}
-
-          <ChangeBadge changeType={item.changeType} date={item.changeDate} />
           <ChangesCategoryBadge changes={item.changes} />
         </div>
 
@@ -202,8 +184,6 @@ const getYearMonths = (): { currentMonth: string; prevMonth: string } => {
 const convertApiToOrgItemState = (
   tree: OrgTypeSettingsNode[],
 ): OrgItemState[] => {
-  let nodeIndex = 0;
-
   const convertNode = (
     node: OrgTypeSettingsNode,
     isFirstLevel = false,
@@ -211,50 +191,45 @@ const convertApiToOrgItemState = (
     // children 변환
     const childNodes = (node.children || []).map((child) => convertNode(child));
 
-    // TODO: 임시 테스트 데이터 - API 연동 후 삭제 필요
-    const testChanges: OrgTypeSettingsChange[] | undefined = (() => {
-      nodeIndex++;
-      // 3번째 노드: 정보변경 (outline)
-      if (nodeIndex === 3) {
-        return [
-          { changeType: "RENAMED" as const, category: "GROUP" as const },
-        ];
-      }
-      // 5번째 노드: 조직생성 (outline)
-      if (nodeIndex === 5) {
-        return [
-          { changeType: "CREATED" as const, category: "GROUP" as const },
-        ];
-      }
-      // 7번째 노드: 조직삭제 (outline)
-      if (nodeIndex === 7) {
-        return [{ changeType: "DELETED" as const, category: "GROUP" as const }];
-      }
-      // 9번째 노드: 유형추가 (outline)
-      if (nodeIndex === 9) {
-        return [{ changeType: "ADD" as const, category: "POLICY" as const }];
-      }
-      // 11번째 노드: 유형제외 (outline)
-      if (nodeIndex === 11) {
-        return [{ changeType: "EXCLUDE" as const, category: "POLICY" as const }];
-      }
-      return node.changes;
-    })();
-
     return {
       id: node.code,
       name: node.name,
+      level: node.level,
       isEvaluationTarget: node.isEvaluationTarget,
       isBlacklisted: node.isBlacklisted ?? false,
-      changeType: null,
       isExpanded: isFirstLevel || node.level === 1,
       children: childNodes,
-      changes: testChanges,
+      changes: node.changes,
     };
   };
 
   // Level 1 (부문)부터 시작
   return tree.map((root) => convertNode(root, true));
+};
+
+// 트리에서 모든 조직의 isEvaluationTarget 값을 추출하는 함수
+const extractAllEvaluationTargets = (
+  items: OrgItemState[],
+): EvaluationTargetChange[] => {
+  const result: EvaluationTargetChange[] = [];
+
+  const traverse = (nodes: OrgItemState[]) => {
+    for (const node of nodes) {
+      // blacklisted가 아닌 항목만 포함
+      if (!node.isBlacklisted) {
+        result.push({
+          code: node.id,
+          isEvaluationTarget: node.isEvaluationTarget,
+        });
+      }
+      if (node.children) {
+        traverse(node.children);
+      }
+    }
+  };
+
+  traverse(items);
+  return result;
 };
 
 export const OrganizationTypeSettingModal = ({
@@ -269,6 +244,10 @@ export const OrganizationTypeSettingModal = ({
 
   // 전월/당월 계산
   const { currentMonth, prevMonth } = useMemo(() => getYearMonths(), []);
+
+  // 개발조직 일괄 변경 mutation
+  const { mutate: updateEvaluationTargets, isPending: isSaving } =
+    useUpdateEvaluationTargetsBulk();
 
   // API에서 전월/당월 조직 데이터 조회
   const { data: currentMonthApiData, isLoading: isCurrentLoading } =
@@ -345,8 +324,20 @@ export const OrganizationTypeSettingModal = ({
   };
 
   const handleSave = () => {
-    onSave();
-    onClose();
+    const changes = extractAllEvaluationTargets(currentMonthData);
+    updateEvaluationTargets(
+      { changes },
+      {
+        onSuccess: () => {
+          onSave();
+          onClose();
+        },
+        onError: (error) => {
+          console.error("조직 유형 변경 실패:", error);
+          alert("조직 유형 변경에 실패했습니다.");
+        },
+      },
+    );
   };
 
   const handleCancel = () => {
@@ -364,17 +355,10 @@ export const OrganizationTypeSettingModal = ({
   const currentMonthLabel = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
 
   // 마지막 동기화 일자
-  const lastSyncDate = currentMonthApiData?.timestamp
-    ? (() => {
-        const date = new Date(currentMonthApiData.timestamp);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0");
-        const day = String(date.getDate()).padStart(2, "0");
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
-        return `${year}.${month}.${day} ${hours}:${minutes}`;
-      })()
-    : "";
+  const lastSyncDate = formatDisplayDateTime(
+    currentMonthApiData?.timestamp,
+    "",
+  );
 
   return (
     <>
@@ -403,8 +387,10 @@ export const OrganizationTypeSettingModal = ({
                 <h2 className="text-lg font-semibold text-gray-900">
                   조직 유형 수정
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
-                  LDAP 자동 동기화 {lastSyncDate}
+                <p className="text-sm text-gray-500 mt-1 gap-1 flex items-center">
+                  <span>마지막 동기화</span>
+                  <span>{lastSyncDate}</span>
+                  <span>(LDAP AD기준)</span>
                 </p>
               </div>
               <button
@@ -464,7 +450,7 @@ export const OrganizationTypeSettingModal = ({
                 ) : prevMonthData.length === 0 ? (
                   <div className="flex items-center justify-center h-full py-8">
                     <p className="text-gray-500 text-sm">
-                      조직 데이터가 없습니다.
+                      해당 기간에는 수집된 데이터가 없습니다.
                     </p>
                   </div>
                 ) : (
@@ -500,7 +486,7 @@ export const OrganizationTypeSettingModal = ({
                 ) : currentMonthData.length === 0 ? (
                   <div className="flex items-center justify-center h-full py-8">
                     <p className="text-gray-500 text-">
-                      조직 데이터가 없습니다.
+                      해당 기간에는 수집된 데이터가 없습니다.
                     </p>
                   </div>
                 ) : (
@@ -522,11 +508,21 @@ export const OrganizationTypeSettingModal = ({
 
           {/* 푸터 */}
           <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-200">
-            <Button variant="cancel" size="sm" onClick={handleCancel}>
+            <Button
+              variant="cancel"
+              size="sm"
+              onClick={handleCancel}
+              disabled={isSaving}
+            >
               취소
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSave}>
-              수정 완료
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving}
+            >
+              {isSaving ? "저장 중..." : "수정 완료"}
             </Button>
           </div>
         </div>

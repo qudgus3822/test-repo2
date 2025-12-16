@@ -43,3 +43,33 @@ export const formatDateString = (
   const [year, month, day] = dateString.split("-");
   return `${year}${separator}${month}${separator}${day}`;
 };
+
+/**
+ * ISO 날짜 문자열을 YYYY.MM.DD HH:mm 형식으로 변환합니다.
+ *
+ * @param isoDate - ISO 8601 형식의 날짜 문자열 (예: "2025-12-15T09:25:00.005Z")
+ * @param fallback - 날짜가 없을 때 반환할 기본값 (기본값: "-")
+ * @returns YYYY.MM.DD HH:mm 형식의 문자열 (예: "2025.12.15 09:25")
+ *
+ * @example
+ * ```typescript
+ * import { formatDisplayDateTime } from "@/utils/date";
+ *
+ * formatDisplayDateTime("2025-12-15T09:25:00.005Z");  // Returns: "2025.12.15 18:25" (로컬 시간)
+ * formatDisplayDateTime(undefined);                    // Returns: "-"
+ * formatDisplayDateTime(null, "N/A");                 // Returns: "N/A"
+ * ```
+ */
+export const formatDisplayDateTime = (
+  isoDate?: string | null,
+  fallback: string = "-"
+): string => {
+  if (!isoDate) return fallback;
+  const date = new Date(isoDate);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}.${month}.${day} ${hours}:${minutes}`;
+};
