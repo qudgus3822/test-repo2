@@ -9,7 +9,6 @@ interface TooltipProps {
   content: string;
   color?: string;
   maxWidth?: number; // 툴팁 최대 너비 (기본값: 175px)
-  arrowPosition?: string; // 화살표 위치 클래스 (기본값: "top-1/2")
   direction?: TooltipDirection; // 툴팁 방향 (기본값: "right")
 }
 
@@ -32,11 +31,6 @@ interface TooltipProps {
  * </Tooltip>
  *
  * @example
- * <Tooltip content="설명 텍스트" arrowPosition="top-[10px]">
- *   <Info className="w-4 h-4" />
- * </Tooltip>
- *
- * @example
  * <Tooltip content="아래 방향 툴팁" direction="bottom">
  *   <Info className="w-4 h-4" />
  * </Tooltip>
@@ -46,12 +40,13 @@ export const Tooltip = ({
   content,
   color = "#374151",
   maxWidth,
-  arrowPosition = "top-1/2",
   direction = "right",
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [arrowTop, setArrowTop] = useState<number | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isVisible && triggerRef.current) {
@@ -61,10 +56,22 @@ export const Tooltip = ({
           top: rect.bottom + 8,
           left: rect.left + rect.width / 2,
         });
+        setArrowTop(null);
       } else {
+        // 트리거 요소의 세로 중앙 위치
+        const triggerCenterY = rect.top + rect.height / 2;
         setPosition({
           top: rect.top,
           left: rect.right + 8,
+        });
+        // 툴팁 렌더링 후 화살표 위치 계산
+        requestAnimationFrame(() => {
+          if (tooltipRef.current) {
+            const tooltipRect = tooltipRef.current.getBoundingClientRect();
+            // 트리거 중앙에서 툴팁 상단까지의 거리 계산
+            const arrowOffset = triggerCenterY - tooltipRect.top;
+            setArrowTop(arrowOffset);
+          }
         });
       }
     }
@@ -87,7 +94,8 @@ export const Tooltip = ({
       {isVisible &&
         createPortal(
           <div
-            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg break-words pointer-events-none whitespace-pre-line"
+            ref={tooltipRef}
+            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg pointer-events-none whitespace-pre-line break-keep"
             style={{
               backgroundColor: color,
               ...(direction === "bottom"
@@ -112,8 +120,11 @@ export const Tooltip = ({
               />
             ) : (
               <div
-                className={`absolute w-2 h-2 transform rotate-45 -left-1 -translate-y-1/2 ${arrowPosition}`}
-                style={{ backgroundColor: color }}
+                className="absolute w-2 h-2 transform rotate-45 -left-1 -translate-y-1/2"
+                style={{
+                  backgroundColor: color,
+                  top: arrowTop !== null ? `${arrowTop}px` : "50%",
+                }}
               />
             )}
           </div>,

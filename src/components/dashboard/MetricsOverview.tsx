@@ -132,7 +132,6 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                   }
                   color="#6B7280"
                   maxWidth={250}
-                  arrowPosition="top-[15px]"
                 >
                   <Info
                     className="w-4 h-4 cursor-pointer"

@@ -3,7 +3,11 @@ import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getCategoryLabel, getMetricUnit, getMetricName } from "@/utils/metrics";
+import {
+  getCategoryLabel,
+  getMetricUnit,
+  getMetricName,
+} from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { useTargetValues } from "@/api/hooks/useTargetValues";
 import { updateTargetValues } from "@/api/metrics";
@@ -115,11 +119,8 @@ export const TargetValueSettingModal = ({
     month,
     isOpen,
   );
-  const { data: efficiencyData, isLoading: isLoadingEfficiency } = useTargetValues(
-    "efficiency",
-    month,
-    isOpen,
-  );
+  const { data: efficiencyData, isLoading: isLoadingEfficiency } =
+    useTargetValues("efficiency", month, isOpen);
 
   const isLoading = isLoadingQuality || isLoadingReview || isLoadingEfficiency;
 
@@ -156,7 +157,8 @@ export const TargetValueSettingModal = ({
 
   // 저장 버튼 비활성화 여부 확인
   const hasErrors = editedMetrics.some((metric, index) => {
-    const error = errors[index] ?? validateTargetValue(String(metric.targetValue));
+    const error =
+      errors[index] ?? validateTargetValue(String(metric.targetValue));
     return error !== null;
   });
 
@@ -181,9 +183,15 @@ export const TargetValueSettingModal = ({
     setIsSaving(true);
     try {
       // 범주별로 그룹핑하여 API 호출
-      const qualityMetrics = editedMetrics.filter((m) => m.category === "quality");
-      const reviewMetrics = editedMetrics.filter((m) => m.category === "review");
-      const efficiencyMetrics = editedMetrics.filter((m) => m.category === "efficiency");
+      const qualityMetrics = editedMetrics.filter(
+        (m) => m.category === "quality",
+      );
+      const reviewMetrics = editedMetrics.filter(
+        (m) => m.category === "review",
+      );
+      const efficiencyMetrics = editedMetrics.filter(
+        (m) => m.category === "efficiency",
+      );
 
       const updatePromises = [];
 
@@ -195,7 +203,7 @@ export const TargetValueSettingModal = ({
               metricCode: m.metricCode,
               targetValue: m.targetValue,
             })),
-          })
+          }),
         );
       }
 
@@ -207,7 +215,7 @@ export const TargetValueSettingModal = ({
               metricCode: m.metricCode,
               targetValue: m.targetValue,
             })),
-          })
+          }),
         );
       }
 
@@ -219,7 +227,7 @@ export const TargetValueSettingModal = ({
               metricCode: m.metricCode,
               targetValue: m.targetValue,
             })),
-          })
+          }),
         );
       }
 
@@ -269,6 +277,7 @@ export const TargetValueSettingModal = ({
           isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* 본문 */}
         <div className="flex flex-col h-full">
           {/* 헤더 */}
           <div className="flex items-start justify-between p-6 border-b border-gray-200 gap-4">
@@ -328,16 +337,23 @@ export const TargetValueSettingModal = ({
                       {editedMetrics.map((metric, index) => {
                         const error = errors[index];
                         const hasError = error !== null && error !== undefined;
-                        const metricCategory = categoryToMetricCategory(metric.category);
+                        const metricCategory = categoryToMetricCategory(
+                          metric.category,
+                        );
                         return (
                           <React.Fragment key={metric.metricCode || index}>
-                            <tr className={hasError ? "" : "border-b border-gray-100"}>
+                            <tr
+                              className={
+                                hasError ? "" : "border-b border-gray-100"
+                              }
+                            >
                               <td className="px-4 py-3 text-sm text-gray-900">
                                 {getMetricName(metric.metricCode)}
                               </td>
                               <td className="px-4 py-3 text-sm text-center">
                                 {(() => {
-                                  const style = getCategoryStyle(metricCategory);
+                                  const style =
+                                    getCategoryStyle(metricCategory);
                                   return (
                                     <span
                                       className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
@@ -361,7 +377,10 @@ export const TargetValueSettingModal = ({
                                     type="text"
                                     value={metric.targetValue}
                                     onChange={(e) =>
-                                      handleTargetValueChange(index, e.target.value)
+                                      handleTargetValueChange(
+                                        index,
+                                        e.target.value,
+                                      )
                                     }
                                     className={`w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
                                       hasError

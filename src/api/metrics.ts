@@ -35,6 +35,14 @@ export const fetchMetricsList = async (
 };
 
 /**
+ * 지표 기준 설정 미리보기 조회 API
+ * @returns 지표 미리보기 데이터
+ */
+export const fetchMetricsPreview = async (): Promise<MetricsListData> => {
+  return apiGet<MetricsListData>("/metrics?mode=preview");
+};
+
+/**
  * 목표 달성률 조회 API
  * @param month - 조회 연월 (YYYY-MM 형식)
  * @returns 목표 달성률 데이터

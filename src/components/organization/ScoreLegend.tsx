@@ -21,7 +21,6 @@ export const ScoreLegend = () => {
           content="달성률은 지표관리 화면에서 설정된 값을 기준으로 반영합니다."
           color="#6B7280"
           maxWidth={250}
-          arrowPosition="top-[15px]"
         >
           <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
         </Tooltip>

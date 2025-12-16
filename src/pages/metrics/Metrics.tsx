@@ -10,12 +10,13 @@ import { AchievementRateSettingModal } from "@/components/metrics/AchievementRat
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
 import { SettingsChangeConfirmModal } from "@/components/metrics/SettingsChangeConfirmModal";
+import { MetricStandardSettingModal } from "@/components/metrics/MetricStandardSettingModal";
 import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
 import { Button } from "@/components/ui";
-import { FileText } from "lucide-react";
+import { Settings } from "lucide-react";
 
 const MetricsPage = () => {
   const {
@@ -36,6 +37,8 @@ const MetricsPage = () => {
     isSettingsChanged,
     isSettingsChangeConfirmModalOpen,
     setIsSettingsChangeConfirmModalOpen,
+    isMetricStandardSettingModalOpen,
+    setIsMetricStandardSettingModalOpen,
   } = useMetricsStore((state) => state);
 
   // 현재 선택된 월
@@ -66,7 +69,8 @@ const MetricsPage = () => {
       isAchievementRateSettingModalOpen ||
       isMetricsDetailModalOpen ||
       isMetricRateSettingModalOpen ||
-      isSettingsChangeConfirmModalOpen;
+      isSettingsChangeConfirmModalOpen ||
+      isMetricStandardSettingModalOpen;
 
     if (!isAnyModalOpen) return;
 
@@ -96,6 +100,7 @@ const MetricsPage = () => {
     isMetricsDetailModalOpen,
     isMetricRateSettingModalOpen,
     isSettingsChangeConfirmModalOpen,
+    isMetricStandardSettingModalOpen,
   ]);
 
   // 변경사항 반영 버튼 클릭
@@ -122,7 +127,7 @@ const MetricsPage = () => {
               onDateChange={setCurrentDate}
             />
             {/* 변경사항 반영 버튼 */}
-            <Button
+            {/* <Button
               variant="primary"
               size="md"
               onClick={handleSaveChanges}
@@ -130,6 +135,15 @@ const MetricsPage = () => {
             >
               <FileText className="w-4 h-4 mr-1.5" />
               변경사항 반영
+            </Button> */}
+            {/* 지표 기준 설정 버튼 */}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setIsMetricStandardSettingModalOpen(true)}
+            >
+              <Settings className="w-4 h-4 mr-1" />
+              지표 기준 설정
             </Button>
           </div>
         </Card>
@@ -203,6 +217,13 @@ const MetricsPage = () => {
         isOpen={isSettingsChangeConfirmModalOpen}
         onClose={() => setIsSettingsChangeConfirmModalOpen(false)}
         onConfirm={handleConfirmChanges}
+      />
+
+      {/* 지표 기준 설정 모달 */}
+      <MetricStandardSettingModal
+        isOpen={isMetricStandardSettingModalOpen}
+        onClose={() => setIsMetricStandardSettingModalOpen(false)}
+        month={month}
       />
     </div>
   );
