@@ -8,13 +8,21 @@ export interface QualityMetric {
 }
 
 /**
+ * 전월 대비 변화 정보
+ */
+export interface MonthlyComparison {
+  changePercent: number; // 전월 대비 변화율 (%)
+  direction: "up" | "down" | "same" | "new"; // 변화 방향
+}
+
+/**
  * 전사 품질 메트릭 메인 인터페이스
  */
 export interface CompanyQualityMetrics {
   month: string; // 'YYYY-MM' 형식
   bdpiAverage: number; // 전사 BDPI 평균
-  bdpiChange: number; // 전월 대비 변화율 (%)
-  codeQuality: QualityMetric; // 코드 품질
-  reviewQuality: QualityMetric; // 리뷰 품질
-  developmentEfficiency: QualityMetric; // 개발 효율
+  monthlyComparison: MonthlyComparison; // 전월 대비 변화
+  quality: QualityMetric; // 코드 품질
+  review: QualityMetric; // 리뷰 품질
+  efficiency: QualityMetric; // 개발 효율
 }

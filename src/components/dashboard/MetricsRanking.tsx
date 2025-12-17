@@ -46,12 +46,11 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
     [metricRankingsData],
   );
 
-  // 로딩, 에러, 데이터 없음 상태
-  const hasNoData = topGainers.length === 0 && topLosers.length === 0;
-  if (isLoading || error || hasNoData) {
+  // 로딩, 에러 상태
+  if (isLoading || error) {
     return (
-      <>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">지표 순위</h3>
+      <div className="grid grid-cols-1 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900">지표 순위</h3>
         <div className="flex items-center justify-center min-h-[257px]">
           {isLoading ? (
             <LoadingSpinner />
@@ -59,25 +58,25 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
             <p className="text-gray-500">수집된 데이터가 없습니다.</p>
           )}
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">지표 순위</h3>
-      <div className="grid grid-cols-1 gap-8">
+    <div className="grid grid-cols-1 gap-6">
+      <h3 className="text-lg font-semibold text-gray-900">지표 순위</h3>
+      <div>
         {/* 우수 지표 TOP 5 */}
-        {topGainers.length > 0 && (
-          <div className="py-4">
-            <div className="flex items-center gap-2 mb-4">
-              <img src={upIcon} alt="up" />
-              <h4 className="text-sm font-semibold text-gray-700">
-                우수 지표 TOP 5
-              </h4>
-            </div>
-            <div className="space-y-3">
-              {topGainers.map((item) => (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <img src={upIcon} alt="up" />
+            <h4 className="text-sm font-semibold text-gray-700">
+              우수 지표 TOP 5
+            </h4>
+          </div>
+          <div className="space-y-3 min-h-[164px]">
+            {topGainers.length > 0 ? (
+              topGainers.map((item) => (
                 <div
                   key={item.rank}
                   className="flex items-center justify-between"
@@ -95,25 +94,27 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
                     +{item.change}%
                   </span>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center">
+                현재 우수 지표가 없습니다.
+              </p>
+            )}
           </div>
-        )}
+        </div>
         {/* 구분선-수평선 */}
-        {topGainers.length > 0 && topLosers.length > 0 && (
-          <div className="border-t border-[#E2E8F0] my-6"></div>
-        )}
+        <div className="border-t border-[#E2E8F0] my-6"></div>
         {/* 위험 지표 TOP 5 */}
-        {topLosers.length > 0 && (
-          <div className="py-4">
-            <div className="flex items-center gap-2 mb-4">
-              <img src={downIcon} alt="down" />
-              <h4 className="text-sm font-semibold text-gray-700">
-                위험 지표 TOP 5
-              </h4>
-            </div>
-            <div className="space-y-3">
-              {topLosers.map((item) => (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <img src={downIcon} alt="down" />
+            <h4 className="text-sm font-semibold text-gray-700">
+              위험 지표 TOP 5
+            </h4>
+          </div>
+          <div className="space-y-3 min-h-[164px]">
+            {topLosers.length > 0 ? (
+              topLosers.map((item) => (
                 <div
                   key={item.rank}
                   className="flex items-center justify-between"
@@ -131,11 +132,15 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
                     {item.change}%
                   </span>
                 </div>
-              ))}
-            </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center">
+                현재 위험 지표가 없습니다.
+              </p>
+            )}
           </div>
-        )}
+        </div>
       </div>
-    </>
+    </div>
   );
 };

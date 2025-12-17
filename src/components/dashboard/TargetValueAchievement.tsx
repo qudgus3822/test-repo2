@@ -31,8 +31,8 @@ export const TargetValueAchievement = ({
   // 로딩, 에러, 데이터 없음 상태
   if (isLoading || error || !goalAchievementData) {
     return (
-      <>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="grid grid-cols-1 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
           목표 달성률
         </h3>
         <div
@@ -45,16 +45,16 @@ export const TargetValueAchievement = ({
             <p className="text-gray-500">수집된 데이터가 없습니다.</p>
           )}
         </div>
-      </>
+      </div>
     );
   }
 
   const { achievedMetrics, totalMetrics } = goalAchievementData;
-  const percentage = (achievedMetrics / totalMetrics) * 100;
+  const percentage = totalMetrics > 0 ? (achievedMetrics / totalMetrics) * 100 : 0;
 
   return (
-    <>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">목표 달성률</h3>
+    <div className="grid grid-cols-1 gap-4">
+      <h3 className="text-lg font-semibold text-gray-900">목표 달성률</h3>
       <div className="flex flex-col items-center py-5">
         <DonutChart
           value={percentage}
@@ -68,6 +68,6 @@ export const TargetValueAchievement = ({
           {achievedMetrics}/{totalMetrics} 지표 달성
         </p>
       </div>
-    </>
+    </div>
   );
 };

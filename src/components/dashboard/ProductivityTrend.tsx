@@ -67,15 +67,17 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
   if (isLoading || error || !trendData || trendData.length === 0) {
     return (
       <Card className="w-full h-auto">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          개발생산성 트렌드
-        </h3>
-        <div className="flex items-center justify-center min-h-[87px]">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
-          )}
+        <div className="grid grid-cols-1 gap-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            개발생산성 트렌드
+          </h3>
+          <div className="flex items-center justify-center min-h-[87px]">
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+            )}
+          </div>
         </div>
       </Card>
     );
@@ -83,20 +85,22 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
 
   return (
     <Card className="w-full h-auto">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        개발생산성 트렌드
-      </h3>
-      <LineChart
-        data={trendData}
-        xKey="month"
-        yKeys={metrics}
-        height={350}
-        colors={chartColors}
-        showLegend={true}
-        showGrid={true}
-        dashedKeys={["목표치"]}
-        yAxisDomain={yAxisDomain}
-      />
+      <div className="grid grid-cols-1 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          개발생산성 트렌드
+        </h3>
+        <LineChart
+          data={trendData}
+          xKey="month"
+          yKeys={metrics}
+          height={350}
+          colors={chartColors}
+          showLegend={true}
+          showGrid={true}
+          dashedKeys={["목표치"]}
+          yAxisDomain={yAxisDomain}
+        />
+      </div>
     </Card>
   );
 };

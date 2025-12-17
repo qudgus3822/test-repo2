@@ -20,10 +20,10 @@ interface MetricsOverviewProps {
 const MOCK_COMPANY_QUALITY_DATA = {
   month: "",
   bdpiAverage: 0.0,
-  bdpiChange: 0.0,
-  codeQuality: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
-  reviewQuality: { score: 0, achievedMetrics: 0, totalMetrics: 12 },
-  developmentEfficiency: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
+  monthlyComparison: { changePercent: 0, direction: "new" as const },
+  quality: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
+  review: { score: 0, achievedMetrics: 0, totalMetrics: 12 },
+  efficiency: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
 };
 
 /**
@@ -56,10 +56,10 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
             sublabel: "평균 확보율",
             color: BRAND_COLORS.secondary,
             trend: {
-              value: data.bdpiChange,
-              isPositive: data.bdpiChange > 0,
-              hasData:
-                data.bdpiChange !== null && data.bdpiChange !== undefined,
+              value: data.monthlyComparison.changePercent,
+              direction: data.monthlyComparison.direction,
+              isPositive: data.monthlyComparison.direction === "up",
+              hasData: data.monthlyComparison.direction !== "new",
             },
           }
         : null,
@@ -73,23 +73,23 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
         ? [
             {
               id: "code",
-              value: data.codeQuality.score,
+              value: data.quality.score,
               label: "코드 품질",
-              sublabel: `${data.codeQuality.achievedMetrics}/${data.codeQuality.totalMetrics}개 달성`,
+              sublabel: `${data.quality.achievedMetrics}/${data.quality.totalMetrics}개 달성`,
               color: CHART_COLORS.blue,
             },
             {
               id: "review",
-              value: data.reviewQuality.score,
+              value: data.review.score,
               label: "리뷰 품질",
-              sublabel: `${data.reviewQuality.achievedMetrics}/${data.reviewQuality.totalMetrics}개 달성`,
+              sublabel: `${data.review.achievedMetrics}/${data.review.totalMetrics}개 달성`,
               color: CHART_COLORS.yellow,
             },
             {
               id: "efficiency",
-              value: data.developmentEfficiency.score,
+              value: data.efficiency.score,
               label: "개발 효율",
-              sublabel: `${data.developmentEfficiency.achievedMetrics}/${data.developmentEfficiency.totalMetrics}개 달성`,
+              sublabel: `${data.efficiency.achievedMetrics}/${data.efficiency.totalMetrics}개 달성`,
               color: CHART_COLORS.lightYellow,
             },
           ]
