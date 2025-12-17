@@ -18,14 +18,12 @@ import type {
   OrganizationNode,
   OrgHistoryItem,
 } from "@/types/organization.types";
-import {
-  MemberRoleLabel,
-  MemberPositionLabel,
-} from "@/types/organization.types";
+import { MemberPositionLabel } from "@/types/organization.types";
 import { formatDisplayDateTime } from "@/utils/date";
 import {
   getMemberEmail,
   getChangeDetailWithSuffix,
+  getMemberRoleOrPositionLabel,
 } from "@/utils/organization";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
 import { OrganizationHistoryModal } from "./OrganizationHistoryModal";
@@ -98,7 +96,7 @@ const DepartmentList = ({
           <span className="font-medium text-gray-900">실 목록</span>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[400px]">
+      <div className="overflow-y-auto h-[390px]">
         {departments.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
             조직 데이터가 없습니다
@@ -109,14 +107,14 @@ const DepartmentList = ({
             return (
               <div
                 key={dept.code}
-                className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 ${
+                className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
                   selectedCode === dept.code
                     ? "bg-blue-50 border-l-blue-500"
                     : "border-l-transparent"
                 }`}
                 onClick={() => onSelect(dept.code)}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between w-full">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <OrgTypeBadge
@@ -166,7 +164,7 @@ const TeamList = ({
           <span className="font-medium text-gray-900">팀 목록</span>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[400px]">
+      <div className="overflow-y-auto h-[390px]">
         {teams.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
             {isDepartmentSelected
@@ -177,14 +175,14 @@ const TeamList = ({
           teams.map((team) => (
             <div
               key={team.code}
-              className={`px-4 py-3 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 ${
+              className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
                 selectedCode === team.code
                   ? "bg-orange-50 border-l-orange-400"
                   : "border-l-transparent"
               }`}
               onClick={() => onSelect(team.code)}
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                   <OrgTypeBadge
                     isEvaluationTarget={team.isEvaluationTarget}
@@ -193,6 +191,7 @@ const TeamList = ({
                   <span className="font-medium text-gray-900 text-sm">
                     {team.name}
                   </span>
+                  <ChangesBadgeGroup changes={team.changes} />
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">
@@ -206,6 +205,32 @@ const TeamList = ({
         )}
       </div>
     </Card>
+  );
+};
+
+// HR 변경 유형 배지 컴포넌트 (멤버용 - HR 카테고리만 표시)
+const HRChangesBadgeGroup = ({
+  changes,
+}: {
+  changes?: { changeType: string; category: string }[];
+}) => {
+  if (!changes || changes.length === 0) return null;
+
+  // HR 카테고리만 필터링
+  const hrChanges = changes.filter((c) => c.category === "HR");
+
+  if (hrChanges.length === 0) return null;
+
+  return (
+    <span className="flex items-center gap-1">
+      {hrChanges.map((change, index) => (
+        <ChangeTypeBadge
+          key={`${change.category}-${change.changeType}-${index}`}
+          type={change.changeType}
+          fixedWidth
+        />
+      ))}
+    </span>
   );
 };
 
@@ -225,7 +250,7 @@ const MemberList = ({
           <span className="font-medium text-gray-900">개인 목록</span>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[400px]">
+      <div className="overflow-y-auto h-[390px]">
         {members.length === 0 ? (
           <div className="p-4 text-center text-gray-500 text-sm">
             {isTeamSelected
@@ -234,14 +259,17 @@ const MemberList = ({
           </div>
         ) : (
           members.map((member) => {
-            const roleLabel = MemberRoleLabel[member.title] || member.title;
+            const roleLabel = getMemberRoleOrPositionLabel(
+              member.title,
+              member.personalTitle,
+            );
 
             return (
               <div
                 key={member.employeeID}
-                className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className="h-[65px] px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full">
                   {/* 프로필 아바타 */}
                   <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200">
                     <User className="w-5 h-5 text-gray-500" />
@@ -253,6 +281,7 @@ const MemberList = ({
                         {member.name}
                       </span>
                       <span className="text-gray-500 text-sm">{roleLabel}</span>
+                      <HRChangesBadgeGroup changes={member.changes} />
                     </div>
                     <p className="text-xs text-gray-500">
                       {member.email || getMemberEmail(member.employeeID)}
