@@ -132,8 +132,8 @@ const MetricsPage = () => {
             </Button> */}
             {/* 지표 기준 설정 버튼 */}
             <Button
-              variant="primary"
-              size="md"
+              variant="setting"
+              size="sm"
               onClick={() => setIsMetricStandardSettingModalOpen(true)}
             >
               <Settings className="w-4 h-4 mr-1" />

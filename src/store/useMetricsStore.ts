@@ -69,6 +69,10 @@ interface MetricsStore {
    */
   isSettingsChangeConfirmModalOpen: boolean;
   /**
+   * 변경사항 초기화 확인 모달이 열려있는지 여부입니다.
+   */
+  isSettingsResetConfirmModalOpen: boolean;
+  /**
    * 지표 기준 설정 모달이 열려있는지 여부입니다.
    */
   isMetricStandardSettingModalOpen: boolean;
@@ -156,6 +160,12 @@ interface MetricsAction {
     isSettingsChangeConfirmModalOpen: boolean,
   ) => void;
   /**
+   * 변경사항 초기화 확인 모달을 엽니다.
+   */
+  setIsSettingsResetConfirmModalOpen: (
+    isSettingsResetConfirmModalOpen: boolean,
+  ) => void;
+  /**
    * 지표 기준 설정 모달을 엽니다.
    */
   setIsMetricStandardSettingModalOpen: (
@@ -194,6 +204,7 @@ const initState: MetricsStore = {
   selectedMetric: null,
   isSettingsChanged: false,
   isSettingsChangeConfirmModalOpen: false,
+  isSettingsResetConfirmModalOpen: false,
   isMetricStandardSettingModalOpen: false,
   changedTargetValueCount: 0,
   changedAchievementRateCount: 0,
@@ -233,6 +244,9 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
   setIsSettingsChangeConfirmModalOpen: (
     isSettingsChangeConfirmModalOpen: boolean,
   ) => set({ isSettingsChangeConfirmModalOpen }),
+  setIsSettingsResetConfirmModalOpen: (
+    isSettingsResetConfirmModalOpen: boolean,
+  ) => set({ isSettingsResetConfirmModalOpen }),
   setIsMetricStandardSettingModalOpen: (
     isMetricStandardSettingModalOpen: boolean,
   ) => set({ isMetricStandardSettingModalOpen }),

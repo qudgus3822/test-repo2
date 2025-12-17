@@ -406,8 +406,14 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                     <td className="px-4 py-3 text-sm text-gray-900">
                       <div className="flex items-center space-x-2">
                         <span>{getMetricName(metric.metricCode)}</span>
-                        {metric.description && (
-                          <Tooltip content={metric.description} color="#6B7280">
+                        {(metric.tooltipDescription || metric.description) && (
+                          <Tooltip
+                            content={
+                              metric.tooltipDescription || metric.description || ""
+                            }
+                            color="#6B7280"
+                            maxWidth={250}
+                          >
                             <Info className="text-gray-400 w-4 h-4 cursor-pointer" />
                           </Tooltip>
                         )}

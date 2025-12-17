@@ -95,6 +95,12 @@ const LoginPage = () => {
                 name="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
                 placeholder="example@bithumbcorp.com"
                 className="rounded-md border border-gray-300 px-4 py-2 text-md transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 required
@@ -115,6 +121,12 @@ const LoginPage = () => {
                 name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
                 placeholder="비밀번호를 입력하세요"
                 className="rounded-md border border-gray-300 px-4 py-2 text-md transition-colors placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 required

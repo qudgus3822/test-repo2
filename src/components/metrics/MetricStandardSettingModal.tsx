@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   X,
   Settings,
@@ -6,6 +6,10 @@ import {
   AlertTriangle,
   XCircle,
 } from "lucide-react";
+import { MetricCategory } from "@/types/metrics.types";
+import { getCategoryLabel, getMetricName } from "@/utils/metrics";
+import { useWeightSettings } from "@/api/hooks/useWeightSettings";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/Button";
 import { useModalAnimation } from "@/hooks";
 import {
@@ -22,6 +26,7 @@ import {
   DEFAULT_EXCELLENT_THRESHOLD,
   DEFAULT_DANGER_THRESHOLD,
 } from "@/store/useMetricsStore";
+import { ConfirmPopup } from "@/components/ui/ConfirmPopup";
 
 // 절대 최소/최대 기준 상수
 const MIN_DANGER_THRESHOLD = 1;
@@ -268,12 +273,228 @@ const AchievementRateSetting = ({ month }: AchievementRateSettingProps) => {
   );
 };
 
-const RatioSetting = () => (
-  <div className="p-4">
-    <h4 className="text-sm font-semibold text-gray-900 mb-2">비율 설정</h4>
-    <p className="text-sm text-gray-500">비율 설정 컴포넌트</p>
-  </div>
-);
+// 카테고리 enum을 API 카테고리 문자열로 변환
+const getCategoryValue = (category: MetricCategory): string => {
+  switch (category) {
+    case MetricCategory.CODE_QUALITY:
+      return "quality";
+    case MetricCategory.REVIEW_QUALITY:
+      return "review";
+    case MetricCategory.DEVELOPMENT_EFFICIENCY:
+      return "efficiency";
+    default:
+      return "quality";
+  }
+};
+
+// 카테고리 목록
+const CATEGORIES = [
+  MetricCategory.CODE_QUALITY,
+  MetricCategory.REVIEW_QUALITY,
+  MetricCategory.DEVELOPMENT_EFFICIENCY,
+];
+
+interface MetricWithWeight {
+  metricCode: string;
+  weight: number;
+}
+
+interface RatioSettingProps {
+  month: string;
+}
+
+const RatioSetting = ({ month }: RatioSettingProps) => {
+  const [selectedCategory, setSelectedCategory] = useState<MetricCategory>(
+    MetricCategory.CODE_QUALITY
+  );
+  const [editedMetrics, setEditedMetrics] = useState<MetricWithWeight[]>([]);
+  const [errors, setErrors] = useState<Map<string, string>>(new Map());
+
+  // 비율 설정 조회 API
+  const { data: weightSettingsData, isLoading } = useWeightSettings(month, true);
+
+  // API 데이터가 로드되면 해당 카테고리의 가중치 적용
+  useEffect(() => {
+    if (weightSettingsData) {
+      const categoryValue = getCategoryValue(selectedCategory);
+      const categorySetting = weightSettingsData.settings.find(
+        (s) => s.category === categoryValue
+      );
+
+      if (categorySetting) {
+        setEditedMetrics(
+          categorySetting.metrics.map((m) => ({
+            metricCode: m.metricCode,
+            weight: m.weight,
+          }))
+        );
+      } else {
+        setEditedMetrics([]);
+      }
+      setErrors(new Map());
+    }
+  }, [weightSettingsData, selectedCategory]);
+
+  // 총 가중치 합계
+  const totalWeight = useMemo(
+    () => editedMetrics.reduce((sum, m) => sum + m.weight, 0),
+    [editedMetrics]
+  );
+
+  // 비율 계산 함수
+  const calculateRatio = (weight: number): string => {
+    if (totalWeight === 0) return "0.0";
+    return ((weight / totalWeight) * 100).toFixed(1);
+  };
+
+  // 가중치 변경 핸들러
+  const handleWeightChange = (metricCode: string, value: string) => {
+    const newErrors = new Map(errors);
+
+    // 빈 값 허용 (입력 중)
+    if (value === "") {
+      const updated = editedMetrics.map((m) =>
+        m.metricCode === metricCode ? { ...m, weight: 0 } : m
+      );
+      setEditedMetrics(updated);
+      newErrors.delete(metricCode);
+      setErrors(newErrors);
+      return;
+    }
+
+    const numValue = parseInt(value, 10);
+
+    // 유효성 검증
+    if (isNaN(numValue) || numValue < 1 || numValue > 3) {
+      newErrors.set(metricCode, "1~3 사이의 정수를 입력해주세요.");
+      setErrors(newErrors);
+      return;
+    }
+
+    // 정상 값 설정
+    newErrors.delete(metricCode);
+    setErrors(newErrors);
+
+    const updated = editedMetrics.map((m) =>
+      m.metricCode === metricCode ? { ...m, weight: numValue } : m
+    );
+    setEditedMetrics(updated);
+  };
+
+  // 균등 분배
+  const handleDistributeEvenly = () => {
+    const updated = editedMetrics.map((m) => ({ ...m, weight: 1 }));
+    setEditedMetrics(updated);
+    setErrors(new Map());
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* 헤더 */}
+      <div className="mb-4">
+        <h4 className="text-sm font-semibold text-gray-900">비율 설정</h4>
+        <p className="text-xs text-gray-500 mt-1">
+          각 지표의 가중치를 설정하면 자동으로 비율(%)이 계산됩니다.
+        </p>
+      </div>
+
+      {/* 카테고리 탭 */}
+      <div className="flex gap-2 mb-4">
+        {CATEGORIES.map((category) => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+              selectedCategory === category
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {getCategoryLabel(category)}
+          </button>
+        ))}
+      </div>
+
+      {/* 본문 - 지표 목록 */}
+      <div className="flex-1 overflow-y-auto">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-32">
+            <LoadingSpinner />
+          </div>
+        ) : editedMetrics.length === 0 ? (
+          <div className="flex items-center justify-center h-32">
+            <p className="text-sm text-gray-500">지표 데이터가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {editedMetrics.map((metric) => {
+              const error = errors.get(metric.metricCode);
+              return (
+                <div
+                  key={metric.metricCode}
+                  className="p-3 bg-white rounded-lg border border-gray-200"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-900">
+                      {getMetricName(metric.metricCode)}
+                    </span>
+                    <span className="text-sm text-blue-600 font-medium">
+                      {calculateRatio(metric.weight)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">가중치</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={3}
+                      value={metric.weight || ""}
+                      onChange={(e) =>
+                        handleWeightChange(metric.metricCode, e.target.value)
+                      }
+                      onKeyDown={(e) => {
+                        if (["e", "E", "+", "-", "."].includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                      className={`w-16 text-center text-sm px-2 py-1 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        error ? "border-red-300 bg-red-50" : "border-gray-200"
+                      }`}
+                    />
+                    <span className="text-xs text-gray-500">(1~3)</span>
+                  </div>
+                  {error && (
+                    <p className="text-xs text-red-500 mt-1">{error}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 합계 */}
+      {editedMetrics.length > 0 && (
+        <div className="mt-4 px-3 py-2 bg-blue-50 rounded-lg flex justify-between items-center">
+          <span className="text-xs font-medium text-gray-700">합계</span>
+          <span className="text-xs font-semibold text-blue-600">100.0%</span>
+        </div>
+      )}
+
+      {/* 하단 버튼 */}
+      <div className="pt-4 mt-auto">
+        <Button
+          variant="normal"
+          size="sm"
+          onClick={handleDistributeEvenly}
+          className="w-full"
+        >
+          균등 분배
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 interface MetricStandardSettingModalProps {
   isOpen: boolean;
@@ -330,6 +551,14 @@ export const MetricStandardSettingModal = ({
   const [activeSettingType, setActiveSettingType] =
     useState<SettingType | null>(null);
 
+  // store에서 확인 팝업 상태 가져오기
+  const {
+    isSettingsChangeConfirmModalOpen,
+    isSettingsResetConfirmModalOpen,
+    setIsSettingsChangeConfirmModalOpen,
+    setIsSettingsResetConfirmModalOpen,
+  } = useMetricsStore();
+
   // 모달 애니메이션
   const { shouldRender, isAnimating } = useModalAnimation(isOpen, {
     duration: 200,
@@ -358,7 +587,7 @@ export const MetricStandardSettingModal = ({
       case "achievementRate":
         return <AchievementRateSetting month={month} />;
       case "ratio":
-        return <RatioSetting />;
+        return <RatioSetting month={month} />;
       default:
         return (
           <p className="text-sm text-gray-500 text-center leading-relaxed">
@@ -372,17 +601,27 @@ export const MetricStandardSettingModal = ({
     }
   };
 
-  // 변경사항 초기화
-  const handleReset = () => {
-    // TODO: 초기화 로직 구현
-    setActiveSettingType(null);
-    console.log("Reset changes");
+  // 변경사항 초기화 버튼 클릭
+  const handleResetClick = () => {
+    setIsSettingsResetConfirmModalOpen(true);
   };
 
-  // 변경사항 반영
-  const handleApply = () => {
+  // 변경사항 초기화 확인
+  const handleResetConfirm = () => {
+    // TODO: 초기화 로직 구현
+    setActiveSettingType(null);
+    setIsSettingsResetConfirmModalOpen(false);
+  };
+
+  // 변경사항 반영 버튼 클릭
+  const handleApplyClick = () => {
+    setIsSettingsChangeConfirmModalOpen(true);
+  };
+
+  // 변경사항 반영 확인
+  const handleApplyConfirm = () => {
     // TODO: 반영 로직 구현
-    console.log("Apply changes");
+    setIsSettingsChangeConfirmModalOpen(false);
     onClose();
   };
 
@@ -522,10 +761,10 @@ export const MetricStandardSettingModal = ({
 
                 {/* 버튼 영역 */}
                 <div className="flex items-end gap-3 self-end">
-                  <Button variant="cancel" size="sm" onClick={handleReset}>
+                  <Button variant="cancel" size="sm" onClick={handleResetClick}>
                     변경사항 초기화
                   </Button>
-                  <Button variant="primary" size="sm" onClick={handleApply}>
+                  <Button variant="primary" size="sm" onClick={handleApplyClick}>
                     변경사항 반영
                   </Button>
                 </div>
@@ -560,6 +799,24 @@ export const MetricStandardSettingModal = ({
           </div>
         </div>
       </div>
+
+      {/* 변경사항 반영 확인 팝업 */}
+      <ConfirmPopup
+        isOpen={isSettingsChangeConfirmModalOpen}
+        onClose={() => setIsSettingsChangeConfirmModalOpen(false)}
+        onConfirm={handleApplyConfirm}
+        title="변경사항을 반영하시겠습니까?"
+        description={`변경된 설정은 즉시 반영되며,\n새로운 설정 기준에 따라 당월 데이터가 전체 재집계됩니다.\n이 작업은 되돌릴 수 없습니다.`}
+      />
+
+      {/* 변경사항 초기화 확인 팝업 */}
+      <ConfirmPopup
+        isOpen={isSettingsResetConfirmModalOpen}
+        onClose={() => setIsSettingsResetConfirmModalOpen(false)}
+        onConfirm={handleResetConfirm}
+        title="변경사항을 초기화하시겠습니까?"
+        description={`현재 변경된 설정은 모두 초기화되며,\n이 작업은 되돌릴 수 없습니다.`}
+      />
     </>
   );
 };

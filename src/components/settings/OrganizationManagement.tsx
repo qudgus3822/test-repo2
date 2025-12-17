@@ -612,10 +612,7 @@ export const OrganizationManagement = () => {
       <OrganizationTypeSettingModal
         isOpen={isOrgTypeModalOpen}
         onClose={() => setIsOrgTypeModalOpen(false)}
-        onSave={() => {
-          // TODO: 저장 로직 구현
-          console.log("조직 유형 설정 저장");
-        }}
+        onSave={() => setIsOrgTypeModalOpen(false)}
       />
 
       {/* 조직도 변경 히스토리 모달 */}
