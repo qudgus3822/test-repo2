@@ -8,6 +8,7 @@ import type {
   WeightSettingsResponse,
   WeightSettingsUpdateRequest,
   PendingSummaryResponse,
+  SyncStatusResponse,
 } from "@/types/metrics.types";
 import type { GoalAchievementRate } from "@/types/goalAchievement.types";
 import { apiDelete, apiGet, apiPost, apiPut } from "@/libs/fetch";
@@ -35,7 +36,7 @@ export const fetchMetricsList = async (
 };
 
 /**
- * 지표 기준 설정 미리보기 조회 API
+ * 지표 기준 변경사항 미리보기 조회 API
  * @returns 지표 미리보기 데이터
  */
 export const fetchMetricsPreview = async (): Promise<MetricsListData> => {
@@ -50,7 +51,9 @@ export const fetchMetricsPreview = async (): Promise<MetricsListData> => {
 export const fetchGoalAchievement = async (
   month: string,
 ): Promise<GoalAchievementRate> => {
-  return apiGet<GoalAchievementRate>(`/metrics/goal-achievement?month=${month}`);
+  return apiGet<GoalAchievementRate>(
+    `/metrics/goal-achievement?month=${month}`,
+  );
 };
 
 /**
@@ -61,7 +64,9 @@ export const fetchGoalAchievement = async (
 export const fetchAchievementCriteria = async (
   month: string,
 ): Promise<AchievementCriteria> => {
-  return apiGet<AchievementCriteria>(`/metrics/achievement-criteria?month=${month}`);
+  return apiGet<AchievementCriteria>(
+    `/metrics/achievement-criteria?month=${month}`,
+  );
 };
 
 /**
@@ -85,7 +90,9 @@ export const fetchTargetValues = async (
   category: string,
   month: string,
 ): Promise<TargetValuesResponse> => {
-  return apiGet<TargetValuesResponse>(`/metrics/target-values?category=${category}&month=${month}`);
+  return apiGet<TargetValuesResponse>(
+    `/metrics/target-values?category=${category}&month=${month}`,
+  );
 };
 
 /**
@@ -108,7 +115,9 @@ export const updateTargetValues = async (
 export const fetchWeightSettings = async (
   month: string,
 ): Promise<WeightSettingsResponse> => {
-  return apiGet<WeightSettingsResponse>(`/metrics/weight-settings?month=${month}`);
+  return apiGet<WeightSettingsResponse>(
+    `/metrics/weight-settings?month=${month}`,
+  );
 };
 
 /**
@@ -127,9 +136,10 @@ export const updateWeightSettings = async (
  * 변경내역 조회 API (Pending Summary)
  * @returns 변경 대기 중인 설정 항목 요약
  */
-export const fetchPendingSummary = async (): Promise<PendingSummaryResponse> => {
-  return apiGet<PendingSummaryResponse>("/metrics/settings/pending-summary");
-};
+export const fetchPendingSummary =
+  async (): Promise<PendingSummaryResponse> => {
+    return apiGet<PendingSummaryResponse>("/metrics/settings/pending-summary");
+  };
 
 /**
  * 변경내역 적용 API
@@ -145,4 +155,12 @@ export const applySettingsChanges = async (): Promise<void> => {
  */
 export const cancelPendingChanges = async (): Promise<void> => {
   return apiDelete<void>("/metrics/settings/pending");
+};
+
+/**
+ * 지표 설정 동기화 상태 조회 API
+ * @returns 동기화 상태 ("ready" | "processing")
+ */
+export const fetchSyncStatus = async (): Promise<SyncStatusResponse> => {
+  return apiGet<SyncStatusResponse>("/metrics/sync/status");
 };

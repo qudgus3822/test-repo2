@@ -3,6 +3,45 @@ import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 import eslint from "vite-plugin-eslint2";
+import vitePluginBundleObfuscator from "vite-plugin-bundle-obfuscator";
+
+// 난독화 설정
+const obfuscatorConfig = {
+  excludes: [],
+  enable: true,
+  log: true,
+  autoExcludeNodeModules: true,
+  threadPool: true,
+  options: {
+    compact: true,
+    controlFlowFlattening: true,
+    controlFlowFlatteningThreshold: 1,
+    deadCodeInjection: false,
+    debugProtection: false,
+    debugProtectionInterval: 0,
+    disableConsoleOutput: false,
+    identifierNamesGenerator: "hexadecimal" as const,
+    log: false,
+    numbersToExpressions: false,
+    renameGlobals: false,
+    selfDefending: true,
+    simplify: true,
+    splitStrings: false,
+    stringArray: false,
+    stringArrayCallsTransform: false,
+    stringArrayCallsTransformThreshold: 0.5,
+    stringArrayEncoding: [],
+    stringArrayIndexShift: true,
+    stringArrayRotate: true,
+    stringArrayShuffle: true,
+    stringArrayWrappersCount: 1,
+    stringArrayWrappersChainedCalls: true,
+    stringArrayWrappersParametersMaxCount: 2,
+    stringArrayWrappersType: "variable" as const,
+    stringArrayThreshold: 0.75,
+    unicodeEscapeSequence: false,
+  },
+};
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -17,6 +56,7 @@ export default defineConfig({
       emitError: true, // 에러를 콘솔에 출력
       emitWarning: true, // 경고를 콘솔에 출력
     }),
+    vitePluginBundleObfuscator(obfuscatorConfig),
   ],
   server: {
     host: "0.0.0.0", // ngrok 사용을 위해 모든 네트워크 인터페이스에서 수신

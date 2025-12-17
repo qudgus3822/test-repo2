@@ -8,15 +8,20 @@ export const metricsPreviewKeys = {
 };
 
 /**
- * 지표 기준 설정 미리보기 조회 Hook
+ * 지표 기준 변경사항 미리보기 조회 Hook
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
- * @returns React Query 결과 객체
+ * @returns React Query 결과 객체 (data, isLoading, refetch 등)
  */
 export const useMetricsPreview = (enabled: boolean = true) => {
-  return useQuery<MetricsListData, Error>({
+  const query = useQuery<MetricsListData, Error>({
     queryKey: metricsPreviewKeys.all,
     queryFn: fetchMetricsPreview,
     enabled,
     staleTime: 2 * 60 * 1000, // 2분
   });
+
+  return {
+    ...query,
+    refetch: query.refetch,
+  };
 };

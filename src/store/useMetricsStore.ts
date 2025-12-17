@@ -92,6 +92,10 @@ interface MetricsStore {
     reviewQuality: number;
     developmentEfficiency: number;
   };
+  /**
+   * 집계 진행 중 여부입니다.
+   */
+  isAggregating: boolean;
 }
 
 interface MetricsAction {
@@ -187,6 +191,10 @@ interface MetricsAction {
     reviewQuality: number;
     developmentEfficiency: number;
   }) => void;
+  /**
+   * 집계 진행 중 여부를 설정합니다.
+   */
+  setIsAggregating: (isAggregating: boolean) => void;
 }
 
 const initState: MetricsStore = {
@@ -213,6 +221,7 @@ const initState: MetricsStore = {
     reviewQuality: 0,
     developmentEfficiency: 0,
   },
+  isAggregating: false,
 };
 
 export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
@@ -259,4 +268,5 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
     reviewQuality: number;
     developmentEfficiency: number;
   }) => set({ changedRatioCount: ratioCount }),
+  setIsAggregating: (isAggregating: boolean) => set({ isAggregating }),
 }));

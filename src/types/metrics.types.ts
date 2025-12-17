@@ -142,3 +142,10 @@ export interface PendingSummaryResponse {
   achievementCriteria: number; // 달성률 기준 변경 개수
   weight: PendingSummaryCategoryCount; // 비율설정 변경 개수
 }
+
+// ==================== 지표 설정 동기화 상태 ====================
+export type SyncStatusType = "ready" | "processing";
+
+export interface SyncStatusResponse {
+  status: SyncStatusType; // "ready": 변경 적용 가능, "processing": 변경 적용 불가능
+}

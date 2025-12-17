@@ -315,11 +315,11 @@ export const TargetValueSettingModal = ({
                       <col className="w-[30%]" />
                     </colgroup>
                     <thead>
-                      <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-                        <th className="px-4 py-3">지표명</th>
-                        <th className="px-4 py-3 text-center">범주</th>
-                        <th className="px-4 py-3">현재값</th>
-                        <th className="px-4 py-3">목표값</th>
+                      <tr className="h-[45px] border-b border-gray-200 text-left text-sm font-medium text-gray-700">
+                        <th className="px-4">지표명</th>
+                        <th className="px-4 text-center">범주</th>
+                        <th className="px-4">현재값</th>
+                        <th className="px-4">목표값</th>
                       </tr>
                     </thead>
                   </table>
@@ -343,14 +343,14 @@ export const TargetValueSettingModal = ({
                         return (
                           <React.Fragment key={metric.metricCode || index}>
                             <tr
-                              className={
+                              className={`h-[51px] ${
                                 hasError ? "" : "border-b border-gray-100"
-                              }
+                              }`}
                             >
-                              <td className="px-4 py-3 text-sm text-gray-900">
+                              <td className="px-4 text-sm text-gray-900">
                                 {getMetricName(metric.metricCode)}
                               </td>
-                              <td className="px-4 py-3 text-sm text-center">
+                              <td className="px-4 text-sm text-center">
                                 {(() => {
                                   const style =
                                     getCategoryStyle(metricCategory);
@@ -367,11 +367,11 @@ export const TargetValueSettingModal = ({
                                   );
                                 })()}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-900">
+                              <td className="px-4 text-sm text-gray-900">
                                 {getCurrentValue(metric.metricCode)}
                                 {getMetricUnit(metric.metricCode)}
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-4">
                                 <div className="flex items-center gap-2">
                                   <input
                                     type="text"

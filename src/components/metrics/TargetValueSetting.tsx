@@ -8,7 +8,9 @@ import {
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { useTargetValues } from "@/api/hooks/useTargetValues";
+import { updateTargetValues } from "@/api/metrics";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Button } from "@/components/ui/Button";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -84,14 +86,17 @@ const categoryToMetricCategory = (category: string): MetricCategory => {
 interface TargetValueSettingProps {
   month: string;
   onDataChange?: (metrics: TargetValueMetric[], hasErrors: boolean) => void;
+  onApply?: () => void;
 }
 
 export const TargetValueSetting = ({
   month,
   onDataChange,
+  onApply,
 }: TargetValueSettingProps) => {
   const [editedMetrics, setEditedMetrics] = useState<TargetValueMetric[]>([]);
   const [errors, setErrors] = useState<Record<number, ValidationError>>({});
+  const [isApplying, setIsApplying] = useState(false);
 
   // 3개 범주의 목표값 조회
   const { data: qualityData, isLoading: isLoadingQuality } = useTargetValues(
@@ -144,6 +149,77 @@ export const TargetValueSetting = ({
     setErrors((prev) => ({ ...prev, [index]: error }));
   };
 
+  // 저장 버튼 비활성화 여부 확인
+  const hasErrors = editedMetrics.some((metric, index) => {
+    const error =
+      errors[index] ?? validateTargetValue(String(metric.targetValue));
+    return error !== null;
+  });
+
+  // 변경사항 적용 핸들러
+  const handleApply = async () => {
+    if (hasErrors || isApplying) return;
+
+    setIsApplying(true);
+    try {
+      // 범주별로 그룹핑하여 API 호출
+      const qualityMetrics = editedMetrics.filter(
+        (m) => m.category === "quality",
+      );
+      const reviewMetrics = editedMetrics.filter(
+        (m) => m.category === "review",
+      );
+      const efficiencyMetrics = editedMetrics.filter(
+        (m) => m.category === "efficiency",
+      );
+
+      const updatePromises = [];
+
+      if (qualityMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("quality", {
+            month,
+            metrics: qualityMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          }),
+        );
+      }
+
+      if (reviewMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("review", {
+            month,
+            metrics: reviewMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          }),
+        );
+      }
+
+      if (efficiencyMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("efficiency", {
+            month,
+            metrics: efficiencyMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          }),
+        );
+      }
+
+      await Promise.all(updatePromises);
+      onApply?.();
+    } catch {
+      window.confirm("목표값 저장 중 오류가 발생했습니다.");
+    } finally {
+      setIsApplying(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full w-full">
@@ -155,28 +231,25 @@ export const TargetValueSetting = ({
   return (
     <div className="flex flex-col h-full w-full">
       {/* 헤더 */}
-      <div className="pb-3 border-b border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-900">목표값 설정</h4>
-        <p className="text-xs text-gray-500 mt-1">
-          각 지표의 목표값을 수정할 수 있습니다.
-        </p>
+      <div className="flex items-start justify-between pb-5 border-b border-gray-200 gap-4">
+        <h2 className="text-lg font-semibold text-gray-900">목표값 설정</h2>
       </div>
 
       {/* 테이블 */}
-      <div className="flex-1 flex flex-col overflow-hidden pt-3">
+      <div className="flex-1 flex flex-col overflow-hidden text-sm">
         {/* 고정 헤더 */}
-        <div className="[scrollbar-gutter:stable] pr-[8px]">
+        <div className="[scrollbar-gutter:stable] pr-[15px]">
           <table className="w-full table-fixed">
             <colgroup>
-              <col className="w-[35%]" />
-              <col className="w-[20%]" />
+              <col className="w-[33%]" />
+              <col className="w-[22%]" />
               <col className="w-[45%]" />
             </colgroup>
             <thead>
-              <tr className="border-b border-gray-200 text-left text-xs font-medium text-gray-600">
-                <th className="px-2 py-2">지표명</th>
-                <th className="px-2 py-2 text-center">범주</th>
-                <th className="px-2 py-2">목표값</th>
+              <tr className="h-[45px] border-b border-gray-200 text-left font-medium text-gray-600">
+                <th className="px-2">지표명</th>
+                <th className="px-2 text-center">범주</th>
+                <th className="px-2">목표값</th>
               </tr>
             </thead>
           </table>
@@ -185,8 +258,8 @@ export const TargetValueSetting = ({
         <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable]">
           <table className="w-full table-fixed">
             <colgroup>
-              <col className="w-[35%]" />
-              <col className="w-[20%]" />
+              <col className="w-[33%]" />
+              <col className="w-[22%]" />
               <col className="w-[45%]" />
             </colgroup>
             <tbody>
@@ -199,17 +272,19 @@ export const TargetValueSetting = ({
                 return (
                   <React.Fragment key={metric.metricCode || index}>
                     <tr
-                      className={hasError ? "" : "border-b border-gray-100"}
+                      className={`h-[51px] ${
+                        hasError ? "" : "border-b border-gray-100"
+                      }`}
                     >
-                      <td className="px-2 py-2 text-xs text-gray-900">
+                      <td className="px-2 text-gray-900">
                         {getMetricName(metric.metricCode)}
                       </td>
-                      <td className="px-2 py-2 text-xs text-center">
+                      <td className="px-2 text-center">
                         {(() => {
                           const style = getCategoryStyle(metricCategory);
                           return (
                             <span
-                              className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border"
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
                               style={{
                                 color: style.color,
                                 borderColor: style.borderColor,
@@ -220,7 +295,7 @@ export const TargetValueSetting = ({
                           );
                         })()}
                       </td>
-                      <td className="px-2 py-2">
+                      <td className="px-2">
                         <div className="flex items-center gap-1">
                           <input
                             type="text"
@@ -228,13 +303,13 @@ export const TargetValueSetting = ({
                             onChange={(e) =>
                               handleTargetValueChange(index, e.target.value)
                             }
-                            className={`w-[60%] text-xs text-gray-700 px-2 py-1 bg-gray-50 border rounded focus:outline-none focus:ring-1 focus:border-transparent ${
+                            className={`w-[58%] text-gray-700 px-3 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
                               hasError
                                 ? "border-red-300 bg-red-50 focus:ring-red-500"
                                 : "border-gray-200 focus:ring-blue-500"
                             }`}
                           />
-                          <span className="text-[10px] text-gray-500 whitespace-nowrap">
+                          <span className="text-gray-500 whitespace-nowrap">
                             {getMetricUnit(metric.metricCode)}
                           </span>
                         </div>
@@ -243,7 +318,7 @@ export const TargetValueSetting = ({
                     {hasError && (
                       <tr className="border-b border-gray-100">
                         <td colSpan={3} className="px-2 pb-1 pt-0">
-                          <span className="text-[10px] text-red-500">
+                          <span className="text-xs text-red-500">
                             {getErrorMessage(error)}
                           </span>
                         </td>
@@ -255,6 +330,21 @@ export const TargetValueSetting = ({
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* 하단 버튼 */}
+      <div className="flex items-center justify-end pt-4 border-t border-gray-200">
+        {/* <Button variant="cancel" size="sm">
+          이전값 으로 재설정
+        </Button> */}
+        <Button
+          variant="primary"
+          size="sm"
+          disabled={hasErrors || isApplying}
+          onClick={handleApply}
+        >
+          {isApplying ? "적용 중..." : "변경사항 적용"}
+        </Button>
       </div>
     </div>
   );

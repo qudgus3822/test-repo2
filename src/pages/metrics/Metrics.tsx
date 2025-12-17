@@ -15,6 +15,7 @@ import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { useSyncStatus } from "@/api/hooks/useSyncStatus";
 import { Button } from "@/components/ui";
 import { Settings } from "lucide-react";
 
@@ -42,6 +43,9 @@ const MetricsPage = () => {
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
+
+  // 지표 설정 동기화 상태 조회 (10초 폴링)
+  const { isProcessing } = useSyncStatus();
 
   // 지표 리스트 API 호출 (모달에서 사용)
   const { data: metricsListData } = useMetricsList(month);
@@ -131,14 +135,20 @@ const MetricsPage = () => {
               변경사항 반영
             </Button> */}
             {/* 지표 기준 설정 버튼 */}
-            <Button
-              variant="setting"
-              size="sm"
-              onClick={() => setIsMetricStandardSettingModalOpen(true)}
-            >
-              <Settings className="w-4 h-4 mr-1" />
-              지표 기준 설정
-            </Button>
+            <div className="flex items-center gap-2">
+              {isProcessing && (
+                <span className="text-sm text-gray-500">집계 진행중</span>
+              )}
+              <Button
+                variant="setting"
+                size="sm"
+                onClick={() => setIsMetricStandardSettingModalOpen(true)}
+                disabled={isProcessing}
+              >
+                <Settings className="w-4 h-4 mr-1" />
+                지표 기준 설정
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

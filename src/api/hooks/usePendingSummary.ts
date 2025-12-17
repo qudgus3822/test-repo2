@@ -10,13 +10,18 @@ export const pendingSummaryKeys = {
 /**
  * 변경내역 조회 Hook (Pending Summary)
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
- * @returns React Query 결과 객체
+ * @returns React Query 결과 객체 (data, isLoading, refetch 등)
  */
 export const usePendingSummary = (enabled: boolean = true) => {
-  return useQuery<PendingSummaryResponse, Error>({
+  const query = useQuery<PendingSummaryResponse, Error>({
     queryKey: pendingSummaryKeys.all,
     queryFn: fetchPendingSummary,
     enabled,
     staleTime: 0, // 항상 최신 데이터 조회
   });
+
+  return {
+    ...query,
+    refetch: query.refetch,
+  };
 };

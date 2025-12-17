@@ -94,11 +94,11 @@ export const MetricsPreviewTable = ({
       ) : (
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-              <th className="px-4 py-3 w-[25%]">지표명</th>
-              <th className="px-4 py-3 w-[15%] text-center">범주</th>
-              <th className="px-4 py-3 w-[15%]">현재값</th>
-              <th className="px-4 py-3 w-[15%]">
+            <tr className="h-[45px] border-b border-gray-200 text-left text-sm font-medium text-gray-700">
+              <th className="px-4 w-[25%]">지표명</th>
+              <th className="px-4 w-[15%] text-center">범주</th>
+              <th className="px-4 w-[15%]">현재값</th>
+              <th className="px-4 w-[15%]">
                 <div className="flex items-center gap-1.5">
                   목표값
                   <button
@@ -109,7 +109,7 @@ export const MetricsPreviewTable = ({
                   </button>
                 </div>
               </th>
-              <th className="px-4 py-3 w-[15%]">
+              <th className="px-4 w-[15%]">
                 <div className="flex items-center gap-1.5">
                   달성률
                   <button
@@ -120,7 +120,7 @@ export const MetricsPreviewTable = ({
                   </button>
                 </div>
               </th>
-              <th className="px-4 py-3 w-[15%]">
+              <th className="px-4 w-[15%]">
                 <div className="flex items-center gap-1.5">
                   비율
                   <button
@@ -137,9 +137,9 @@ export const MetricsPreviewTable = ({
             {metricsWithCalculatedStatus.map((metric, index) => (
               <tr
                 key={metric.metricCode || index}
-                className="border-b border-gray-100 hover:bg-gray-50 whitespace-nowrap"
+                className="h-[51px] border-b border-gray-100 hover:bg-gray-50 whitespace-nowrap"
               >
-                <td className="px-4 py-3 text-sm text-gray-900">
+                <td className="px-4 text-sm text-gray-900">
                   <div className="flex items-center space-x-2">
                     <span>{getMetricName(metric.metricCode)}</span>
                     {(metric.tooltipDescription || metric.description) && (
@@ -155,7 +155,7 @@ export const MetricsPreviewTable = ({
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-center">
+                <td className="px-4 text-sm text-center">
                   {(() => {
                     const style = getCategoryStyle(metric.category);
                     return (
@@ -172,15 +172,15 @@ export const MetricsPreviewTable = ({
                     );
                   })()}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900">
+                <td className="px-4 text-sm text-gray-900">
                   {metric.currentValue}
                   {getMetricUnit(metric.metricCode)}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600">
+                <td className="px-4 text-sm text-gray-600">
                   {metric.targetValue}
                   {getMetricUnit(metric.metricCode)}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4">
                   <div className="flex items-center space-x-2">
                     {(() => {
                       const Icon = getStatusIcon(metric.status);
@@ -202,7 +202,7 @@ export const MetricsPreviewTable = ({
                     })()}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-600">
+                <td className="px-4 text-sm text-gray-600">
                   {metric.weightRatio.toFixed(1)}%
                 </td>
               </tr>

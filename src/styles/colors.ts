@@ -155,6 +155,12 @@ export const ACHIEVEMENT_COLORS = {
   danger: { bg: "#FEE2E2", text: "#DC2626" }, // 위험 (red-100, red-600)
 } as const;
 
+// 변경 사항 색상
+export const CHANGE_COLORS = {
+  changed: "#005FCC", // 변경된 값 (파란색)
+  emphasis: "#E7000B", // 강조 (빨간색)
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -171,4 +177,5 @@ export const COLORS = {
   codeReview: CODE_REVIEW_COLORS,
   reviewStatusBadge: REVIEW_STATUS_BADGE_COLORS,
   achievement: ACHIEVEMENT_COLORS,
+  change: CHANGE_COLORS,
 } as const;

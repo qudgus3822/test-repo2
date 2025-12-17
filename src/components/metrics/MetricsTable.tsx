@@ -256,6 +256,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
     <div className="space-y-4">
       {/* Tabs와 달성률 필터 */}
       <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+        {/* Tabs 영역 */}
         <div className="flex space-x-6">
           {tabs.map((tab) => (
             <button
@@ -409,7 +410,9 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                         {(metric.tooltipDescription || metric.description) && (
                           <Tooltip
                             content={
-                              metric.tooltipDescription || metric.description || ""
+                              metric.tooltipDescription ||
+                              metric.description ||
+                              ""
                             }
                             color="#6B7280"
                             maxWidth={250}

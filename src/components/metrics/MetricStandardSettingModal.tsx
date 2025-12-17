@@ -1,500 +1,26 @@
-import { useState, useEffect, useMemo } from "react";
-import {
-  X,
-  Settings,
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-} from "lucide-react";
-import { MetricCategory } from "@/types/metrics.types";
-import { getCategoryLabel, getMetricName } from "@/utils/metrics";
-import { useWeightSettings } from "@/api/hooks/useWeightSettings";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useState } from "react";
+import { Settings } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/Button";
 import { useModalAnimation } from "@/hooks";
+import { CHANGE_COLORS } from "@/styles/colors";
+import { getStatusIconConfig } from "@/utils/metrics";
+import { MetricStatus } from "@/types/metrics.types";
+import { applySettingsChanges, cancelPendingChanges } from "@/api/metrics";
+import { metricsPreviewKeys } from "@/api/hooks/useMetricsPreview";
+import { pendingSummaryKeys } from "@/api/hooks/usePendingSummary";
 import {
   MetricsPreviewTable,
   type SettingType,
 } from "@/components/metrics/MetricsPreviewTable";
 import { useMetricsPreview } from "@/api/hooks/useMetricsPreview";
 import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
+import { usePendingSummary } from "@/api/hooks/usePendingSummary";
 import { TargetValueSetting } from "@/components/metrics/TargetValueSetting";
-import { MetricStatus } from "@/types/metrics.types";
-import { getStatusIconConfig } from "@/utils/metrics";
-import {
-  useMetricsStore,
-  DEFAULT_EXCELLENT_THRESHOLD,
-  DEFAULT_DANGER_THRESHOLD,
-} from "@/store/useMetricsStore";
+import { AchievementRateSetting } from "@/components/metrics/AchievementRateSetting";
+import { RatioSetting } from "@/components/metrics/RatioSetting";
+import { useMetricsStore } from "@/store/useMetricsStore";
 import { ConfirmPopup } from "@/components/ui/ConfirmPopup";
-
-// 절대 최소/최대 기준 상수
-const MIN_DANGER_THRESHOLD = 1;
-const MAX_EXCELLENT_THRESHOLD = 100;
-
-interface AchievementRateSettingProps {
-  month: string;
-}
-
-const AchievementRateSetting = ({ month }: AchievementRateSettingProps) => {
-  const {
-    achievementRateExcellentThreshold,
-    achievementRateDangerThreshold,
-  } = useMetricsStore();
-
-  const [excellentThreshold, setExcellentThreshold] = useState(
-    achievementRateExcellentThreshold
-  );
-  const [dangerThreshold, setDangerThreshold] = useState(
-    achievementRateDangerThreshold
-  );
-
-  // month가 변경되거나 store 값이 변경될 때 초기화
-  useEffect(() => {
-    setExcellentThreshold(achievementRateExcellentThreshold);
-    setDangerThreshold(achievementRateDangerThreshold);
-  }, [month, achievementRateExcellentThreshold, achievementRateDangerThreshold]);
-
-  // 우수 기준 검증
-  const isExcellentThresholdValid =
-    excellentThreshold >= dangerThreshold &&
-    excellentThreshold <= MAX_EXCELLENT_THRESHOLD;
-
-  // 위험 기준 검증
-  const isDangerThresholdValid =
-    dangerThreshold >= MIN_DANGER_THRESHOLD &&
-    dangerThreshold < excellentThreshold;
-
-  // 우수 기준 에러 메시지
-  const getExcellentThresholdErrorMessage = () => {
-    if (excellentThreshold > MAX_EXCELLENT_THRESHOLD) {
-      return `우수 기준은 ${MAX_EXCELLENT_THRESHOLD}%이하여야 합니다.`;
-    }
-    if (excellentThreshold < dangerThreshold) {
-      return `우수 기준은 위험 기준보다 높아야 합니다.`;
-    }
-    return "";
-  };
-
-  // 위험 기준 에러 메시지
-  const getDangerThresholdErrorMessage = () => {
-    if (dangerThreshold < MIN_DANGER_THRESHOLD) {
-      return `위험 기준은 ${MIN_DANGER_THRESHOLD}%이상이어야 합니다.`;
-    }
-    if (dangerThreshold >= excellentThreshold) {
-      return `위험 기준은 우수 기준보다 낮아야 합니다.`;
-    }
-    return "";
-  };
-
-  // 소수점 입력 차단
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "." || e.key === ",") {
-      e.preventDefault();
-    }
-  };
-
-  // 기본값으로 재설정
-  const handleReset = () => {
-    setExcellentThreshold(DEFAULT_EXCELLENT_THRESHOLD);
-    setDangerThreshold(DEFAULT_DANGER_THRESHOLD);
-  };
-
-  // 상태별 아이콘 설정
-  const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);
-  const warningConfig = getStatusIconConfig(MetricStatus.WARNING);
-  const dangerConfig = getStatusIconConfig(MetricStatus.DANGER);
-
-  const ExcellentIcon = excellentConfig.icon;
-  const WarningIcon = warningConfig.icon;
-  const DangerIcon = dangerConfig.icon;
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* 헤더 */}
-      <div className="mb-4">
-        <h4 className="text-sm font-semibold text-gray-900">달성률 기준 설정</h4>
-        <p className="text-xs text-gray-500 mt-1">
-          지표의 달성률을 평가하는 기준값을 설정합니다.
-        </p>
-      </div>
-
-      {/* 본문 */}
-      <div className="flex-1 overflow-y-auto space-y-5">
-        {/* 우수 기준 */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <ExcellentIcon
-              className="w-5 h-5"
-              style={{ color: excellentConfig.color }}
-            />
-            <span className="text-sm font-medium text-gray-900">우수 기준</span>
-          </div>
-          <div className="flex items-center gap-3 mb-1">
-            <input
-              type="number"
-              step="1"
-              value={excellentThreshold}
-              onChange={(e) =>
-                setExcellentThreshold(Math.floor(Number(e.target.value)))
-              }
-              onKeyDown={handleKeyDown}
-              className={`flex-1 px-3 py-2 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
-                isExcellentThresholdValid
-                  ? "border-gray-200 focus:ring-blue-500"
-                  : "border-red-300 focus:ring-red-500"
-              }`}
-            />
-            <span className="text-sm text-gray-600 whitespace-nowrap">
-              % 이상
-            </span>
-          </div>
-          {!isExcellentThresholdValid && (
-            <p className="text-xs text-red-500 mb-1">
-              {getExcellentThresholdErrorMessage()}
-            </p>
-          )}
-          <p className="text-xs text-gray-500">
-            달성률이 이 값 이상이면 초록색 체크 아이콘이 표시됩니다.
-          </p>
-        </div>
-
-        {/* 경고 기준 */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <WarningIcon
-              className="w-5 h-5"
-              style={{ color: warningConfig.color }}
-            />
-            <span className="text-sm font-medium text-gray-900">경고 기준</span>
-          </div>
-          <div className="flex items-center gap-2 mb-1">
-            <input
-              type="number"
-              value={dangerThreshold}
-              disabled
-              className="w-[70px] px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600 cursor-not-allowed"
-            />
-            <span className="text-xs text-gray-600">% 이상</span>
-            <span className="text-xs text-gray-400">~</span>
-            <input
-              type="number"
-              value={excellentThreshold}
-              disabled
-              className="w-[70px] px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-sm text-gray-600 cursor-not-allowed"
-            />
-            <span className="text-xs text-gray-600">% 미만</span>
-          </div>
-          <p className="text-xs text-gray-500">
-            달성률이 이 범위에 있으면 주황색 느낌표 아이콘이 표시됩니다.
-          </p>
-        </div>
-
-        {/* 위험 기준 */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <DangerIcon
-              className="w-5 h-5"
-              style={{ color: dangerConfig.color }}
-            />
-            <span className="text-sm font-medium text-gray-900">위험 기준</span>
-          </div>
-          <div className="flex items-center gap-3 mb-1">
-            <input
-              type="number"
-              step="1"
-              value={dangerThreshold}
-              onChange={(e) =>
-                setDangerThreshold(Math.floor(Number(e.target.value)))
-              }
-              onKeyDown={handleKeyDown}
-              className={`flex-1 px-3 py-2 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
-                isDangerThresholdValid
-                  ? "border-gray-200 focus:ring-blue-500"
-                  : "border-red-300 focus:ring-red-500"
-              }`}
-            />
-            <span className="text-sm text-gray-600 whitespace-nowrap">
-              % 미만
-            </span>
-          </div>
-          {!isDangerThresholdValid && (
-            <p className="text-xs text-red-500 mb-1">
-              {getDangerThresholdErrorMessage()}
-            </p>
-          )}
-          <p className="text-xs text-gray-500">
-            달성률이 이 값 미만이면 빨간색 경고 아이콘이 표시됩니다.
-          </p>
-        </div>
-
-        {/* 미리보기 */}
-        <div className="p-3 bg-white rounded-lg border border-gray-200">
-          <h5 className="text-xs font-medium text-gray-900 mb-2">미리보기</h5>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <ExcellentIcon
-                className="w-4 h-4"
-                style={{ color: excellentConfig.color }}
-              />
-              <span className="text-xs text-gray-700">
-                {excellentThreshold}% 이상
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <WarningIcon
-                className="w-4 h-4"
-                style={{ color: warningConfig.color }}
-              />
-              <span className="text-xs text-gray-700">
-                {dangerThreshold}% ~ {excellentThreshold}% 미만
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <DangerIcon
-                className="w-4 h-4"
-                style={{ color: dangerConfig.color }}
-              />
-              <span className="text-xs text-gray-700">
-                {dangerThreshold}% 미만
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 하단 버튼 */}
-      <div className="pt-4 mt-auto">
-        <Button variant="normal" size="sm" onClick={handleReset} className="w-full">
-          기본값으로 재설정
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-// 카테고리 enum을 API 카테고리 문자열로 변환
-const getCategoryValue = (category: MetricCategory): string => {
-  switch (category) {
-    case MetricCategory.CODE_QUALITY:
-      return "quality";
-    case MetricCategory.REVIEW_QUALITY:
-      return "review";
-    case MetricCategory.DEVELOPMENT_EFFICIENCY:
-      return "efficiency";
-    default:
-      return "quality";
-  }
-};
-
-// 카테고리 목록
-const CATEGORIES = [
-  MetricCategory.CODE_QUALITY,
-  MetricCategory.REVIEW_QUALITY,
-  MetricCategory.DEVELOPMENT_EFFICIENCY,
-];
-
-interface MetricWithWeight {
-  metricCode: string;
-  weight: number;
-}
-
-interface RatioSettingProps {
-  month: string;
-}
-
-const RatioSetting = ({ month }: RatioSettingProps) => {
-  const [selectedCategory, setSelectedCategory] = useState<MetricCategory>(
-    MetricCategory.CODE_QUALITY
-  );
-  const [editedMetrics, setEditedMetrics] = useState<MetricWithWeight[]>([]);
-  const [errors, setErrors] = useState<Map<string, string>>(new Map());
-
-  // 비율 설정 조회 API
-  const { data: weightSettingsData, isLoading } = useWeightSettings(month, true);
-
-  // API 데이터가 로드되면 해당 카테고리의 가중치 적용
-  useEffect(() => {
-    if (weightSettingsData) {
-      const categoryValue = getCategoryValue(selectedCategory);
-      const categorySetting = weightSettingsData.settings.find(
-        (s) => s.category === categoryValue
-      );
-
-      if (categorySetting) {
-        setEditedMetrics(
-          categorySetting.metrics.map((m) => ({
-            metricCode: m.metricCode,
-            weight: m.weight,
-          }))
-        );
-      } else {
-        setEditedMetrics([]);
-      }
-      setErrors(new Map());
-    }
-  }, [weightSettingsData, selectedCategory]);
-
-  // 총 가중치 합계
-  const totalWeight = useMemo(
-    () => editedMetrics.reduce((sum, m) => sum + m.weight, 0),
-    [editedMetrics]
-  );
-
-  // 비율 계산 함수
-  const calculateRatio = (weight: number): string => {
-    if (totalWeight === 0) return "0.0";
-    return ((weight / totalWeight) * 100).toFixed(1);
-  };
-
-  // 가중치 변경 핸들러
-  const handleWeightChange = (metricCode: string, value: string) => {
-    const newErrors = new Map(errors);
-
-    // 빈 값 허용 (입력 중)
-    if (value === "") {
-      const updated = editedMetrics.map((m) =>
-        m.metricCode === metricCode ? { ...m, weight: 0 } : m
-      );
-      setEditedMetrics(updated);
-      newErrors.delete(metricCode);
-      setErrors(newErrors);
-      return;
-    }
-
-    const numValue = parseInt(value, 10);
-
-    // 유효성 검증
-    if (isNaN(numValue) || numValue < 1 || numValue > 3) {
-      newErrors.set(metricCode, "1~3 사이의 정수를 입력해주세요.");
-      setErrors(newErrors);
-      return;
-    }
-
-    // 정상 값 설정
-    newErrors.delete(metricCode);
-    setErrors(newErrors);
-
-    const updated = editedMetrics.map((m) =>
-      m.metricCode === metricCode ? { ...m, weight: numValue } : m
-    );
-    setEditedMetrics(updated);
-  };
-
-  // 균등 분배
-  const handleDistributeEvenly = () => {
-    const updated = editedMetrics.map((m) => ({ ...m, weight: 1 }));
-    setEditedMetrics(updated);
-    setErrors(new Map());
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      {/* 헤더 */}
-      <div className="mb-4">
-        <h4 className="text-sm font-semibold text-gray-900">비율 설정</h4>
-        <p className="text-xs text-gray-500 mt-1">
-          각 지표의 가중치를 설정하면 자동으로 비율(%)이 계산됩니다.
-        </p>
-      </div>
-
-      {/* 카테고리 탭 */}
-      <div className="flex gap-2 mb-4">
-        {CATEGORIES.map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
-              selectedCategory === category
-                ? "bg-blue-500 text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            {getCategoryLabel(category)}
-          </button>
-        ))}
-      </div>
-
-      {/* 본문 - 지표 목록 */}
-      <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-32">
-            <LoadingSpinner />
-          </div>
-        ) : editedMetrics.length === 0 ? (
-          <div className="flex items-center justify-center h-32">
-            <p className="text-sm text-gray-500">지표 데이터가 없습니다.</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {editedMetrics.map((metric) => {
-              const error = errors.get(metric.metricCode);
-              return (
-                <div
-                  key={metric.metricCode}
-                  className="p-3 bg-white rounded-lg border border-gray-200"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-900">
-                      {getMetricName(metric.metricCode)}
-                    </span>
-                    <span className="text-sm text-blue-600 font-medium">
-                      {calculateRatio(metric.weight)}%
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">가중치</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={3}
-                      value={metric.weight || ""}
-                      onChange={(e) =>
-                        handleWeightChange(metric.metricCode, e.target.value)
-                      }
-                      onKeyDown={(e) => {
-                        if (["e", "E", "+", "-", "."].includes(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                      className={`w-16 text-center text-sm px-2 py-1 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        error ? "border-red-300 bg-red-50" : "border-gray-200"
-                      }`}
-                    />
-                    <span className="text-xs text-gray-500">(1~3)</span>
-                  </div>
-                  {error && (
-                    <p className="text-xs text-red-500 mt-1">{error}</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* 합계 */}
-      {editedMetrics.length > 0 && (
-        <div className="mt-4 px-3 py-2 bg-blue-50 rounded-lg flex justify-between items-center">
-          <span className="text-xs font-medium text-gray-700">합계</span>
-          <span className="text-xs font-semibold text-blue-600">100.0%</span>
-        </div>
-      )}
-
-      {/* 하단 버튼 */}
-      <div className="pt-4 mt-auto">
-        <Button
-          variant="normal"
-          size="sm"
-          onClick={handleDistributeEvenly}
-          className="w-full"
-        >
-          균등 분배
-        </Button>
-      </div>
-    </div>
-  );
-};
 
 interface MetricStandardSettingModalProps {
   isOpen: boolean;
@@ -502,52 +28,12 @@ interface MetricStandardSettingModalProps {
   month: string;
 }
 
-// 변경 사항 요약 타입
-interface ChangeSummary {
-  targetValue: {
-    codeQuality: number;
-    reviewQuality: number;
-    developmentEfficiency: number;
-  };
-  ratio: {
-    codeQuality: number;
-    reviewQuality: number;
-    developmentEfficiency: number;
-  };
-  achievementRate: {
-    isChanged: boolean;
-    excellent: number;
-    warning: number;
-    danger: number;
-  };
-}
-
-// Mock 데이터 - 변경 사항 요약
-const mockChangeSummary: ChangeSummary = {
-  targetValue: {
-    codeQuality: 0,
-    reviewQuality: 0,
-    developmentEfficiency: 0,
-  },
-  ratio: {
-    codeQuality: 0,
-    reviewQuality: 0,
-    developmentEfficiency: 0,
-  },
-  achievementRate: {
-    isChanged: false,
-    excellent: 80,
-    warning: 70,
-    danger: 70,
-  },
-};
-
 export const MetricStandardSettingModal = ({
   isOpen,
   onClose,
   month,
 }: MetricStandardSettingModalProps) => {
-  const [changeSummary] = useState<ChangeSummary>(mockChangeSummary);
+  const queryClient = useQueryClient();
   const [activeSettingType, setActiveSettingType] =
     useState<SettingType | null>(null);
 
@@ -559,35 +45,74 @@ export const MetricStandardSettingModal = ({
     setIsSettingsResetConfirmModalOpen,
   } = useMetricsStore();
 
+  // 상태별 아이콘 설정
+  const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);
+  const warningConfig = getStatusIconConfig(MetricStatus.WARNING);
+  const dangerConfig = getStatusIconConfig(MetricStatus.DANGER);
+
+  const ExcellentIcon = excellentConfig.icon;
+  const WarningIcon = warningConfig.icon;
+  const DangerIcon = dangerConfig.icon;
+
   // 모달 애니메이션
   const { shouldRender, isAnimating } = useModalAnimation(isOpen, {
     duration: 200,
   });
 
   // 지표 미리보기 데이터 조회 (모달이 열릴 때만 조회)
-  const { data: metricsData, isLoading: isMetricsLoading } =
-    useMetricsPreview(isOpen);
+  const {
+    data: metricsData,
+    isLoading: isMetricsLoading,
+    refetch: refetchPreview,
+  } = useMetricsPreview(isOpen);
   const metrics = metricsData?.metrics ?? [];
+
+  // 변경내역 조회 (모달이 열릴 때만 조회)
+  const { data: pendingSummary, refetch: refetchPendingSummary } =
+    usePendingSummary(isOpen);
 
   // 달성률 기준 조회
   const { data: criteriaData } = useAchievementCriteria(month);
   const excellentThreshold = criteriaData?.thresholds.excellent ?? 80;
   const dangerThreshold = criteriaData?.thresholds.danger ?? 70;
 
+  // API 응답에서 변경 사항 데이터 추출
+  const targetValueCount = {
+    codeQuality: pendingSummary?.targetValue.quality ?? 0,
+    reviewQuality: pendingSummary?.targetValue.review ?? 0,
+    developmentEfficiency: pendingSummary?.targetValue.efficiency ?? 0,
+  };
+  const ratioCount = {
+    codeQuality: pendingSummary?.weight.quality ?? 0,
+    reviewQuality: pendingSummary?.weight.review ?? 0,
+    developmentEfficiency: pendingSummary?.weight.efficiency ?? 0,
+  };
+  const achievementRateChanged = (pendingSummary?.achievementCriteria ?? 0) > 0;
+
   // 설정 버튼 클릭 핸들러
   const handleSettingClick = (settingType: SettingType) => {
     setActiveSettingType(settingType);
+  };
+
+  // 설정 컴포넌트에서 변경사항 적용 후 미리보기 테이블 및 변경 사항 갱신
+  const handleSettingApply = () => {
+    refetchPreview();
+    refetchPendingSummary();
   };
 
   // 설정 타입에 따른 컴포넌트 렌더링
   const renderSettingComponent = () => {
     switch (activeSettingType) {
       case "targetValue":
-        return <TargetValueSetting month={month} />;
+        return (
+          <TargetValueSetting month={month} onApply={handleSettingApply} />
+        );
       case "achievementRate":
-        return <AchievementRateSetting month={month} />;
+        return (
+          <AchievementRateSetting month={month} onApply={handleSettingApply} />
+        );
       case "ratio":
-        return <RatioSetting month={month} />;
+        return <RatioSetting month={month} onApply={handleSettingApply} />;
       default:
         return (
           <p className="text-sm text-gray-500 text-center leading-relaxed">
@@ -601,28 +126,52 @@ export const MetricStandardSettingModal = ({
     }
   };
 
-  // 변경사항 초기화 버튼 클릭
+  // 변경 초기화 버튼 클릭
   const handleResetClick = () => {
     setIsSettingsResetConfirmModalOpen(true);
   };
 
-  // 변경사항 초기화 확인
-  const handleResetConfirm = () => {
-    // TODO: 초기화 로직 구현
-    setActiveSettingType(null);
-    setIsSettingsResetConfirmModalOpen(false);
+  // 변경 초기화 확인
+  const [isResetting, setIsResetting] = useState(false);
+  const handleResetConfirm = async () => {
+    setIsResetting(true);
+    try {
+      // 변경내역 취소 API 호출
+      await cancelPendingChanges();
+      // 쿼리 캐시 무효화 (다음에 모달 열릴 때 새로 조회)
+      await queryClient.invalidateQueries({ queryKey: metricsPreviewKeys.all });
+      await queryClient.invalidateQueries({ queryKey: pendingSummaryKeys.all });
+      // 팝업창 닫기 + 설정 화면 모두 닫기
+      setIsSettingsResetConfirmModalOpen(false);
+      onClose();
+    } catch {
+      window.confirm("변경내역 초기화 중 오류가 발생했습니다.");
+    } finally {
+      setIsResetting(false);
+    }
   };
 
-  // 변경사항 반영 버튼 클릭
+  // 최종 반영 버튼 클릭
   const handleApplyClick = () => {
     setIsSettingsChangeConfirmModalOpen(true);
   };
 
-  // 변경사항 반영 확인
-  const handleApplyConfirm = () => {
-    // TODO: 반영 로직 구현
-    setIsSettingsChangeConfirmModalOpen(false);
-    onClose();
+  // 최종 반영 확인
+  const [isApplying, setIsApplying] = useState(false);
+  const handleApplyConfirm = async () => {
+    setIsApplying(true);
+    try {
+      // 변경내역 적용 API 호출
+      await applySettingsChanges();
+      // 팝업창 닫기 + 설정 화면 모두 닫기
+      setIsSettingsChangeConfirmModalOpen(false);
+      onClose();
+      // 집계 상태는 useSyncStatus 폴링으로 자동 감지됨
+    } catch {
+      window.confirm("변경사항 반영 중 오류가 발생했습니다.");
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   if (!shouldRender) return null;
@@ -650,17 +199,20 @@ export const MetricStandardSettingModal = ({
               <h2 className="text-lg font-semibold text-gray-900">
                 지표 기준 설정
               </h2>
-              <p className="mt-1 text-sm text-orange-600">
+              <p
+                className="mt-1 text-sm"
+                style={{ color: CHANGE_COLORS.emphasis }}
+              >
                 변경된 목표값•달성기준•비율 설정은 즉시 전체 화면에 반영되며
                 해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다.
               </p>
             </div>
-            <button
+            {/* <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 cursor-pointer ml-4 flex-shrink-0"
             >
               <X className="w-5 h-5" />
-            </button>
+            </button> */}
           </div>
 
           {/* 본문 */}
@@ -679,22 +231,31 @@ export const MetricStandardSettingModal = ({
                       <div className="flex items-center gap-4">
                         <span className="text-gray-700">
                           코드품질{" "}
-                          <span className="text-orange-600 font-medium">
-                            {changeSummary.targetValue.codeQuality}개
+                          <span
+                            className="font-medium"
+                            style={{ color: CHANGE_COLORS.changed }}
+                          >
+                            {targetValueCount.codeQuality}개
                           </span>
                         </span>
                         <span className="text-gray-300">|</span>
                         <span className="text-gray-700">
                           리뷰품질{" "}
-                          <span className="text-orange-600 font-medium">
-                            {changeSummary.targetValue.reviewQuality}개
+                          <span
+                            className="font-medium"
+                            style={{ color: CHANGE_COLORS.changed }}
+                          >
+                            {targetValueCount.reviewQuality}개
                           </span>
                         </span>
                         <span className="text-gray-300">|</span>
                         <span className="text-gray-700">
                           개발효율{" "}
-                          <span className="text-orange-600 font-medium">
-                            {changeSummary.targetValue.developmentEfficiency}개
+                          <span
+                            className="font-medium"
+                            style={{ color: CHANGE_COLORS.changed }}
+                          >
+                            {targetValueCount.developmentEfficiency}개
                           </span>
                         </span>
                       </div>
@@ -706,22 +267,31 @@ export const MetricStandardSettingModal = ({
                       <div className="flex items-center gap-4">
                         <span className="text-gray-700">
                           코드품질{" "}
-                          <span className="text-orange-600 font-medium">
-                            {changeSummary.ratio.codeQuality}개
+                          <span
+                            className="font-medium"
+                            style={{ color: CHANGE_COLORS.changed }}
+                          >
+                            {ratioCount.codeQuality}개
                           </span>
                         </span>
                         <span className="text-gray-300">|</span>
                         <span className="text-gray-700">
                           리뷰품질{" "}
-                          <span className="text-orange-600 font-medium">
-                            {changeSummary.ratio.reviewQuality}개
+                          <span
+                            className="font-medium"
+                            style={{ color: CHANGE_COLORS.changed }}
+                          >
+                            {ratioCount.reviewQuality}개
                           </span>
                         </span>
                         <span className="text-gray-300">|</span>
                         <span className="text-gray-700">
                           개발효율{" "}
-                          <span className="text-orange-600 font-medium">
-                            {changeSummary.ratio.developmentEfficiency}개
+                          <span
+                            className="font-medium"
+                            style={{ color: CHANGE_COLORS.changed }}
+                          >
+                            {ratioCount.developmentEfficiency}개
                           </span>
                         </span>
                       </div>
@@ -731,28 +301,45 @@ export const MetricStandardSettingModal = ({
                     <div className="flex items-center gap-4">
                       <span className="text-gray-600 w-20">달성률 설정</span>
                       <div className="flex items-center gap-4">
-                        <span className="text-gray-700">
-                          {changeSummary.achievementRate.isChanged
-                            ? "변경됨"
-                            : "변경없음"}
+                        <span
+                          className="font-medium"
+                          style={{ color: CHANGE_COLORS.changed }}
+                        >
+                          {achievementRateChanged ? "변경됨" : "변경없음"}
                         </span>
                         <span className="text-gray-300">|</span>
                         <div className="flex items-center gap-3 text-gray-600">
-                          <span>( 기준</span>
-                          <span className="flex items-center gap-1 text-green-600">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            {changeSummary.achievementRate.excellent}% 이상
+                          <span>기준</span>
+                          <span
+                            className="flex items-center gap-1"
+                            style={{ color: excellentConfig.color }}
+                          >
+                            <ExcellentIcon
+                              className="w-3.5 h-3.5"
+                              style={{ color: excellentConfig.color }}
+                            />
+                            {excellentThreshold}% 이상
                           </span>
-                          <span className="flex items-center gap-1 text-yellow-600">
-                            <AlertTriangle className="w-3.5 h-3.5" />
-                            {changeSummary.achievementRate.warning}% ~{" "}
-                            {changeSummary.achievementRate.excellent}% 미만
+                          <span
+                            className="flex items-center gap-1"
+                            style={{ color: warningConfig.color }}
+                          >
+                            <WarningIcon
+                              className="w-3.5 h-3.5"
+                              style={{ color: warningConfig.color }}
+                            />
+                            {dangerThreshold}% ~ {excellentThreshold}% 미만
                           </span>
-                          <span className="flex items-center gap-1 text-red-600">
-                            <XCircle className="w-3.5 h-3.5" />
-                            {changeSummary.achievementRate.danger}% 미만
+                          <span
+                            className="flex items-center gap-1"
+                            style={{ color: dangerConfig.color }}
+                          >
+                            <DangerIcon
+                              className="w-3.5 h-3.5"
+                              style={{ color: dangerConfig.color }}
+                            />
+                            {dangerThreshold}% 미만
                           </span>
-                          <span>)</span>
                         </div>
                       </div>
                     </div>
@@ -762,22 +349,29 @@ export const MetricStandardSettingModal = ({
                 {/* 버튼 영역 */}
                 <div className="flex items-end gap-3 self-end">
                   <Button variant="cancel" size="sm" onClick={handleResetClick}>
-                    변경사항 초기화
+                    변경 초기화
                   </Button>
-                  <Button variant="primary" size="sm" onClick={handleApplyClick}>
-                    변경사항 반영
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleApplyClick}
+                  >
+                    최종 반영
                   </Button>
                 </div>
               </div>
             </div>
 
-            {/* 하단 영역 - 설정 미리보기 & 안내 문구 */}
+            {/* 하단 영역 - 변경사항 미리보기 & 안내 문구 */}
             <div className="flex-1 overflow-hidden flex">
-              {/* 왼쪽 - 설정 미리보기 테이블 */}
-              <div className="flex-1 overflow-y-auto px-6 py-5">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  설정 미리보기
-                </h3>
+              {/* 왼쪽 - 변경사항 미리보기 테이블 */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 gap-3">
+                <div className="flex items-start justify-between pb-5 border-b border-gray-200 gap-4">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    변경사항 미리보기
+                  </h2>
+                </div>
+
                 <MetricsPreviewTable
                   metrics={metrics}
                   isLoading={isMetricsLoading}
@@ -789,7 +383,7 @@ export const MetricStandardSettingModal = ({
 
               {/* 오른쪽 - 설정 영역 */}
               <div
-                className={`w-[480px] bg-gray-50 px-6 py-5 flex border-l border-gray-200 ${
+                className={`w-[480px] px-6 py-5 flex border-l border-gray-200 ${
                   activeSettingType ? "flex-col" : "items-center justify-center"
                 }`}
               >
@@ -800,22 +394,24 @@ export const MetricStandardSettingModal = ({
         </div>
       </div>
 
-      {/* 변경사항 반영 확인 팝업 */}
+      {/* 최종 반영 확인 팝업 */}
       <ConfirmPopup
         isOpen={isSettingsChangeConfirmModalOpen}
         onClose={() => setIsSettingsChangeConfirmModalOpen(false)}
         onConfirm={handleApplyConfirm}
         title="변경사항을 반영하시겠습니까?"
         description={`변경된 설정은 즉시 반영되며,\n새로운 설정 기준에 따라 당월 데이터가 전체 재집계됩니다.\n이 작업은 되돌릴 수 없습니다.`}
+        isLoading={isApplying}
       />
 
-      {/* 변경사항 초기화 확인 팝업 */}
+      {/* 변경 초기화 확인 팝업 */}
       <ConfirmPopup
         isOpen={isSettingsResetConfirmModalOpen}
         onClose={() => setIsSettingsResetConfirmModalOpen(false)}
         onConfirm={handleResetConfirm}
         title="변경사항을 초기화하시겠습니까?"
         description={`현재 변경된 설정은 모두 초기화되며,\n이 작업은 되돌릴 수 없습니다.`}
+        isLoading={isResetting}
       />
     </>
   );

@@ -8,6 +8,9 @@ interface ConfirmPopupProps {
   onConfirm: () => void;
   title: string;
   description: string;
+  isLoading?: boolean;
+  confirmText?: string;
+  cancelText?: string;
 }
 
 export const ConfirmPopup = ({
@@ -16,6 +19,9 @@ export const ConfirmPopup = ({
   onConfirm,
   title,
   description,
+  isLoading = false,
+  confirmText = "확인",
+  cancelText = "취소",
 }: ConfirmPopupProps) => {
   const { shouldRender, isAnimating } = useModalAnimation(isOpen, {
     duration: 200,
@@ -62,16 +68,18 @@ export const ConfirmPopup = ({
               size="sm"
               onClick={onClose}
               className="flex-1"
+              disabled={isLoading}
             >
-              취소
+              {cancelText}
             </Button>
             <Button
               variant="primary"
               size="sm"
               onClick={onConfirm}
               className="flex-1"
+              disabled={isLoading}
             >
-              확인
+              {isLoading ? "처리 중..." : confirmText}
             </Button>
           </div>
         </div>
