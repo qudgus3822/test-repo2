@@ -30,7 +30,7 @@ interface OrganizationDetailModalProps {
 
 // 점수에 따른 배경색 결정
 const getScoreBgColor = (score: number | null): string => {
-  if (score === null) return SCORE_COLORS.none;
+  if (score === null) return SCORE_COLORS.noScore;
   if (score >= SCORE_EXCELLENT_THRESHOLD) return SCORE_COLORS.excellent;
   if (score >= SCORE_GOOD_THRESHOLD) return SCORE_COLORS.good;
   return SCORE_COLORS.danger;
