@@ -77,8 +77,8 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
     "FAILURE_DIAGNOSIS_TIME",
     "FAILURE_RECOVERY_TIME",
     "DEPLOYMENT_SUCCESS_RATE",
-    "MR_SIZE",
-    "CODE_LINE_COUNT_PER_COMMIT",
+    "PR_SIZE",
+    "LOC_PER_COMMIT",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
 };
 

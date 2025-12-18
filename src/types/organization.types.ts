@@ -150,8 +150,8 @@ export interface DevelopmentEfficiencyMetrics {
   FAILURE_DIAGNOSIS_TIME: MetricScoreValue;
   FAILURE_RECOVERY_TIME: MetricScoreValue;
   DEPLOYMENT_SUCCESS_RATE: MetricScoreValue;
-  MR_SIZE: MetricScoreValue;
-  CODE_LINE_COUNT_PER_COMMIT: MetricScoreValue;
+  PR_SIZE: MetricScoreValue;
+  LOC_PER_COMMIT: MetricScoreValue;
 }
 
 // 통합 metrics 타입 (API 응답에서 탭에 따라 다른 구조)

@@ -44,9 +44,9 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   REVIEW_COMPLETION_TIME: "리뷰완료시간",
   REVIEW_REVIEWER_DIVERSE: "리뷰어다양성",
   // 개발효율 (9개)
-  MR_SIZE: "MR크기",
+  PR_SIZE: "MR크기",
   COMMIT_FREQUENCY: "커밋빈도",
-  CODE_LINE_COUNT_PER_COMMIT: "커밋당라인수",
+  LOC_PER_COMMIT: "커밋당라인수",
   LEAD_TIME: "평균장애해결시간",
   FAILURE_DETECTION_TIME: "장애탐지시간",
   FAILURE_DIAGNOSIS_TIME: "장애진단시간",
@@ -91,9 +91,9 @@ export const METRIC_CODE_UNITS: Record<string, string> = {
   REVIEW_COMPLETION_TIME: "분", // 리뷰완료시간
   REVIEW_REVIEWER_DIVERSE: "점", // 리뷰어다양성
   // 개발효율 (9개)
-  MR_SIZE: "LOC", // MR크기
+  PR_SIZE: "LOC", // MR크기
   COMMIT_FREQUENCY: "회", // 커밋빈도
-  CODE_LINE_COUNT_PER_COMMIT: "LOC", // 커밋당라인수
+  LOC_PER_COMMIT: "LOC", // 커밋당라인수
   LEAD_TIME: "초", // 평균장애해결시간
   FAILURE_DETECTION_TIME: "초", // 장애탐지시간
   FAILURE_DIAGNOSIS_TIME: "초", // 장애진단시간
@@ -139,9 +139,9 @@ export const METRIC_CODE_ORDER: Record<string, number> = {
   REVIEW_COMPLETION_TIME: 20,
   REVIEW_REVIEWER_DIVERSE: 21,
   // 개발효율 (22-30) - METRIC_CODE_NAMES 순서와 동일
-  MR_SIZE: 22,
+  PR_SIZE: 22,
   COMMIT_FREQUENCY: 23,
-  CODE_LINE_COUNT_PER_COMMIT: 24,
+  LOC_PER_COMMIT: 24,
   LEAD_TIME: 25,
   FAILURE_DETECTION_TIME: 26,
   FAILURE_DIAGNOSIS_TIME: 27,
