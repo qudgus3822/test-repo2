@@ -2,6 +2,10 @@ import type { CompanyQualityMetrics } from "@/types/companyQuality.types";
 import type { ServiceStabilityMetrics } from "@/types/serviceStability.types";
 import type { ProductionTrendResponse } from "@/types/productionTrend.types";
 import type { MetricRankings } from "@/types/metricRankings.types";
+import type {
+  CodeReviewProgressResponse,
+  CodeReviewProgressParams,
+} from "@/types/codeReviewMetric";
 import { apiGet } from "@/libs/fetch";
 
 /**
@@ -59,5 +63,26 @@ export const fetchMetricRankings = async (
 ): Promise<MetricRankings> => {
   return apiGet<MetricRankings>(
     `/dashboard/metric-rankings?month=${month}&type=${type}`,
+  );
+};
+
+/**
+ * 코드 리뷰 진행 현황 조회
+ * @param {CodeReviewProgressParams} params - 조회 파라미터
+ * @returns {Promise<CodeReviewProgressResponse>} 코드 리뷰 진행 현황 데이터
+ * @throws {Error} 데이터 조회 실패 시 에러
+ */
+export const fetchCodeReviewProgress = async (
+  params: CodeReviewProgressParams = {},
+): Promise<CodeReviewProgressResponse> => {
+  const {
+    page = 1,
+    limit = 15,
+    sortBy = "collectedAt",
+    sortOrder = "desc",
+  } = params;
+
+  return apiGet<CodeReviewProgressResponse>(
+    `/reviews/progress?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
   );
 };

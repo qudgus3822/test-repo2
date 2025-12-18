@@ -67,7 +67,7 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
       <h3 className="text-lg font-semibold text-gray-900">지표 순위</h3>
       <div>
         {/* 우수 지표 TOP 5 */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-h-[200px]">
           <div className="flex items-center gap-2">
             <img src={upIcon} alt="up" />
             <h4 className="text-sm font-semibold text-gray-700">
@@ -105,7 +105,7 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
         {/* 구분선-수평선 */}
         <div className="border-t border-[#E2E8F0] my-6"></div>
         {/* 위험 지표 TOP 5 */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 min-h-[200px]">
           <div className="flex items-center gap-2">
             <img src={downIcon} alt="down" />
             <h4 className="text-sm font-semibold text-gray-700">
