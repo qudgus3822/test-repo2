@@ -25,6 +25,7 @@ const MetricsPage = () => {
     setPeriod,
     currentDate,
     setCurrentDate,
+    setActiveTab,
     isTargetValueSettingModalOpen,
     setIsTargetValueSettingModalOpen,
     isAchievementRateSettingModalOpen,
@@ -40,6 +41,13 @@ const MetricsPage = () => {
     isMetricStandardSettingModalOpen,
     setIsMetricStandardSettingModalOpen,
   } = useMetricsStore((state) => state);
+
+  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
+  useEffect(() => {
+    setPeriod("monthly");
+    setCurrentDate(new Date());
+    setActiveTab("bdpi");
+  }, [setPeriod, setCurrentDate, setActiveTab]);
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
@@ -124,16 +132,6 @@ const MetricsPage = () => {
               currentDate={currentDate}
               onDateChange={setCurrentDate}
             />
-            {/* 변경사항 반영 버튼 */}
-            {/* <Button
-              variant="primary"
-              size="md"
-              onClick={handleSaveChanges}
-              disabled={!isSettingsChanged}
-            >
-              <FileText className="w-4 h-4 mr-1.5" />
-              변경사항 반영
-            </Button> */}
             {/* 지표 기준 설정 버튼 */}
             <div className="flex items-center gap-2">
               {isProcessing && (

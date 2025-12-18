@@ -143,6 +143,12 @@ const ChangeRateDisplay = ({
   if (!comparison) return <span className="text-gray-400">--</span>;
 
   const { changePercent, direction } = comparison;
+
+  // direction이 "new"이면 전월 데이터가 없으므로 "--" 표시
+  if (direction === "new") {
+    return <span className="text-gray-400">--</span>;
+  }
+
   const isUp = direction === "up";
   const isDown = direction === "down";
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   MetricsOverview,
   TargetValueAchievement,
@@ -7,27 +8,23 @@ import {
 } from "@/components/dashboard";
 import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { usePdfDownload } from "@/hooks";
 
 const DashboardPage = () => {
   const { period, setPeriod, currentDate, setCurrentDate } = useDashboardStore(
     (state) => state,
   );
-  const { downloadPdf, isGenerating } = usePdfDownload();
+
+  // 페이지 진입 시 초기화: 당월로 설정
+  useEffect(() => {
+    setPeriod("monthly");
+    setCurrentDate(new Date());
+  }, [setPeriod, setCurrentDate]);
 
   // 날짜를 YYYY-MM 형식으로 변환
   const formattedMonth = `${currentDate.getFullYear()}-${String(
     currentDate.getMonth() + 1,
   ).padStart(2, "0")}`;
-
-  const handleDownload = () => {
-    downloadPdf(
-      "dashboard-content",
-      "BarcodePlus_Monitoring_Dashboard_2025.pdf",
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -41,7 +38,7 @@ const DashboardPage = () => {
               currentDate={currentDate}
               onDateChange={setCurrentDate}
             />
-            {/* PDF 다운로드 버튼 */}
+            {/* TODO: Phase2 개발 예정 - PDF 내보내기 버튼
             <Button
               variant="primary"
               size="md"
@@ -50,6 +47,7 @@ const DashboardPage = () => {
             >
               {isGenerating ? "PDF 생성 중..." : "PDF 내보내기"}
             </Button>
+            */}
           </div>
         </Card>
       </div>

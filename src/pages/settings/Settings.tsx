@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { OrganizationManagement } from "@/components/settings/OrganizationManagement";
 import { UserManagement } from "@/components/settings/UserManagement";
 import {
@@ -9,6 +9,11 @@ import { Card } from "@/components/ui/Card";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("organization");
+
+  // 페이지 진입 시 초기화: 조직도 관리 탭으로 설정
+  useEffect(() => {
+    setActiveTab("organization");
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">

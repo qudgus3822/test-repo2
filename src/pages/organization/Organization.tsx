@@ -44,6 +44,7 @@ const getDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
 const OrganizationPage = () => {
   const {
     activeTab,
+    setActiveTab,
     period,
     setPeriod,
     currentDate,
@@ -55,6 +56,13 @@ const OrganizationPage = () => {
     collapseToDefault,
     isTeamsExpanded,
   } = useOrganizationStore();
+
+  // 페이지 진입 시 초기화: 당월, BDPI 탭으로 설정
+  useEffect(() => {
+    setPeriod("monthly");
+    setCurrentDate(new Date());
+    setActiveTab("bdpi");
+  }, [setPeriod, setCurrentDate, setActiveTab]);
 
   // 상세 모달 상태
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
