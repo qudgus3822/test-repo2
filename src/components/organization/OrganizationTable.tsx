@@ -187,18 +187,22 @@ const ScoreCell = ({
 }) => {
   // isUsed가 false이면 수집 불가 지표로 표시
   const isNoData = !isUsed;
+  // score가 null이면 수집 가능하지만 데이터 없음
+  const isNoScore = isUsed && score === null;
 
   return (
     <td
       className={clsx(
         "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px]",
         isFirst && "border-l",
-        !isNoData && getScoreTextColor(score),
+        !isNoData && !isNoScore && getScoreTextColor(score),
       )}
       style={{
         backgroundColor: isNoData
           ? SCORE_COLORS.noData
-          : getScoreBgColor(score),
+          : isNoScore
+            ? SCORE_COLORS.noScore
+            : getScoreBgColor(score),
         color: isNoData ? SCORE_COLORS.noDataText : undefined,
       }}
     >
