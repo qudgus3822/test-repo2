@@ -23,14 +23,14 @@ const getLevel1DepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   return orgs.filter((org) => org.level === 1).map((org) => org.code);
 };
 
-// Level 3(팀)까지의 조직 코드 수집 (부문 + 실 + 팀)
-// 전체 팀 열기 클릭 시 사용 → 팀 멤버까지 보임
+// Level 2(실)까지의 조직 코드 수집 (부문 + 실)
+// 전체 팀 열기 클릭 시 사용 → 팀 목록까지 보임 (팀은 접힌 상태)
 const getDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   const codes: string[] = [];
   const collect = (org: OrganizationDepartment) => {
     codes.push(org.code);
-    // Level 1(부문), Level 2(실), Level 3(팀)까지 수집
-    if (org.level <= 3 && org.children) {
+    // Level 1(부문)만 children 탐색 → Level 2(실)까지만 수집
+    if (org.level < 2 && org.children) {
       org.children.forEach((child) => {
         if (child.type === "department") {
           collect(child);
@@ -118,8 +118,9 @@ const OrganizationPage = () => {
 
   const handleToggleTeams = () => {
     if (isTeamsExpanded) {
-      // 접기: IT부문만 펼침 → 실 단위까지 보임
-      collapseToDefault();
+      // 접기: 초기 화면 진입 시와 동일 (Level 1만 펼침 → 실 단위까지 보임)
+      const level1Codes = getLevel1DepartmentCodes(organizations);
+      collapseToDefault(level1Codes);
     } else {
       // 열기: 실 단위까지 펼침 → 팀 단위까지 보임
       const deptCodes = getDepartmentCodes(organizations);
