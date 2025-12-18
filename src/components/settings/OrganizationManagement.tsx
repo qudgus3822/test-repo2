@@ -150,12 +150,18 @@ const TeamList = ({
   selectedCode,
   onSelect,
   isDepartmentSelected,
+  departmentDirectMembers,
 }: {
   teams: OrganizationDepartment[];
   selectedCode: string | null;
   onSelect: (code: string) => void;
   isDepartmentSelected: boolean;
+  departmentDirectMembers: OrganizationMember[];
 }) => {
+  const hasDirectMembers = departmentDirectMembers.length > 0;
+  const hasTeams = teams.length > 0;
+  const hasContent = hasDirectMembers || hasTeams;
+
   return (
     <Card padding="none" className="h-full">
       <div className="p-4 border-b border-gray-200">
@@ -165,43 +171,80 @@ const TeamList = ({
         </div>
       </div>
       <div className="overflow-y-auto h-[390px]">
-        {teams.length === 0 ? (
+        {!hasContent ? (
           <div className="p-4 text-center text-gray-500 text-sm">
             {isDepartmentSelected
               ? "해당 실에 팀 정보가 없습니다."
               : "실을 선택하면 팀 목록이 표시됩니다."}
           </div>
         ) : (
-          teams.map((team) => (
-            <div
-              key={team.code}
-              className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
-                selectedCode === team.code
-                  ? "bg-orange-50 border-l-orange-400"
-                  : "border-l-transparent"
-              }`}
-              onClick={() => onSelect(team.code)}
-            >
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <OrgTypeBadge
-                    isEvaluationTarget={team.isEvaluationTarget}
-                    fixedWidth
-                  />
-                  <span className="font-medium text-gray-900 text-sm">
-                    {team.name}
-                  </span>
-                  <ChangesBadgeGroup changes={team.changes} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">
-                    {team.memberCount}명
-                  </span>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
+          <>
+            {/* 팀 목록 */}
+            {teams.map((team) => (
+              <div
+                key={team.code}
+                className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
+                  selectedCode === team.code
+                    ? "bg-orange-50 border-l-orange-400"
+                    : "border-l-transparent"
+                }`}
+                onClick={() => onSelect(team.code)}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <OrgTypeBadge
+                      isEvaluationTarget={team.isEvaluationTarget}
+                      fixedWidth
+                    />
+                    <span className="font-medium text-gray-900 text-sm">
+                      {team.name}
+                    </span>
+                    <ChangesBadgeGroup changes={team.changes} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">
+                      {team.memberCount}명
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+            {/* 실 직속 멤버 (멤버 목록 UI 스타일) */}
+            {departmentDirectMembers.map((member) => {
+              const roleLabel = getMemberRoleOrPositionLabel(
+                member.title,
+                member.personalTitle,
+              );
+
+              return (
+                <div
+                  key={member.employeeID}
+                  className="h-[65px] px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center"
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    {/* 프로필 아바타 */}
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200">
+                      <User className="w-5 h-5 text-gray-500" />
+                    </div>
+                    {/* 멤버 정보 */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-gray-900 text-sm">
+                          {member.name}
+                        </span>
+                        <span className="text-gray-500 text-sm">{roleLabel}</span>
+                        <HRChangesBadgeGroup changes={member.changes} />
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {member.email || getMemberEmail(member.employeeID)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </>
         )}
       </div>
     </Card>
@@ -467,6 +510,15 @@ export const OrganizationManagement = () => {
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [selectedDepartment]);
 
+  // 선택된 부서(실)의 직속 멤버 목록
+  const departmentDirectMembers = useMemo<OrganizationMember[]>(() => {
+    if (!selectedDepartment?.children) return [];
+
+    return selectedDepartment.children.filter(
+      (child): child is OrganizationMember => child.type === "member",
+    );
+  }, [selectedDepartment]);
+
   // 선택된 팀
   const selectedTeam = useMemo(() => {
     return teams.find((t) => t.code === selectedTeamCode);
@@ -606,6 +658,7 @@ export const OrganizationManagement = () => {
           selectedCode={selectedTeamCode}
           onSelect={handleTeamSelect}
           isDepartmentSelected={selectedDepartmentCode !== null}
+          departmentDirectMembers={departmentDirectMembers}
         />
 
         {/* 개인 목록 */}
