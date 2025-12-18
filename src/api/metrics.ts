@@ -164,3 +164,19 @@ export const cancelPendingChanges = async (): Promise<void> => {
 export const fetchSyncStatus = async (): Promise<SyncStatusResponse> => {
   return apiGet<SyncStatusResponse>("/metrics/sync/status");
 };
+
+/**
+ * 마지막 집계 시간 응답 타입
+ */
+export interface LastAggregatedAtResponse {
+  lastAggregatedAt: string;
+}
+
+/**
+ * 마지막 집계 시간 조회 API
+ * @returns 마지막 집계 시간
+ */
+export const fetchLastAggregatedAt =
+  async (): Promise<LastAggregatedAtResponse> => {
+    return apiGet<LastAggregatedAtResponse>("/metrics/last-aggregated-at");
+  };

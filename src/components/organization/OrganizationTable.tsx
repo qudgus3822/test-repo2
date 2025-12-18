@@ -593,7 +593,17 @@ export const OrganizationTable = ({
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-lg">
       <table className="w-full table-fixed">
-        {activeTab !== "bdpi" && (
+        {activeTab === "bdpi" ? (
+          <colgroup>
+            <col style={{ width: "40%" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "80px" }} />
+          </colgroup>
+        ) : (
           <colgroup>
             <col style={{ width: "50%" }} />
             {Array.from({ length: metricCount }).map((_, i) => (

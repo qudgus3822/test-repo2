@@ -22,24 +22,58 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
     error,
   } = useDeveloperProductivity(month);
 
-  // 개발생산성 트렌드 데이터 가공
-  const trendData = useMemo(
-    () =>
-      developerProductivityData
-        ? developerProductivityData.trends.map((item) => {
-            const [year, monthNum] = item.month.split("-");
-            return {
-              month: `${year}년 ${parseInt(monthNum)}월`, // '2025-05' -> '2025년 5월'
-              "BDPI 평균": item.bdpiAverage,
-              "코드 품질": item.codeQuality,
-              "리뷰 품질": item.reviewQuality,
-              "개발 효율": item.developmentEfficiency,
-              "목표치": item.target,
-            };
-          })
-        : [],
-    [developerProductivityData],
-  );
+  // 최근 6개월 날짜 생성 함수
+  const generateLast6Months = (baseMonth: string) => {
+    const [year, monthNum] = baseMonth.split("-").map(Number);
+    const months: string[] = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(year, monthNum - 1 - i, 1);
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      months.push(`${y}-${m}`);
+    }
+
+    return months;
+  };
+
+  // 개발생산성 트렌드 데이터 가공 (최근 6개월, 없는 데이터는 0으로 채움)
+  const trendData = useMemo(() => {
+    const last6Months = generateLast6Months(month);
+
+    // API 데이터를 month 기준으로 맵핑
+    const dataMap = new Map(
+      developerProductivityData?.map((item) => [item.month, item]) ?? [],
+    );
+
+    return last6Months.map((monthKey) => {
+      const [year, monthNum] = monthKey.split("-");
+      const item = dataMap.get(monthKey);
+      const hasData = !!item;
+
+      return {
+        month: `${year}년 ${parseInt(monthNum)}월`,
+        "BDPI 평균": item?.bdpiAverage ?? 0,
+        "코드 품질": item?.quality ?? 0,
+        "리뷰 품질": item?.review ?? 0,
+        "개발 효율": item?.efficiency ?? 0,
+        목표치: item?.target ?? 0,
+        _hasData: hasData, // 데이터 존재 여부 플래그
+      };
+    });
+  }, [developerProductivityData, month]);
+
+  // 툴팁 값 포맷터 (데이터 없는 경우 "-" 표시)
+  const tooltipValueFormatter = (
+    value: number,
+    _key: string,
+    dataPoint: Record<string, string | number>,
+  ) => {
+    if (!dataPoint._hasData) {
+      return "-";
+    }
+    return value;
+  };
 
   // yAxisDomain 계산 (데이터의 최소값, 최대값)
   const yAxisDomain = useMemo((): [number, number] => {
@@ -99,6 +133,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
           showGrid={true}
           dashedKeys={["목표치"]}
           yAxisDomain={yAxisDomain}
+          tooltipValueFormatter={tooltipValueFormatter}
         />
       </div>
     </Card>
