@@ -11,7 +11,7 @@ import {
 import { CHART_STYLES, LINE_CHART_MARGIN, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
-  [key: string]: string | number;
+  [key: string]: string | number | boolean;
 }
 
 type YAxisDomainType = "auto" | "dataMinMax" | "fromZero" | [number, number];

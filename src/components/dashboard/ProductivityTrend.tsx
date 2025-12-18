@@ -67,7 +67,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
   const tooltipValueFormatter = (
     value: number,
     _key: string,
-    dataPoint: Record<string, string | number>,
+    dataPoint: Record<string, string | number | boolean>,
   ) => {
     if (!dataPoint._hasData) {
       return "-";
