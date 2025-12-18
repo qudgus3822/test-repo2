@@ -123,7 +123,7 @@ const getScoreLevel = (score: number | null): ScoreLevel | null => {
 
 const getScoreBgColor = (score: number | null): string => {
   const level = getScoreLevel(score);
-  if (level === null) return SCORE_COLORS.none;
+  if (level === null) return SCORE_COLORS.noScore;
   if (level === "excellent") return SCORE_COLORS.excellent;
   if (level === "good") return SCORE_COLORS.good;
   return SCORE_COLORS.danger;
