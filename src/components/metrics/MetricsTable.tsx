@@ -1,14 +1,11 @@
 import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
-import { Button } from "@/components/ui/Button";
 import {
   Search,
   ArrowDownUp,
   Info,
-  Pencil,
   ArrowUp,
   ArrowDown,
-  Settings,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
@@ -75,10 +72,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
     achievementRateDangerThreshold,
     setAchievementRateExcellentThreshold,
     setAchievementRateDangerThreshold,
-    setIsTargetValueSettingModalOpen,
-    setIsAchievementRateSettingModalOpen,
     setIsMetricsDetailModalOpen,
-    setIsMetricRateSettingModalOpen,
     setSelectedMetric,
   } = useMetricsStore((state) => state);
 
@@ -105,13 +99,6 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const [ratioSortOrder, setRatioSortOrder] = useState<"asc" | "desc" | null>(
     null,
   );
-
-  // 현재 날짜와 선택된 날짜의 년/월 비교 (같은 월인지 확인)
-  const now = new Date();
-  const currentYearMonth = `${now.getFullYear()}-${String(
-    now.getMonth() + 1,
-  ).padStart(2, "0")}`;
-  const isCurrentMonth = month === currentYearMonth;
 
   // 달성률 기준값 (store 값 사용)
   const excellentThreshold = achievementRateExcellentThreshold;
@@ -273,17 +260,6 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
           ))}
         </div>
         <div className="flex items-center gap-3">
-          {/* 비율 설정 버튼 (전체 탭 제외) */}
-          {activeTab !== "bdpi" && (
-            <Button
-              variant="setting"
-              size="sm"
-              onClick={() => setIsMetricRateSettingModalOpen(true)}
-            >
-              <Settings className="w-4 h-4 mr-1.5" />
-              비율 설정
-            </Button>
-          )}
           {/* 달성률 필터 */}
           <AchievementRateFilter
             value={achievementRateFilter}
@@ -312,48 +288,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>
                 <th className="px-4 py-3 w-[12%]">현재값</th>
 
-                <th className="px-4 py-3 w-[12%]">
-                  <div className="flex items-center gap-1.5">
-                    목표값
-                    {isCurrentMonth && (
-                      <span className="flex items-center cursor-pointer">
-                        <Tooltip
-                          content="지표의 목표값을 수정할 수 있습니다."
-                          color="#6B7280"
-                        >
-                          <Pencil
-                            className="w-4 h-4"
-                            id="목표값 설정 아이콘"
-                            onClick={() =>
-                              setIsTargetValueSettingModalOpen(true)
-                            }
-                          />
-                        </Tooltip>
-                      </span>
-                    )}
-                  </div>
-                </th>
-                <th className="px-4 py-3 w-[12%]">
-                  <div className="flex items-center gap-1.5">
-                    달성률
-                    {isCurrentMonth && (
-                      <span className="flex items-center cursor-pointer">
-                        <Tooltip
-                          content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                          color="#6B7280"
-                        >
-                          <Pencil
-                            className="w-4 h-4"
-                            id="달성률 설정 아이콘"
-                            onClick={() =>
-                              setIsAchievementRateSettingModalOpen(true)
-                            }
-                          />
-                        </Tooltip>
-                      </span>
-                    )}
-                  </div>
-                </th>
+                <th className="px-4 py-3 w-[12%]">목표값</th>
+                <th className="px-4 py-3 w-[12%]">달성률</th>
                 <th className="px-4 py-3 w-[12%]">
                   <div className="flex items-center gap-1.5">
                     비율

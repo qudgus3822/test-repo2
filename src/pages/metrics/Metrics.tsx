@@ -5,13 +5,11 @@ import { MetricsSummary } from "@/components/metrics/MetricsSummary";
 import { TargetValueAchievement } from "@/components/dashboard/TargetValueAchievement";
 import { MetricsTable } from "@/components/metrics/MetricsTable";
 import { useMetricsStore } from "@/store/useMetricsStore";
-import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
-import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
 import { SettingsChangeConfirmModal } from "@/components/metrics/SettingsChangeConfirmModal";
 import { MetricStandardSettingModal } from "@/components/metrics/MetricStandardSettingModal";
-import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
+import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
@@ -26,10 +24,6 @@ const MetricsPage = () => {
     currentDate,
     setCurrentDate,
     setActiveTab,
-    isTargetValueSettingModalOpen,
-    setIsTargetValueSettingModalOpen,
-    isAchievementRateSettingModalOpen,
-    setIsAchievementRateSettingModalOpen,
     isMetricsDetailModalOpen,
     setIsMetricsDetailModalOpen,
     selectedMetric,
@@ -76,8 +70,6 @@ const MetricsPage = () => {
   // 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
     const isAnyModalOpen =
-      isTargetValueSettingModalOpen ||
-      isAchievementRateSettingModalOpen ||
       isMetricsDetailModalOpen ||
       isMetricRateSettingModalOpen ||
       isSettingsChangeConfirmModalOpen ||
@@ -106,8 +98,6 @@ const MetricsPage = () => {
       document.body.style.paddingRight = originalPaddingRight;
     };
   }, [
-    isTargetValueSettingModalOpen,
-    isAchievementRateSettingModalOpen,
     isMetricsDetailModalOpen,
     isMetricRateSettingModalOpen,
     isSettingsChangeConfirmModalOpen,
@@ -171,28 +161,6 @@ const MetricsPage = () => {
       <Card className="w-full">
         <MetricsTable month={month} />
       </Card>
-
-      {/* 지표 리스트 - 목표값 설정 모달 */}
-      <TargetValueSettingModal
-        isOpen={isTargetValueSettingModalOpen}
-        onClose={() => setIsTargetValueSettingModalOpen(false)}
-        metrics={metrics}
-        month={month}
-        onSave={(updatedMetrics: TargetValueMetric[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
-          console.log("Updated metrics:", updatedMetrics);
-        }}
-      />
-
-      {/* 지표 리스트 - 달성률 설정 모달 */}
-      <AchievementRateSettingModal
-        isOpen={isAchievementRateSettingModalOpen}
-        onClose={() => setIsAchievementRateSettingModalOpen(false)}
-        metrics={metrics}
-        onSave={(updatedMetrics: MetricItem[]) => {
-          console.log("Updated achievement rates:", updatedMetrics);
-        }}
-      />
 
       {/* 지표 리스트 - 지표 상세보기 모달 */}
       <MetricsDetailModal

@@ -2,15 +2,26 @@ import { SCORE_COLORS } from "@/styles/colors";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Info } from "lucide-react";
 
+interface ScoreLegendProps {
+  excellentThreshold?: number; // 우수 기준 (기본값: 80)
+  dangerThreshold?: number; // 위험 기준 (기본값: 70)
+}
+
 /**
  * 점수 범례 컴포넌트
- * 80% 이상 (초록), 70%~80% 미만 (연한 초록), 70% 미만 (주황)
+ * excellentThreshold 이상 (초록), dangerThreshold ~ excellentThreshold 미만 (연한 초록), dangerThreshold 미만 (주황)
  */
-export const ScoreLegend = () => {
+export const ScoreLegend = ({
+  excellentThreshold = 80,
+  dangerThreshold = 70,
+}: ScoreLegendProps) => {
   const legends = [
-    { color: SCORE_COLORS.excellent, label: "80% 이상" },
-    { color: SCORE_COLORS.good, label: "70% ~ 80% 미만" },
-    { color: SCORE_COLORS.danger, label: "70% 미만" },
+    { color: SCORE_COLORS.excellent, label: `${excellentThreshold}% 이상` },
+    {
+      color: SCORE_COLORS.good,
+      label: `${dangerThreshold}% ~ ${excellentThreshold}% 미만`,
+    },
+    { color: SCORE_COLORS.danger, label: `${dangerThreshold}% 미만` },
   ];
 
   return (

@@ -360,7 +360,7 @@ export const OrganizationDetailModal = ({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
@@ -402,7 +402,9 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics?.quality?.score ?? 0),
+                          color: getScoreTextColor(
+                            bdpiMetrics?.quality?.score ?? 0,
+                          ),
                         }}
                       >
                         {(bdpiMetrics?.quality?.score ?? 0).toFixed(1)}
@@ -420,7 +422,9 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics?.review?.score ?? 0),
+                          color: getScoreTextColor(
+                            bdpiMetrics?.review?.score ?? 0,
+                          ),
                         }}
                       >
                         {(bdpiMetrics?.review?.score ?? 0).toFixed(1)}
@@ -438,7 +442,9 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.efficiency.score),
+                          color: getScoreTextColor(
+                            bdpiMetrics.efficiency.score,
+                          ),
                         }}
                       >
                         {bdpiMetrics.efficiency.score.toFixed(1)}
@@ -447,7 +453,9 @@ export const OrganizationDetailModal = ({
                     <div
                       className="rounded-lg px-4 py-3 border-2 border-blue-200"
                       style={{
-                        backgroundColor: getScoreBgColor(bdpiMetrics.bdpi.score),
+                        backgroundColor: getScoreBgColor(
+                          bdpiMetrics.bdpi.score,
+                        ),
                       }}
                     >
                       <div className="text-xs text-gray-500 mb-1">BDPI</div>

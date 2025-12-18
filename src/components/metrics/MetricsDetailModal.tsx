@@ -1,6 +1,10 @@
 import type { MetricItem } from "@/types/metrics.types";
 import { X } from "lucide-react";
-import { getCategoryLabel, getCategoryStyle, getMetricName } from "@/utils/metrics";
+import {
+  getCategoryLabel,
+  getCategoryStyle,
+  getMetricName,
+} from "@/utils/metrics";
 import { useModalAnimation } from "@/hooks";
 
 interface MetricsDetailModalProps {
@@ -18,21 +22,6 @@ export const MetricsDetailModal = ({
   const { shouldRender, isAnimating } = useModalAnimation(isOpen);
 
   if (!shouldRender || !metric) return null;
-
-  {
-    /* 추후 개발 예정 기능 주석 처리 */
-  }
-  // const statusConfig = getStatusIconConfig(metric.status);
-
-  // // 6개월 추이 목업 데이터 (실제로는 API에서 받아와야 함)
-  // const trendData = [
-  //   { month: "2024.06", 목표값: metric.targetValue, 달성값: 75, 기준값: 80 },
-  //   { month: "2024.07", 목표값: metric.targetValue, 달성값: 77, 기준값: 80 },
-  //   { month: "2024.08", 목표값: metric.targetValue, 달성값: 79, 기준값: 80 },
-  //   { month: "2024.09", 목표값: metric.targetValue, 달성값: 80, 기준값: 80 },
-  //   { month: "2024.10", 목표값: metric.targetValue, 달성값: 82, 기준값: 80 },
-  //   { month: "2024.11", 목표값: metric.targetValue, 달성값: 85, 기준값: 80 },
-  // ];
 
   return (
     <>
@@ -58,7 +47,7 @@ export const MetricsDetailModal = ({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
@@ -94,13 +83,14 @@ export const MetricsDetailModal = ({
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
                   <div className="text-xs text-gray-500 mb-1">데이터 소스</div>
                   <div className="text-sm font-medium text-gray-900">
-                    {metric.dataSource || "현재 데이터 없음"}
+                    {metric.sources?.join(", ") || metric.dataSource || "-"}
                   </div>
                 </div>
               </div>
             </div>
-            {/* 현재 성과 (추후 개발 예정 기능 주석 처리) */}
-            {/*<div className="mb-6">
+
+            {/* [Phase 2] 현재 성과 - 추후 개발 예정 */}
+            {/* <div className="mb-6">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 현재 성과
               </h3>
@@ -109,30 +99,40 @@ export const MetricsDetailModal = ({
                   <div className="text-xs text-gray-500 mb-1">현재값</div>
                   <div className="text-sm font-semibold text-blue-600">
                     {metric.currentValue}
+                    {getMetricUnit(metric.metricCode)}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
                   <div className="text-xs text-gray-500 mb-1">목표값</div>
                   <div className="text-sm font-medium text-gray-900">
                     {metric.targetValue}
+                    {getMetricUnit(metric.metricCode)}
                   </div>
                 </div>
-                 <div
-                  className="rounded-lg px-4 py-3"
-                  style={{
-                    backgroundColor: statusConfig.bgColor,
-                  }}
-                >
+                <div className="bg-gray-50 rounded-lg px-4 py-3">
                   <div className="text-xs text-gray-500 mb-1">달성률</div>
                   <div
-                    className="text-sm font-semibold"
-                    style={{ color: statusConfig.color }}
+                    className="text-sm font-semibold flex items-center gap-1"
+                    style={{ color: statusColor }}
                   >
-                    {metric.achievementRate}%
+                    <StatusIcon className="w-4 h-4" />
+                    {Math.round(metric.achievementRate)}%
                   </div>
-                </div> 
+                </div>
               </div>
-            </div>*/}
+            </div> */}
+
+            {/* [Phase 2] BDPI 반영 비율 - 추후 개발 예정 */}
+            {/* <div className="mb-6">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                BDPI 반영 비율
+              </h3>
+              <div className="bg-gray-50 rounded-lg px-4 py-3">
+                <div className="text-sm font-medium text-gray-900">
+                  {metric.weightRatio.toFixed(1)}%
+                </div>
+              </div>
+            </div> */}
 
             {/* 지표 설명 */}
             <div className="mb-6">
@@ -140,28 +140,9 @@ export const MetricsDetailModal = ({
                 지표 설명
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-4 py-3">
-                {metric.description ||
-                  "코드의 기술부표 수준 측정합니다. 낮을수록 좋고 지표입니다. 기술부표가 높으면 유지보수 비용이 증가하고 버그 발생률이 높아집니다."}
+                {metric.tooltipDescription || metric.description || "-"}
               </p>
             </div>
-
-            {/* 6개월 추세 및 이동 평균 차트 (추후 개발 예정) */}
-            {/* <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                6개월 추세 및 이동 평균
-              </h3>
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <LineChart
-                  data={trendData}
-                  xKey="month"
-                  yKeys={["목표값", "달성값", "기준값"]}
-                  height={300}
-                  showGrid={true}
-                  showDots={true}
-                  showLegend={true}
-                />
-              </div>
-            </div> */}
           </div>
         </div>
       </div>

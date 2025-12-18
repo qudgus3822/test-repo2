@@ -13,6 +13,7 @@ import {
 import type { OrganizationDetailItem } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 import type { OrganizationDepartment } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 
@@ -93,6 +94,11 @@ const OrganizationPage = () => {
     activeTab,
   );
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
+
+  // 달성률 기준 API 조회
+  const { data: criteriaData } = useAchievementCriteria(yearMonth);
+  const excellentThreshold = criteriaData?.thresholds.excellent ?? 80;
+  const dangerThreshold = criteriaData?.thresholds.danger ?? 70;
 
   // 데이터가 있는지 확인 (isEvaluationTarget: true인 조직이 있는지)
   const hasData =
@@ -188,7 +194,12 @@ const OrganizationPage = () => {
           />
         </div>
 
-        {hasData && <ScoreLegend />}
+        {hasData && (
+          <ScoreLegend
+            excellentThreshold={excellentThreshold}
+            dangerThreshold={dangerThreshold}
+          />
+        )}
       </Card>
 
       {/* 조직/멤버 상세 모달 */}
