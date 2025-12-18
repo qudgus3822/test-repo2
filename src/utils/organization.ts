@@ -246,18 +246,18 @@ export const getChangeTypeLabel = (type?: string): string => {
 };
 
 /**
- * ISO 8601 날짜 문자열을 yyyy-MM-dd 형식으로 변환합니다.
+ * ISO 8601 날짜 문자열을 yyyy.MM.dd 형식으로 변환합니다.
  *
  * @param dateString - ISO 8601 형식의 날짜 문자열
- * @returns yyyy-MM-dd 형식의 날짜 문자열
+ * @returns yyyy.MM.dd 형식의 날짜 문자열
  */
 export const formatChangeDate = (dateString?: string): string => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(
     2,
     "0",
-  )}-${String(date.getDate()).padStart(2, "0")}`;
+  )}.${String(date.getDate()).padStart(2, "0")}`;
 };
 
 /**

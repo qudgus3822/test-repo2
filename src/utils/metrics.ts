@@ -56,6 +56,49 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
 };
 
 /**
+ * 지표 코드를 `테이블 헤더용 2줄 표시명`으로 매핑하는 객체
+ * 80px 컬럼 너비에 맞게 줄바꿈 위치를 지정합니다.
+ * 줄바꿈이 필요 없는 짧은 이름은 포함하지 않습니다.
+ *
+ * @example
+ * ```typescript
+ * import { METRIC_CODE_DISPLAY_NAMES } from "@/utils/metrics";
+ *
+ * const displayName = METRIC_CODE_DISPLAY_NAMES["LOC_PER_COMMIT"];
+ * // Returns: ["커밋당", "라인수"]
+ * ```
+ */
+export const METRIC_CODE_DISPLAY_NAMES: Record<string, [string, string]> = {
+  // 코드품질
+  CODE_COMPLEXITY: ["코드", "복잡도"],
+  CODE_DUPLICATION: ["코드", "중복률"],
+  SECURITY_VULNERABILITIES: ["보안", "취약점수"],
+  BUG_COUNT: ["버그", "발생수"],
+  INCIDENT_COUNT: ["장애", "발생수"],
+  TEST_COVERAGE: ["테스트", "커버리지"],
+  CODE_DEFECT_DENSITY: ["코드", "결함밀도"],
+  // 리뷰품질
+  REVIEW_RESPONSE_RATE: ["리뷰요청", "응답률"],
+  REVIEW_PARTICIPATION_RATE: ["리뷰", "참여율"],
+  REVIEW_ACCEPTANCE_RATE: ["리뷰제안", "수용률"],
+  REVIEW_FEEDBACK_CONCRETENESS: ["피드백", "구체성"],
+  REVIEW_REQUEST_COUNT: ["리뷰", "요청수"],
+  REVIEW_PARTICIPATION_COUNT: ["리뷰", "참여수"],
+  REVIEW_PASS_RATE: ["초회", "통과율"],
+  REVIEW_PARTICIPATION_NUMBER: ["코드리뷰", "참여수치"],
+  REVIEW_FEEDBACK_TIME: ["피드백", "반영시간"],
+  REVIEW_COMPLETION_TIME: ["리뷰", "완료시간"],
+  REVIEW_REVIEWER_DIVERSE: ["리뷰어", "다양성"],
+  // 개발효율
+  LOC_PER_COMMIT: ["커밋당", "라인수"],
+  LEAD_TIME: ["평균장애", "해결시간"],
+  FAILURE_DETECTION_TIME: ["장애", "탐지시간"],
+  FAILURE_DIAGNOSIS_TIME: ["장애", "진단시간"],
+  FAILURE_RECOVERY_TIME: ["장애", "복구시간"],
+  DEPLOYMENT_SUCCESS_RATE: ["배포", "성공률"],
+};
+
+/**
  * 지표 코드를 `단위(unit)`로 매핑하는 객체
  *
  * @example

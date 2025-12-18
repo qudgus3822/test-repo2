@@ -28,7 +28,11 @@ import {
   getMemberEmail,
   getChangeDetailWithSuffix,
 } from "@/utils/organization";
-import { METRIC_CODE_NAMES, getMetricOrder } from "@/utils/metrics";
+import {
+  METRIC_CODE_NAMES,
+  METRIC_CODE_DISPLAY_NAMES,
+  getMetricOrder,
+} from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -201,8 +205,8 @@ const ScoreCell = ({
         backgroundColor: isNoData
           ? SCORE_COLORS.noData
           : isNoScore
-            ? SCORE_COLORS.noScore
-            : getScoreBgColor(score),
+          ? SCORE_COLORS.noScore
+          : getScoreBgColor(score),
         color: isNoData ? SCORE_COLORS.noDataText : undefined,
       }}
     >
@@ -570,17 +574,28 @@ export const OrganizationTable = ({
 
     return (
       <>
-        {metricCodes.map((code, index) => (
-          <th
-            key={code}
-            className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px] break-words`}
-            style={{
-              borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
-            }}
-          >
-            {METRIC_CODE_NAMES[code] || code}
-          </th>
-        ))}
+        {metricCodes.map((code, index) => {
+          const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+          return (
+            <th
+              key={code}
+              className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px]`}
+              style={{
+                borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
+              }}
+            >
+              {displayName ? (
+                <>
+                  {displayName[0]}
+                  <br />
+                  {displayName[1]}
+                </>
+              ) : (
+                METRIC_CODE_NAMES[code] || code
+              )}
+            </th>
+          );
+        })}
       </>
     );
   };
@@ -599,13 +614,13 @@ export const OrganizationTable = ({
       <table className="w-full table-fixed">
         {activeTab === "bdpi" ? (
           <colgroup>
-            <col style={{ width: "40%" }} />
+            <col /> {/* 조직 이름 - 남은 width 모두 사용 */}
             <col style={{ width: "100px" }} />
             <col style={{ width: "100px" }} />
             <col style={{ width: "100px" }} />
             <col style={{ width: "100px" }} />
             <col style={{ width: "100px" }} />
-            <col style={{ width: "80px" }} />
+            <col style={{ width: "100px" }} />
           </colgroup>
         ) : (
           <colgroup>
