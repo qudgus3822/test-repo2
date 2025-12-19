@@ -24,6 +24,7 @@ const MetricsPage = () => {
     currentDate,
     setCurrentDate,
     setActiveTab,
+    setAchievementRateFilter,
     isMetricsDetailModalOpen,
     setIsMetricsDetailModalOpen,
     selectedMetric,
@@ -36,12 +37,13 @@ const MetricsPage = () => {
     setIsMetricStandardSettingModalOpen,
   } = useMetricsStore((state) => state);
 
-  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
+  // 페이지 진입 시 초기화: 당월, 전체 탭, 달성률 필터 전체로 설정
   useEffect(() => {
     setPeriod("monthly");
     setCurrentDate(new Date());
     setActiveTab("bdpi");
-  }, [setPeriod, setCurrentDate, setActiveTab]);
+    setAchievementRateFilter("all");
+  }, [setPeriod, setCurrentDate, setActiveTab, setAchievementRateFilter]);
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);

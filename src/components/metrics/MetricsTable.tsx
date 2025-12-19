@@ -1,12 +1,6 @@
 import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
-import {
-  Search,
-  ArrowDownUp,
-  Info,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
+import { Search, ArrowDownUp, Info, ArrowUp, ArrowDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
@@ -183,7 +177,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
     },
     {
       id: "developmentEfficiency",
-      label: "개발품질",
+      label: "개발효율",
       count: developmentEfficiencyCount,
       category: MetricCategory.DEVELOPMENT_EFFICIENCY,
     },

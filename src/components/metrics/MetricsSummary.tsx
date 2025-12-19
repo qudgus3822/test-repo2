@@ -47,7 +47,7 @@ export const MetricsSummary = ({ month }: MetricsSummaryProps) => {
       iconColor: PALETTE_COLORS.orange,
     },
     {
-      label: "개발 효율",
+      label: "개발효율",
       value: data.developmentEfficiencyCount,
       icon: BarChart3,
       iconColor: PALETTE_COLORS.purple,
