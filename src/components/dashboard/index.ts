@@ -7,3 +7,4 @@ export { TargetValueAchievement } from "./TargetValueAchievement";
 export { ServiceStability } from "./ServiceStability";
 export { MetricsRanking } from "./MetricsRanking";
 export { ProductivityTrend } from "./ProductivityTrend";
+export { OrgChangeHistoryModal } from "./OrgChangeHistoryModal";

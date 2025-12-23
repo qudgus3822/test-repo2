@@ -79,7 +79,7 @@ const SortableHeader = ({
 };
 
 export const CodeReviewStatusModal = () => {
-  const { isCodeReviewModalOpen, closeCodeReviewModal } = useDashboardStore();
+  const { isCodeReviewModalOpen, setCodeReviewModal } = useDashboardStore();
   const { shouldRender, isAnimating } = useModalAnimation(
     isCodeReviewModalOpen,
   );
@@ -164,7 +164,7 @@ export const CodeReviewStatusModal = () => {
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
-        onClick={closeCodeReviewModal}
+        onClick={() => setCodeReviewModal(false)}
       />
 
       {/* 모달 */}
@@ -172,7 +172,7 @@ export const CodeReviewStatusModal = () => {
         className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-200 ${
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
-        onClick={closeCodeReviewModal}
+        onClick={() => setCodeReviewModal(false)}
       >
         <div
           className="bg-white rounded-lg shadow-xl w-[900px] flex flex-col"
@@ -184,7 +184,7 @@ export const CodeReviewStatusModal = () => {
               코드 리뷰 진행 현황
             </h2>
             <button
-              onClick={closeCodeReviewModal}
+              onClick={() => setCodeReviewModal(false)}
               className="text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               <X className="w-5 h-5" />

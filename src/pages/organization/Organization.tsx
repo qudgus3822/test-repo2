@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Cable } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
@@ -10,8 +10,10 @@ import {
   ScoreLegend,
   OrganizationDetailModal,
 } from "@/components/organization";
+import { OrgChangeHistoryModal } from "@/components/dashboard";
 import type { OrganizationDetailItem } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
+import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 import type { OrganizationDepartment } from "@/types/organization.types";
@@ -57,6 +59,8 @@ const OrganizationPage = () => {
     collapseToDefault,
     isTeamsExpanded,
   } = useOrganizationStore();
+
+  const { setOrgHistoryModal } = useDashboardStore();
 
   // 페이지 진입 시 초기화: 당월, BDPI 탭으로 설정
   useEffect(() => {
@@ -143,6 +147,14 @@ const OrganizationPage = () => {
               currentDate={currentDate}
               onDateChange={setCurrentDate}
             />
+            {/* 조직도 변경 히스토리 팝업 버튼 */}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setOrgHistoryModal(true)}
+            >
+              <Cable className="w-4 h-4" />
+            </Button>
           </div>
           {/* 통합검색 (추후 개발 예정) + 전체 팀 열기 버튼 */}
           <div className="flex items-center gap-2">
@@ -209,6 +221,9 @@ const OrganizationPage = () => {
         onClose={handleDetailModalClose}
         item={selectedDetailItem}
       />
+
+      {/* 조직도 변경 히스토리 모달 */}
+      <OrgChangeHistoryModal />
     </div>
   );
 };

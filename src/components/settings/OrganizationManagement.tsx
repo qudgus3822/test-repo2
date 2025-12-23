@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
+import { ChangeHistoryList } from "@/components/ui/ChangeHistoryList";
 import {
   ChevronRight,
   Users,
@@ -16,22 +17,15 @@ import type {
   OrganizationDepartment,
   OrganizationMember,
   OrganizationNode,
-  OrgHistoryItem,
 } from "@/types/organization.types";
 import { MemberPositionLabel } from "@/types/organization.types";
 import { formatDisplayDateTime } from "@/utils/date";
-import {
-  getMemberEmail,
-  getChangeDetailWithSuffix,
-  getMemberRoleOrPositionLabel,
-} from "@/utils/organization";
+import { getMemberEmail, getMemberRoleOrPositionLabel } from "@/utils/organization";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
 import { OrganizationHistoryModal } from "./OrganizationHistoryModal";
-import {
-  useOrganizationTreeBasic,
-  useOrgChangeHistory,
-} from "@/api/hooks/useOrganizationTree";
+import { useOrganizationTreeBasic } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { LastSyncInfo } from "@/components/ui/LastSyncInfo";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
 // 실장/팀장 찾기 헬퍼 함수
@@ -233,7 +227,9 @@ const TeamList = ({
                         <span className="font-medium text-gray-900 text-sm">
                           {member.name}
                         </span>
-                        <span className="text-gray-500 text-sm">{roleLabel}</span>
+                        <span className="text-gray-500 text-sm">
+                          {roleLabel}
+                        </span>
                         <HRChangesBadgeGroup changes={member.changes} />
                       </div>
                       <p className="text-xs text-gray-500">
@@ -340,18 +336,21 @@ const MemberList = ({
   );
 };
 
+// 조직도 관리 페이지용 칼럼 너비
+const orgManagementColWidths = {
+  bullet: "1%",
+  date: "11%",
+  divider: "1%",
+  processedBy: "11%",
+  changeType: "6%",
+  orgType: "6%",
+  name: "14%",
+  detail: "25%",
+};
+
 // 변경 이력 컴포넌트
 const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { data, isLoading } = useOrgChangeHistory(yearMonth);
-
-  // GROUP, POLICY 카테고리만 필터링
-  const filteredData = useMemo<OrgHistoryItem[]>(() => {
-    if (!data?.changes) return [];
-    return data.changes.filter(
-      (item) => item.category === "GROUP" || item.category === "POLICY",
-    );
-  }, [data]);
 
   return (
     <Card padding="sm" className="mt-4">
@@ -368,72 +367,14 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
           실/팀 변경 이력
         </span>
       </div>
+      {/* 실/팀 변경 이력 */}
       {isExpanded && (
         <div className="mt-3">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <LoadingSpinner />
-            </div>
-          ) : filteredData.length === 0 ? (
-            <ul className="list-disc list-inside text-sm text-gray-500 pl-2">
-              <li>변경 이력이 없습니다.</li>
-            </ul>
-          ) : (
-            <ul className="space-y-1.5 pl-2 max-h-[139px] overflow-y-auto">
-              {filteredData.map((item, index) => (
-                <li
-                  key={`${item.changeDate}-${index}`}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <span className="w-[1%] text-gray-400">•</span>
-                  <span className="w-[11%] text-gray-600">
-                    {formatDisplayDateTime(item.changeDate)}
-                  </span>
-                  <span className="w-[1%] text-gray-400">|</span>
-                  <span
-                    className={`w-[11%] truncate ${
-                      item.processedBy && item.processedBy !== "자동(LDAP)"
-                        ? "text-blue-600 font-medium"
-                        : "text-gray-600"
-                    }`}
-                    title={item.processedBy}
-                  >
-                    {item.processedBy || "-"}
-                  </span>
-                  <span className="w-[6%]">
-                    <ChangeTypeBadge type={item.changeType} fixedWidth />
-                  </span>
-                  <span className="w-[6%]">
-                    <OrgTypeBadge
-                      isEvaluationTarget={item.isEvaluationTarget}
-                      fixedWidth
-                    />
-                  </span>
-                  <span
-                    className="w-[14%] text-gray-700 truncate"
-                    title={item.name || "-"}
-                  >
-                    {item.name || "-"}
-                  </span>
-                  <span
-                    className="w-[25%] text-gray-700 truncate"
-                    title={getChangeDetailWithSuffix(
-                      item.changeDetail,
-                      item.category,
-                      item.changeType,
-                    )}
-                  >
-                    {getChangeDetailWithSuffix(
-                      item.changeDetail,
-                      item.category,
-                      item.changeType,
-                    )}
-                  </span>
-                  <span className="w-[10%]"></span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ChangeHistoryList
+            yearMonth={yearMonth}
+            colWidths={orgManagementColWidths}
+            maxHeight="139px"
+          />
         </div>
       )}
     </Card>
@@ -670,11 +611,7 @@ export const OrganizationManagement = () => {
 
       {/* 하단 영역 */}
       <div className="flex items-center justify-end gap-4">
-        <p className="text-sm text-gray-500 mt-1 gap-1 flex items-center">
-          <span>마지막 동기화</span>
-          <span>{lastSyncDate}</span>
-          <span>(LDAP AD기준)</span>
-        </p>
+        <LastSyncInfo syncDate={lastSyncDate} />
         <div className="flex items-center gap-2">
           <span
             className={`w-2 h-2 rounded-full ${

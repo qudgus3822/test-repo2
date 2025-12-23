@@ -39,9 +39,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
   } = useCompanyQuality(month);
 
   // 코드 리뷰 현황 모달 상태
-  const openCodeReviewModal = useDashboardStore(
-    (state) => state.openCodeReviewModal,
-  );
+  const { setCodeReviewModal } = useDashboardStore();
 
   // API 에러 시 목업 데이터 사용
   const data = error ? MOCK_COMPANY_QUALITY_DATA : companyQualityData;
@@ -192,7 +190,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                 <Button
                   variant="normal"
                   size="sm"
-                  onClick={openCodeReviewModal}
+                  onClick={() => setCodeReviewModal(true)}
                 >
                   상세보기
                 </Button>
