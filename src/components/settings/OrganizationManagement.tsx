@@ -420,7 +420,7 @@ export const OrganizationManagement = () => {
 
     const level2Depts: OrganizationDepartment[] = [];
 
-    // Level 1 (부문)에서 Level 2 (실) 추출
+    // Level 1 (부문)에서 Level 2 (실) 추출 - API 응답 순서 유지
     for (const level1 of organizationData.tree) {
       if (level1.children) {
         for (const child of level1.children) {
@@ -431,7 +431,7 @@ export const OrganizationManagement = () => {
       }
     }
 
-    return level2Depts.sort((a, b) => a.sortOrder - b.sortOrder);
+    return level2Depts;
   }, [organizationData]);
 
   // 선택된 부서 (실)
@@ -439,16 +439,14 @@ export const OrganizationManagement = () => {
     return departments.find((d) => d.code === selectedDepartmentCode);
   }, [departments, selectedDepartmentCode]);
 
-  // 선택된 부서의 팀 목록 (Level 3)
+  // 선택된 부서의 팀 목록 (Level 3) - API 응답 순서 유지
   const teams = useMemo<OrganizationDepartment[]>(() => {
     if (!selectedDepartment?.children) return [];
 
-    return selectedDepartment.children
-      .filter(
-        (child): child is OrganizationDepartment =>
-          child.type === "department" && child.level === 3,
-      )
-      .sort((a, b) => a.sortOrder - b.sortOrder);
+    return selectedDepartment.children.filter(
+      (child): child is OrganizationDepartment =>
+        child.type === "department" && child.level === 3,
+    );
   }, [selectedDepartment]);
 
   // 선택된 부서(실)의 직속 멤버 목록
