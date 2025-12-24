@@ -95,7 +95,7 @@ export const Tooltip = ({
         createPortal(
           <div
             ref={tooltipRef}
-            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg pointer-events-none whitespace-pre-line break-keep"
+            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg pointer-events-none whitespace-pre-line break-words"
             style={{
               backgroundColor: color,
               ...(direction === "bottom"

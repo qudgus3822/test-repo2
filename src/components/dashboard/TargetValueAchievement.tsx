@@ -50,7 +50,8 @@ export const TargetValueAchievement = ({
   }
 
   const { achievedMetrics, totalMetrics } = goalAchievementData;
-  const percentage = totalMetrics > 0 ? (achievedMetrics / totalMetrics) * 100 : 0;
+  const hasData = achievedMetrics !== null && totalMetrics > 0;
+  const percentage = hasData ? (achievedMetrics / totalMetrics) * 100 : 0;
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -63,9 +64,10 @@ export const TargetValueAchievement = ({
           gradient={ACHIEVEMENT_GRADIENT}
           size={180}
           strokeWidth={20}
+          noDataLabel={hasData ? undefined : "-%"}
         />
         <p className="mt-4 text-sm text-gray-600">
-          {achievedMetrics}/{totalMetrics} 지표 달성
+          {achievedMetrics ?? "-"}/{totalMetrics} 지표 달성
         </p>
       </div>
     </div>

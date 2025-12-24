@@ -150,7 +150,7 @@ const LoginPage = () => {
 
             {/* 에러 메시지 */}
             {(errorMessage || loginError) && (
-              <div className="rounded-md bg-red-50 p-3 text-center text-md text-red-600">
+              <div className="rounded-md p-3 text-center text-md text-red-600">
                 {errorMessage || loginError?.message}
               </div>
             )}

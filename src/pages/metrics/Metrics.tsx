@@ -15,6 +15,7 @@ import { formatYearMonth } from "@/utils";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
 import { useSyncStatus } from "@/api/hooks/useSyncStatus";
 import { Button } from "@/components/ui";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { Settings } from "lucide-react";
 
 const MetricsPage = () => {
@@ -47,6 +48,12 @@ const MetricsPage = () => {
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
+
+  // 선택된 날짜가 현재 년/월과 일치하는지 확인
+  const now = new Date();
+  const isCurrentMonth =
+    currentDate.getFullYear() === now.getFullYear() &&
+    currentDate.getMonth() === now.getMonth();
 
   // 지표 설정 동기화 상태 조회 (10초 폴링)
   const { isProcessing } = useSyncStatus();
@@ -124,21 +131,36 @@ const MetricsPage = () => {
               currentDate={currentDate}
               onDateChange={setCurrentDate}
             />
-            {/* 지표 기준 설정 버튼 */}
-            <div className="flex items-center gap-2">
-              {isProcessing && (
-                <span className="text-sm text-gray-500">집계 진행중</span>
-              )}
-              <Button
-                variant="setting"
-                size="sm"
-                onClick={() => setIsMetricStandardSettingModalOpen(true)}
-                disabled={isProcessing}
+            {/* 지표 기준 설정 버튼 (당월에만 표시) */}
+            {isCurrentMonth && (
+              <Tooltip
+                maxWidth={400}
+                content={
+                  isProcessing
+                    ? "현재 집계가 진행중이므로 추가 설정은 불가능합니다."
+                    : ""
+                }
+                direction="bottom"
               >
-                <Settings className="w-4 h-4 mr-1" />
-                지표 기준 설정
-              </Button>
-            </div>
+                <div className="flex items-center gap-4">
+                  {isProcessing && (
+                    <span className="text-sm text-gray-500 flex items-center gap-1.5">
+                      <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+                      집계 진행중
+                    </span>
+                  )}
+                  <Button
+                    variant="setting"
+                    size="sm"
+                    onClick={() => setIsMetricStandardSettingModalOpen(true)}
+                    disabled={isProcessing}
+                  >
+                    <Settings className="w-4 h-4 mr-1" />
+                    지표 기준 설정
+                  </Button>
+                </div>
+              </Tooltip>
+            )}
           </div>
         </Card>
       </div>

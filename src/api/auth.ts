@@ -79,7 +79,12 @@ export const loginToServer = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "로그인 실패");
+      // 영문 에러 메시지를 한글로 변환
+      const errorMessage =
+        errorData.message === "Invalid email or password"
+          ? "이메일 또는 비밀번호가 올바르지 않습니다."
+          : errorData.message || "로그인에 실패했습니다.";
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
