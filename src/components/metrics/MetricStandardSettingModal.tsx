@@ -126,8 +126,23 @@ export const MetricStandardSettingModal = ({
     }
   };
 
+  // 변경 사항이 있는지 확인
+  const hasChanges =
+    targetValueCount.codeQuality > 0 ||
+    targetValueCount.reviewQuality > 0 ||
+    targetValueCount.developmentEfficiency > 0 ||
+    ratioCount.codeQuality > 0 ||
+    ratioCount.reviewQuality > 0 ||
+    ratioCount.developmentEfficiency > 0 ||
+    achievementRateChanged;
+
   // 변경 초기화 버튼 클릭
   const handleResetClick = () => {
+    // 변경 사항이 없으면 팝업 없이 모달 닫기
+    if (!hasChanges) {
+      onClose();
+      return;
+    }
     setIsSettingsResetConfirmModalOpen(true);
   };
 
@@ -355,6 +370,7 @@ export const MetricStandardSettingModal = ({
                     variant="primary"
                     size="sm"
                     onClick={handleApplyClick}
+                    disabled={!hasChanges}
                   >
                     최종 반영
                   </Button>
