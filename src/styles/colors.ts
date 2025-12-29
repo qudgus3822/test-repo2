@@ -93,9 +93,9 @@ export const SCORE_COLORS = {
   excellent: "#91D470", // 80% 이상 (초록)
   good: "#FBFFBD", // 70% ~ 80% 미만 (연한 노란색)
   danger: "#F38752", // 70% 미만 (주황)
-  none: "#F3F4F6", // 데이터 없음 (회색)
   noData: "#7A7F85", // 수집 불가 지표 (진회색)
   noDataText: "#C9CCD1", // 수집 불가 지표 텍스트 (연회색)
+  noScore: "#F3F4F6", // 수집 가능 지표 - 데이터 없음 (회색)
 } as const;
 
 // 조직비교 상태 뱃지 색상 (ApiMemberStatus 기준)
@@ -134,6 +134,33 @@ export const CHANGE_TYPE_BADGE_COLORS = {
   default: "#6B7280", // 기본 (회색)
 } as const;
 
+// 코드 리뷰 진행률 색상
+export const CODE_REVIEW_COLORS = {
+  completed: "#22C55E", // 완료 (green-500)
+  completedText: "#FFFFFF", // 완료 텍스트 (white)
+  incomplete: "#D1D5DB", // 미완료 (gray-300)
+  incompleteText: "#374151", // 미완료 텍스트 (gray-700)
+} as const;
+
+// 코드 리뷰 상태 뱃지 색상 (ReviewStatus 기준)
+export const REVIEW_STATUS_BADGE_COLORS = {
+  completed: { bg: "#E8F5E9", text: "#008236" }, // 완료 (초록)
+  incomplete: { bg: "#E5E7EB", text: "#7B7B7B" }, // 미완료 (회색)
+} as const;
+
+// 달성률 상태 색상 (아이콘 배경/텍스트)
+export const ACHIEVEMENT_COLORS = {
+  excellent: { bg: "#DCFCE7", text: "#16A34A" }, // 우수 (green-100, green-600)
+  warning: { bg: "#FEF3C7", text: "#D97706" }, // 경고 (amber-100, amber-600)
+  danger: { bg: "#FEE2E2", text: "#DC2626" }, // 위험 (red-100, red-600)
+} as const;
+
+// 변경 사항 색상
+export const CHANGE_COLORS = {
+  changed: "#005FCC", // 변경된 값 (파란색)
+  emphasis: "#E7000B", // 강조 (빨간색)
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -147,4 +174,8 @@ export const COLORS = {
   score: SCORE_COLORS,
   statusBadge: STATUS_BADGE_COLORS,
   changeTypeBadge: CHANGE_TYPE_BADGE_COLORS,
+  codeReview: CODE_REVIEW_COLORS,
+  reviewStatusBadge: REVIEW_STATUS_BADGE_COLORS,
+  achievement: ACHIEVEMENT_COLORS,
+  change: CHANGE_COLORS,
 } as const;

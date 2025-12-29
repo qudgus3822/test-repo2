@@ -112,25 +112,28 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
   if (isLoading || error || !metrics || metrics.length === 0) {
     return (
       <Card className="w-full h-auto">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          서비스 안정성
-        </h3>
-        <div className="flex items-center justify-center min-h-[152px]">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : (
-            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
-          )}
+        <div className="grid grid-cols-1 gap-4">
+          <h3 className="text-lg font-semibold text-gray-900">
+            서비스 안정성
+          </h3>
+          <div className="flex items-center justify-center min-h-[152px]">
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <p className="text-gray-500">수집된 데이터가 없습니다.</p>
+            )}
+          </div>
         </div>
       </Card>
     );
   }
   return (
     <Card className="w-full h-auto">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        서비스 안정성
-      </h3>
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          서비스 안정성
+        </h3>
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
         {metrics.map((metric) => {
           const Icon = getStatusIcon(metric.status);
           const iconColor = getStatusColor(metric.status);
@@ -183,6 +186,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
             </div>
           );
         })}
+        </div>
       </div>
     </Card>
   );

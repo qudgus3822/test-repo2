@@ -10,6 +10,14 @@ interface DashboardStore {
    * 현재 선택된 날짜입니다.
    */
   currentDate: Date;
+  /**
+   * 코드 리뷰 현황 팝업 열림 상태입니다.
+   */
+  isCodeReviewModalOpen: boolean;
+  /**
+   * 조직도 변경 히스토리 팝업 열림 상태입니다.
+   */
+  isOrgHistoryModalOpen: boolean;
 }
 
 interface DashboardAction {
@@ -21,11 +29,21 @@ interface DashboardAction {
    * 현재 선택된 날짜를 설정합니다.
    */
   setCurrentDate: (date: Date) => void;
+  /**
+   * 코드 리뷰 현황 팝업을 엽니다.
+   */
+  setCodeReviewModal: (isCodeReviewModalOpen: boolean) => void;
+  /**
+   * 조직도 변경 히스토리 팝업을
+   */
+  setOrgHistoryModal: (isOrgHistoryModalOpen: boolean) => void;
 }
 
 const initState: DashboardStore = {
   period: "monthly",
   currentDate: new Date(),
+  isCodeReviewModalOpen: false,
+  isOrgHistoryModalOpen: false,
 };
 
 export const useDashboardStore = create<DashboardStore & DashboardAction>(
@@ -33,5 +51,9 @@ export const useDashboardStore = create<DashboardStore & DashboardAction>(
     ...initState,
     setPeriod: (period: PeriodType) => set({ period }),
     setCurrentDate: (date: Date) => set({ currentDate: date }),
+    setCodeReviewModal: (isCodeReviewModalOpen: boolean) =>
+      set({ isCodeReviewModalOpen }),
+    setOrgHistoryModal: (isOrgHistoryModalOpen: boolean) =>
+      set({ isOrgHistoryModalOpen }),
   }),
 );

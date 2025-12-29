@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import { flushSync } from "react-dom";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricStatus } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getStatusIconConfig } from "@/utils/metrics";
+import { updateAchievementCriteria } from "@/api/metrics";
 import {
   useMetricsStore,
   DEFAULT_EXCELLENT_THRESHOLD,
   DEFAULT_DANGER_THRESHOLD,
 } from "@/store/useMetricsStore";
+import { useModalAnimation } from "@/hooks";
 
 // 절대 최소/최대 기준 상수
 const MIN_DANGER_THRESHOLD = 1; // 위험 기준 절대 최솟값
@@ -37,13 +38,27 @@ export const AchievementRateSettingModal = ({
 
   const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
   const [excellentThreshold, setExcellentThreshold] = useState(
-    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD,
+    achievementRateExcellentThreshold,
   );
   const [dangerThreshold, setDangerThreshold] = useState(
-    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD,
+    achievementRateDangerThreshold,
   );
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
+
+  // 모달이 열릴 때 store 값으로 초기화
+  useEffect(() => {
+    if (isOpen) {
+      setExcellentThreshold(achievementRateExcellentThreshold);
+      setDangerThreshold(achievementRateDangerThreshold);
+    }
+  }, [
+    isOpen,
+    achievementRateExcellentThreshold,
+    achievementRateDangerThreshold,
+  ]);
 
   // 우수 기준 검증 (위험 기준값 이상, 절대 최댓값 이하)
   const isExcellentThresholdValid =
@@ -80,45 +95,37 @@ export const AchievementRateSettingModal = ({
     return "";
   };
 
-  // 애니메이션을 위한 지연된 unmount
-  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
-  useEffect(() => {
-    if (isOpen) {
-      flushSync(() => setShouldRender(true));
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
-
   if (!shouldRender) return null;
 
-  // const handleAchievementRateChange = (index: number, value: string) => {
-  //   const updated = [...editedMetrics];
-  //   updated[index] = { ...updated[index], achievementRate: parseFloat(value) };
-  //   setEditedMetrics(updated);
-  // };
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateAchievementCriteria({
+        thresholds: {
+          excellent: excellentThreshold,
+          danger: dangerThreshold,
+        },
+      });
 
-  const handleSave = () => {
-    // Store에 threshold 값들 저장
-    setAchievementRateExcellentThreshold(excellentThreshold);
-    setAchievementRateDangerThreshold(dangerThreshold);
+      // Store에 threshold 값들 저장
+      setAchievementRateExcellentThreshold(excellentThreshold);
+      setAchievementRateDangerThreshold(dangerThreshold);
 
-    onSave(editedMetrics);
-    onClose();
+      onSave(editedMetrics);
+      onClose();
+    } catch {
+      // API가 없거나 에러 발생 시 confirm 메시지 표시
+      window.confirm("현재 서버에 해당 API가 없습니다.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setEditedMetrics(metrics);
-    // 원래 값으로 복원
-    setExcellentThreshold(
-      achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD,
-    );
-    setDangerThreshold(
-      achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD,
-    );
+    // store 값으로 복원
+    setExcellentThreshold(achievementRateExcellentThreshold);
+    setDangerThreshold(achievementRateDangerThreshold);
     onClose();
   };
 
@@ -176,7 +183,7 @@ export const AchievementRateSettingModal = ({
             </div>
             <button
               onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
@@ -356,9 +363,9 @@ export const AchievementRateSettingModal = ({
                 variant="primary"
                 size="sm"
                 onClick={handleSave}
-                disabled={!isFormValid}
+                disabled={!isFormValid || isSaving}
               >
-                저장
+                {isSaving ? "저장 중..." : "저장"}
               </Button>
             </div>
           </div>

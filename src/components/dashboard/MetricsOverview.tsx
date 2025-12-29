@@ -2,16 +2,29 @@ import { useMemo } from "react";
 import { DonutChart } from "@/libs/chart";
 import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { TREND_COLORS, BRAND_COLORS, CHART_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import { useCompanyQuality } from "@/api/hooks/useCompanyQuality";
 import { Tooltip } from "../ui/Tooltip";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
+import { CodeReviewStatusModal } from "./CodeReviewStatusModal";
+import { useDashboardStore } from "@/store/useDashboardStore";
 
 interface MetricsOverviewProps {
   month: string; // YYYY-MM 형식
 }
+
+// TODO: API 연동 후 제거 - 임시 목업 데이터
+const MOCK_COMPANY_QUALITY_DATA = {
+  month: "",
+  bdpiAverage: 0.0,
+  monthlyComparison: { changePercent: 0, direction: "new" as const },
+  quality: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
+  review: { score: 0, achievedMetrics: 0, totalMetrics: 12 },
+  efficiency: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
+};
 
 /**
  * 메트릭 개요 컴포넌트
@@ -25,57 +38,65 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
     error,
   } = useCompanyQuality(month);
 
+  // 코드 리뷰 현황 모달 상태
+  const { setCodeReviewModal } = useDashboardStore();
+
+  // API 에러 시 목업 데이터 사용
+  const data = error ? MOCK_COMPANY_QUALITY_DATA : companyQualityData;
+
   // 전사 BDPI 평균 계산
   const bdpiAverage = useMemo(
     () =>
-      companyQualityData
+      data
         ? {
-            value: companyQualityData.bdpiAverage,
+            value: data.bdpiAverage,
             label: "전사 BDPI 평균",
             sublabel: "평균 확보율",
             color: BRAND_COLORS.secondary,
             trend: {
-              value: Math.abs(companyQualityData.bdpiChange),
-              isPositive: companyQualityData.bdpiChange > 0,
+              value: data.monthlyComparison.changePercent,
+              direction: data.monthlyComparison.direction,
+              isPositive: data.monthlyComparison.direction === "up",
+              hasData: data.monthlyComparison.direction !== "new",
             },
           }
         : null,
-    [companyQualityData],
+    [data],
   );
 
   // 차트 메트릭 계산
   const chartMetrics = useMemo(
     () =>
-      companyQualityData
+      data
         ? [
             {
               id: "code",
-              value: companyQualityData.codeQuality.score,
+              value: data.quality.score,
               label: "코드 품질",
-              sublabel: `${companyQualityData.codeQuality.achievedMetrics}/${companyQualityData.codeQuality.totalMetrics}건 달성`,
+              sublabel: `${data.quality.achievedMetrics}/${data.quality.totalMetrics}개 달성`,
               color: CHART_COLORS.blue,
             },
             {
               id: "review",
-              value: companyQualityData.reviewQuality.score,
+              value: data.review.score,
               label: "리뷰 품질",
-              sublabel: `${companyQualityData.reviewQuality.achievedMetrics}/${companyQualityData.reviewQuality.totalMetrics}건 달성`,
+              sublabel: `${data.review.achievedMetrics}/${data.review.totalMetrics}개 달성`,
               color: CHART_COLORS.yellow,
             },
             {
               id: "efficiency",
-              value: companyQualityData.developmentEfficiency.score,
+              value: data.efficiency.score,
               label: "개발 효율",
-              sublabel: `${companyQualityData.developmentEfficiency.achievedMetrics}/${companyQualityData.developmentEfficiency.totalMetrics}건 달성`,
+              sublabel: `${data.efficiency.achievedMetrics}/${data.efficiency.totalMetrics}개 달성`,
               color: CHART_COLORS.lightYellow,
             },
           ]
         : null,
-    [companyQualityData],
+    [data],
   );
 
-  // 로딩, 에러, 데이터 없음 상태
-  if (isLoading || error || !bdpiAverage || !chartMetrics) {
+  // 로딩 또는 데이터 없음 상태
+  if (isLoading || !bdpiAverage || !chartMetrics) {
     return (
       <Card className="w-full h-auto">
         <div className="flex items-center justify-center h-40">
@@ -97,7 +118,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
           <div className="flex flex-col items-center w-full">
             <div className="text-center mb-2">
               <div className="text-4xl font-bold text-gray-900 mb-2">
-                {bdpiAverage.value}
+                {bdpiAverage.value.toFixed(1)}
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-sm font-medium text-gray-700">
@@ -109,7 +130,6 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                   }
                   color="#6B7280"
                   maxWidth={250}
-                  arrowPosition="top-[15px]"
                 >
                   <Info
                     className="w-4 h-4 cursor-pointer"
@@ -123,23 +143,31 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                 <span className="text-sm font-medium text-gray-700">
                   전월대비
                 </span>
-                <div
-                  className="flex items-center gap-1 text-sm font-medium"
-                  style={{
-                    color: bdpiAverage.trend.isPositive
-                      ? TREND_COLORS.increase
-                      : TREND_COLORS.decrease,
-                  }}
-                >
-                  <span>
-                    {bdpiAverage.trend.isPositive ? (
-                      <img src={upIcon} alt="up" />
-                    ) : (
-                      <img src={downIcon} alt="down" />
-                    )}
+                {!bdpiAverage.trend.hasData ? (
+                  <span className="text-sm font-medium text-gray-500">-</span>
+                ) : bdpiAverage.trend.value === 0 ? (
+                  <span className="text-sm font-medium text-gray-500">
+                    0.0%
                   </span>
-                  <span>{Math.abs(bdpiAverage.trend.value)}%</span>
-                </div>
+                ) : (
+                  <div
+                    className="flex items-center gap-1 text-sm font-medium"
+                    style={{
+                      color: bdpiAverage.trend.isPositive
+                        ? TREND_COLORS.increase
+                        : TREND_COLORS.decrease,
+                    }}
+                  >
+                    <span>
+                      {bdpiAverage.trend.isPositive ? (
+                        <img src={upIcon} alt="up" />
+                      ) : (
+                        <img src={downIcon} alt="down" />
+                      )}
+                    </span>
+                    <span>{Math.abs(bdpiAverage.trend.value).toFixed(1)}%</span>
+                  </div>
+                )}
               </div>
             )}{" "}
           </div>
@@ -147,17 +175,33 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
 
         {/* 차트 메트릭 (도넛 차트 표시) */}
         {chartMetrics.map((metric) => (
-          <div key={metric.id} className="flex items-center justify-center">
-            <DonutChart
-              value={metric.value}
-              maxValue={100}
-              color={metric.color}
-              label={metric.label}
-              sublabel={metric.sublabel}
-            />
+          <div key={metric.id}>
+            <div className="flex flex-col items-center justify-center gap-2">
+              <DonutChart
+                value={metric.value}
+                maxValue={100}
+                color={metric.color}
+                label={metric.label}
+                sublabel={metric.sublabel}
+              />
+            </div>
+            <div className="flex justify-center pt-1">
+              {metric.id === "review" && (
+                <Button
+                  variant="normal"
+                  size="sm"
+                  onClick={() => setCodeReviewModal(true)}
+                >
+                  상세보기
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </div>
+
+      {/* 코드 리뷰 현황 모달 */}
+      <CodeReviewStatusModal />
     </Card>
   );
 };

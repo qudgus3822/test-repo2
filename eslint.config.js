@@ -29,5 +29,10 @@ export default tseslint.config([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // 사용되지 않는 변수/import는 경고만 표시 (빌드에 영향 없음)
+      "@typescript-eslint/no-unused-vars": "warn",
+      "no-unused-vars": "off", // TypeScript 규칙 사용을 위해 비활성화
+    },
   },
 ]);

@@ -1,32 +1,22 @@
 import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
-import { Button } from "@/components/ui/Button";
-import {
-  Search,
-  ArrowDownUp,
-  Info,
-  Pencil,
-  ArrowUp,
-  ArrowDown,
-  Settings,
-} from "lucide-react";
-import { useState } from "react";
+import { Search, ArrowDownUp, Info, ArrowUp, ArrowDown } from "lucide-react";
+import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
-import {
-  useMetricsStore,
-  type TabType,
-  DEFAULT_EXCELLENT_THRESHOLD,
-  DEFAULT_DANGER_THRESHOLD,
-} from "@/store/useMetricsStore";
+import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
 import {
   getCategoryLabel,
   getStatusIcon,
   getStatusColor,
   calculateMetricStatus,
+  getMetricUnit,
+  getMetricName,
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -56,9 +46,7 @@ const getCategoryStyle = (category: MetricCategory) => {
 };
 
 interface MetricsTableProps {
-  metrics: MetricItem[];
-  isLoading?: boolean;
-  isError?: boolean;
+  month: string;
 }
 
 interface Tab {
@@ -68,11 +56,7 @@ interface Tab {
   category?: MetricCategory;
 }
 
-export const MetricsTable = ({
-  metrics,
-  isLoading = false,
-  isError = false,
-}: MetricsTableProps) => {
+export const MetricsTable = ({ month }: MetricsTableProps) => {
   const {
     activeTab,
     setActiveTab,
@@ -80,30 +64,39 @@ export const MetricsTable = ({
     setAchievementRateFilter,
     achievementRateExcellentThreshold,
     achievementRateDangerThreshold,
-    setIsTargetValueSettingModalOpen,
-    setIsAchievementRateSettingModalOpen,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
     setIsMetricsDetailModalOpen,
-    setIsMetricRateSettingModalOpen,
     setSelectedMetric,
-    currentDate,
   } = useMetricsStore((state) => state);
+
+  // API 호출
+  const { data, isLoading, error } = useMetricsList(month);
+  const metrics = data?.metrics ?? [];
+
+  // 달성률 기준 API 조회
+  const { data: criteriaData } = useAchievementCriteria(month);
+
+  // API 데이터가 로드되면 store에 저장
+  useEffect(() => {
+    if (criteriaData) {
+      setAchievementRateExcellentThreshold(criteriaData.thresholds.excellent);
+      setAchievementRateDangerThreshold(criteriaData.thresholds.danger);
+    }
+  }, [
+    criteriaData,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
+  ]);
 
   // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
   const [ratioSortOrder, setRatioSortOrder] = useState<"asc" | "desc" | null>(
     null,
   );
 
-  // 현재 날짜와 선택된 날짜의 년/월 비교 (같은 월인지 확인)
-  const now = new Date();
-  const isCurrentMonth =
-    currentDate.getFullYear() === now.getFullYear() &&
-    currentDate.getMonth() === now.getMonth();
-
-  // 달성률 기준값
-  const excellentThreshold =
-    achievementRateExcellentThreshold || DEFAULT_EXCELLENT_THRESHOLD;
-  const dangerThreshold =
-    achievementRateDangerThreshold || DEFAULT_DANGER_THRESHOLD;
+  // 달성률 기준값 (store 값 사용)
+  const excellentThreshold = achievementRateExcellentThreshold;
+  const dangerThreshold = achievementRateDangerThreshold;
 
   // 먼저 달성률 필터 적용
   const achievementRateFilteredAllMetrics = metrics.filter((m) => {
@@ -137,7 +130,7 @@ export const MetricsTable = ({
   // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
   const getTableHeight = () => {
     // 데이터가 없는 경우 최소 높이 반환
-    if (isLoading || isError || metrics.length === 0) {
+    if (isLoading || error || metrics.length === 0) {
       return 225;
     }
 
@@ -184,7 +177,7 @@ export const MetricsTable = ({
     },
     {
       id: "developmentEfficiency",
-      label: "개발품질",
+      label: "개발효율",
       count: developmentEfficiencyCount,
       category: MetricCategory.DEVELOPMENT_EFFICIENCY,
     },
@@ -226,9 +219,9 @@ export const MetricsTable = ({
   const sortedMetrics = [...metricsWithCalculatedStatus].sort((a, b) => {
     if (ratioSortOrder === null) return 0;
     if (ratioSortOrder === "asc") {
-      return a.ratio - b.ratio;
+      return a.weightRatio - b.weightRatio;
     }
-    return b.ratio - a.ratio;
+    return b.weightRatio - a.weightRatio;
   });
 
   // 지표 상세보기 모달 열기
@@ -238,12 +231,13 @@ export const MetricsTable = ({
   };
 
   // 로딩, 에러, 데이터 없음 상태 여부
-  const isEmptyState = isLoading || isError || metrics.length === 0;
+  const isEmptyState = isLoading || error || metrics.length === 0;
 
   return (
     <div className="space-y-4">
       {/* Tabs와 달성률 필터 */}
       <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+        {/* Tabs 영역 */}
         <div className="flex space-x-6">
           {tabs.map((tab) => (
             <button
@@ -260,21 +254,12 @@ export const MetricsTable = ({
           ))}
         </div>
         <div className="flex items-center gap-3">
-          {/* 비율 설정 버튼 (전체 탭 제외) */}
-          {activeTab !== "bdpi" && (
-            <Button
-              variant="setting"
-              size="sm"
-              onClick={() => setIsMetricRateSettingModalOpen(true)}
-            >
-              <Settings className="w-4 h-4 mr-1.5" />
-              비율 설정
-            </Button>
-          )}
           {/* 달성률 필터 */}
           <AchievementRateFilter
             value={achievementRateFilter}
             onChange={setAchievementRateFilter}
+            excellentThreshold={excellentThreshold}
+            dangerThreshold={dangerThreshold}
           />
         </div>
       </div>
@@ -297,48 +282,8 @@ export const MetricsTable = ({
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>
                 <th className="px-4 py-3 w-[12%]">현재값</th>
 
-                <th className="px-4 py-3 w-[12%]">
-                  <div className="flex items-center gap-1.5">
-                    목표값
-                    {isCurrentMonth && (
-                      <span className="flex items-center cursor-pointer">
-                        <Tooltip
-                          content="지표의 목표값을 수정할 수 있습니다."
-                          color="#6B7280"
-                        >
-                          <Pencil
-                            className="w-4 h-4"
-                            id="목표값 설정 아이콘"
-                            onClick={() =>
-                              setIsTargetValueSettingModalOpen(true)
-                            }
-                          />
-                        </Tooltip>
-                      </span>
-                    )}
-                  </div>
-                </th>
-                <th className="px-4 py-3 w-[12%]">
-                  <div className="flex items-center gap-1.5">
-                    달성률
-                    {isCurrentMonth && (
-                      <span className="flex items-center cursor-pointer">
-                        <Tooltip
-                          content="지표의 달성률을 평가하는 기준값을 설정합니다."
-                          color="#6B7280"
-                        >
-                          <Pencil
-                            className="w-4 h-4"
-                            id="달성률 설정 아이콘"
-                            onClick={() =>
-                              setIsAchievementRateSettingModalOpen(true)
-                            }
-                          />
-                        </Tooltip>
-                      </span>
-                    )}
-                  </div>
-                </th>
+                <th className="px-4 py-3 w-[12%]">목표값</th>
+                <th className="px-4 py-3 w-[12%]">달성률</th>
                 <th className="px-4 py-3 w-[12%]">
                   <div className="flex items-center gap-1.5">
                     비율
@@ -391,9 +336,17 @@ export const MetricsTable = ({
                   >
                     <td className="px-4 py-3 text-sm text-gray-900">
                       <div className="flex items-center space-x-2">
-                        <span>{metric.name}</span>
-                        {metric.description && (
-                          <Tooltip content={metric.description} color="#6B7280">
+                        <span>{getMetricName(metric.metricCode)}</span>
+                        {(metric.tooltipDescription || metric.description) && (
+                          <Tooltip
+                            content={
+                              metric.tooltipDescription ||
+                              metric.description ||
+                              ""
+                            }
+                            color="#6B7280"
+                            maxWidth={250}
+                          >
                             <Info className="text-gray-400 w-4 h-4 cursor-pointer" />
                           </Tooltip>
                         )}
@@ -418,11 +371,11 @@ export const MetricsTable = ({
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {metric.currentValue}
-                      {metric.unit}
+                      {getMetricUnit(metric.metricCode)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {metric.targetValue}
-                      {metric.unit}
+                      {getMetricUnit(metric.metricCode)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">
@@ -439,7 +392,7 @@ export const MetricsTable = ({
                                 className="text-sm font-medium"
                                 style={{ color: iconColor }}
                               >
-                                {metric.achievementRate}%
+                                {Math.round(metric.achievementRate)}%
                               </span>
                             </>
                           );
@@ -447,7 +400,7 @@ export const MetricsTable = ({
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {metric.ratio}%
+                      {metric.weightRatio.toFixed(1)}%
                     </td>
                     <td className="px-4 py-3">
                       <button

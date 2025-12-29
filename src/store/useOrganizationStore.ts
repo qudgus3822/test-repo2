@@ -91,7 +91,7 @@ interface OrganizationAction {
    */
   collapseAll: () => void;
   /**
-   * 전체 팀 열기 (팀까지만 펼침, 멤버 숨김)
+   * 전체 팀 열기 (실까지 펼침, 팀은 접힌 상태로 표시, 실 직속 멤버 표시)
    */
   expandAllTeams: (orgIds: string[]) => void;
   /**
@@ -99,9 +99,9 @@ interface OrganizationAction {
    */
   setShowMembers: (show: boolean) => void;
   /**
-   * 기본 상태로 접기 (IT부문만 펼침)
+   * 기본 상태로 접기 (초기 화면 진입 시와 동일)
    */
-  collapseToDefault: () => void;
+  collapseToDefault: (orgIds: string[]) => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -164,13 +164,13 @@ export const useOrganizationStore = create<
   expandAllTeams: (orgIds: string[]) =>
     set(() => ({
       expandedOrganizations: new Set(orgIds),
-      showMembers: false,
+      showMembers: true,
       isTeamsExpanded: true,
     })),
   setShowMembers: (show: boolean) => set({ showMembers: show }),
-  collapseToDefault: () =>
+  collapseToDefault: (orgIds: string[]) =>
     set(() => ({
-      expandedOrganizations: new Set(DEFAULT_EXPANDED_CODES),
+      expandedOrganizations: new Set(orgIds),
       showMembers: true,
       isTeamsExpanded: false,
     })),

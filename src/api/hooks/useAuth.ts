@@ -24,7 +24,7 @@ export const useCurrentUser = () => {
   return useQuery({
     queryKey: authKeys.user(),
     queryFn: checkAuthStatus,
-    staleTime: 5 * 60 * 1000, // 5분
+    staleTime: 0, // 항상 서버에서 인증 상태 확인
     retry: false, // 인증 실패 시 재시도 하지 않음
   });
 };
@@ -62,13 +62,19 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: logoutFromServer,
     onSuccess: () => {
-      // React Query 캐시 초기화
-      queryClient.clear();
-      // Zustand 스토어 초기화 (localStorage에서도 제거)
+      // Zustand 스토어 초기화
       setLoggedOut();
+      // user 쿼리 캐시를 null로 설정하여 즉시 로그아웃 상태 반영
+      queryClient.setQueryData(authKeys.user(), null);
+      // React Query 캐시 전체 초기화
+      queryClient.clear();
     },
     onError: (error) => {
       console.error("로그아웃 실패:", error);
+      // 로그아웃 실패해도 클라이언트 상태는 초기화
+      setLoggedOut();
+      queryClient.setQueryData(authKeys.user(), null);
+      queryClient.clear();
     },
   });
 };
@@ -81,8 +87,8 @@ export const useBackendHealth = () => {
   return useQuery({
     queryKey: authKeys.health(),
     queryFn: checkBackendHealth,
-    staleTime: 1 * 60 * 1000, // 1분
-    refetchInterval: 5 * 60 * 1000, // 5분마다 자동 체크
+    staleTime: 4 * 60 * 60 * 1000, // 4시간
+    refetchInterval: 4 * 60 * 60 * 1000, // 4시간마다 자동 체크
   });
 };
 

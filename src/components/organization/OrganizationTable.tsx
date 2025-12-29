@@ -24,37 +24,42 @@ import { clsx } from "clsx";
 import {
   getMemberRoleOrPositionLabel,
   hasChangeInfo,
-  getChangeTypeBadgeColor,
-  getChangeTypeLabel,
   formatChangeDate,
   getMemberEmail,
+  getChangeDetailWithSuffix,
 } from "@/utils/organization";
-import { METRIC_CODE_NAMES, getMetricOrder } from "@/utils/metrics";
+import {
+  METRIC_CODE_NAMES,
+  METRIC_CODE_DISPLAY_NAMES,
+  getMetricOrder,
+} from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 
-// 탭 타입 → 지표 카테고리 키 매핑
+// 탭 타입 → API 카테고리 키 매핑
+// - UI 탭 ID (codeQuality 등) → API 카테고리 키 (quality 등)
 const TAB_TO_CATEGORY: Record<Exclude<TabType, "bdpi">, MetricCategoryKey> = {
-  codeQuality: "code_quality",
-  reviewQuality: "review_quality",
-  developmentEfficiency: "development_efficiency",
+  codeQuality: "quality",
+  reviewQuality: "review",
+  developmentEfficiency: "efficiency",
 };
 
 // 카테고리별 지표 코드 목록 (METRIC_CODE_ORDER 순서로 정렬)
 const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
-  code_quality: [
+  quality: [
     "TECH_DEBT",
     "CODE_COMPLEXITY",
     "CODE_DUPLICATION",
     "CODE_SMELL",
     "TEST_COVERAGE",
     "SECURITY_VULNERABILITIES",
-    "CODE_COUPLING",
+    "CODE_DEFECT_DENSITY",
     "BUG_COUNT",
     "INCIDENT_COUNT",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-  review_quality: [
+  review: [
     "REVIEW_SPEED",
     "REVIEW_RESPONSE_RATE",
     "REVIEW_PARTICIPATION_RATE",
@@ -68,7 +73,7 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
     "REVIEW_FEEDBACK_TIME",
     "REVIEW_COMPLETION_TIME",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-  development_efficiency: [
+  efficiency: [
     "DEPLOYMENT_FREQUENCY",
     "COMMIT_FREQUENCY",
     "LEAD_TIME",
@@ -76,8 +81,8 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
     "FAILURE_DIAGNOSIS_TIME",
     "FAILURE_RECOVERY_TIME",
     "DEPLOYMENT_SUCCESS_RATE",
-    "MR_SIZE",
-    "CODE_LINE_COUNT_PER_COMMIT",
+    "PR_SIZE",
+    "LOC_PER_COMMIT",
   ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
 };
 
@@ -85,7 +90,7 @@ const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
 const isBdpiMetrics = (
   metrics: OrganizationMetrics,
 ): metrics is BdpiMetrics => {
-  return "bdpi" in metrics && "codeQuality" in metrics;
+  return "bdpi" in metrics && "quality" in metrics;
 };
 
 // metrics 객체에서 특정 카테고리의 지표들을 순서대로 가져오기
@@ -122,7 +127,7 @@ const getScoreLevel = (score: number | null): ScoreLevel | null => {
 
 const getScoreBgColor = (score: number | null): string => {
   const level = getScoreLevel(score);
-  if (level === null) return SCORE_COLORS.none;
+  if (level === null) return SCORE_COLORS.noScore;
   if (level === "excellent") return SCORE_COLORS.excellent;
   if (level === "good") return SCORE_COLORS.good;
   return SCORE_COLORS.danger;
@@ -142,6 +147,12 @@ const ChangeRateDisplay = ({
   if (!comparison) return <span className="text-gray-400">--</span>;
 
   const { changePercent, direction } = comparison;
+
+  // direction이 "new"이면 전월 데이터가 없으므로 "--" 표시
+  if (direction === "new") {
+    return <span className="text-gray-400">--</span>;
+  }
+
   const isUp = direction === "up";
   const isDown = direction === "down";
 
@@ -180,76 +191,52 @@ const ScoreCell = ({
 }) => {
   // isUsed가 false이면 수집 불가 지표로 표시
   const isNoData = !isUsed;
+  // score가 null이면 수집 가능하지만 데이터 없음
+  const isNoScore = isUsed && score === null;
 
   return (
     <td
       className={clsx(
         "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px]",
         isFirst && "border-l",
-        !isNoData && getScoreTextColor(score),
+        !isNoData && !isNoScore && getScoreTextColor(score),
       )}
       style={{
         backgroundColor: isNoData
           ? SCORE_COLORS.noData
+          : isNoScore
+          ? SCORE_COLORS.noScore
           : getScoreBgColor(score),
         color: isNoData ? SCORE_COLORS.noDataText : undefined,
       }}
     >
-      {score !== null ? score.toFixed(1) : "--"}
+      {isNoData ? "N/A" : score !== null ? score.toFixed(1) : "--"}
     </td>
   );
 };
 
 // 단일 변경이력 툴팁 내용 생성 함수
 // 형식: 날짜 상세내용 (이동전/이동후는 detail 앞에 줄바꿈 추가)
-// GROUP: (자동), POLICY: (수동) 텍스트 추가
+// GROUP && (CREATED/DELETED): (자동), POLICY: (수동) 텍스트 추가
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
-  const { changeDate, changeEndDate, changeDetail, category } = change;
+  const { changeDate, changeEndDate, changeDetail, changeType, category } =
+    change;
 
   // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
   const formattedDate = changeEndDate
     ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
     : formatChangeDate(changeDate);
 
-  // 이동전/이동후는 detail 앞에 줄바꿈 추가
-  // const isTransfer =
-  //   changeType === "TRANSFERRED_IN" || changeType === "TRANSFERRED_OUT";
-  // const separator = isTransfer && changeDetail ? "\n" : " ";
   const separator = " ";
 
-  // category에 따라 suffix 결정
-  const suffix =
-    category === "GROUP" ? " (자동)" : category === "POLICY" ? " (수동)" : "";
-
-  // changeDetail에 suffix 추가
-  const detailWithSuffix = changeDetail ? `${changeDetail}${suffix}` : "";
+  // 공통 util 함수를 사용하여 suffix가 추가된 상세 내용 생성
+  const detailWithSuffix = changeDetail
+    ? getChangeDetailWithSuffix(changeDetail, category, changeType)
+    : "";
 
   return detailWithSuffix
     ? `${formattedDate}${separator}${detailWithSuffix}`
     : formattedDate;
-};
-
-// 단일 상태 뱃지 컴포넌트 (툴팁 없이 뱃지만 렌더링)
-const SingleBadge = ({ change }: { change: ChangeInfo }) => {
-  const { changeType, category } = change;
-  const color = getChangeTypeBadgeColor(changeType);
-
-  // category에 따라 variant 결정: GROUP은 outlined, HR/POLICY는 filled
-  const variant = category === "GROUP" ? "outlined" : "filled";
-
-  const style =
-    variant === "filled"
-      ? { backgroundColor: color, color: "#E7E7E7" }
-      : { border: `1px solid ${color}`, color };
-
-  return (
-    <span
-      className="ml-2 px-2 py-0.5 text-xs font-medium rounded-xl cursor-default"
-      style={style}
-    >
-      {getChangeTypeLabel(changeType)}
-    </span>
-  );
 };
 
 // 여러 변경이력의 툴팁 내용을 하나로 합치는 함수
@@ -279,7 +266,12 @@ const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
   const badges = (
     <div className="inline-flex items-center">
       {displayChanges.map((item, index) => (
-        <SingleBadge key={`${item.changeType}-${index}`} change={item} />
+        <ChangeTypeBadge
+          key={`${item.changeType}-${index}`}
+          type={item.changeType}
+          category={item.category}
+          className="ml-2 cursor-default"
+        />
       ))}
     </div>
   );
@@ -311,10 +303,10 @@ const MemberRow = ({
       const bdpiMetrics = member.metrics as BdpiMetrics;
       return (
         <>
-          <ScoreCell score={bdpiMetrics.codeQuality.score} isFirst />
-          <ScoreCell score={bdpiMetrics.reviewQuality.score} />
-          <ScoreCell score={bdpiMetrics.efficiency.score} />
-          <ScoreCell score={bdpiMetrics.bdpi.score} />
+          <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
+          <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
         </>
       );
     }
@@ -425,10 +417,10 @@ const OrganizationRow = ({
       const bdpiMetrics = org.metrics as BdpiMetrics;
       return (
         <>
-          <ScoreCell score={bdpiMetrics.codeQuality.score} isFirst />
-          <ScoreCell score={bdpiMetrics.reviewQuality.score} />
-          <ScoreCell score={bdpiMetrics.efficiency.score} />
-          <ScoreCell score={bdpiMetrics.bdpi.score} />
+          <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
+          <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
+          <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
         </>
       );
     }
@@ -582,17 +574,28 @@ export const OrganizationTable = ({
 
     return (
       <>
-        {metricCodes.map((code, index) => (
-          <th
-            key={code}
-            className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px] break-words`}
-            style={{
-              borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
-            }}
-          >
-            {METRIC_CODE_NAMES[code] || code}
-          </th>
-        ))}
+        {metricCodes.map((code, index) => {
+          const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+          return (
+            <th
+              key={code}
+              className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px]`}
+              style={{
+                borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
+              }}
+            >
+              {displayName ? (
+                <>
+                  {displayName[0]}
+                  <br />
+                  {displayName[1]}
+                </>
+              ) : (
+                METRIC_CODE_NAMES[code] || code
+              )}
+            </th>
+          );
+        })}
       </>
     );
   };
@@ -609,7 +612,17 @@ export const OrganizationTable = ({
   return (
     <div className="overflow-x-auto border border-gray-200 rounded-lg">
       <table className="w-full table-fixed">
-        {activeTab !== "bdpi" && (
+        {activeTab === "bdpi" ? (
+          <colgroup>
+            <col /> {/* 조직 이름 - 남은 width 모두 사용 */}
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+            <col style={{ width: "100px" }} />
+          </colgroup>
+        ) : (
           <colgroup>
             <col style={{ width: "50%" }} />
             {Array.from({ length: metricCount }).map((_, i) => (

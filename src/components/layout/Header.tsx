@@ -1,11 +1,11 @@
 import { User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logoBlack from "@/assets/images/bithumb_logo_black_vertical.png";
-import { useCurrentDate } from "@/hooks";
+import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Header() {
-  const currentDate = useCurrentDate();
+  const { formattedDate: lastUpdatedAt } = useLastAggregatedAt();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const setLoggedOut = useAuthStore((state) => state.setLoggedOut);
@@ -53,7 +53,7 @@ export default function Header() {
           {/* 최근 업데이트 */}
           <div className="text-right text-sm">
             <p className="text-gray-500">최근 업데이트</p>
-            <p className="text-gray-900">{currentDate}</p>
+            <p className="text-gray-900">{lastUpdatedAt}</p>
           </div>
 
           {/* 알림 아이콘 */}

@@ -1,30 +1,78 @@
-// types/codeReview.ts
+// types/codeReviewMetric.ts
 
-// 진행 상태
-export type ReviewStatus = "진행" | "완료";
+// 진행 상태 코드 (API 응답 기준)
+export type ReviewStatus = "completed" | "incomplete";
 
-// 전행 항목 목록 데이터
+// 상태 코드 → 라벨 매핑
+export const REVIEW_STATUS_LABEL: Record<ReviewStatus, string> = {
+  completed: "완료",
+  incomplete: "미완료",
+};
+
+// 리뷰어/참여자/기여자 상세 정보
+export interface ReviewerInfo {
+  username: string; // 사용자 ID
+  name: string; // 이름
+  team: string; // 소속팀
+}
+
+// MR 작성자 정보
+export interface MrAuthorInfo {
+  name: string; // 이름
+  email: string; // 이메일
+}
+
+// 리뷰 항목 데이터 (API 응답 기준)
 export interface ReviewItem {
-  date: string; // 날짜 (YYYY-MM-DD)
-  mrId: string; // MR ID
-  author: string; // 작성자
-  mrApproval: number; // MR Approval 횟수
-  reviewRequest: number; // 리뷰 요청 횟수
-  reviewApproval: number; // 리뷰 승인 횟수
-  mrReopen: number; // MR 재오픈 횟수
+  collectedAt: string; // 수집일자 (ISO 8601)
+  mrId: number; // MR ID
+  mrAuthor: MrAuthorInfo; // MR 작성자
+  registeredReviewerCount: number; // 등록된 리뷰어 수
+  registeredReviewers: ReviewerInfo[]; // 등록된 리뷰어 목록
+  actualReviewerCount: number; // 실리뷰 참여자 수
+  actualReviewers: ReviewerInfo[]; // 실리뷰 참여자 목록
+  contributorCount: number; // MR 기여자 수
+  contributors: ReviewerInfo[]; // MR 기여자 목록
   status: ReviewStatus; // 상태
 }
 
-// 전체 응답 데이터
-export interface CodeReviewData {
-  totalMR: number; // 총 MR 건수
-  inProgressCount: number; // 진행 중인 MR 수
+// Summary 데이터
+export interface CodeReviewSummary {
+  totalMrCount: number; // 총 MR 건수
   completedCount: number; // 완료된 MR 수
-  inProgressPercentage: number; // 진행 중 비율
-  completedPercentage: number; // 완료 비율
-  items: ReviewItem[]; // 전행 항목 목록
-  totalItems: number; // 전체 아이템 수
-  currentPage: number; // 현재 페이지
+  completedRate: number; // 완료 비율
+  incompleteCount: number; // 미완료 MR 수
+  incompleteRate: number; // 미완료 비율
+}
+
+// Pagination 데이터
+export interface CodeReviewPagination {
+  page: number; // 현재 페이지
+  limit: number; // 페이지당 아이템 수
+  totalCount: number; // 전체 아이템 수
   totalPages: number; // 전체 페이지 수
-  itemsPerPage: number; // 페이지당 아이템 수
+}
+
+// 전체 API 응답 데이터
+export interface CodeReviewProgressResponse {
+  summary: CodeReviewSummary;
+  items: ReviewItem[];
+  pagination: CodeReviewPagination;
+}
+
+// 정렬 가능한 컬럼 타입
+export type CodeReviewSortBy =
+  | "collectedAt"
+  | "mrId"
+  | "registeredReviewerCount"
+  | "actualReviewerCount"
+  | "contributorCount"
+  | "status";
+
+// API 요청 파라미터
+export interface CodeReviewProgressParams {
+  page?: number;
+  limit?: number;
+  sortBy?: CodeReviewSortBy;
+  sortOrder?: "asc" | "desc";
 }

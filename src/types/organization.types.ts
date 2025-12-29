@@ -82,10 +82,7 @@ export const PolicyStatusLabel = {
 };
 
 // 지표 카테고리 키 타입 (API metrics 객체의 키로 사용)
-export type MetricCategoryKey =
-  | "code_quality"
-  | "review_quality"
-  | "development_efficiency";
+export type MetricCategoryKey = "quality" | "review" | "efficiency";
 
 // 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
 export interface MetricScoreValue {
@@ -99,7 +96,7 @@ export interface CategoryScoreValue {
 }
 
 // 전월대비 타입
-export type MonthlyComparisonDirection = "up" | "down" | "same";
+export type MonthlyComparisonDirection = "up" | "down" | "same" | "new";
 
 export interface MonthlyComparison {
   changePercent: number;
@@ -108,10 +105,10 @@ export interface MonthlyComparison {
 
 // BDPI 탭용 metrics 타입
 export interface BdpiMetrics {
-  codeQuality: CategoryScoreValue;
-  reviewQuality: CategoryScoreValue;
-  efficiency: CategoryScoreValue;
-  bdpi: CategoryScoreValue;
+  quality: CategoryScoreValue; // 코드품질
+  review: CategoryScoreValue; // 리뷰품질
+  efficiency: CategoryScoreValue; // 개발효율
+  bdpi: CategoryScoreValue; // BDPI 총점
   monthlyComparison: MonthlyComparison; // 전월대비
 }
 
@@ -123,7 +120,7 @@ export interface CodeQualityMetrics {
   CODE_SMELL: MetricScoreValue;
   TEST_COVERAGE: MetricScoreValue;
   SECURITY_VULNERABILITIES: MetricScoreValue;
-  CODE_COUPLING: MetricScoreValue;
+  CODE_DEFECT_DENSITY: MetricScoreValue;
   BUG_COUNT: MetricScoreValue;
   INCIDENT_COUNT: MetricScoreValue;
 }
@@ -153,8 +150,8 @@ export interface DevelopmentEfficiencyMetrics {
   FAILURE_DIAGNOSIS_TIME: MetricScoreValue;
   FAILURE_RECOVERY_TIME: MetricScoreValue;
   DEPLOYMENT_SUCCESS_RATE: MetricScoreValue;
-  MR_SIZE: MetricScoreValue;
-  CODE_LINE_COUNT_PER_COMMIT: MetricScoreValue;
+  PR_SIZE: MetricScoreValue;
+  LOC_PER_COMMIT: MetricScoreValue;
 }
 
 // 통합 metrics 타입 (API 응답에서 탭에 따라 다른 구조)
@@ -171,6 +168,12 @@ export interface ScoreMetrics {
 
 // 변경 카테고리 타입
 export type ChangeCategory = "HR" | "GROUP" | "POLICY";
+
+export const ChangeCategoryLabel: Record<ChangeCategory, string> = {
+  HR: "인사",
+  GROUP: "조직",
+  POLICY: "정책",
+};
 
 // 변경 사항 정보
 export interface ChangeInfo {
@@ -219,9 +222,7 @@ export interface OrganizationDepartment extends ScoreMetrics {
 }
 
 // 조직 트리 노드 (부서 또는 멤버)
-export type OrganizationNode =
-  | OrganizationDepartment
-  | OrganizationMember;
+export type OrganizationNode = OrganizationDepartment | OrganizationMember;
 
 // 기간 정보
 export interface Period {
@@ -237,6 +238,8 @@ export interface OrganizationCompareRequest {
 // 조직 비교 API 응답 타입
 export interface OrganizationCompareResponse {
   period: Period;
+  lastLdapSyncAt?: string; // 마지막 LDAP 동기화 시간 (ISO 8601)
+  lastChangeAt?: string; // 마지막 변경 이력 시간 (ISO 8601)
   tree: OrganizationDepartment[];
 }
 
@@ -266,3 +269,88 @@ export type ScoreLevel = "excellent" | "good" | "danger";
 
 // 조직 비교 필터 타입
 export type OrganizationFilterType = "all" | "excellent" | "good" | "danger";
+
+// ================================
+// 조직도 변경 히스토리 타입 정의
+// ================================
+
+// 히스토리 변경 유형 타입 (MemberStatus, DepartmentStatus에서 파생)
+export type OrgHistoryChangeType =
+  | Exclude<MemberStatus, "ACTIVE" | "TRANSFERRED_IN" | "TRANSFERRED_OUT">
+  | "TRANSFERRED" // 이동 (TRANSFERRED_IN/OUT 통합)
+  | Exclude<DepartmentStatus, "ACTIVE">;
+
+export const OrgHistoryChangeTypeLabel: Record<OrgHistoryChangeType, string> = {
+  // MemberStatus 기반
+  JOINED: MemberStatusLabel.JOINED,
+  RESIGNED: MemberStatusLabel.RESIGNED,
+  ON_LEAVE: MemberStatusLabel.ON_LEAVE,
+  RETURNED: MemberStatusLabel.RETURNED,
+  CHANGED_ROLE: `${MemberStatusLabel.CHANGED_ROLE}변경`,
+  CHANGED_POSITION: `${MemberStatusLabel.CHANGED_POSITION}변경`,
+  // 통합 이동 타입
+  TRANSFERRED: "이동",
+  // DepartmentStatus 기반
+  CREATED: DepartmentStatusLabel.CREATED,
+  DELETED: DepartmentStatusLabel.DELETED,
+  RENAMED: DepartmentStatusLabel.RENAMED,
+};
+
+// 조직도 변경 히스토리 항목 (API 응답)
+export interface OrgHistoryItem {
+  changeType: OrgHistoryChangeType | PolicyStatus; // 변경 유형 (PolicyStatus 포함)
+  changeDate: string; // 변경일시 (ISO 8601)
+  category: ChangeCategory; // 카테고리
+  target: string; // 대상 ID
+  name: string; // 대상 이름
+  changeDetail: string; // 변경내역
+  processedBy: string; // 처리자
+  isEvaluationTarget: boolean; // 개발조직 여부
+}
+
+// 조직도 변경 히스토리 필터 타입
+export type OrgHistoryFilterType = "ALL" | OrgHistoryChangeType | PolicyStatus;
+
+// 조직도 변경 히스토리 API 응답 타입
+export interface OrgHistoryResponse {
+  period: {
+    year: number;
+    month: number;
+  };
+  totalCount: number;
+  changes: OrgHistoryItem[];
+}
+
+// ================================
+// 조직 유형 설정 타입 정의
+// ================================
+
+// 조직 유형 설정 변경 타입 (OrgHistoryChangeType + PolicyStatus)
+export type OrgTypeSettingsChangeType = OrgHistoryChangeType | PolicyStatus;
+
+// 조직 유형 설정 변경 정보
+export interface OrgTypeSettingsChange {
+  changeType: OrgTypeSettingsChangeType;
+  category: ChangeCategory;
+  changeDate: string; // 변경일 (YYYY-MM-DD)
+  changeDetail: string; // 변경 상세 내용
+  processedBy: string; // 처리자 (자동/수동)
+}
+
+// 조직 유형 설정 트리 노드
+export interface OrgTypeSettingsNode {
+  code: string;
+  name: string;
+  level: number;
+  sortOrder: number;
+  isEvaluationTarget: boolean;
+  isBlacklisted: boolean;
+  children: OrgTypeSettingsNode[];
+  changes?: OrgTypeSettingsChange[];
+}
+
+// 조직 유형 설정 API 응답 타입
+export interface OrgTypeSettingsResponse {
+  timestamp: string;
+  tree: OrgTypeSettingsNode[];
+}

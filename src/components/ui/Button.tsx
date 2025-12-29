@@ -26,7 +26,7 @@ const BUTTON_VARIANTS = {
   danger: "bg-[#F39200] text-[#FFFFFF] hover:bg-[#E66100]", // 삭제/경고
   warning: "bg-[#FABA3F] text-[#FFFFFF] hover:bg-[#F39200]", // 주의
   setting:
-    "bg-[#1E54B8] text-[#FFFFFF] border border-[#1E54B8] hover:bg-[#1B21A6]", // '비율 설정' 버튼 (PALETTE_COLORS.blue → darkBlue on hover)
+    "bg-[#1E54B8] text-[#FFFFFF] border border-[#1E54B8] hover:bg-[#1B21A6]", // '설정' 버튼 (PALETTE_COLORS.blue → darkBlue on hover)
 };
 
 const BUTTON_SIZES = {
@@ -54,8 +54,8 @@ export const Button = ({
     <button
       className={clsx(
         "flex cursor-pointer items-center justify-center rounded-[8px] font-medium text-[#000000]",
-        "focus:outline-none focus:ring-1 focus:ring-offset-1",
-        "disabled:cursor-not-allowed disabled:opacity-50 disabled:border-none",
+        "focus:outline-none",
+        "disabled:cursor-not-allowed disabled:opacity-90 disabled:border-gray-200",
         BUTTON_VARIANTS[variant],
         BUTTON_SIZES[size],
         fullWidth && "w-full",

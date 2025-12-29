@@ -7,9 +7,9 @@ export enum MetricStatus {
 }
 
 export enum MetricCategory {
-  CODE_QUALITY = "code_quality", // 코드품질
-  REVIEW_QUALITY = "review_quality", // 리뷰품질
-  DEVELOPMENT_EFFICIENCY = "development_efficiency", // 개발효율
+  CODE_QUALITY = "quality", // 코드품질
+  REVIEW_QUALITY = "review", // 리뷰품질
+  DEVELOPMENT_EFFICIENCY = "efficiency", // 개발효율
 }
 
 // ==================== 지표 총 현황 ====================
@@ -23,14 +23,6 @@ export interface MetricOverview {
   reviewQualityIcon?: string; // 리뷰품질 아이콘 (lucide-react icon name)
   developmentEfficiencyCount: number; // 개발효율 지표 수 (9개)
   developmentEfficiencyIcon?: string; // 개발효율 아이콘 (lucide-react icon name)
-}
-
-// ==================== 목표 달성률 ====================
-export interface MetricsTargetValueAchievement {
-  month: string; // 'YYYY-MM' 형식
-  achievementRate: number; // 달성률 (76.7%)
-  achievedMetrics: number; // 달성한 지표 수 (23개)
-  totalMetrics: number; // 전체 지표 수 (30개)
 }
 
 // ==================== 지표 리스트 전체 데이터 ====================
@@ -47,29 +39,113 @@ export interface MetricsListData {
 // ==================== 지표 아이템 ====================
 export interface MetricItem {
   name: string; // 지표명 (예: "기술부채", "코드복잡도")
-  category: MetricCategory; // 범주
-  // 25.11.10 API 응답 형태 변경됨. 확인필요. category: "quality" | "review" | "efficiency"; // 범주 (문자열 리터럴)
+  category: MetricCategory; // 범주 ("quality" | "review" | "efficiency")
   currentValue: string; // 현재값 (8.2일, 15.2, 3.5%, 125개, 68%)
   targetValue: string; // 목표값 (10일, 12, 5%, 100개, 80%)
   achievementRate: number; // 달성률 (%)
-  status: MetricStatus; // 상태 (달성/주의/미달성)
-  ratio: number; // 비율 (11.1%, 11.2%)
-  metricCode?: string; // 지표 코드 (예: "TECH_DEBT")
-  unit?: string; // 단위 (일, %, 개)
-  // 25.11.10 API 응답 형태 변경됨. 확인필요. unit: string; // 단위 (hour, count, percent)
+  status: MetricStatus; // 상태 (excellent/warning/danger)
+  weightRatio: number; // 비율 (11.1%, 11.2%)
+  metricCode: string; // 지표 코드 (예: "TECH_DEBT")
+  unit: string; // 단위 (hour, count, percent, %, 건, 분 등)
   description?: string; // 설명
+  tooltipDescription?: string; // 툴팁 설명 (mode=preview API 응답용)
+  dataSource?: string; // 데이터 소스 (예: "Sonarqube", "Gitlab")
+  sources?: string[]; // 데이터 소스 배열 (mode=preview API 응답용)
 }
 
-// ==================== API 응답 형태의 지표 아이템 ====================
-// export interface MetricItemResponse {
-//   name: string; // 지표명
-//   category: "quality" | "review" | "efficiency"; // 범주 (문자열 리터럴)
-//   currentValue: string; // 현재값
-//   targetValue: string; // 목표값
-//   achievementRate: number; // 달성률 (%)
-//   status: "achieved" | "warning" | "not_achieved"; // 상태 (문자열 리터럴)
-//   ratio: number; // 비율
-//   metricCode: string; // 지표 코드
-//   unit: string; // 단위 (hour, count, percent)
-//   description: string; // 설명
-// }
+// ==================== 달성률 기준 설정 ====================
+export interface AchievementCriteria {
+  appliedMonth: string; // 적용 월 (YYYY-MM 형식)
+  thresholds: {
+    excellent: number; // 우수 기준 (%)
+    danger: number; // 위험 기준 (%)
+  };
+  updatedAt: string; // 수정일시 (ISO 8601 형식)
+}
+
+export interface AchievementCriteriaUpdateRequest {
+  thresholds: {
+    excellent: number; // 우수 기준 (%)
+    danger: number; // 위험 기준 (%)
+  };
+}
+
+// ==================== 목표값 설정 ====================
+export interface TargetValueMetric {
+  metricName: string; // 지표명
+  category: string; // 범주
+  targetValue: string; // 목표값
+  unit: string; // 단위
+  metricCode: string; // 지표 코드
+}
+
+export interface TargetValuesResponse {
+  category: string; // 범주 코드
+  appliedMonth: string; // 적용 월 (YYYY-MM 형식)
+  categoryName: string; // 범주명
+  metrics: TargetValueMetric[]; // 지표 목록
+  updatedBy: string; // 수정자
+  updatedAt: string; // 수정일시 (ISO 8601 형식)
+}
+
+export interface TargetValueUpdateItem {
+  metricCode: string; // 지표 코드
+  targetValue: string; // 목표값
+}
+
+export interface TargetValuesUpdateRequest {
+  month: string; // 적용 월 (YYYY-MM 형식)
+  metrics: TargetValueUpdateItem[]; // 지표 목록
+}
+
+// ==================== 비율 설정 ====================
+export interface WeightSettingMetric {
+  metricCode: string; // 지표 코드
+  metricName: string; // 지표명
+  weight: number; // 가중치
+}
+
+export interface WeightSettingCategory {
+  category: string; // 범주 코드 (quality | review | efficiency)
+  appliedMonth: string; // 적용 월 (YYYY-MM 형식)
+  categoryName: string; // 범주명
+  metrics: WeightSettingMetric[]; // 지표 목록
+  updatedBy: string; // 수정자
+  updatedAt: string; // 수정일시 (ISO 8601 형식)
+}
+
+export interface WeightSettingsResponse {
+  settings: WeightSettingCategory[]; // 범주별 비율 설정 목록
+}
+
+export interface WeightSettingUpdateItem {
+  metricCode: string; // 지표 코드
+  weight: number; // 가중치
+}
+
+export interface WeightSettingsUpdateRequest {
+  month: string; // 적용 월 (YYYY-MM 형식)
+  metrics: WeightSettingUpdateItem[]; // 지표 목록
+}
+
+// ==================== 변경내역 조회 (Pending Summary) ====================
+export interface PendingSummaryCategoryCount {
+  quality: number; // 코드품질 개수
+  review: number; // 리뷰품질 개수
+  efficiency: number; // 개발효율 개수
+  total: number; // 전체 개수
+}
+
+export interface PendingSummaryResponse {
+  hasPending: boolean; // 변경 대기 항목 존재 여부
+  targetValue: PendingSummaryCategoryCount; // 목표값 변경 개수
+  achievementCriteria: number; // 달성률 기준 변경 개수
+  weight: PendingSummaryCategoryCount; // 비율설정 변경 개수
+}
+
+// ==================== 지표 설정 동기화 상태 ====================
+export type SyncStatusType = "ready" | "processing";
+
+export interface SyncStatusResponse {
+  status: SyncStatusType; // "ready": 변경 적용 가능, "processing": 변경 적용 불가능
+}

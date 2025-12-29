@@ -4,18 +4,19 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
 import { TargetValueAchievement } from "@/components/dashboard/TargetValueAchievement";
 import { MetricsTable } from "@/components/metrics/MetricsTable";
-import {
-  mockMetricOverview,
-  mockMetricsTargetValueAchievement,
-  mockCodeQualityMetrics,
-} from "@/mocks/metrics.mock";
 import { useMetricsStore } from "@/store/useMetricsStore";
-import { TargetValueSettingModal } from "@/components/metrics/TargetValueSettingModal";
-import { AchievementRateSettingModal } from "@/components/metrics/AchievementRateSettingModal";
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
 import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
+import { SettingsChangeConfirmModal } from "@/components/metrics/SettingsChangeConfirmModal";
+import { MetricStandardSettingModal } from "@/components/metrics/MetricStandardSettingModal";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
+import { formatYearMonth } from "@/utils";
+import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { useSyncStatus } from "@/api/hooks/useSyncStatus";
+import { Button } from "@/components/ui";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { Settings } from "lucide-react";
 
 const MetricsPage = () => {
   const {
@@ -23,17 +24,43 @@ const MetricsPage = () => {
     setPeriod,
     currentDate,
     setCurrentDate,
-    isTargetValueSettingModalOpen,
-    setIsTargetValueSettingModalOpen,
-    isAchievementRateSettingModalOpen,
-    setIsAchievementRateSettingModalOpen,
+    setActiveTab,
+    setAchievementRateFilter,
     isMetricsDetailModalOpen,
     setIsMetricsDetailModalOpen,
     selectedMetric,
     isMetricRateSettingModalOpen,
     setIsMetricRateSettingModalOpen,
     activeTab,
+    isSettingsChangeConfirmModalOpen,
+    setIsSettingsChangeConfirmModalOpen,
+    isMetricStandardSettingModalOpen,
+    setIsMetricStandardSettingModalOpen,
   } = useMetricsStore((state) => state);
+
+  // 페이지 진입 시 초기화: 당월, 전체 탭, 달성률 필터 전체로 설정
+  useEffect(() => {
+    setPeriod("monthly");
+    setCurrentDate(new Date());
+    setActiveTab("bdpi");
+    setAchievementRateFilter("all");
+  }, [setPeriod, setCurrentDate, setActiveTab, setAchievementRateFilter]);
+
+  // 현재 선택된 월
+  const month = formatYearMonth(currentDate);
+
+  // 선택된 날짜가 현재 년/월과 일치하는지 확인
+  const now = new Date();
+  const isCurrentMonth =
+    currentDate.getFullYear() === now.getFullYear() &&
+    currentDate.getMonth() === now.getMonth();
+
+  // 지표 설정 동기화 상태 조회 (10초 폴링)
+  const { isProcessing } = useSyncStatus();
+
+  // 지표 리스트 API 호출 (모달에서 사용)
+  const { data: metricsListData } = useMetricsList(month);
+  const metrics = metricsListData?.metrics ?? [];
 
   // activeTab을 MetricCategory로 변환
   const getSelectedCategory = (): MetricCategory => {
@@ -52,10 +79,10 @@ const MetricsPage = () => {
   // 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
     const isAnyModalOpen =
-      isTargetValueSettingModalOpen ||
-      isAchievementRateSettingModalOpen ||
       isMetricsDetailModalOpen ||
-      isMetricRateSettingModalOpen;
+      isMetricRateSettingModalOpen ||
+      isSettingsChangeConfirmModalOpen ||
+      isMetricStandardSettingModalOpen;
 
     if (!isAnyModalOpen) return;
 
@@ -80,24 +107,60 @@ const MetricsPage = () => {
       document.body.style.paddingRight = originalPaddingRight;
     };
   }, [
-    isTargetValueSettingModalOpen,
-    isAchievementRateSettingModalOpen,
     isMetricsDetailModalOpen,
     isMetricRateSettingModalOpen,
+    isSettingsChangeConfirmModalOpen,
+    isMetricStandardSettingModalOpen,
   ]);
+
+  // 변경사항 확정
+  const handleConfirmChanges = () => {
+    // TODO: API 연동 시 실제 저장 로직 구현
+    console.log("Changes confirmed");
+  };
 
   return (
     <div className="flex flex-col gap-6">
       {/* 헤더 - 날짜 필터 */}
       <div>
         <Card className="w-full">
-          <div className="w-full flex">
+          <div className="w-full flex items-center justify-between gap-4">
             <DateFilter
               period={period}
               onPeriodChange={setPeriod}
               currentDate={currentDate}
               onDateChange={setCurrentDate}
             />
+            {/* 지표 기준 설정 버튼 (당월에만 표시) */}
+            {isCurrentMonth && (
+              <Tooltip
+                maxWidth={400}
+                content={
+                  isProcessing
+                    ? "현재 집계가 진행중이므로 추가 설정은 불가능합니다."
+                    : ""
+                }
+                direction="bottom"
+              >
+                <div className="flex items-center gap-4">
+                  {isProcessing && (
+                    <span className="text-sm text-gray-500 flex items-center gap-1.5">
+                      <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+                      집계 진행중
+                    </span>
+                  )}
+                  <Button
+                    variant="setting"
+                    size="sm"
+                    onClick={() => setIsMetricStandardSettingModalOpen(true)}
+                    disabled={isProcessing}
+                  >
+                    <Settings className="w-4 h-4 mr-1" />
+                    지표 기준 설정
+                  </Button>
+                </div>
+              </Tooltip>
+            )}
           </div>
         </Card>
       </div>
@@ -106,48 +169,22 @@ const MetricsPage = () => {
         {/* 지표 현황 */}
         <div className="w-2/3 h-full">
           <Card className="h-full w-full flex items-center">
-            <MetricsSummary data={mockMetricOverview} />
+            <MetricsSummary month={month} />
           </Card>
         </div>
 
         {/* 목표 달성률 */}
         <div className="w-1/3 h-full">
           <Card className="w-full h-full">
-            {/* 목표 달성률 */}
-            <TargetValueAchievement
-              achieved={mockMetricsTargetValueAchievement.achievedMetrics}
-              total={mockMetricsTargetValueAchievement.totalMetrics}
-            />
+            <TargetValueAchievement month={month} />
           </Card>
         </div>
       </div>
 
       {/* 지표 리스트 */}
       <Card className="w-full">
-        <MetricsTable metrics={mockCodeQualityMetrics.metrics} />
+        <MetricsTable month={month} />
       </Card>
-
-      {/* 지표 리스트 - 목표값 설정 모달 */}
-      <TargetValueSettingModal
-        isOpen={isTargetValueSettingModalOpen}
-        onClose={() => setIsTargetValueSettingModalOpen(false)}
-        metrics={mockCodeQualityMetrics.metrics}
-        onSave={(updatedMetrics: MetricItem[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
-          console.log("Updated metrics:", updatedMetrics);
-        }}
-      />
-
-      {/* 지표 리스트 - 달성률 설정 모달 */}
-      <AchievementRateSettingModal
-        isOpen={isAchievementRateSettingModalOpen}
-        onClose={() => setIsAchievementRateSettingModalOpen(false)}
-        metrics={mockCodeQualityMetrics.metrics}
-        onSave={(updatedMetrics: MetricItem[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
-          console.log("Updated achievement rates:", updatedMetrics);
-        }}
-      />
 
       {/* 지표 리스트 - 지표 상세보기 모달 */}
       <MetricsDetailModal
@@ -160,12 +197,27 @@ const MetricsPage = () => {
       <MetricRateSettingModal
         isOpen={isMetricRateSettingModalOpen}
         onClose={() => setIsMetricRateSettingModalOpen(false)}
-        metrics={mockCodeQualityMetrics.metrics}
+        metrics={metrics}
         category={getSelectedCategory()}
+        month={month}
         onSave={(updatedMetrics: MetricItem[]) => {
           // TODO: API 연동 시 실제 저장 로직 구현
           console.log("Updated metric rates:", updatedMetrics);
         }}
+      />
+
+      {/* 변경사항 반영 확인 모달 */}
+      <SettingsChangeConfirmModal
+        isOpen={isSettingsChangeConfirmModalOpen}
+        onClose={() => setIsSettingsChangeConfirmModalOpen(false)}
+        onConfirm={handleConfirmChanges}
+      />
+
+      {/* 지표 기준 설정 모달 */}
+      <MetricStandardSettingModal
+        isOpen={isMetricStandardSettingModalOpen}
+        onClose={() => setIsMetricStandardSettingModalOpen(false)}
+        month={month}
       />
     </div>
   );

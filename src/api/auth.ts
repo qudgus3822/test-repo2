@@ -1,5 +1,5 @@
 import type { User } from "@/types/auth";
-import { env } from "@/env";
+import { apiFetch } from "@/libs/fetch";
 
 export interface LoginRequest {
   email: string;
@@ -18,9 +18,9 @@ export interface LoginResponse {
  */
 export const checkBackendHealth = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/health`, {
+    const response = await apiFetch("/health", {
       method: "GET",
-      credentials: "include",
+      skipAuthRedirect: true, // 헬스체크는 인증 불필요
     });
     return response.ok;
   } catch {
@@ -34,9 +34,11 @@ export const checkBackendHealth = async (): Promise<boolean> => {
  */
 export const checkAuthStatus = async (): Promise<User | null> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/users/me`, {
+    const response = await apiFetch("/users/me", {
       method: "GET",
-      credentials: "include", // 쿠키 포함
+      skipAuthRedirect: true, // 인증 상태 확인은 401 시 리다이렉트하지 않음
+      // 브라우저 캐시 사용하지 않도록 설정 (304 응답 방지)
+      cache: "no-store",
     });
 
     if (response.status === 401) return null; // 인증되지 않음
@@ -66,21 +68,23 @@ export const loginToServer = async (
   credentials: LoginRequest,
 ): Promise<LoginResponse> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/auth/signin`, {
+    const response = await apiFetch("/auth/signin", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // 쿠키 포함
       body: JSON.stringify({
         email: credentials.email,
         password: credentials.password,
       }),
+      skipAuthRedirect: true, // 로그인은 401 시 리다이렉트하지 않음
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || "로그인 실패");
+      // 영문 에러 메시지를 한글로 변환
+      const errorMessage =
+        errorData.message === "Invalid email or password"
+          ? "이메일 또는 비밀번호가 올바르지 않습니다."
+          : errorData.message || "로그인에 실패했습니다.";
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
@@ -115,9 +119,9 @@ export const loginToServer = async (
  */
 export const logoutFromServer = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/auth/logout`, {
+    const response = await apiFetch("/auth/logout", {
       method: "POST",
-      credentials: "include",
+      skipAuthRedirect: true, // 로그아웃은 401 시 리다이렉트하지 않음
     });
 
     if (!response.ok) {

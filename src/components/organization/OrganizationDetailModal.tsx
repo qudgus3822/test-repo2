@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { flushSync } from "react-dom";
 import { X } from "lucide-react";
 import type {
   OrganizationDepartment,
@@ -16,6 +15,7 @@ import {
   SCORE_EXCELLENT_THRESHOLD,
   SCORE_GOOD_THRESHOLD,
 } from "@/store/useOrganizationStore";
+import { useModalAnimation } from "@/hooks";
 
 // 선택된 항목 타입 (조직 또는 멤버)
 export type OrganizationDetailItem =
@@ -30,7 +30,7 @@ interface OrganizationDetailModalProps {
 
 // 점수에 따른 배경색 결정
 const getScoreBgColor = (score: number | null): string => {
-  if (score === null) return SCORE_COLORS.none;
+  if (score === null) return SCORE_COLORS.noScore;
   if (score >= SCORE_EXCELLENT_THRESHOLD) return SCORE_COLORS.excellent;
   if (score >= SCORE_GOOD_THRESHOLD) return SCORE_COLORS.good;
   return SCORE_COLORS.danger;
@@ -61,22 +61,11 @@ export const OrganizationDetailModal = ({
   onClose,
   item,
 }: OrganizationDetailModalProps) => {
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
   // 상세 내용 표시 여부 (추후 개발 시 true로 변경)
   const [isDetailVisible] = useState(false);
 
-  // 애니메이션을 위한 지연된 unmount
-  useEffect(() => {
-    if (isOpen) {
-      flushSync(() => setShouldRender(true));
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
 
   // 모달이 열려있을 때 body 스크롤 방지
   useEffect(() => {
@@ -133,10 +122,10 @@ export const OrganizationDetailModal = ({
     },
     {
       month: "2024.11",
-      코드품질: bdpiMetrics.codeQuality.score,
-      리뷰품질: bdpiMetrics.reviewQuality.score,
-      개발효율: bdpiMetrics.efficiency.score,
-      BDPI: bdpiMetrics.bdpi.score,
+      코드품질: bdpiMetrics?.quality?.score ?? 0,
+      리뷰품질: bdpiMetrics?.review?.score ?? 0,
+      개발효율: bdpiMetrics?.efficiency?.score ?? 0,
+      BDPI: bdpiMetrics?.bdpi?.score ?? 0,
     },
   ];
 
@@ -371,7 +360,7 @@ export const OrganizationDetailModal = ({
             </h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
@@ -405,7 +394,7 @@ export const OrganizationDetailModal = ({
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.codeQuality.score,
+                          bdpiMetrics?.quality?.score ?? 0,
                         ),
                       }}
                     >
@@ -413,17 +402,19 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.codeQuality.score),
+                          color: getScoreTextColor(
+                            bdpiMetrics?.quality?.score ?? 0,
+                          ),
                         }}
                       >
-                        {bdpiMetrics.codeQuality.score.toFixed(1)}
+                        {(bdpiMetrics?.quality?.score ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.reviewQuality.score,
+                          bdpiMetrics?.review?.score ?? 0,
                         ),
                       }}
                     >
@@ -431,17 +422,19 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.reviewQuality.score),
+                          color: getScoreTextColor(
+                            bdpiMetrics?.review?.score ?? 0,
+                          ),
                         }}
                       >
-                        {bdpiMetrics.reviewQuality.score.toFixed(1)}
+                        {(bdpiMetrics?.review?.score ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.efficiency.score,
+                          bdpiMetrics?.efficiency?.score ?? 0,
                         ),
                       }}
                     >
@@ -449,7 +442,9 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.efficiency.score),
+                          color: getScoreTextColor(
+                            bdpiMetrics.efficiency.score,
+                          ),
                         }}
                       >
                         {bdpiMetrics.efficiency.score.toFixed(1)}
@@ -458,7 +453,9 @@ export const OrganizationDetailModal = ({
                     <div
                       className="rounded-lg px-4 py-3 border-2 border-blue-200"
                       style={{
-                        backgroundColor: getScoreBgColor(bdpiMetrics.bdpi.score),
+                        backgroundColor: getScoreBgColor(
+                          bdpiMetrics.bdpi.score,
+                        ),
                       }}
                     >
                       <div className="text-xs text-gray-500 mb-1">BDPI</div>

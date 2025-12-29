@@ -1,16 +1,29 @@
-import { env } from "@/env";
 import type {
   OrganizationCompareResponse,
+  OrgHistoryResponse,
+  OrgTypeSettingsResponse,
   TabType,
 } from "@/types/organization.types";
+import { apiGet, apiPut } from "@/libs/fetch";
+
+// 개발조직 일괄 변경 요청 타입
+export interface EvaluationTargetChange {
+  code: string;
+  isEvaluationTarget: boolean;
+}
+
+export interface BulkEvaluationTargetRequest {
+  changes: EvaluationTargetChange[];
+}
 
 /**
  * 탭 타입별 API 엔드포인트 매핑
+ * - UI 탭 ID (codeQuality 등) → API 엔드포인트 (quality 등)
  */
 const TAB_ENDPOINT_MAP: Record<TabType, string> = {
   bdpi: "bdpi",
-  codeQuality: "code-quality",
-  reviewQuality: "review-quality",
+  codeQuality: "quality",
+  reviewQuality: "review",
   developmentEfficiency: "efficiency",
 };
 
@@ -22,20 +35,7 @@ const TAB_ENDPOINT_MAP: Record<TabType, string> = {
 export const fetchOrganizationTree = async (
   yearMonth: string,
 ): Promise<OrganizationCompareResponse> => {
-  const response = await fetch(
-    `${env.apiBaseUrl}/departments/monthly/tree?yearMonth=${yearMonth}`,
-    {
-      method: "GET",
-      credentials: "include",
-    },
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || "조직도 조회 실패");
-  }
-
-  return response.json();
+  return apiGet<OrganizationCompareResponse>(`/departments/monthly/tree?yearMonth=${yearMonth}`);
 };
 
 /**
@@ -49,18 +49,38 @@ export const fetchOrganizationByTab = async (
   tab: TabType,
 ): Promise<OrganizationCompareResponse> => {
   const endpoint = TAB_ENDPOINT_MAP[tab];
-  const response = await fetch(
-    `${env.apiBaseUrl}/departments/monthly/${endpoint}?yearMonth=${yearMonth}`,
-    {
-      method: "GET",
-      credentials: "include",
-    },
-  );
+  return apiGet<OrganizationCompareResponse>(`/departments/monthly/${endpoint}?yearMonth=${yearMonth}`);
+};
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `${tab} 데이터 조회 실패`);
-  }
+/**
+ * 조직도 변경 이력 조회 API
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @returns 변경 이력 데이터
+ */
+export const fetchOrgChangeHistory = async (
+  yearMonth: string,
+): Promise<OrgHistoryResponse> => {
+  return apiGet<OrgHistoryResponse>(`/departments/change-history?yearMonth=${yearMonth}`);
+};
 
-  return response.json();
+/**
+ * 조직 유형 설정 조회 API
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @returns 조직 유형 설정 트리 데이터
+ */
+export const fetchOrgTypeSettings = async (
+  yearMonth: string,
+): Promise<OrgTypeSettingsResponse> => {
+  return apiGet<OrgTypeSettingsResponse>(`/departments/org-type-settings?yearMonth=${yearMonth}`);
+};
+
+/**
+ * 개발조직 포함/제외 일괄 변경 API
+ * @param request - 변경할 조직 목록
+ * @returns 성공 여부
+ */
+export const updateEvaluationTargetsBulk = async (
+  request: BulkEvaluationTargetRequest,
+): Promise<void> => {
+  return apiPut<void>(`/departments/evaluation-targets/bulk`, request);
 };

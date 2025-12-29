@@ -23,6 +23,8 @@ interface DonutChartProps {
     value: number;
     isPositive: boolean;
   };
+  /** 데이터가 없을 때 표시할 라벨 (예: "-%") */
+  noDataLabel?: string;
 }
 
 /**
@@ -41,6 +43,7 @@ export const DonutChart = ({
   sublabel,
   showPercentage = false,
   trend,
+  noDataLabel,
 }: DonutChartProps) => {
   const percentage = (value / maxValue) * 100;
   const data = [
@@ -86,7 +89,11 @@ export const DonutChart = ({
         {/* 중앙 값 표시 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="text-3xl font-bold text-gray-900">
-            {showPercentage ? `${percentage.toFixed(1)}%` : value.toFixed(1)}
+            {noDataLabel
+              ? noDataLabel
+              : showPercentage
+                ? `${percentage.toFixed(1)}%`
+                : value.toFixed(1)}
           </div>
           {trend && (
             <div

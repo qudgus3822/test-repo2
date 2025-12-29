@@ -1,0 +1,434 @@
+import { useState, useEffect } from "react";
+import { X, ChevronsUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { useModalAnimation } from "@/hooks";
+import { useDashboardStore } from "@/store/useDashboardStore";
+import { useCodeReviewProgress } from "@/api/hooks/useCodeReviewProgress";
+import { formatDateString } from "@/utils/date";
+import {
+  CODE_REVIEW_COLORS,
+  REVIEW_STATUS_BADGE_COLORS,
+} from "@/styles/colors";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Pagination } from "@/components/ui/Pagination";
+import { Tooltip } from "@/components/ui/Tooltip";
+import {
+  REVIEW_STATUS_LABEL,
+  type CodeReviewSortBy,
+  type ReviewItem,
+  type ReviewerInfo,
+  type ReviewStatus,
+} from "@/types/codeReviewMetric";
+
+// 정렬 방향 타입
+type SortDirection = "asc" | "desc";
+
+// 상태 뱃지 컴포넌트
+const StatusBadge = ({ status }: { status: ReviewStatus }) => {
+  const colors = REVIEW_STATUS_BADGE_COLORS[status] ?? {
+    bg: "#E5E7EB",
+    text: "#7B7B7B",
+  };
+  const label = REVIEW_STATUS_LABEL[status] ?? status;
+  return (
+    <span
+      className="inline-block w-14 py-1 rounded text-sm font-medium text-center"
+      style={{
+        backgroundColor: colors.bg,
+        color: colors.text,
+      }}
+    >
+      {label}
+    </span>
+  );
+};
+
+// 테이블 헤더 컴포넌트
+const SortableHeader = ({
+  label,
+  column,
+  currentSort,
+  currentDirection,
+  onSort,
+}: {
+  label: React.ReactNode;
+  column: CodeReviewSortBy;
+  currentSort: CodeReviewSortBy;
+  currentDirection: SortDirection;
+  onSort: (column: CodeReviewSortBy) => void;
+}) => {
+  const isActive = currentSort === column;
+  return (
+    <th
+      className="px-3 py-3 text-center font-medium text-gray-500 cursor-pointer hover:bg-gray-100 select-none"
+      onClick={() => onSort(column)}
+    >
+      <div className="flex items-center justify-center gap-1">
+        <span>{label}</span>
+        {isActive ? (
+          currentDirection === "asc" ? (
+            <ChevronUp className="w-4 h-4 text-blue-600" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-blue-600" />
+          )
+        ) : (
+          <ChevronsUpDown className="w-4 h-4 text-gray-400" />
+        )}
+      </div>
+    </th>
+  );
+};
+
+export const CodeReviewStatusModal = () => {
+  const { isCodeReviewModalOpen, setCodeReviewModal } = useDashboardStore();
+  const { shouldRender, isAnimating } = useModalAnimation(
+    isCodeReviewModalOpen,
+  );
+
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  // 정렬 상태
+  const [sortColumn, setSortColumn] = useState<CodeReviewSortBy>("collectedAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  // API 호출
+  const { data, isLoading, isError } = useCodeReviewProgress(
+    {
+      page: currentPage,
+      limit: itemsPerPage,
+      sortBy: sortColumn,
+      sortOrder: sortDirection,
+    },
+    isCodeReviewModalOpen,
+  );
+
+  // 모달 닫힐 때 페이지 초기화
+  useEffect(() => {
+    if (!isCodeReviewModalOpen) {
+      setCurrentPage(1);
+      setSortColumn("collectedAt");
+      setSortDirection("desc");
+    }
+  }, [isCodeReviewModalOpen]);
+
+  // 정렬 핸들러
+  const handleSort = (column: CodeReviewSortBy) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+    setCurrentPage(1); // 정렬 변경 시 첫 페이지로 이동
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // MR 링크 클릭 핸들러
+  const handleMrClick = (mrId: number) => {
+    window.open(`https://gitlab.example.com/merge_requests/${mrId}`, "_blank");
+  };
+
+  // 리뷰어 목록을 툴팁 문자열로 변환
+  const formatReviewerListTooltip = (list: ReviewerInfo[]): string => {
+    if (list.length === 0) return "";
+    return list.map((r) => `• ${r.name}(${r.team})`).join("\n");
+  };
+
+  if (!shouldRender) return null;
+
+  // 로딩/에러 상태 처리
+  const summary = data?.summary ?? {
+    totalMrCount: 0,
+    completedCount: 0,
+    completedRate: 0,
+    incompleteCount: 0,
+    incompleteRate: 0,
+  };
+  const items = data?.items ?? [];
+  const pagination = data?.pagination ?? {
+    page: 1,
+    limit: itemsPerPage,
+    totalCount: 0,
+    totalPages: 1,
+  };
+
+  return (
+    <>
+      {/* 오버레이 */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${
+          isAnimating ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={() => setCodeReviewModal(false)}
+      />
+
+      {/* 모달 */}
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-200 ${
+          isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
+        }`}
+        onClick={() => setCodeReviewModal(false)}
+      >
+        <div
+          className="bg-white rounded-lg shadow-xl w-[900px] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* 헤더 */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              코드 리뷰 진행 현황
+            </h2>
+            <button
+              onClick={() => setCodeReviewModal(false)}
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* 본문 */}
+          <div className="flex-1 overflow-hidden px-6 py-3 flex flex-col gap-3">
+            {/* 총 MR 수 */}
+            <div className="gap-4 flex items-center">
+              <span className="text-gray-700">총 MR 수 </span>
+              <span className="text-2xl font-bold text-gray-900">
+                {summary.totalMrCount}건
+              </span>
+            </div>
+
+            {/* 리뷰 진행률 */}
+            <div className="gap-2 flex flex-col">
+              <div className="text-gray-700 flex items-center gap-2">
+                리뷰 진행률
+              </div>
+              <div className="flex h-9 rounded-md overflow-hidden text-sm">
+                {isLoading ? (
+                  <div className="flex items-center justify-center w-full bg-gray-100">
+                    <LoadingSpinner size="sm" showMessage={false} />
+                  </div>
+                ) : (
+                  <>
+                    {summary.completedRate > 0 && (
+                      <div
+                        className="flex items-center justify-center font-medium"
+                        style={{
+                          width: `${summary.completedRate}%`,
+                          backgroundColor: CODE_REVIEW_COLORS.completed,
+                          color: CODE_REVIEW_COLORS.completedText,
+                        }}
+                      >
+                        완료 {summary.completedCount}개 (
+                        {Math.round(summary.completedRate)}%)
+                      </div>
+                    )}
+                    {summary.incompleteRate > 0 && (
+                      <div
+                        className="flex items-center justify-center font-medium"
+                        style={{
+                          width: `${summary.incompleteRate}%`,
+                          backgroundColor: CODE_REVIEW_COLORS.incomplete,
+                          color: CODE_REVIEW_COLORS.incompleteText,
+                        }}
+                      >
+                        미완료 {summary.incompleteCount}개 (
+                        {Math.round(summary.incompleteRate)}%)
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* 리뷰 현황 목록 */}
+            <div className="flex-1 flex flex-col gap-2 min-h-0">
+              <div className="text-gray-700">리뷰 현황 목록</div>
+
+              {/* 테이블 */}
+              <div className="flex-1 flex flex-col overflow-hidden border border-gray-200 rounded-lg">
+                {/* 테이블 헤더 */}
+                <div className="bg-gray-50">
+                  <table className="w-full table-fixed">
+                    <colgroup>
+                      <col className="w-[14%]" />
+                      <col className="w-[11%]" />
+                      <col className="w-[14%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[16%]" />
+                      <col className="w-[11%]" />
+                    </colgroup>
+                    <thead>
+                      <tr>
+                        <SortableHeader
+                          label="수집일자"
+                          column="collectedAt"
+                          currentSort={sortColumn}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                        <SortableHeader
+                          label="MR ID"
+                          column="mrId"
+                          currentSort={sortColumn}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                        <th className="px-3 py-1 text-center font-medium text-gray-500">
+                          MR 작성자
+                        </th>
+                        <SortableHeader
+                          label={"등록된 리뷰어"}
+                          column="registeredReviewerCount"
+                          currentSort={sortColumn}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                        <SortableHeader
+                          label={"실리뷰 참여자"}
+                          column="actualReviewerCount"
+                          currentSort={sortColumn}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                        <SortableHeader
+                          label={"MR 기여자"}
+                          column="contributorCount"
+                          currentSort={sortColumn}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                        <SortableHeader
+                          label="상태"
+                          column="status"
+                          currentSort={sortColumn}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+                {/* 테이블 본문 - 15행 기준 높이 고정 */}
+                <div className="min-h-[554px]">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <LoadingSpinner />
+                    </div>
+                  ) : isError ? (
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-red-500">
+                        데이터를 불러오는 데 실패했습니다.
+                      </span>
+                    </div>
+                  ) : items.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-gray-500">
+                        수집된 데이터가 없습니다.
+                      </span>
+                    </div>
+                  ) : (
+                    <table className="w-full table-fixed">
+                      <colgroup>
+                        <col className="w-[14%]" />
+                        <col className="w-[11%]" />
+                        <col className="w-[14%]" />
+                        <col className="w-[16%]" />
+                        <col className="w-[16%]" />
+                        <col className="w-[16%]" />
+                        <col className="w-[11%]" />
+                      </colgroup>
+                      <tbody className="divide-y divide-gray-100">
+                        {items.map((item: ReviewItem, index: number) => (
+                          <tr
+                            key={`${item.mrId}-${index}`}
+                            className="hover:bg-gray-50"
+                          >
+                            <td className="px-3 py-1 text-gray-900 text-center">
+                              {formatDateString(item.collectedAt)}
+                            </td>
+                            <td
+                              className="px-3 py-1 text-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                              onClick={() => handleMrClick(item.mrId)}
+                            >
+                              {item.mrId}
+                            </td>
+                            <td className="px-3 py-1 text-gray-900 text-center">
+                              <Tooltip
+                                content={item.mrAuthor.email}
+                                direction="bottom"
+                              >
+                                <span className="cursor-default">
+                                  {item.mrAuthor.name}
+                                </span>
+                              </Tooltip>
+                            </td>
+                            <td className="px-3 py-1 text-gray-900 text-center">
+                              <Tooltip
+                                content={formatReviewerListTooltip(
+                                  item.registeredReviewers,
+                                )}
+                                direction="bottom"
+                              >
+                                <span className="cursor-default">
+                                  {item.registeredReviewerCount}명
+                                </span>
+                              </Tooltip>
+                            </td>
+                            <td className="px-3 py-1 text-gray-900 text-center">
+                              <Tooltip
+                                content={formatReviewerListTooltip(
+                                  item.actualReviewers,
+                                )}
+                                direction="bottom"
+                              >
+                                <span className="cursor-default">
+                                  {item.actualReviewerCount}명
+                                </span>
+                              </Tooltip>
+                            </td>
+                            <td className="px-3 py-1 text-gray-900 text-center">
+                              <Tooltip
+                                content={formatReviewerListTooltip(
+                                  item.contributors,
+                                )}
+                                direction="bottom"
+                              >
+                                <span className="cursor-default">
+                                  {item.contributorCount}명
+                                </span>
+                              </Tooltip>
+                            </td>
+                            <td className="px-3 py-1 text-center">
+                              <StatusBadge status={item.status} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 푸터 - 페이지네이션 */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 text-md">
+            <div className="text-gray-600">전체 {pagination.totalCount}건</div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+              displayMode="text"
+            />
+            <div className="text-gray-500">{itemsPerPage}개씩 노출</div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};

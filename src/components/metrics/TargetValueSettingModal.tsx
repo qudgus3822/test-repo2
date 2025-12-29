@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { flushSync } from "react-dom";
-import type { MetricItem } from "@/types/metrics.types";
+import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getCategoryLabel } from "@/utils/metrics";
+import {
+  getCategoryLabel,
+  getMetricUnit,
+  getMetricName,
+} from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
+import { useTargetValues } from "@/api/hooks/useTargetValues";
+import { updateTargetValues } from "@/api/metrics";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useModalAnimation } from "@/hooks";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -37,7 +44,8 @@ interface TargetValueSettingModalProps {
   isOpen: boolean;
   onClose: () => void;
   metrics: MetricItem[];
-  onSave: (updatedMetrics: MetricItem[]) => void;
+  month: string;
+  onSave: (updatedMetrics: TargetValueMetric[]) => void;
 }
 
 // 유효성 검사 에러 타입
@@ -72,30 +80,66 @@ const getErrorMessage = (error: ValidationError): string => {
   }
 };
 
+// 범주 문자열을 MetricCategory로 변환
+const categoryToMetricCategory = (category: string): MetricCategory => {
+  switch (category) {
+    case "quality":
+      return MetricCategory.CODE_QUALITY;
+    case "review":
+      return MetricCategory.REVIEW_QUALITY;
+    case "efficiency":
+      return MetricCategory.DEVELOPMENT_EFFICIENCY;
+    default:
+      return MetricCategory.CODE_QUALITY;
+  }
+};
+
 export const TargetValueSettingModal = ({
   isOpen,
   onClose,
   metrics,
+  month,
   onSave,
 }: TargetValueSettingModalProps) => {
-  const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
-  const [shouldRender, setShouldRender] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [editedMetrics, setEditedMetrics] = useState<TargetValueMetric[]>([]);
   const [errors, setErrors] = useState<Record<number, ValidationError>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
-  // 애니메이션을 위한 지연된 unmount
-  // flushSync를 사용하여 DOM 렌더링을 동기적으로 보장한 후 애니메이션 시작
+  // 모달 애니메이션
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
+
+  // 3개 범주의 목표값 조회
+  const { data: qualityData, isLoading: isLoadingQuality } = useTargetValues(
+    "quality",
+    month,
+    isOpen,
+  );
+  const { data: reviewData, isLoading: isLoadingReview } = useTargetValues(
+    "review",
+    month,
+    isOpen,
+  );
+  const { data: efficiencyData, isLoading: isLoadingEfficiency } =
+    useTargetValues("efficiency", month, isOpen);
+
+  const isLoading = isLoadingQuality || isLoadingReview || isLoadingEfficiency;
+
+  // API 데이터가 로드되면 editedMetrics 초기화
+  useEffect(() => {
+    if (qualityData && reviewData && efficiencyData) {
+      const allMetrics = [
+        ...qualityData.metrics,
+        ...reviewData.metrics,
+        ...efficiencyData.metrics,
+      ];
+      setEditedMetrics(allMetrics);
+    }
+  }, [qualityData, reviewData, efficiencyData]);
+
+  // 모달 열릴 때 에러 초기화
   useEffect(() => {
     if (isOpen) {
-      flushSync(() => {
-        setShouldRender(true);
-        setErrors({}); // 모달 열릴 때 에러 초기화
-      });
-      setIsAnimating(true);
-    } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => setShouldRender(false), 300);
-      return () => clearTimeout(timer);
+      setErrors({});
     }
   }, [isOpen]);
 
@@ -113,11 +157,12 @@ export const TargetValueSettingModal = ({
 
   // 저장 버튼 비활성화 여부 확인
   const hasErrors = editedMetrics.some((metric, index) => {
-    const error = errors[index] ?? validateTargetValue(String(metric.targetValue));
+    const error =
+      errors[index] ?? validateTargetValue(String(metric.targetValue));
     return error !== null;
   });
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // 저장 전 전체 유효성 검사
     const newErrors: Record<number, ValidationError> = {};
     let hasValidationError = false;
@@ -135,13 +180,85 @@ export const TargetValueSettingModal = ({
       return;
     }
 
-    onSave(editedMetrics);
-    onClose();
+    setIsSaving(true);
+    try {
+      // 범주별로 그룹핑하여 API 호출
+      const qualityMetrics = editedMetrics.filter(
+        (m) => m.category === "quality",
+      );
+      const reviewMetrics = editedMetrics.filter(
+        (m) => m.category === "review",
+      );
+      const efficiencyMetrics = editedMetrics.filter(
+        (m) => m.category === "efficiency",
+      );
+
+      const updatePromises = [];
+
+      if (qualityMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("quality", {
+            month,
+            metrics: qualityMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          }),
+        );
+      }
+
+      if (reviewMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("review", {
+            month,
+            metrics: reviewMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          }),
+        );
+      }
+
+      if (efficiencyMetrics.length > 0) {
+        updatePromises.push(
+          updateTargetValues("efficiency", {
+            month,
+            metrics: efficiencyMetrics.map((m) => ({
+              metricCode: m.metricCode,
+              targetValue: m.targetValue,
+            })),
+          }),
+        );
+      }
+
+      await Promise.all(updatePromises);
+      onSave(editedMetrics);
+      onClose();
+    } catch {
+      // API가 없거나 에러 발생 시 confirm 메시지 표시
+      window.confirm("현재 서버에 해당 API가 없습니다.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
-    setEditedMetrics(metrics); // 원래 값으로 복원
+    // API 데이터로 원래 값 복원
+    if (qualityData && reviewData && efficiencyData) {
+      const allMetrics = [
+        ...qualityData.metrics,
+        ...reviewData.metrics,
+        ...efficiencyData.metrics,
+      ];
+      setEditedMetrics(allMetrics);
+    }
     onClose();
+  };
+
+  // metrics props에서 현재값 찾기
+  const getCurrentValue = (metricCode: string): string => {
+    const found = metrics.find((m) => m.metricCode === metricCode);
+    return found ? `${found.currentValue}` : "-";
   };
 
   return (
@@ -160,6 +277,7 @@ export const TargetValueSettingModal = ({
           isAnimating ? "translate-x-0" : "translate-x-full"
         }`}
       >
+        {/* 본문 */}
         <div className="flex flex-col h-full">
           {/* 헤더 */}
           <div className="flex items-start justify-between p-6 border-b border-gray-200 gap-4">
@@ -173,7 +291,7 @@ export const TargetValueSettingModal = ({
             </div>
             <button
               onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
@@ -181,99 +299,118 @@ export const TargetValueSettingModal = ({
 
           {/* 테이블 */}
           <div className="flex-1 flex flex-col overflow-hidden px-6 pt-4">
-            {/* 고정 헤더 */}
-            <div className="[scrollbar-gutter:stable] pr-[15px]">
-              <table className="w-full table-fixed">
-                <colgroup>
-                  <col className="w-[30%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[30%]" />
-                </colgroup>
-                <thead>
-                  <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-                    <th className="px-4 py-3">지표명</th>
-                    <th className="px-4 py-3 text-center">범주</th>
-                    <th className="px-4 py-3">현재값</th>
-                    <th className="px-4 py-3">목표값</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            {/* 스크롤 영역 */}
-            <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable]">
-              <table className="w-full table-fixed">
-                <colgroup>
-                  <col className="w-[30%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[30%]" />
-                </colgroup>
-                <tbody>
-                  {editedMetrics.map((metric, index) => {
-                    const error = errors[index];
-                    const hasError = error !== null && error !== undefined;
-                    return (
-                      <React.Fragment key={metric.metricCode || index}>
-                        <tr className={hasError ? "" : "border-b border-gray-100"}>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {metric.name}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-center">
-                            {(() => {
-                              const style = getCategoryStyle(metric.category);
-                              return (
-                                <span
-                                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
-                                  style={{
-                                    color: style.color,
-                                    borderColor: style.borderColor,
-                                  }}
-                                >
-                                  {getCategoryLabel(metric.category)}
-                                </span>
-                              );
-                            })()}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {metric.currentValue}
-                            {metric.unit && `${metric.unit}`}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={metric.targetValue}
-                                onChange={(e) =>
-                                  handleTargetValueChange(index, e.target.value)
-                                }
-                                className={`w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
-                                  hasError
-                                    ? "border-red-300 bg-red-50 focus:ring-red-500"
-                                    : "border-gray-200 focus:ring-blue-500"
-                                }`}
-                              />
-                              <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
-                                {metric.unit && `${metric.unit}`}
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
-                        {hasError && (
-                          <tr className="border-b border-gray-100">
-                            <td colSpan={4} className="px-4 pb-2 pt-0">
-                              <span className="text-xs text-red-500">
-                                {getErrorMessage(error)}
-                              </span>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {isLoading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <>
+                {/* 고정 헤더 */}
+                <div className="[scrollbar-gutter:stable] pr-[15px]">
+                  <table className="w-full table-fixed">
+                    <colgroup>
+                      <col className="w-[30%]" />
+                      <col className="w-[20%]" />
+                      <col className="w-[20%]" />
+                      <col className="w-[30%]" />
+                    </colgroup>
+                    <thead>
+                      <tr className="h-[45px] border-b border-gray-200 text-left text-sm font-medium text-gray-700">
+                        <th className="px-4">지표명</th>
+                        <th className="px-4 text-center">범주</th>
+                        <th className="px-4">현재값</th>
+                        <th className="px-4">목표값</th>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+                {/* 스크롤 영역 */}
+                <div className="flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+                  <table className="w-full table-fixed">
+                    <colgroup>
+                      <col className="w-[30%]" />
+                      <col className="w-[20%]" />
+                      <col className="w-[20%]" />
+                      <col className="w-[30%]" />
+                    </colgroup>
+                    <tbody>
+                      {editedMetrics.map((metric, index) => {
+                        const error = errors[index];
+                        const hasError = error !== null && error !== undefined;
+                        const metricCategory = categoryToMetricCategory(
+                          metric.category,
+                        );
+                        return (
+                          <React.Fragment key={metric.metricCode || index}>
+                            <tr
+                              className={`h-[51px] ${
+                                hasError ? "" : "border-b border-gray-100"
+                              }`}
+                            >
+                              <td className="px-4 text-sm text-gray-900">
+                                {getMetricName(metric.metricCode)}
+                              </td>
+                              <td className="px-4 text-sm text-center">
+                                {(() => {
+                                  const style =
+                                    getCategoryStyle(metricCategory);
+                                  return (
+                                    <span
+                                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border"
+                                      style={{
+                                        color: style.color,
+                                        borderColor: style.borderColor,
+                                      }}
+                                    >
+                                      {getCategoryLabel(metricCategory)}
+                                    </span>
+                                  );
+                                })()}
+                              </td>
+                              <td className="px-4 text-sm text-gray-900">
+                                {getCurrentValue(metric.metricCode)}
+                                {getMetricUnit(metric.metricCode)}
+                              </td>
+                              <td className="px-4">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={metric.targetValue}
+                                    onChange={(e) =>
+                                      handleTargetValueChange(
+                                        index,
+                                        e.target.value,
+                                      )
+                                    }
+                                    className={`w-[58%] text-[14px] text-gray-700 px-3 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                                      hasError
+                                        ? "border-red-300 bg-red-50 focus:ring-red-500"
+                                        : "border-gray-200 focus:ring-blue-500"
+                                    }`}
+                                  />
+                                  <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                                    {getMetricUnit(metric.metricCode)}
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                            {hasError && (
+                              <tr className="border-b border-gray-100">
+                                <td colSpan={4} className="px-4 pb-2 pt-0">
+                                  <span className="text-xs text-red-500">
+                                    {getErrorMessage(error)}
+                                  </span>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
           </div>
 
           {/* 하단 버튼 */}
@@ -285,9 +422,9 @@ export const TargetValueSettingModal = ({
               variant="primary"
               size="sm"
               onClick={handleSave}
-              disabled={hasErrors}
+              disabled={hasErrors || isSaving}
             >
-              저장
+              {isSaving ? "저장 중..." : "저장"}
             </Button>
           </div>
         </div>

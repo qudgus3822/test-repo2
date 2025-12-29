@@ -11,7 +11,7 @@ import {
 import { CHART_STYLES, LINE_CHART_MARGIN, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
-  [key: string]: string | number;
+  [key: string]: string | number | boolean;
 }
 
 type YAxisDomainType = "auto" | "dataMinMax" | "fromZero" | [number, number];
@@ -28,6 +28,11 @@ interface LineChartProps {
   yAxisDomain?: YAxisDomainType; // y축 범위 설정 (기본값: 'auto')
   dashedKeys?: string[]; // 점선으로 표시할 key 배열
   dashedColor?: string; // 점선 색상 (기본값: 회색)
+  tooltipValueFormatter?: (
+    value: number,
+    key: string,
+    dataPoint: DataPoint,
+  ) => string | number; // 툴팁 값 포맷터
 }
 
 /**
@@ -46,6 +51,7 @@ export const LineChart = ({
   yAxisDomain = "auto",
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
+  tooltipValueFormatter,
 }: LineChartProps) => {
   // y축 domain 계산
   const getDomain = (): [number | string, number | string] | undefined => {
@@ -81,12 +87,16 @@ export const LineChart = ({
         <Tooltip
           content={({ active, payload, label }) => {
             if (!active || !payload || !payload.length) return null;
+            const dataPoint = payload[0]?.payload as DataPoint;
             return (
               <div style={CHART_STYLES.tooltip.contentStyle}>
                 <p style={CHART_STYLES.tooltip.labelStyle}>{label}</p>
                 {yKeys.map((key) => {
                   const item = payload.find((p) => p.dataKey === key);
                   if (!item) return null;
+                  const displayValue = tooltipValueFormatter
+                    ? tooltipValueFormatter(item.value as number, key, dataPoint)
+                    : item.value;
                   return (
                     <p
                       key={key}
@@ -95,7 +105,7 @@ export const LineChart = ({
                         color: item.color,
                       }}
                     >
-                      {`${key}: ${item.value}`}
+                      {`${key}: ${displayValue}`}
                     </p>
                   );
                 })}
