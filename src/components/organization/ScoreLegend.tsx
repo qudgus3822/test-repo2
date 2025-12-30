@@ -1,33 +1,24 @@
-import { SCORE_COLORS } from "@/styles/colors";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Info } from "lucide-react";
-
-interface ScoreLegendProps {
-  excellentThreshold?: number; // 우수 기준 (기본값: 80)
-  dangerThreshold?: number; // 위험 기준 (기본값: 70)
-}
+import { ACHIEVEMENT_RATE_COLORS } from "@/styles/colors";
 
 /**
  * 점수 범례 컴포넌트
- * excellentThreshold 이상 (초록), dangerThreshold ~ excellentThreshold 미만 (연한 초록), dangerThreshold 미만 (주황)
+ * 달성률 5단계: 0-25%, 25-50%, 50-75%, 75-100%, 100% 이상
  */
-export const ScoreLegend = ({
-  excellentThreshold = 80,
-  dangerThreshold = 70,
-}: ScoreLegendProps) => {
+export const ScoreLegend = () => {
   const legends = [
-    { color: SCORE_COLORS.excellent, label: `${excellentThreshold}% 이상` },
-    {
-      color: SCORE_COLORS.good,
-      label: `${dangerThreshold}% ~ ${excellentThreshold}% 미만`,
-    },
-    { color: SCORE_COLORS.danger, label: `${dangerThreshold}% 미만` },
+    { color: ACHIEVEMENT_RATE_COLORS.level1, label: "0-25% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level2, label: "25-50% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level3, label: "50-75% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level4, label: "75-100% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level5, label: "100% 이상" },
   ];
 
   return (
     <div className="flex items-center justify-center gap-6 py-8">
       <span className="text-sm text-gray-600 font-medium flex items-center gap-1.5">
-        달성률
+        달성률 범례
         <Tooltip
           content="달성률은 지표관리 화면에서 설정된 값을 기준으로 반영합니다."
           color="#6B7280"

@@ -5,6 +5,7 @@ import {
   fetchOrgChangeHistory,
   fetchOrgTypeSettings,
   updateEvaluationTargetsBulk,
+  fetchOrganizationAllMetrics,
 } from "@/api/organization";
 import type { BulkEvaluationTargetRequest } from "@/api/organization";
 import type {
@@ -32,7 +33,7 @@ export const organizationTreeKeys = {
 /**
  * 탭별 조직도 트리 조회 Hook
  * @param yearMonth - 조회 연월 (YYYY-MM 형식)
- * @param tab - 탭 타입 (bdpi, codeQuality, reviewQuality, developmentEfficiency)
+ * @param tab - 탭 타입 (all, bdpi, codeQuality, reviewQuality, developmentEfficiency)
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
  * @returns React Query 결과 객체
  */
@@ -44,6 +45,10 @@ export const useOrganizationTree = (
   return useQuery<OrganizationCompareResponse, Error>({
     queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab),
     queryFn: async () => {
+      // "all" 탭일 경우 전체 지표 API 호출
+      if (tab === "all") {
+        return fetchOrganizationAllMetrics(yearMonth);
+      }
       return fetchOrganizationByTab(yearMonth, tab);
     },
     enabled: enabled && !!yearMonth,

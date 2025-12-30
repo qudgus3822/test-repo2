@@ -47,6 +47,7 @@ export const MemberRoleLabel = {
 
 // 직책 타입
 export type MemberPosition =
+  | "" // 없음 (일반 사원)
   | "TEAM_LEADER" // 팀장
   | "DEPARTMENT_HEAD" // 실장
   | "OVERALL_MANAGER"; // 총괄
@@ -195,6 +196,10 @@ export interface OrganizationMember extends ScoreMetrics {
   status: MemberStatus; // 상태 (재직, 이동 전, 이동 후, 입사, 퇴사, 휴직, 복직, 직급변경, 직책변경)
   departmentCode: string; // 소속 부서 코드
   departmentName: string; // 소속 부서 이름
+  teamCode?: string; // 소속 팀 코드 (팀 소속일 경우)
+  teamName?: string; // 소속 팀 이름 (팀 소속일 경우)
+  divisionCode: string; // 소속 실 코드
+  divisionName: string; // 소속 실 이름
   level: number; // 조직 레벨 (소속 부서와 동일)
   isEvaluationTarget: boolean; // 평가 대상 여부
   isManager: boolean; // 실장/팀장 여부 (personalTitle 코드로 넘어오는 값과 동일)
@@ -249,10 +254,12 @@ export interface OrganizationCompareResponse {
 
 /**
  * 통합 탭 타입
- * - 조직비교/지표 공통: bdpi(전체), codeQuality, reviewQuality, developmentEfficiency
+ * - 조직비교: all(전체), bdpi(BDPI)
+ * - 지표관리: codeQuality, reviewQuality, developmentEfficiency
  */
 export type TabType =
-  | "bdpi" // BDPI (전체)
+  | "all" // 전체
+  | "bdpi" // BDPI
   | "codeQuality"
   | "reviewQuality"
   | "developmentEfficiency";

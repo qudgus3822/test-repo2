@@ -12,7 +12,7 @@ export const SCORE_GOOD_THRESHOLD = 70;
 
 interface OrganizationStore {
   /**
-   * 현재 활성화된 탭 (BDPI, 코드품질, 리뷰품질, 개발효율)
+   * 현재 활성화된 탭 (전체, BDPI)
    */
   activeTab: TabType;
   /**
@@ -113,7 +113,7 @@ const initialCompareGroups: CompareGroup[] = [
 const DEFAULT_EXPANDED_CODES = ["IT01"];
 
 const initState: OrganizationStore = {
-  activeTab: "bdpi",
+  activeTab: "all",
   period: "monthly",
   currentDate: new Date(),
   compareGroups: initialCompareGroups,

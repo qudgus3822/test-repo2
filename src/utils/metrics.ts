@@ -99,6 +99,84 @@ export const METRIC_CODE_DISPLAY_NAMES: Record<string, [string, string]> = {
 };
 
 /**
+ * 지표 코드를 `설명`으로 매핑하는 객체
+ */
+export const METRIC_CODE_DESCRIPTIONS: Record<string, string> = {
+  // 코드품질 (9개)
+  TECH_DEBT: "코드의 기술적 부채를 측정하여 유지보수 비용을 평가합니다.",
+  CODE_COMPLEXITY: "코드의 복잡도를 측정하여 유지보수성을 평가합니다.",
+  CODE_DUPLICATION: "중복된 코드의 비율을 측정합니다.",
+  CODE_SMELL: "잠재적 문제가 있는 코드 패턴의 수를 측정합니다.",
+  SECURITY_VULNERABILITIES: "보안 취약점의 수를 측정합니다.",
+  BUG_COUNT: "발견된 버그의 수를 측정합니다.",
+  INCIDENT_COUNT: "발생한 장애의 수를 측정합니다.",
+  TEST_COVERAGE: "테스트로 검증된 코드의 비율을 측정합니다.",
+  CODE_DEFECT_DENSITY: "코드 1,000줄당 결함 수를 측정합니다.",
+  // 리뷰품질 (12개)
+  REVIEW_SPEED: "코드 리뷰 처리 속도를 측정합니다.",
+  REVIEW_RESPONSE_RATE: "리뷰 요청에 대한 응답률을 측정합니다.",
+  REVIEW_PARTICIPATION_RATE: "코드 리뷰 참여율을 측정합니다.",
+  REVIEW_ACCEPTANCE_RATE: "리뷰 제안의 수용률을 측정합니다.",
+  REVIEW_FEEDBACK_CONCRETENESS: "리뷰 피드백의 구체성을 측정합니다.",
+  REVIEW_REQUEST_COUNT: "리뷰 요청 횟수를 측정합니다.",
+  REVIEW_PARTICIPATION_COUNT: "리뷰 참여 횟수를 측정합니다.",
+  REVIEW_PASS_RATE: "첫 번째 리뷰에서 통과한 비율을 측정합니다.",
+  REVIEW_PARTICIPATION_NUMBER: "코드 리뷰 참여 수치를 측정합니다.",
+  REVIEW_FEEDBACK_TIME: "피드백 반영에 걸린 시간을 측정합니다.",
+  REVIEW_COMPLETION_TIME: "리뷰 완료까지 걸린 시간을 측정합니다.",
+  REVIEW_REVIEWER_DIVERSE: "리뷰어의 다양성을 측정합니다.",
+  // 개발효율 (9개)
+  PR_SIZE: "MR(Merge Request)의 크기를 측정합니다.",
+  COMMIT_FREQUENCY: "커밋 빈도를 측정합니다.",
+  LOC_PER_COMMIT: "커밋당 코드 라인 수를 측정합니다.",
+  LEAD_TIME: "장애 해결에 걸린 평균 시간을 측정합니다.",
+  FAILURE_DETECTION_TIME: "장애 탐지에 걸린 시간을 측정합니다.",
+  FAILURE_DIAGNOSIS_TIME: "장애 진단에 걸린 시간을 측정합니다.",
+  FAILURE_RECOVERY_TIME: "장애 복구에 걸린 시간을 측정합니다.",
+  DEPLOYMENT_FREQUENCY: "배포 빈도를 측정합니다.",
+  DEPLOYMENT_SUCCESS_RATE: "배포 성공률을 측정합니다.",
+};
+
+/**
+ * 지표 코드를 `목표값 표시 문자열`로 매핑하는 객체
+ */
+export const METRIC_CODE_TARGETS: Record<string, string> = {
+  // 코드품질 (9개)
+  TECH_DEBT: "60분 이하",
+  CODE_COMPLEXITY: "15 이하",
+  CODE_DUPLICATION: "5% 이하",
+  CODE_SMELL: "10개 이하",
+  SECURITY_VULNERABILITIES: "0개",
+  BUG_COUNT: "5개 이하",
+  INCIDENT_COUNT: "0개",
+  TEST_COVERAGE: "80% 이상",
+  CODE_DEFECT_DENSITY: "1.0 이하",
+  // 리뷰품질 (12개)
+  REVIEW_SPEED: "3600초 이하",
+  REVIEW_RESPONSE_RATE: "90% 이상",
+  REVIEW_PARTICIPATION_RATE: "80% 이상",
+  REVIEW_ACCEPTANCE_RATE: "70% 이상",
+  REVIEW_FEEDBACK_CONCRETENESS: "80% 이상",
+  REVIEW_REQUEST_COUNT: "10개 이상",
+  REVIEW_PARTICIPATION_COUNT: "5개 이상",
+  REVIEW_PASS_RATE: "70% 이상",
+  REVIEW_PARTICIPATION_NUMBER: "80점 이상",
+  REVIEW_FEEDBACK_TIME: "60분 이하",
+  REVIEW_COMPLETION_TIME: "120분 이하",
+  REVIEW_REVIEWER_DIVERSE: "80점 이상",
+  // 개발효율 (9개)
+  PR_SIZE: "400 LOC 이하",
+  COMMIT_FREQUENCY: "5회 이상",
+  LOC_PER_COMMIT: "200 LOC 이하",
+  LEAD_TIME: "3600초 이하",
+  FAILURE_DETECTION_TIME: "600초 이하",
+  FAILURE_DIAGNOSIS_TIME: "1200초 이하",
+  FAILURE_RECOVERY_TIME: "1800초 이하",
+  DEPLOYMENT_FREQUENCY: "10개 이상",
+  DEPLOYMENT_SUCCESS_RATE: "95% 이상",
+};
+
+/**
  * 지표 코드를 `단위(unit)`로 매핑하는 객체
  *
  * @example
@@ -275,6 +353,20 @@ export const getMetricName = (metricCode: string): string => {
  */
 export const getMetricUnit = (metricCode: string): string => {
   return METRIC_CODE_UNITS[metricCode] ?? "";
+};
+
+/**
+ * 지표 코드에 해당하는 설명을 반환합니다.
+ */
+export const getMetricDescription = (metricCode: string): string => {
+  return METRIC_CODE_DESCRIPTIONS[metricCode] ?? "";
+};
+
+/**
+ * 지표 코드에 해당하는 목표값 문자열을 반환합니다.
+ */
+export const getMetricTarget = (metricCode: string): string => {
+  return METRIC_CODE_TARGETS[metricCode] ?? "";
 };
 
 /**

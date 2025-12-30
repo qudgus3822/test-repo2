@@ -1,545 +1,275 @@
-import { ChevronRight, ChevronDown, Search as SearchIcon } from "lucide-react";
-import upIcon from "@/assets/icons/up_icon_green.svg";
-import downIcon from "@/assets/icons/down_icon_red.svg";
-import {
-  useOrganizationStore,
-  SCORE_EXCELLENT_THRESHOLD,
-  SCORE_GOOD_THRESHOLD,
-} from "@/store/useOrganizationStore";
+/**
+ * OrganizationTable 컴포넌트
+ * - 하이어라키뷰 테이블 (트리 구조)
+ * - 고정 영역 (좌측 5개 컬럼) + 스크롤 영역 (30개 지표 + BDPI)
+ * - 히트맵 시각화 (ProgressSquare 사용)
+ */
+
+import { ChevronRight, ChevronDown } from "lucide-react";
+import { useOrganizationStore } from "@/store/useOrganizationStore";
 import type {
   OrganizationDepartment,
   OrganizationMember,
   OrganizationNode,
   TabType,
-  ScoreLevel,
-  ChangeInfo,
-  MetricCategoryKey,
-  OrganizationMetrics,
   BdpiMetrics,
-  MetricScoreValue,
-  MonthlyComparison,
 } from "@/types/organization.types";
-import { SCORE_COLORS, TREND_COLORS } from "@/styles/colors";
-import { clsx } from "clsx";
-import {
-  getMemberRoleOrPositionLabel,
-  hasChangeInfo,
-  formatChangeDate,
-  getMemberEmail,
-  getChangeDetailWithSuffix,
-} from "@/utils/organization";
 import {
   METRIC_CODE_NAMES,
   METRIC_CODE_DISPLAY_NAMES,
-  getMetricOrder,
+  METRIC_CODE_ORDER,
 } from "@/utils/metrics";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
+import { HeatmapCell } from "./heatmap/HeatmapCell";
+import {
+  calculateSummaryCounts,
+  SUMMARY_CATEGORIES,
+  SUMMARY_BG_COLORS,
+  type MetricData,
+  type SummaryCounts,
+} from "./heatmap/types";
 
-// 탭 타입 → API 카테고리 키 매핑
-// - UI 탭 ID (codeQuality 등) → API 카테고리 키 (quality 등)
-const TAB_TO_CATEGORY: Record<Exclude<TabType, "bdpi">, MetricCategoryKey> = {
-  codeQuality: "quality",
-  reviewQuality: "review",
-  developmentEfficiency: "efficiency",
-};
-
-// 카테고리별 지표 코드 목록 (METRIC_CODE_ORDER 순서로 정렬)
-const CATEGORY_METRIC_CODES: Record<MetricCategoryKey, string[]> = {
-  quality: [
-    "TECH_DEBT",
-    "CODE_COMPLEXITY",
-    "CODE_DUPLICATION",
-    "CODE_SMELL",
-    "TEST_COVERAGE",
-    "SECURITY_VULNERABILITIES",
-    "CODE_DEFECT_DENSITY",
-    "BUG_COUNT",
-    "INCIDENT_COUNT",
-  ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-  review: [
-    "REVIEW_SPEED",
-    "REVIEW_RESPONSE_RATE",
-    "REVIEW_PARTICIPATION_RATE",
-    "REVIEW_ACCEPTANCE_RATE",
-    "REVIEW_FEEDBACK_CONCRETENESS",
-    "REVIEW_REVIEWER_DIVERSE",
-    "REVIEW_REQUEST_COUNT",
-    "REVIEW_PARTICIPATION_COUNT",
-    "REVIEW_PASS_RATE",
-    "REVIEW_PARTICIPATION_NUMBER",
-    "REVIEW_FEEDBACK_TIME",
-    "REVIEW_COMPLETION_TIME",
-  ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-  efficiency: [
-    "DEPLOYMENT_FREQUENCY",
-    "COMMIT_FREQUENCY",
-    "LEAD_TIME",
-    "FAILURE_DETECTION_TIME",
-    "FAILURE_DIAGNOSIS_TIME",
-    "FAILURE_RECOVERY_TIME",
-    "DEPLOYMENT_SUCCESS_RATE",
-    "PR_SIZE",
-    "LOC_PER_COMMIT",
-  ].sort((a, b) => getMetricOrder(a) - getMetricOrder(b)),
-};
-
-// BDPI 탭용 metrics인지 확인하는 타입 가드
-const isBdpiMetrics = (
-  metrics: OrganizationMetrics,
-): metrics is BdpiMetrics => {
-  return "bdpi" in metrics && "quality" in metrics;
-};
-
-// metrics 객체에서 특정 카테고리의 지표들을 순서대로 가져오기
-const getMetricsByCategory = (
-  metrics: OrganizationMetrics | undefined,
-  category: MetricCategoryKey,
-): (MetricScoreValue | null)[] => {
-  if (!metrics || isBdpiMetrics(metrics)) {
-    // BDPI metrics이거나 없으면 빈 배열 반환
-    return CATEGORY_METRIC_CODES[category].map(() => null);
-  }
-
-  const codes = CATEGORY_METRIC_CODES[category];
-  const metricsObj = metrics as unknown as Record<string, MetricScoreValue>;
-  return codes.map((code) => {
-    const metric = metricsObj[code];
-    return metric || null;
-  });
-};
+// 플랫 아이템 타입
+interface FlatTreeItem {
+  type: "department" | "member";
+  data: OrganizationDepartment | OrganizationMember;
+  depth: number;
+  hasChildren: boolean;
+  isExpanded: boolean;
+}
 
 interface OrganizationTableProps {
-  month: string; // YYYY-MM 형식
+  month: string;
   activeTab: TabType;
+  hideValues?: boolean;
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
 }
 
-// 점수에 따른 배경색 결정
-const getScoreLevel = (score: number | null): ScoreLevel | null => {
-  if (score === null) return null;
-  if (score >= SCORE_EXCELLENT_THRESHOLD) return "excellent";
-  if (score >= SCORE_GOOD_THRESHOLD) return "good";
-  return "danger";
-};
+// 30개 지표 코드 목록 (순서대로)
+const ALL_METRIC_CODES = Object.keys(METRIC_CODE_ORDER).sort(
+  (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
+);
 
-const getScoreBgColor = (score: number | null): string => {
-  const level = getScoreLevel(score);
-  if (level === null) return SCORE_COLORS.noScore;
-  if (level === "excellent") return SCORE_COLORS.excellent;
-  if (level === "good") return SCORE_COLORS.good;
-  return SCORE_COLORS.danger;
-};
+// 트리를 플랫 배열로 변환 (expand 상태 고려)
+const flattenTreeWithExpand = (
+  organizations: OrganizationDepartment[],
+  expandedOrganizations: Set<string>,
+  showMembers: boolean,
+): FlatTreeItem[] => {
+  const result: FlatTreeItem[] = [];
 
-const getScoreTextColor = (score: number | null): string => {
-  if (score === null) return "text-gray-400";
-  return "text-gray-900";
-};
+  const traverse = (node: OrganizationNode, depth: number) => {
+    if (!node.isEvaluationTarget) return;
 
-// 전월대비 표시
-const ChangeRateDisplay = ({
-  comparison,
-}: {
-  comparison: MonthlyComparison | undefined;
-}) => {
-  if (!comparison) return <span className="text-gray-400">--</span>;
+    if (node.type === "department") {
+      const dept = node as OrganizationDepartment;
+      const hasChildren = !!(dept.children && dept.children.length > 0);
+      const isExpanded = expandedOrganizations.has(dept.code);
 
-  const { changePercent, direction } = comparison;
+      result.push({
+        type: "department",
+        data: dept,
+        depth,
+        hasChildren,
+        isExpanded,
+      });
 
-  // direction이 "new"이면 전월 데이터가 없으므로 "--" 표시
-  if (direction === "new") {
-    return <span className="text-gray-400">--</span>;
-  }
+      if (isExpanded && dept.children) {
+        // 멤버 먼저 표시
+        if (showMembers) {
+          dept.children
+            .filter(
+              (child): child is OrganizationMember =>
+                child.type === "member" && child.isEvaluationTarget,
+            )
+            .forEach((member) => {
+              result.push({
+                type: "member",
+                data: member,
+                depth: depth + 1,
+                hasChildren: false,
+                isExpanded: false,
+              });
+            });
+        }
 
-  const isUp = direction === "up";
-  const isDown = direction === "down";
+        // 하위 부서 표시
+        const childDepts = dept.children
+          .filter(
+            (child): child is OrganizationDepartment =>
+              child.type === "department" && child.isEvaluationTarget,
+          )
+          .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  return (
-    <div
-      className="flex items-center justify-center gap-1 text-sm font-medium"
-      style={{
-        color: isUp
-          ? TREND_COLORS.increase
-          : isDown
-          ? TREND_COLORS.decrease
-          : undefined,
-      }}
-    >
-      {(isUp || isDown) && (
-        <img
-          src={isUp ? upIcon : downIcon}
-          alt={isUp ? "up" : "down"}
-          className="w-4 h-4"
-        />
-      )}
-      <span>{changePercent.toFixed(1)}%</span>
-    </div>
-  );
-};
-
-// 점수 셀 컴포넌트
-const ScoreCell = ({
-  score,
-  isFirst = false,
-  isUsed = true,
-}: {
-  score: number | null;
-  isFirst?: boolean;
-  isUsed?: boolean;
-}) => {
-  // isUsed가 false이면 수집 불가 지표로 표시
-  const isNoData = !isUsed;
-  // score가 null이면 수집 가능하지만 데이터 없음
-  const isNoScore = isUsed && score === null;
-
-  return (
-    <td
-      className={clsx(
-        "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px]",
-        isFirst && "border-l",
-        !isNoData && !isNoScore && getScoreTextColor(score),
-      )}
-      style={{
-        backgroundColor: isNoData
-          ? SCORE_COLORS.noData
-          : isNoScore
-          ? SCORE_COLORS.noScore
-          : getScoreBgColor(score),
-        color: isNoData ? SCORE_COLORS.noDataText : undefined,
-      }}
-    >
-      {isNoData ? "N/A" : score !== null ? score.toFixed(1) : "--"}
-    </td>
-  );
-};
-
-// 단일 변경이력 툴팁 내용 생성 함수
-// 형식: 날짜 상세내용 (이동전/이동후는 detail 앞에 줄바꿈 추가)
-// GROUP && (CREATED/DELETED): (자동), POLICY: (수동) 텍스트 추가
-const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
-  const { changeDate, changeEndDate, changeDetail, changeType, category } =
-    change;
-
-  // 날짜 포맷팅 (기간이 있으면 start ~ end, 없으면 단일 날짜)
-  const formattedDate = changeEndDate
-    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
-    : formatChangeDate(changeDate);
-
-  const separator = " ";
-
-  // 공통 util 함수를 사용하여 suffix가 추가된 상세 내용 생성
-  const detailWithSuffix = changeDetail
-    ? getChangeDetailWithSuffix(changeDetail, category, changeType)
-    : "";
-
-  return detailWithSuffix
-    ? `${formattedDate}${separator}${detailWithSuffix}`
-    : formattedDate;
-};
-
-// 여러 변경이력의 툴팁 내용을 하나로 합치는 함수
-const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
-  return changes
-    .map((change) => getSingleChangeTooltipContent(change))
-    .join("\n");
-};
-
-// 상태 뱃지 컴포넌트 (배열 지원, 통합 Tooltip)
-// 최대 4개까지만 표시, changeDate 기준 최신순 정렬
-const MAX_BADGE_COUNT = 4;
-
-const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
-  if (!hasChangeInfo(change)) return null;
-
-  // changeDate 기준 최신순 정렬 후 최대 4개까지만 표시
-  const sortedChanges = [...change!].sort((a, b) => {
-    const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
-    const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
-    return dateB - dateA;
-  });
-  const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
-
-  const tooltipContent = getCombinedTooltipContent(displayChanges);
-
-  const badges = (
-    <div className="inline-flex items-center">
-      {displayChanges.map((item, index) => (
-        <ChangeTypeBadge
-          key={`${item.changeType}-${index}`}
-          type={item.changeType}
-          category={item.category}
-          className="ml-2 cursor-default"
-        />
-      ))}
-    </div>
-  );
-
-  return (
-    <Tooltip content={tooltipContent} color="#6B7280">
-      {badges}
-    </Tooltip>
-  );
-};
-
-// 멤버 행 컴포넌트
-const MemberRow = ({
-  member,
-  depth,
-  activeTab,
-  onDetailClick,
-}: {
-  member: OrganizationMember;
-  depth: number;
-  activeTab: TabType;
-  onDetailClick?: (item: OrganizationMember) => void;
-}) => {
-  const paddingLeft = 24 + depth * 24;
-
-  // 카테고리별 지표 렌더링
-  const renderMetricsCells = () => {
-    if (activeTab === "bdpi") {
-      const bdpiMetrics = member.metrics as BdpiMetrics;
-      return (
-        <>
-          <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
-          <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
-          <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
-          <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
-        </>
-      );
+        childDepts.forEach((child) => traverse(child, depth + 1));
+      }
     }
-
-    const category = TAB_TO_CATEGORY[activeTab];
-    const categoryMetrics = getMetricsByCategory(member.metrics, category);
-
-    return (
-      <>
-        {categoryMetrics.map((metric, index) => (
-          <ScoreCell
-            key={index}
-            score={metric?.score ?? null}
-            isFirst={index === 0}
-            isUsed={metric?.isUsed ?? true}
-          />
-        ))}
-      </>
-    );
   };
 
+  organizations.forEach((org) => traverse(org, 0));
+
+  return result;
+};
+
+// 고정 영역 행 컴포넌트 (부서)
+const FixedDepartmentRow = ({
+  item,
+  summaryCounts,
+  onToggle,
+}: {
+  item: FlatTreeItem;
+  summaryCounts: SummaryCounts;
+  onToggle: (code: string) => void;
+}) => {
+  const dept = item.data as OrganizationDepartment;
+  const paddingLeft = 16 + item.depth * 24;
+
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[70px]">
+    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
       <td
-        className="pr-4 align-middle whitespace-nowrap"
+        className="py-0 align-middle whitespace-nowrap border-r border-gray-200 w-[220px] h-[64px]"
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            disabled
-            className="mr-3 w-4 h-4 rounded border-gray-300 opacity-30 cursor-not-allowed"
-          />
-          <div className="flex items-center whitespace-nowrap">
-            <span className="font-medium text-gray-900 whitespace-nowrap">
-              {member.name}
-            </span>
-            <span className="ml-2 text-sm text-gray-500 whitespace-nowrap">
-              {getMemberRoleOrPositionLabel(member.title, member.personalTitle)}
-            </span>
-            <StatusBadge change={member.changes} />
-          </div>
-        </div>
-        <div
-          className="text-xs text-gray-500 mt-0.5 whitespace-nowrap"
-          style={{ marginLeft: "28px" }}
-        >
-          {member.email || getMemberEmail(member.employeeID)}
+        <div className="flex items-center h-full">
+          {item.hasChildren ? (
+            <button
+              onClick={() => onToggle(dept.code)}
+              className="mr-2 p-0.5 hover:bg-gray-200 rounded cursor-pointer"
+            >
+              {item.isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-gray-600" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-600" />
+              )}
+            </button>
+          ) : (
+            <span className="mr-2 w-5" />
+          )}
+          <span className="font-semibold text-gray-900">{dept.name}</span>
+          <span className="ml-1 text-sm text-gray-500">
+            ({dept.memberCount})
+          </span>
         </div>
       </td>
-      {renderMetricsCells()}
-      {activeTab === "bdpi" && (
-        <td className="px-3 text-center align-middle">
-          <ChangeRateDisplay
-            comparison={(member.metrics as BdpiMetrics).monthlyComparison}
-          />
+      {SUMMARY_CATEGORIES.map((cat) => (
+        <td
+          key={cat.id}
+          className="px-4 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[60px] h-[64px]"
+        >
+          {summaryCounts[cat.id]}
         </td>
-      )}
-      <td className="px-3 text-center align-middle">
-        <button
-          className="text-gray-400 hover:text-gray-600 cursor-pointer"
-          onClick={() => onDetailClick?.(member)}
-        >
-          <SearchIcon className="w-5 h-5" />
-        </button>
-      </td>
+      ))}
     </tr>
   );
 };
 
-// 조직 행 컴포넌트
-const OrganizationRow = ({
-  org,
-  depth,
-  activeTab,
-  onDetailClick,
+// 고정 영역 행 컴포넌트 (멤버)
+const FixedMemberRow = ({
+  item,
+  summaryCounts,
 }: {
-  org: OrganizationDepartment;
-  depth: number;
-  activeTab: TabType;
-  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  item: FlatTreeItem;
+  summaryCounts: SummaryCounts;
 }) => {
-  const { expandedOrganizations, toggleOrganization, showMembers } =
-    useOrganizationStore();
-  const isExpanded = expandedOrganizations.has(org.code);
-  const hasChildren = org.children && org.children.length > 0;
-  const paddingLeft = 16 + depth * 24;
-
-  // children을 부서와 멤버로 분리 (isEvaluationTarget: true인 것만 필터링 후 sortOrder로 정렬)
-  const childDepartments: OrganizationDepartment[] = [];
-  const childMembers: OrganizationMember[] = [];
-
-  org.children?.forEach((child: OrganizationNode) => {
-    if (!child.isEvaluationTarget) return; // 평가 대상이 아니면 제외
-    if (child.type === "department") {
-      childDepartments.push(child);
-    } else if (child.type === "member") {
-      childMembers.push(child);
-    }
-  });
-
-  // 부서는 sortOrder로 정렬
-  childDepartments.sort((a, b) => a.sortOrder - b.sortOrder);
-
-  // 카테고리별 지표 렌더링
-  const renderMetricsCells = () => {
-    if (activeTab === "bdpi") {
-      const bdpiMetrics = org.metrics as BdpiMetrics;
-      return (
-        <>
-          <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
-          <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
-          <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
-          <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
-        </>
-      );
-    }
-
-    const category = TAB_TO_CATEGORY[activeTab];
-    const categoryMetrics = getMetricsByCategory(org.metrics, category);
-
-    return (
-      <>
-        {categoryMetrics.map((metric, index) => (
-          <ScoreCell
-            key={index}
-            score={metric?.score ?? null}
-            isFirst={index === 0}
-            isUsed={metric?.isUsed ?? true}
-          />
-        ))}
-      </>
-    );
-  };
+  const member = item.data as OrganizationMember;
+  const paddingLeft = 24 + item.depth * 24;
 
   return (
-    <>
-      {/* 조직 행 */}
-      <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[70px]">
+    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
+      <td
+        className="py-0 align-middle whitespace-nowrap border-r border-gray-200 w-[220px] h-[64px]"
+        style={{ paddingLeft: `${paddingLeft}px` }}
+      >
+        <div className="flex items-center h-full">
+          <span className="mr-2 w-5" />
+          <span className="font-medium text-gray-900">{member.name}</span>
+        </div>
+      </td>
+      {SUMMARY_CATEGORIES.map((cat) => (
         <td
-          className="pr-4 align-middle whitespace-nowrap"
-          style={{ paddingLeft: `${paddingLeft}px` }}
+          key={cat.id}
+          className="px-4 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[60px] h-[64px]"
         >
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              disabled
-              className="mr-3 w-4 h-4 rounded border-gray-300 opacity-30 cursor-not-allowed"
-            />
-            {hasChildren ? (
-              <button
-                onClick={() => toggleOrganization(org.code)}
-                className="mr-2 p-0.5 hover:bg-gray-200 rounded cursor-pointer"
-              >
-                {isExpanded ? (
-                  <ChevronDown className="w-4 h-4 text-gray-600" />
-                ) : (
-                  <ChevronRight className="w-4 h-4 text-gray-600" />
-                )}
-              </button>
-            ) : (
-              <span className="mr-2 w-5" />
-            )}
-            <span className="font-semibold text-gray-900 whitespace-nowrap">
-              {org.name}
-            </span>
-            <span className="ml-2 text-sm text-gray-500 whitespace-nowrap">
-              ({org.memberCount})
-            </span>
-            <StatusBadge change={org.changes} />
-          </div>
+          {summaryCounts[cat.id]}
         </td>
-        {renderMetricsCells()}
-        {activeTab === "bdpi" && (
-          <td className="px-3 text-center align-middle">
-            <ChangeRateDisplay
-              comparison={(org.metrics as BdpiMetrics).monthlyComparison}
+      ))}
+    </tr>
+  );
+};
+
+// 스크롤 영역 행 컴포넌트
+const ScrollableRow = ({
+  item,
+  hideValue = false,
+}: {
+  item: FlatTreeItem;
+  hideValue?: boolean;
+}) => {
+  const metrics = item.data.metrics as unknown as Record<string, MetricData>;
+  const bdpiMetrics = item.data.metrics as BdpiMetrics;
+
+  return (
+    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
+      {ALL_METRIC_CODES.map((code) => {
+        const metric = metrics?.[code];
+        const hasData =
+          metric && typeof metric.value === "number" && metric.isUsed !== false;
+        const score = hasData ? metric?.score ?? null : null;
+        const value = hasData ? metric?.value ?? null : null;
+
+        return (
+          <td
+            key={code}
+            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[85px] min-w-[85px] max-w-[85px] h-[64px]"
+          >
+            <HeatmapCell
+              metricCode={code}
+              score={score}
+              value={value}
+              hideValue={hideValue}
             />
           </td>
-        )}
-        <td className="px-3 text-center align-middle">
-          <button
-            className="text-gray-400 hover:text-gray-600 cursor-pointer"
-            onClick={() => onDetailClick?.(org)}
-          >
-            <SearchIcon className="w-5 h-5" />
-          </button>
-        </td>
-      </tr>
-
-      {/* 하위 조직/멤버 렌더링 */}
-      {isExpanded && (
-        <>
-          {/* 직속 멤버 렌더링 (showMembers가 true일 때만) */}
-          {showMembers &&
-            childMembers.map((member) => (
-              <MemberRow
-                key={member.employeeID}
-                member={member}
-                depth={depth + 1}
-                activeTab={activeTab}
-                onDetailClick={onDetailClick}
-              />
-            ))}
-          {/* 하위 조직 렌더링 */}
-          {childDepartments.map((child) => (
-            <OrganizationRow
-              key={child.code}
-              org={child}
-              depth={depth + 1}
-              activeTab={activeTab}
-              onDetailClick={onDetailClick}
-            />
-          ))}
-        </>
-      )}
-    </>
+        );
+      })}
+      <td className="px-6 py-4 text-center text-sm font-semibold align-middle border-l border-gray-200 w-[85px] min-w-[85px] max-w-[85px] h-[64px]">
+        {bdpiMetrics?.bdpi?.score !== undefined
+          ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
+          : "--"}
+      </td>
+    </tr>
   );
 };
 
 export const OrganizationTable = ({
   month,
   activeTab,
-  onDetailClick,
+  hideValues = false,
 }: OrganizationTableProps) => {
-  // API에서 조직 트리 가져오기 (탭별로 다른 API 호출)
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
-  // isEvaluationTarget: true인 조직만 필터링 후 sortOrder로 정렬
+  const { expandedOrganizations, toggleOrganization, showMembers } =
+    useOrganizationStore();
+
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  // 로딩, 에러, 데이터 없음 상태
+  // 트리를 플랫 배열로 변환
+  const flatItems = flattenTreeWithExpand(
+    organizations,
+    expandedOrganizations,
+    showMembers,
+  );
+
+  // 각 아이템의 summary counts 미리 계산
+  const itemSummaryCountsMap = new Map<FlatTreeItem, SummaryCounts>();
+  flatItems.forEach((item) => {
+    const counts = calculateSummaryCounts(
+      item.data.metrics as unknown as Record<string, MetricData>,
+    );
+    itemSummaryCountsMap.set(item, counts);
+  });
+
   if (isLoading || isError || organizations.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
@@ -552,115 +282,134 @@ export const OrganizationTable = ({
     );
   }
 
-  // 공통 th 스타일
-  const thStyle = "px-3 py-3 text-center text-sm font-medium text-gray-700";
-
-  // 테이블 헤더 결정
-  const getTableHeaders = () => {
-    if (activeTab === "bdpi") {
-      return (
-        <>
-          <th className={`${thStyle} w-[7%]`}>코드품질</th>
-          <th className={`${thStyle} w-[7%]`}>리뷰품질</th>
-          <th className={`${thStyle} w-[7%]`}>개발효율</th>
-          <th className={`${thStyle} w-[7%]`}>BDPI</th>
-        </>
-      );
-    }
-
-    // 카테고리별 지표 헤더 렌더링
-    const category = TAB_TO_CATEGORY[activeTab];
-    const metricCodes = CATEGORY_METRIC_CODES[category];
-
-    return (
-      <>
-        {metricCodes.map((code, index) => {
-          const displayName = METRIC_CODE_DISPLAY_NAMES[code];
-          return (
-            <th
-              key={code}
-              className={`${thStyle} w-[80px] min-w-[80px] max-w-[80px]`}
-              style={{
-                borderLeft: index === 0 ? "1px solid #e5e7eb" : undefined,
-              }}
-            >
-              {displayName ? (
-                <>
-                  {displayName[0]}
-                  <br />
-                  {displayName[1]}
-                </>
-              ) : (
-                METRIC_CODE_NAMES[code] || code
-              )}
-            </th>
-          );
-        })}
-      </>
-    );
-  };
-
-  // 지표 개수 계산
-  const getMetricCount = () => {
-    if (activeTab === "bdpi") return 4; // 코드품질, 리뷰품질, 개발효율, BDPI
-    const category = TAB_TO_CATEGORY[activeTab];
-    return CATEGORY_METRIC_CODES[category].length;
-  };
-
-  const metricCount = getMetricCount();
+  const thBaseStyle =
+    "px-6 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
   return (
-    <div className="overflow-x-auto border border-gray-200 rounded-lg">
-      <table className="w-full table-fixed">
-        {activeTab === "bdpi" ? (
-          <colgroup>
-            <col /> {/* 조직 이름 - 남은 width 모두 사용 */}
-            <col style={{ width: "100px" }} />
-            <col style={{ width: "100px" }} />
-            <col style={{ width: "100px" }} />
-            <col style={{ width: "100px" }} />
-            <col style={{ width: "100px" }} />
-            <col style={{ width: "100px" }} />
-          </colgroup>
-        ) : (
-          <colgroup>
-            <col style={{ width: "50%" }} />
-            {Array.from({ length: metricCount }).map((_, i) => (
-              <col key={i} style={{ width: "80px" }} />
+    <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+      {/* 고정 영역 (좌측 5개 컬럼) */}
+      <div
+        className="flex-shrink-0 bg-white z-10"
+        style={{ boxShadow: "4px 0 8px -2px rgba(0, 0, 0, 0.1)" }}
+      >
+        <table className="border-collapse">
+          <thead>
+            <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
+              <th
+                className={`${thBaseStyle} text-left border-r border-gray-200 w-[220px]`}
+              >
+                조직 이름
+              </th>
+              {SUMMARY_CATEGORIES.map((cat) => {
+                const criteriaText =
+                  cat.id === "exceeds"
+                    ? "100% 이상"
+                    : cat.id === "achieved"
+                    ? "100% 미만"
+                    : cat.id === "good"
+                    ? "80% 미만"
+                    : "60% 미만";
+
+                return (
+                  <th
+                    key={cat.id}
+                    className="px-4 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px]"
+                    style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
+                  >
+                    <div className="flex flex-col items-center justify-center">
+                      <span>
+                        {cat.id === "exceeds"
+                          ? "초과달성"
+                          : cat.id === "achieved"
+                          ? "우수"
+                          : cat.id === "good"
+                          ? "경고"
+                          : "위험"}
+                      </span>
+                      <span className="text-xs text-gray-500 mt-0.5">
+                        {criteriaText}
+                      </span>
+                    </div>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {flatItems.map((item, index) => {
+              const summaryCounts =
+                itemSummaryCountsMap.get(item) ??
+                calculateSummaryCounts(undefined);
+              return item.type === "department" ? (
+                <FixedDepartmentRow
+                  key={`fixed-${(item.data as OrganizationDepartment).code}`}
+                  item={item}
+                  summaryCounts={summaryCounts}
+                  onToggle={toggleOrganization}
+                />
+              ) : (
+                <FixedMemberRow
+                  key={`fixed-${
+                    (item.data as OrganizationMember).employeeID
+                  }-${index}`}
+                  item={item}
+                  summaryCounts={summaryCounts}
+                />
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* 스크롤 영역 (30개 지표 + BDPI) */}
+      <div className="flex-1 overflow-x-auto">
+        <table className="border-collapse table-fixed">
+          <thead>
+            <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
+              {ALL_METRIC_CODES.map((code) => {
+                const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+
+                return (
+                  <th
+                    key={code}
+                    className={`${thBaseStyle} border-r border-gray-200 w-[85px] min-w-[85px] max-w-[85px]`}
+                  >
+                    {displayName ? (
+                      <>
+                        {displayName[0]}
+                        <br />
+                        {displayName[1]}
+                      </>
+                    ) : (
+                      METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
+                    )}
+                  </th>
+                );
+              })}
+              <th
+                className={`${thBaseStyle} border-l border-gray-200 w-[85px] min-w-[85px] max-w-[85px]`}
+              >
+                BDPI
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {flatItems.map((item, index) => (
+              <ScrollableRow
+                key={
+                  item.type === "department"
+                    ? `scroll-${(item.data as OrganizationDepartment).code}`
+                    : `scroll-${
+                        (item.data as OrganizationMember).employeeID
+                      }-${index}`
+                }
+                item={item}
+                hideValue={hideValues}
+              />
             ))}
-            <col style={{ width: "80px" }} />
-          </colgroup>
-        )}
-        <thead>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <th className={`${thStyle} text-left whitespace-nowrap`}>
-              조직 이름
-            </th>
-            {getTableHeaders()}
-            {activeTab === "bdpi" && (
-              <th className={`${thStyle} w-[7%]`}>전월비교</th>
-            )}
-            <th
-              className={`${thStyle} ${
-                activeTab === "bdpi" ? "w-[7%]" : "w-[80px]"
-              }`}
-            >
-              상세
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {organizations.map((org) => (
-            <OrganizationRow
-              key={org.code}
-              org={org}
-              depth={0}
-              activeTab={activeTab}
-              onDetailClick={onDetailClick}
-            />
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

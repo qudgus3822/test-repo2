@@ -7,10 +7,8 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
+  { id: "all", label: "전체" },
   { id: "bdpi", label: "BDPI" },
-  { id: "codeQuality", label: "코드품질" },
-  { id: "reviewQuality", label: "리뷰품질" },
-  { id: "developmentEfficiency", label: "개발효율" },
 ];
 
 export const OrganizationTabs = () => {
