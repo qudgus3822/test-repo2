@@ -3,9 +3,28 @@
  * - 하이어라키뷰 테이블 (트리 구조)
  * - 고정 영역 (좌측 5개 컬럼) + 스크롤 영역 (30개 지표 + BDPI)
  * - 히트맵 시각화 (ProgressSquare 사용)
+ * - 지표 칼럼 드래그 앤 드롭 정렬 기능
  */
 
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { useState, useCallback } from "react";
+import { ChevronRight, ChevronDown, GripHorizontal } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import type {
   OrganizationDepartment,
@@ -56,10 +75,13 @@ interface OrganizationTableProps {
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
 }
 
-// 30개 지표 코드 목록 (순서대로)
-const ALL_METRIC_CODES = Object.keys(METRIC_CODE_ORDER).sort(
-  (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
-);
+// 30개 지표 코드 목록 (순서대로) + BDPI
+const ALL_METRIC_CODES = [
+  ...Object.keys(METRIC_CODE_ORDER).sort(
+    (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
+  ),
+  "bdpi", // BDPI를 마지막에 추가
+];
 
 // 변경이력 툴팁 내용 생성
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
@@ -281,12 +303,81 @@ const FixedMemberRow = ({
   );
 };
 
+// 드래그 가능한 지표 헤더 컴포넌트
+interface SortableMetricHeaderProps {
+  code: string;
+  displayName: string[] | undefined;
+  thBaseStyle: string;
+}
+
+const SortableMetricHeader = ({
+  code,
+  displayName,
+  thBaseStyle,
+}: SortableMetricHeaderProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: code });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] select-none ${
+        isDragging ? "bg-blue-100" : ""
+      }`}
+    >
+      <div className="flex flex-col items-center justify-center gap-1 h-full">
+        {/* 드래그 핸들 - 고정 높이 */}
+        <div
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing hover:bg-gray-200 rounded w-full h-[20px] flex items-center justify-center"
+          title="드래그하여 순서 변경"
+        >
+          <GripHorizontal className="w-4 h-4 text-gray-400" />
+        </div>
+        {/* displayName 영역 */}
+        <div className="cursor-default flex flex-col items-center hover:bg-gray-100 rounded px-1">
+          <span className="h-[32px] flex items-center justify-center text-center leading-tight">
+            {code === "bdpi" ? (
+              "BDPI"
+            ) : displayName ? (
+              <>
+                {displayName[0]}
+                <br />
+                {displayName[1]}
+              </>
+            ) : (
+              METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
+            )}
+          </span>
+        </div>
+      </div>
+    </th>
+  );
+};
+
 // 스크롤 영역 행 컴포넌트
 const ScrollableRow = ({
   item,
+  metricOrder,
   hideValue = false,
 }: {
   item: FlatTreeItem;
+  metricOrder: string[];
   hideValue?: boolean;
 }) => {
   const metrics = item.data.metrics as unknown as Record<string, MetricData>;
@@ -294,7 +385,21 @@ const ScrollableRow = ({
 
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
-      {ALL_METRIC_CODES.map((code) => {
+      {metricOrder.map((code) => {
+        // BDPI 칼럼 특별 처리
+        if (code === "bdpi") {
+          return (
+            <td
+              key={code}
+              className="px-5 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
+            >
+              {bdpiMetrics?.bdpi?.score !== undefined
+                ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
+                : "--"}
+            </td>
+          );
+        }
+
         const metric = metrics?.[code];
         const hasData =
           metric && typeof metric.value === "number" && metric.isUsed !== false;
@@ -315,11 +420,6 @@ const ScrollableRow = ({
           </td>
         );
       })}
-      <td className="px-5 py-4 text-center text-sm font-semibold align-middle border-l border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]">
-        {bdpiMetrics?.bdpi?.score !== undefined
-          ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
-          : "--"}
-      </td>
     </tr>
   );
 };
@@ -332,6 +432,34 @@ export const OrganizationTable = ({
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
+
+  // 지표 순서 상태 (드래그로 변경 가능)
+  const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
+
+  // 드래그 앤 드롭 센서 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px 이동 후 드래그 시작
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  // 드래그 종료 핸들러
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setMetricOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }, []);
 
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
@@ -377,9 +505,9 @@ export const OrganizationTable = ({
       >
         <table className="border-collapse">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
+            <tr className="border-b border-gray-200 bg-gray-50 h-[89px]">
               <th
-                className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px]`}
+                className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[89px]`}
               >
                 조직 이름
               </th>
@@ -396,10 +524,10 @@ export const OrganizationTable = ({
                 return (
                   <th
                     key={cat.id}
-                    className="px-4 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px]"
+                    className="px-4 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] h-[89px]"
                     style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
                   >
-                    <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center justify-center h-full gap-1">
                       <span>
                         {cat.id === "exceeds"
                           ? "초과달성"
@@ -409,7 +537,7 @@ export const OrganizationTable = ({
                           ? "경고"
                           : "위험"}
                       </span>
-                      <span className="text-xs text-gray-500 mt-0.5">
+                      <span className="text-xs text-gray-500">
                         {criteriaText}
                       </span>
                     </div>
@@ -446,52 +574,51 @@ export const OrganizationTable = ({
 
       {/* 스크롤 영역 (30개 지표 + BDPI) */}
       <div className="flex-1 overflow-x-auto">
-        <table className="border-collapse table-fixed">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
-              {ALL_METRIC_CODES.map((code) => {
-                const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <table className="border-collapse table-fixed">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <SortableContext
+                  items={metricOrder}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  {metricOrder.map((code) => {
+                    const displayName = METRIC_CODE_DISPLAY_NAMES[code];
 
-                return (
-                  <th
-                    key={code}
-                    className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px]`}
-                  >
-                    {displayName ? (
-                      <>
-                        {displayName[0]}
-                        <br />
-                        {displayName[1]}
-                      </>
-                    ) : (
-                      METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
-                    )}
-                  </th>
-                );
-              })}
-              <th
-                className={`${thBaseStyle} border-l border-gray-200 w-[90px] min-w-[90px] max-w-[90px]`}
-              >
-                BDPI
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {flatItems.map((item, index) => (
-              <ScrollableRow
-                key={
-                  item.type === "department"
-                    ? `scroll-${(item.data as OrganizationDepartment).code}`
-                    : `scroll-${
-                        (item.data as OrganizationMember).employeeID
-                      }-${index}`
-                }
-                item={item}
-                hideValue={hideValues}
-              />
-            ))}
-          </tbody>
-        </table>
+                    return (
+                      <SortableMetricHeader
+                        key={code}
+                        code={code}
+                        displayName={displayName}
+                        thBaseStyle={thBaseStyle}
+                      />
+                    );
+                  })}
+                </SortableContext>
+              </tr>
+            </thead>
+            <tbody>
+              {flatItems.map((item, index) => (
+                <ScrollableRow
+                  key={
+                    item.type === "department"
+                      ? `scroll-${(item.data as OrganizationDepartment).code}`
+                      : `scroll-${
+                          (item.data as OrganizationMember).employeeID
+                        }-${index}`
+                  }
+                  item={item}
+                  metricOrder={metricOrder}
+                  hideValue={hideValues}
+                />
+              ))}
+            </tbody>
+          </table>
+        </DndContext>
       </div>
     </div>
   );

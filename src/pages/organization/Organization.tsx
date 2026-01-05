@@ -145,8 +145,8 @@ const OrganizationPage = () => {
       <Card className="overflow-hidden">
         <OrganizationTabs />
 
-        {/* 첫 번째 줄: 기간 선택 + 통합검색 + 전체 팀 열기 */}
-        <div className="h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200">
+        {/* 첫 번째 줄: 기간 선택 */}
+        <div className="h-[84px] relative flex items-center p-4 border-b border-gray-200">
           <div className="flex items-center gap-5">
             <DateFilter
               period={period}
@@ -163,35 +163,11 @@ const OrganizationPage = () => {
               <Cable className="w-4 h-4" />
             </Button>
           </div>
-          {/* 탭별 우측 영역 */}
-          <div className="flex items-center gap-2">
-            {/* BDPI 탭: 통합검색 */}
-            {activeTab === "bdpi" && (
-              <div
-                className={`relative ${!isFunctionEnabled ? "opacity-40" : ""}`}
-              >
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="추후 개발 예정"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  disabled={!isFunctionEnabled}
-                  className="pl-10 pr-4 py-2 w-[200px] border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:placeholder-gray-700"
-                />
-              </div>
-            )}
-            {/* 전체 탭: 전체 팀 열기/접기 버튼 */}
-            {activeTab === "all" && (
-              <Button variant="normal" size="sm" onClick={handleToggleTeams}>
-                {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
-              </Button>
-            )}
-          </div>
         </div>
 
         {/* 서브탭: 하이어라키뷰 / 플랫뷰 */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          {/* 좌측: 뷰타입 탭 + 플랫뷰 필터 */}
           <div className="flex items-center">
             <button
               onClick={() => setViewType("hierarchy")}
@@ -253,24 +229,49 @@ const OrganizationPage = () => {
             )}
           </div>
 
-          {/* 보기/숨기기 버튼 */}
-          <Button
-            variant="normal"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? (
-              <span className="flex items-center gap-1.5">
-                <Eye className="w-4 h-4" />
-                보기
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <EyeOff className="w-4 h-4" />
-                숨기기
-              </span>
+          {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
+          <div className="flex items-center gap-2">
+            {/* 플랫뷰: 통합검색 */}
+            {viewType === "flat" && (
+              <div
+                className={`relative ${!isFunctionEnabled ? "opacity-40" : ""}`}
+              >
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="추후 개발 예정"
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  disabled={!isFunctionEnabled}
+                  className="pl-10 pr-4 py-2 w-[200px] border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:placeholder-gray-700"
+                />
+              </div>
             )}
-          </Button>
+            {/* 하이어라키뷰: 전체 팀 열기/접기 버튼 */}
+            {viewType === "hierarchy" && (
+              <Button variant="normal" size="sm" onClick={handleToggleTeams}>
+                {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+              </Button>
+            )}
+            {/* 보기/숨기기 버튼 */}
+            <Button
+              variant="normal"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <span className="flex items-center gap-1.5">
+                  <Eye className="w-4 h-4" />
+                  보기
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <EyeOff className="w-4 h-4" />
+                  숨기기
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* 탭 콘텐츠 */}

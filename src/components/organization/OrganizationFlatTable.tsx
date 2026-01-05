@@ -7,7 +7,24 @@
  */
 
 import { useState, useMemo, useCallback } from "react";
-import { ArrowUp, ArrowDown, ArrowDownUp } from "lucide-react";
+import { ArrowUp, ArrowDown, ArrowDownUp, GripHorizontal } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type {
   OrganizationDepartment,
   OrganizationMember,
@@ -61,10 +78,13 @@ interface FlatItem {
   parentName?: string;
 }
 
-// 30개 지표 코드 목록 (순서대로)
-const ALL_METRIC_CODES = Object.keys(METRIC_CODE_ORDER).sort(
-  (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
-);
+// 30개 지표 코드 목록 (순서대로) + BDPI
+const ALL_METRIC_CODES = [
+  ...Object.keys(METRIC_CODE_ORDER).sort(
+    (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
+  ),
+  "bdpi", // BDPI를 마지막에 추가
+];
 
 // 변경이력 툴팁 내용 생성
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
@@ -239,12 +259,113 @@ const FixedRow = ({
   );
 };
 
+// 드래그 가능한 지표 헤더 컴포넌트
+interface SortableMetricHeaderProps {
+  code: string;
+  displayName: string[] | undefined;
+  isActive: boolean;
+  sortDirection: "asc" | "desc" | null;
+  onSort: (code: string) => void;
+  thBaseStyle: string;
+}
+
+const SortableMetricHeader = ({
+  code,
+  displayName,
+  isActive,
+  sortDirection,
+  onSort,
+  thBaseStyle,
+}: SortableMetricHeaderProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: code });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  // 정렬 아이콘 렌더링
+  const renderSortIcon = () => {
+    if (!isActive) {
+      return <ArrowDownUp className="w-4 h-4 text-gray-400" />;
+    }
+    if (sortDirection === "asc") {
+      return <ArrowUp className="w-4 h-4 text-blue-600" />;
+    }
+    return <ArrowDown className="w-4 h-4 text-blue-600" />;
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isDragging) {
+      e.stopPropagation();
+      onSort(code);
+    }
+  };
+
+  return (
+    <th
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[113px] select-none ${
+        isDragging ? "bg-blue-100" : isActive ? "bg-blue-50" : ""
+      }`}
+    >
+      <div className="flex flex-col items-center justify-center gap-1 h-full">
+        {/* 드래그 핸들 - 고정 높이 */}
+        <div
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing hover:bg-gray-200 rounded w-full h-[20px] flex items-center justify-center"
+          title="드래그하여 순서 변경"
+        >
+          <GripHorizontal className="w-4 h-4 text-gray-400" />
+        </div>
+        {/* 정렬 클릭 영역 */}
+        <div
+          onClick={handleClick}
+          className="cursor-pointer flex flex-col items-center gap-1 hover:bg-gray-200 rounded px-1"
+        >
+          {/* displayName 영역 - 2줄 높이로 고정 */}
+          <span className="h-[32px] flex items-center justify-center text-center leading-tight">
+            {code === "bdpi" ? (
+              "BDPI"
+            ) : displayName ? (
+              <>
+                {displayName[0]}
+                <br />
+                {displayName[1]}
+              </>
+            ) : (
+              METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
+            )}
+          </span>
+          {/* 정렬 아이콘 - 고정 높이 */}
+          <span className="h-[20px] flex items-center justify-center">
+            {renderSortIcon()}
+          </span>
+        </div>
+      </div>
+    </th>
+  );
+};
+
 // 스크롤 영역 행 컴포넌트
 const ScrollableRow = ({
   item,
+  metricOrder,
   hideValue = false,
 }: {
   item: FlatItem;
+  metricOrder: string[];
   hideValue?: boolean;
 }) => {
   const data = item.data;
@@ -253,7 +374,21 @@ const ScrollableRow = ({
 
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
-      {ALL_METRIC_CODES.map((code) => {
+      {metricOrder.map((code) => {
+        // BDPI 칼럼 특별 처리
+        if (code === "bdpi") {
+          return (
+            <td
+              key={code}
+              className="px-5 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
+            >
+              {bdpiMetrics?.bdpi?.score !== undefined
+                ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
+                : "--"}
+            </td>
+          );
+        }
+
         const metric = metrics?.[code];
         const hasData =
           metric && typeof metric.value === "number" && metric.isUsed !== false;
@@ -274,11 +409,6 @@ const ScrollableRow = ({
           </td>
         );
       })}
-      <td className="px-5 py-4 text-center text-sm font-semibold align-middle border-l border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]">
-        {bdpiMetrics?.bdpi?.score !== undefined
-          ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
-          : "--"}
-      </td>
     </tr>
   );
 };
@@ -292,11 +422,39 @@ export const OrganizationFlatTable = ({
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const flatItems = flattenTree(data?.tree ?? [], filterType);
 
+  // 지표 순서 상태 (드래그로 변경 가능)
+  const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
+
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     column: null,
     direction: null,
   });
+
+  // 드래그 앤 드롭 센서 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px 이동 후 드래그 시작
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  // 드래그 종료 핸들러
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setMetricOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }, []);
 
   // 정렬 토글 (3단계: null → asc → desc → null)
   const toggleSort = useCallback((column: string) => {
@@ -409,9 +567,9 @@ export const OrganizationFlatTable = ({
       >
         <table className="border-collapse">
           <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
+            <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
               <th
-                className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px]`}
+                className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
               >
                 조직 이름
               </th>
@@ -444,13 +602,13 @@ export const OrganizationFlatTable = ({
                 return (
                   <th
                     key={cat.id}
-                    className={`px-4 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] cursor-pointer hover:brightness-95 select-none ${
+                    className={`px-4 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] h-[113px] cursor-pointer hover:brightness-95 select-none ${
                       isActive ? "ring-2 ring-inset ring-blue-400" : ""
                     }`}
                     style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
                     onClick={() => toggleSort(cat.id)}
                   >
-                    <div className="flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center justify-center h-full gap-1">
                       <span>
                         {cat.id === "exceeds"
                           ? "초과달성"
@@ -460,10 +618,10 @@ export const OrganizationFlatTable = ({
                           ? "경고"
                           : "위험"}
                       </span>
-                      <span className="text-xs text-gray-500 mt-0.5">
+                      <span className="text-xs text-gray-500">
                         {criteriaText}
                       </span>
-                      <span className="mt-0.5">{renderSortIcon()}</span>
+                      <span>{renderSortIcon()}</span>
                     </div>
                   </th>
                 );
@@ -495,74 +653,57 @@ export const OrganizationFlatTable = ({
 
       {/* 스크롤 영역 (30개 지표 + BDPI) */}
       <div className="flex-1 overflow-x-auto">
-        <table className="border-collapse table-fixed">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
-              {ALL_METRIC_CODES.map((code) => {
-                const displayName = METRIC_CODE_DISPLAY_NAMES[code];
-                const isActive =
-                  sortConfig.column === code && sortConfig.direction !== null;
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <table className="border-collapse table-fixed">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
+                <SortableContext
+                  items={metricOrder}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  {metricOrder.map((code) => {
+                    const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+                    const isActive =
+                      sortConfig.column === code &&
+                      sortConfig.direction !== null;
 
-                // 정렬 아이콘 렌더링
-                const renderSortIcon = () => {
-                  if (!isActive) {
                     return (
-                      <ArrowDownUp className="w-4.5 h-4.5 text-gray-400" />
+                      <SortableMetricHeader
+                        key={code}
+                        code={code}
+                        displayName={displayName}
+                        isActive={isActive}
+                        sortDirection={sortConfig.direction}
+                        onSort={toggleSort}
+                        thBaseStyle={thBaseStyle}
+                      />
                     );
+                  })}
+                </SortableContext>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedItems.map((item, index) => (
+                <ScrollableRow
+                  key={
+                    item.type === "department"
+                      ? (item.data as OrganizationDepartment).code
+                      : `${
+                          (item.data as OrganizationMember).employeeID
+                        }-${index}`
                   }
-                  if (sortConfig.direction === "asc") {
-                    return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
-                  }
-                  return <ArrowDown className="w-4.5 h-4.5 text-blue-600" />;
-                };
-
-                return (
-                  <th
-                    key={code}
-                    className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] cursor-pointer hover:bg-gray-100 select-none ${
-                      isActive ? "bg-blue-50" : ""
-                    }`}
-                    onClick={() => toggleSort(code)}
-                  >
-                    <div className="flex flex-col items-center justify-center">
-                      <span>
-                        {displayName ? (
-                          <>
-                            {displayName[0]}
-                            <br />
-                            {displayName[1]}
-                          </>
-                        ) : (
-                          METRIC_CODE_NAMES[code]?.slice(0, 4) ||
-                          code.slice(0, 4)
-                        )}
-                      </span>
-                      <span className="mt-0.5">{renderSortIcon()}</span>
-                    </div>
-                  </th>
-                );
-              })}
-              <th
-                className={`${thBaseStyle} border-l border-gray-200 w-[90px] min-w-[90px] max-w-[90px]`}
-              >
-                BDPI
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedItems.map((item, index) => (
-              <ScrollableRow
-                key={
-                  item.type === "department"
-                    ? (item.data as OrganizationDepartment).code
-                    : `${(item.data as OrganizationMember).employeeID}-${index}`
-                }
-                item={item}
-                hideValue={hideValues}
-              />
-            ))}
-          </tbody>
-        </table>
+                  item={item}
+                  metricOrder={metricOrder}
+                  hideValue={hideValues}
+                />
+              ))}
+            </tbody>
+          </table>
+        </DndContext>
       </div>
     </div>
   );
