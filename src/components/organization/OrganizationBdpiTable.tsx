@@ -206,11 +206,6 @@ const MemberRow = ({
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         <div className="flex items-center">
-          <input
-            type="checkbox"
-            disabled
-            className="mr-3 w-4 h-4 rounded border-gray-300 opacity-30 cursor-not-allowed"
-          />
           <div className="flex items-center whitespace-nowrap">
             <span className="font-medium text-gray-900 whitespace-nowrap">
               {member.name}
@@ -287,11 +282,6 @@ const OrganizationRow = ({
           style={{ paddingLeft: `${paddingLeft}px` }}
         >
           <div className="flex items-center">
-            <input
-              type="checkbox"
-              disabled
-              className="mr-3 w-4 h-4 rounded border-gray-300 opacity-30 cursor-not-allowed"
-            />
             {hasChildren ? (
               <button
                 onClick={() => toggleOrganization(org.code)}

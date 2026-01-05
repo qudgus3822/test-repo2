@@ -14,14 +14,24 @@ import type {
   OrganizationNode,
   TabType,
   BdpiMetrics,
+  ChangeInfo,
 } from "@/types/organization.types";
+import {
+  hasChangeInfo,
+  formatChangeDate,
+  getChangeDetailWithSuffix,
+  getMemberRoleOrPositionLabel,
+  getMemberEmail,
+} from "@/utils/organization";
 import {
   METRIC_CODE_NAMES,
   METRIC_CODE_DISPLAY_NAMES,
   METRIC_CODE_ORDER,
 } from "@/utils/metrics";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 import {
   calculateSummaryCounts,
@@ -55,6 +65,66 @@ interface FlatItem {
 const ALL_METRIC_CODES = Object.keys(METRIC_CODE_ORDER).sort(
   (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
 );
+
+// 변경이력 툴팁 내용 생성
+const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
+  const { changeDate, changeEndDate, changeDetail, changeType, category } =
+    change;
+
+  const formattedDate = changeEndDate
+    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
+    : formatChangeDate(changeDate);
+
+  const separator = " ";
+  const detailWithSuffix = changeDetail
+    ? getChangeDetailWithSuffix(changeDetail, category, changeType)
+    : "";
+
+  return detailWithSuffix
+    ? `${formattedDate}${separator}${detailWithSuffix}`
+    : formattedDate;
+};
+
+const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
+  return changes
+    .map((change) => getSingleChangeTooltipContent(change))
+    .join("\n");
+};
+
+// 상태 뱃지 컴포넌트
+const MAX_BADGE_COUNT = 4;
+
+const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
+  if (!hasChangeInfo(change)) return null;
+
+  const sortedChanges = [...change!].sort((a, b) => {
+    const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
+    const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
+    return dateB - dateA;
+  });
+  const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
+
+  const tooltipContent = getCombinedTooltipContent(displayChanges);
+
+  const badges = (
+    <div className="inline-flex items-center">
+      {displayChanges.map((item, index) => (
+        <ChangeTypeBadge
+          key={`${item.changeType}-${index}`}
+          type={item.changeType}
+          category={item.category}
+          className="ml-2 cursor-default"
+        />
+      ))}
+    </div>
+  );
+
+  return (
+    <Tooltip content={tooltipContent} color="#6B7280">
+      {badges}
+    </Tooltip>
+  );
+};
 
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
@@ -124,15 +194,38 @@ const FixedRow = ({
     ? (data as OrganizationDepartment).memberCount
     : null;
 
+  const member = !isDepartment ? (data as OrganizationMember) : null;
+
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
-      <td className="px-6 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[180px] h-[64px]">
-        <div className="flex items-center h-full">
-          <span className="font-medium text-gray-900">{displayName}</span>
-          {memberCount !== null && (
-            <span className="ml-1 text-sm text-gray-500">({memberCount})</span>
-          )}
-        </div>
+      <td className="px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]">
+        {isDepartment ? (
+          <div className="flex items-center h-full">
+            <span className="font-medium text-gray-900">{displayName}</span>
+            {memberCount !== null && (
+              <span className="ml-1 text-sm text-gray-500">
+                ({memberCount})
+              </span>
+            )}
+            <StatusBadge change={data.changes} />
+          </div>
+        ) : (
+          <div className="flex flex-col justify-center h-full">
+            <div className="flex items-center">
+              <span className="font-medium text-gray-900">{displayName}</span>
+              <span className="ml-2 text-sm text-gray-500">
+                {getMemberRoleOrPositionLabel(
+                  member!.title,
+                  member!.personalTitle,
+                )}
+              </span>
+              <StatusBadge change={data.changes} />
+            </div>
+            <div className="text-xs text-gray-500 mt-0.5">
+              {member!.email || getMemberEmail(member!.employeeID)}
+            </div>
+          </div>
+        )}
       </td>
       {SUMMARY_CATEGORIES.map((cat) => (
         <td
@@ -170,7 +263,7 @@ const ScrollableRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[85px] min-w-[85px] max-w-[85px] h-[64px]"
+            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
           >
             <HeatmapCell
               metricCode={code}
@@ -181,7 +274,7 @@ const ScrollableRow = ({
           </td>
         );
       })}
-      <td className="px-6 py-4 text-center text-sm font-semibold align-middle border-l border-gray-200 w-[85px] min-w-[85px] max-w-[85px] h-[64px]">
+      <td className="px-5 py-4 text-center text-sm font-semibold align-middle border-l border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]">
         {bdpiMetrics?.bdpi?.score !== undefined
           ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
           : "--"}
@@ -305,7 +398,7 @@ export const OrganizationFlatTable = ({
   }
 
   const thBaseStyle =
-    "px-6 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
+    "px-5 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
   return (
     <div className="flex border border-gray-200 rounded-lg overflow-hidden">
@@ -318,7 +411,7 @@ export const OrganizationFlatTable = ({
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50 h-[48px]">
               <th
-                className={`${thBaseStyle} text-left border-r border-gray-200 w-[180px]`}
+                className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px]`}
               >
                 조직 이름
               </th>
@@ -426,7 +519,7 @@ export const OrganizationFlatTable = ({
                 return (
                   <th
                     key={code}
-                    className={`${thBaseStyle} border-r border-gray-200 w-[85px] min-w-[85px] max-w-[85px] cursor-pointer hover:bg-gray-100 select-none ${
+                    className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] cursor-pointer hover:bg-gray-100 select-none ${
                       isActive ? "bg-blue-50" : ""
                     }`}
                     onClick={() => toggleSort(code)}
@@ -450,7 +543,7 @@ export const OrganizationFlatTable = ({
                 );
               })}
               <th
-                className={`${thBaseStyle} border-l border-gray-200 w-[85px] min-w-[85px] max-w-[85px]`}
+                className={`${thBaseStyle} border-l border-gray-200 w-[90px] min-w-[90px] max-w-[90px]`}
               >
                 BDPI
               </th>
