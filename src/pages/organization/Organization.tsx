@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Cable, Network, List, Eye, EyeOff } from "lucide-react";
+import {
+  Search,
+  Cable,
+  Network,
+  List,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
@@ -54,8 +63,6 @@ const OrganizationPage = () => {
     setPeriod,
     currentDate,
     setCurrentDate,
-    searchKeyword,
-    setSearchKeyword,
     expandAllTeams,
     expandAll,
     collapseToDefault,
@@ -76,9 +83,6 @@ const OrganizationPage = () => {
   const [selectedDetailItem, setSelectedDetailItem] =
     useState<OrganizationDetailItem | null>(null);
 
-  // 추후 개발 예정 기능 표시 여부
-  const [isFunctionEnabled] = useState(false);
-
   // 서브탭 상태: 하이어라키뷰 / 플랫뷰
   const [viewType, setViewType] = useState<"hierarchy" | "flat">("hierarchy");
 
@@ -88,6 +92,56 @@ const OrganizationPage = () => {
 
   // 보기/펼치기 상태
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // 검색 영역 표시 상태
+  const [isSearchAreaOpen, setIsSearchAreaOpen] = useState(false);
+
+  // 검색 입력 상태 (검색 영역 내 input)
+  const [searchInput, setSearchInput] = useState("");
+
+  // 실제 검색에 사용되는 키워드 (검색 버튼 클릭 또는 엔터 시 업데이트)
+  const [activeSearchKeyword, setActiveSearchKeyword] = useState("");
+
+  // 검색 결과 개수
+  const [searchResultCount, setSearchResultCount] = useState<number | null>(
+    null,
+  );
+
+  // 검색 실행 핸들러
+  const handleSearch = () => {
+    setActiveSearchKeyword(searchInput.trim());
+  };
+
+  // 검색 입력 엔터 핸들러
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // 플랫뷰 필터 변경 시 검색어 초기화
+  useEffect(() => {
+    setSearchInput("");
+    setActiveSearchKeyword("");
+    setSearchResultCount(null);
+  }, [flatViewFilter]);
+
+  // 검색 영역 닫힐 때 검색어 초기화
+  useEffect(() => {
+    if (!isSearchAreaOpen) {
+      setSearchInput("");
+      setActiveSearchKeyword("");
+      setSearchResultCount(null);
+    }
+  }, [isSearchAreaOpen]);
+
+  // 뷰타입 변경 시 검색어 초기화 및 검색 영역 숨김
+  useEffect(() => {
+    setSearchInput("");
+    setActiveSearchKeyword("");
+    setSearchResultCount(null);
+    setIsSearchAreaOpen(false);
+  }, [viewType]);
 
   // 상세 버튼 클릭 핸들러
   const handleDetailClick = (item: OrganizationDetailItem) => {
@@ -171,9 +225,9 @@ const OrganizationPage = () => {
           <div className="flex items-center">
             <button
               onClick={() => setViewType("hierarchy")}
-              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
+              className={`cursor-pointer flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
                 viewType === "hierarchy"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -182,9 +236,9 @@ const OrganizationPage = () => {
             </button>
             <button
               onClick={() => setViewType("flat")}
-              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+              className={`cursor-pointer flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
                 viewType === "flat"
-                  ? "bg-blue-500 text-white"
+                  ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -197,9 +251,9 @@ const OrganizationPage = () => {
               <div className="flex items-center ml-4">
                 <button
                   onClick={() => setFlatViewFilter("room")}
-                  className={`px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
                     flatViewFilter === "room"
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -207,9 +261,9 @@ const OrganizationPage = () => {
                 </button>
                 <button
                   onClick={() => setFlatViewFilter("team")}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${
                     flatViewFilter === "team"
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -217,9 +271,9 @@ const OrganizationPage = () => {
                 </button>
                 <button
                   onClick={() => setFlatViewFilter("member")}
-                  className={`px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
                     flatViewFilter === "member"
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -231,21 +285,23 @@ const OrganizationPage = () => {
 
           {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
           <div className="flex items-center gap-2">
-            {/* 플랫뷰: 통합검색 */}
+            {/* 플랫뷰: 검색 아이콘 버튼 */}
             {viewType === "flat" && (
-              <div
-                className={`relative ${!isFunctionEnabled ? "opacity-40" : ""}`}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsSearchAreaOpen(!isSearchAreaOpen)}
               >
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="추후 개발 예정"
-                  value={searchKeyword}
-                  onChange={(e) => setSearchKeyword(e.target.value)}
-                  disabled={!isFunctionEnabled}
-                  className="pl-10 pr-4 py-2 w-[200px] border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:placeholder-gray-700"
-                />
-              </div>
+                <span className="flex items-center gap-1.5">
+                  <Search className="w-4 h-4" />
+                  통합 검색
+                  {isSearchAreaOpen ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                </span>
+              </Button>
             )}
             {/* 하이어라키뷰: 전체 팀 열기/접기 버튼 */}
             {viewType === "hierarchy" && (
@@ -274,6 +330,55 @@ const OrganizationPage = () => {
           </div>
         </div>
 
+        {/* 검색 영역: 플랫뷰일 때만 표시 */}
+        {viewType === "flat" && isSearchAreaOpen && (
+          <div className="px-4 py-3 border-b border-gray-200 gap-5 flex flex-col min-h-[120px]">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder={
+                  flatViewFilter === "room"
+                    ? "실 이름을 입력하세요"
+                    : flatViewFilter === "team"
+                    ? "팀 이름을 입력하세요"
+                    : "이름을 입력하세요"
+                }
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="w-[calc(100%-55px)] h-10 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSearch}
+                className="w-[55px]"
+              >
+                검색
+              </Button>
+            </div>
+            {/* 검색 결과 메시지 */}
+            {activeSearchKeyword && searchResultCount !== null && (
+              <div className="text-sm flex items-center justify-center">
+                {searchResultCount > 0 ? (
+                  <span className="text-gray-600">
+                    검색 결과 총{" "}
+                    <span className="font-semibold text-blue-600">
+                      {searchResultCount}
+                    </span>
+                    건이 있습니다.
+                  </span>
+                ) : (
+                  <span className="text-gray-500">
+                    '{activeSearchKeyword}'에 대한 검색 결과가 없습니다.
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 탭 콘텐츠 */}
         {activeTab === "all" && (
           <>
@@ -293,6 +398,8 @@ const OrganizationPage = () => {
                   filterType={flatViewFilter}
                   hideValues={isExpanded}
                   onDetailClick={handleDetailClick}
+                  searchKeyword={activeSearchKeyword}
+                  onSearchResult={setSearchResultCount}
                 />
               )}
             </div>
@@ -309,14 +416,16 @@ const OrganizationPage = () => {
                 <OrganizationBdpiTable
                   month={yearMonth}
                   activeTab={activeTab}
-                  onDetailClick={handleDetailClick}
+                  hideValues={isExpanded}
                 />
               ) : (
                 <OrganizationBdpiFlatTable
                   month={yearMonth}
                   activeTab={activeTab}
                   filterType={flatViewFilter}
-                  onDetailClick={handleDetailClick}
+                  hideValues={isExpanded}
+                  searchKeyword={activeSearchKeyword}
+                  onSearchResult={setSearchResultCount}
                 />
               )}
             </div>

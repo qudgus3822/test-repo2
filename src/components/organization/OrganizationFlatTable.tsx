@@ -6,7 +6,7 @@
  * - 지표별 정렬 기능 포함
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { ArrowUp, ArrowDown, ArrowDownUp, GripHorizontal } from "lucide-react";
 import {
   DndContext,
@@ -68,6 +68,8 @@ interface OrganizationFlatTableProps {
   filterType?: FlatViewFilterType;
   hideValues?: boolean;
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  searchKeyword?: string;
+  onSearchResult?: (resultCount: number) => void;
 }
 
 // 플랫 데이터 아이템 타입
@@ -418,9 +420,34 @@ export const OrganizationFlatTable = ({
   activeTab,
   filterType = "room",
   hideValues = false,
+  searchKeyword = "",
+  onSearchResult,
 }: OrganizationFlatTableProps) => {
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const flatItems = flattenTree(data?.tree ?? [], filterType);
+
+  // 검색 필터링
+  const filteredItems = useMemo(() => {
+    if (!searchKeyword.trim()) {
+      return flatItems;
+    }
+
+    const keyword = searchKeyword.toLowerCase().trim();
+    return flatItems.filter((item) => {
+      const name =
+        item.type === "department"
+          ? (item.data as OrganizationDepartment).name
+          : (item.data as OrganizationMember).name;
+      return name.toLowerCase().includes(keyword);
+    });
+  }, [flatItems, searchKeyword]);
+
+  // 검색 결과 콜백
+  useEffect(() => {
+    if (onSearchResult && searchKeyword.trim()) {
+      onSearchResult(filteredItems.length);
+    }
+  }, [filteredItems.length, searchKeyword, onSearchResult]);
 
   // 지표 순서 상태 (드래그로 변경 가능)
   const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
@@ -477,14 +504,14 @@ export const OrganizationFlatTable = ({
   // 각 아이템의 summary counts 미리 계산
   const itemSummaryCountsMap = useMemo(() => {
     const map = new Map<FlatItem, SummaryCounts>();
-    flatItems.forEach((item) => {
+    filteredItems.forEach((item) => {
       const counts = calculateSummaryCounts(
         item.data.metrics as unknown as Record<string, MetricData>,
       );
       map.set(item, counts);
     });
     return map;
-  }, [flatItems]);
+  }, [filteredItems]);
 
   // Summary 카테고리 ID 목록
   const summaryCategoryIds = SUMMARY_CATEGORIES.map((cat) => cat.id);
@@ -493,10 +520,10 @@ export const OrganizationFlatTable = ({
   const sortedItems = useMemo(() => {
     // 정렬이 비활성화된 경우 원본 순서 유지
     if (!sortConfig.column || !sortConfig.direction) {
-      return flatItems;
+      return filteredItems;
     }
 
-    return [...flatItems].sort((a, b) => {
+    return [...filteredItems].sort((a, b) => {
       let aValue: number;
       let bValue: number;
 
@@ -541,7 +568,7 @@ export const OrganizationFlatTable = ({
       }
       return bValue - aValue;
     });
-  }, [flatItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds]);
+  }, [filteredItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds]);
 
   if (isLoading || isError || flatItems.length === 0) {
     return (
@@ -551,6 +578,17 @@ export const OrganizationFlatTable = ({
         ) : (
           <p className="text-gray-500">수집된 데이터가 없습니다.</p>
         )}
+      </div>
+    );
+  }
+
+  // 검색 결과가 없을 때
+  if (filteredItems.length === 0 && searchKeyword.trim()) {
+    return (
+      <div className="flex items-center justify-center min-h-[510px]">
+        <p className="text-gray-500">
+          '{searchKeyword}' 검색 결과가 없습니다.
+        </p>
       </div>
     );
   }

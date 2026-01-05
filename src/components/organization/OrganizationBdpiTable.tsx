@@ -1,29 +1,24 @@
 /**
  * OrganizationBdpiTable 컴포넌트
  * - BDPI 탭용 테이블 (하이어라키뷰)
- * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교, 상세 컬럼
+ * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교 컬럼
+ * - 히트맵 시각화 (HeatmapCell 사용)
  */
 
-import { ChevronRight, ChevronDown, Search as SearchIcon } from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import downIcon from "@/assets/icons/down_icon_red.svg";
-import {
-  useOrganizationStore,
-  SCORE_EXCELLENT_THRESHOLD,
-  SCORE_GOOD_THRESHOLD,
-} from "@/store/useOrganizationStore";
+import { useOrganizationStore } from "@/store/useOrganizationStore";
 import type {
   OrganizationDepartment,
   OrganizationMember,
   OrganizationNode,
   TabType,
-  ScoreLevel,
   ChangeInfo,
   BdpiMetrics,
   MonthlyComparison,
 } from "@/types/organization.types";
-import { SCORE_COLORS, TREND_COLORS } from "@/styles/colors";
-import { clsx } from "clsx";
+import { TREND_COLORS } from "@/styles/colors";
 import {
   getMemberRoleOrPositionLabel,
   hasChangeInfo,
@@ -35,33 +30,16 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
+import { HeatmapCell } from "./heatmap/HeatmapCell";
 
 interface OrganizationBdpiTableProps {
   month: string;
   activeTab: TabType;
-  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  hideValues?: boolean;
 }
 
-// 점수에 따른 배경색 결정
-const getScoreLevel = (score: number | null): ScoreLevel | null => {
-  if (score === null) return null;
-  if (score >= SCORE_EXCELLENT_THRESHOLD) return "excellent";
-  if (score >= SCORE_GOOD_THRESHOLD) return "good";
-  return "danger";
-};
-
-const getScoreBgColor = (score: number | null): string => {
-  const level = getScoreLevel(score);
-  if (level === null) return SCORE_COLORS.noScore;
-  if (level === "excellent") return SCORE_COLORS.excellent;
-  if (level === "good") return SCORE_COLORS.good;
-  return SCORE_COLORS.danger;
-};
-
-const getScoreTextColor = (score: number | null): string => {
-  if (score === null) return "text-gray-400";
-  return "text-gray-900";
-};
+// BDPI 지표 코드 목록
+const BDPI_METRIC_CODES = ["quality", "review", "efficiency", "bdpi"] as const;
 
 // 전월대비 표시
 const ChangeRateDisplay = ({
@@ -100,32 +78,6 @@ const ChangeRateDisplay = ({
       )}
       <span>{changePercent.toFixed(1)}%</span>
     </div>
-  );
-};
-
-// 점수 셀 컴포넌트
-const ScoreCell = ({
-  score,
-  isFirst = false,
-}: {
-  score: number | null;
-  isFirst?: boolean;
-}) => {
-  const isNoScore = score === null;
-
-  return (
-    <td
-      className={clsx(
-        "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px]",
-        isFirst && "border-l",
-        !isNoScore && getScoreTextColor(score)
-      )}
-      style={{
-        backgroundColor: isNoScore ? SCORE_COLORS.noScore : getScoreBgColor(score),
-      }}
-    >
-      {score !== null ? score.toFixed(1) : "--"}
-    </td>
   );
 };
 
@@ -190,19 +142,19 @@ const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
 const MemberRow = ({
   member,
   depth,
-  onDetailClick,
+  hideValues = false,
 }: {
   member: OrganizationMember;
   depth: number;
-  onDetailClick?: (item: OrganizationMember) => void;
+  hideValues?: boolean;
 }) => {
   const paddingLeft = 24 + depth * 24;
   const bdpiMetrics = member.metrics as BdpiMetrics;
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[70px]">
+    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[64px]">
       <td
-        className="pr-4 align-middle whitespace-nowrap"
+        className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         <div className="flex items-center">
@@ -223,20 +175,25 @@ const MemberRow = ({
           {member.email || getMemberEmail(member.employeeID)}
         </div>
       </td>
-      <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
-      <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
-      <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
-      <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
+      {BDPI_METRIC_CODES.map((code) => {
+        const metric = bdpiMetrics?.[code];
+        const score = metric?.score ?? null;
+        return (
+          <td
+            key={code}
+            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+          >
+            <HeatmapCell
+              metricCode={code}
+              score={score}
+              value={score}
+              hideValue={hideValues}
+            />
+          </td>
+        );
+      })}
       <td className="px-3 text-center align-middle">
         <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
-      </td>
-      <td className="px-3 text-center align-middle">
-        <button
-          className="text-gray-400 hover:text-gray-600 cursor-pointer"
-          onClick={() => onDetailClick?.(member)}
-        >
-          <SearchIcon className="w-5 h-5" />
-        </button>
       </td>
     </tr>
   );
@@ -246,11 +203,11 @@ const MemberRow = ({
 const OrganizationRow = ({
   org,
   depth,
-  onDetailClick,
+  hideValues = false,
 }: {
   org: OrganizationDepartment;
   depth: number;
-  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  hideValues?: boolean;
 }) => {
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
@@ -276,9 +233,9 @@ const OrganizationRow = ({
 
   return (
     <>
-      <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[70px]">
+      <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[64px]">
         <td
-          className="pr-4 align-middle whitespace-nowrap"
+          className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
           style={{ paddingLeft: `${paddingLeft}px` }}
         >
           <div className="flex items-center">
@@ -305,20 +262,25 @@ const OrganizationRow = ({
             <StatusBadge change={org.changes} />
           </div>
         </td>
-        <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
-        <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
-        <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
-        <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
+        {BDPI_METRIC_CODES.map((code) => {
+          const metric = bdpiMetrics?.[code];
+          const score = metric?.score ?? null;
+          return (
+            <td
+              key={code}
+              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+            >
+              <HeatmapCell
+                metricCode={code}
+                score={score}
+                value={score}
+                hideValue={hideValues}
+              />
+            </td>
+          );
+        })}
         <td className="px-3 text-center align-middle">
           <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
-        </td>
-        <td className="px-3 text-center align-middle">
-          <button
-            className="text-gray-400 hover:text-gray-600 cursor-pointer"
-            onClick={() => onDetailClick?.(org)}
-          >
-            <SearchIcon className="w-5 h-5" />
-          </button>
         </td>
       </tr>
 
@@ -330,7 +292,7 @@ const OrganizationRow = ({
                 key={member.employeeID}
                 member={member}
                 depth={depth + 1}
-                onDetailClick={onDetailClick}
+                hideValues={hideValues}
               />
             ))}
           {childDepartments.map((child) => (
@@ -338,7 +300,7 @@ const OrganizationRow = ({
               key={child.code}
               org={child}
               depth={depth + 1}
-              onDetailClick={onDetailClick}
+              hideValues={hideValues}
             />
           ))}
         </>
@@ -350,7 +312,7 @@ const OrganizationRow = ({
 export const OrganizationBdpiTable = ({
   month,
   activeTab,
-  onDetailClick,
+  hideValues = false,
 }: OrganizationBdpiTableProps) => {
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const organizations = (data?.tree ?? [])
@@ -381,17 +343,15 @@ export const OrganizationBdpiTable = ({
           <col style={{ width: "100px" }} />
           <col style={{ width: "100px" }} />
           <col style={{ width: "100px" }} />
-          <col style={{ width: "100px" }} />
         </colgroup>
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <th className={`${thStyle} text-left whitespace-nowrap`}>조직 이름</th>
-            <th className={`${thStyle} w-[7%]`}>코드품질</th>
-            <th className={`${thStyle} w-[7%]`}>리뷰품질</th>
-            <th className={`${thStyle} w-[7%]`}>개발효율</th>
-            <th className={`${thStyle} w-[7%]`}>BDPI</th>
+          <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
+            <th className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}>조직 이름</th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>코드품질</th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>리뷰품질</th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>개발효율</th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>BDPI</th>
             <th className={`${thStyle} w-[7%]`}>전월비교</th>
-            <th className={`${thStyle} w-[7%]`}>상세</th>
           </tr>
         </thead>
         <tbody>
@@ -400,7 +360,7 @@ export const OrganizationBdpiTable = ({
               key={org.code}
               org={org}
               depth={0}
-              onDetailClick={onDetailClick}
+              hideValues={hideValues}
             />
           ))}
         </tbody>

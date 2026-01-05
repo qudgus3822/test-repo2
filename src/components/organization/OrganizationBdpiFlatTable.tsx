@@ -3,22 +3,18 @@
  * - BDPI 탭용 플랫 테이블
  * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교, 상세 컬럼
  * - 헤더별 정렬 기능 포함
+ * - 히트맵 시각화 (HeatmapCell 사용)
  */
 
-import { useState, useMemo, useCallback } from "react";
-import { Search as SearchIcon, ArrowUp, ArrowDown } from "lucide-react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { ArrowUp, ArrowDown, ArrowDownUp } from "lucide-react";
 import upIcon from "@/assets/icons/up_icon_green.svg";
 import downIcon from "@/assets/icons/down_icon_red.svg";
-import {
-  SCORE_EXCELLENT_THRESHOLD,
-  SCORE_GOOD_THRESHOLD,
-} from "@/store/useOrganizationStore";
 import type {
   OrganizationDepartment,
   OrganizationMember,
   OrganizationNode,
   TabType,
-  ScoreLevel,
   BdpiMetrics,
   MonthlyComparison,
   ChangeInfo,
@@ -30,12 +26,12 @@ import {
   getMemberRoleOrPositionLabel,
   getMemberEmail,
 } from "@/utils/organization";
-import { SCORE_COLORS, TREND_COLORS } from "@/styles/colors";
-import { clsx } from "clsx";
+import { TREND_COLORS } from "@/styles/colors";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
+import { HeatmapCell } from "./heatmap/HeatmapCell";
 
 // 플랫뷰 필터 타입
 export type FlatViewFilterType = "room" | "team" | "member";
@@ -44,7 +40,9 @@ interface OrganizationBdpiFlatTableProps {
   month: string;
   activeTab: TabType;
   filterType?: FlatViewFilterType;
-  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  hideValues?: boolean;
+  searchKeyword?: string;
+  onSearchResult?: (resultCount: number) => void;
 }
 
 // 플랫 데이터 아이템 타입
@@ -60,8 +58,11 @@ type SortColumn = "quality" | "review" | "efficiency" | "bdpi" | null;
 
 interface SortConfig {
   column: SortColumn;
-  direction: "asc" | "desc";
+  direction: "asc" | "desc" | null;
 }
+
+// BDPI 지표 코드 목록
+const BDPI_METRIC_CODES = ["quality", "review", "efficiency", "bdpi"] as const;
 
 // 정렬 가능한 헤더 정의
 const SORTABLE_HEADERS: { id: SortColumn; label: string }[] = [
@@ -70,27 +71,6 @@ const SORTABLE_HEADERS: { id: SortColumn; label: string }[] = [
   { id: "efficiency", label: "개발효율" },
   { id: "bdpi", label: "BDPI" },
 ];
-
-// 점수에 따른 배경색 결정
-const getScoreLevel = (score: number | null): ScoreLevel | null => {
-  if (score === null) return null;
-  if (score >= SCORE_EXCELLENT_THRESHOLD) return "excellent";
-  if (score >= SCORE_GOOD_THRESHOLD) return "good";
-  return "danger";
-};
-
-const getScoreBgColor = (score: number | null): string => {
-  const level = getScoreLevel(score);
-  if (level === null) return SCORE_COLORS.noScore;
-  if (level === "excellent") return SCORE_COLORS.excellent;
-  if (level === "good") return SCORE_COLORS.good;
-  return SCORE_COLORS.danger;
-};
-
-const getScoreTextColor = (score: number | null): string => {
-  if (score === null) return "text-gray-400";
-  return "text-gray-900";
-};
 
 // 전월대비 표시
 const ChangeRateDisplay = ({
@@ -192,32 +172,6 @@ const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
   );
 };
 
-// 점수 셀 컴포넌트
-const ScoreCell = ({
-  score,
-  isFirst = false,
-}: {
-  score: number | null;
-  isFirst?: boolean;
-}) => {
-  const isNoScore = score === null;
-
-  return (
-    <td
-      className={clsx(
-        "px-2 text-center text-sm font-medium align-middle border-r border-gray-200 w-[80px] min-w-[80px]",
-        isFirst && "border-l",
-        !isNoScore && getScoreTextColor(score)
-      )}
-      style={{
-        backgroundColor: isNoScore ? SCORE_COLORS.noScore : getScoreBgColor(score),
-      }}
-    >
-      {score !== null ? score.toFixed(1) : "--"}
-    </td>
-  );
-};
-
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
   nodes: OrganizationNode[],
@@ -270,10 +224,10 @@ const flattenTree = (
 // 플랫 테이블 행 컴포넌트
 const FlatRow = ({
   item,
-  onDetailClick,
+  hideValues = false,
 }: {
   item: FlatItem;
-  onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  hideValues?: boolean;
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
@@ -291,7 +245,7 @@ const FlatRow = ({
 
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
-      <td className="px-5 py-4 align-middle whitespace-nowrap w-[350px] h-[64px]">
+      <td className="px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]">
         {isDepartment ? (
           <div className="flex items-center h-full">
             <span className="font-medium text-gray-900">{displayName}</span>
@@ -320,20 +274,25 @@ const FlatRow = ({
           </div>
         )}
       </td>
-      <ScoreCell score={bdpiMetrics?.quality?.score ?? null} isFirst />
-      <ScoreCell score={bdpiMetrics?.review?.score ?? null} />
-      <ScoreCell score={bdpiMetrics?.efficiency?.score ?? null} />
-      <ScoreCell score={bdpiMetrics?.bdpi?.score ?? null} />
+      {BDPI_METRIC_CODES.map((code) => {
+        const metric = bdpiMetrics?.[code];
+        const score = metric?.score ?? null;
+        return (
+          <td
+            key={code}
+            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+          >
+            <HeatmapCell
+              metricCode={code}
+              score={score}
+              value={score}
+              hideValue={hideValues}
+            />
+          </td>
+        );
+      })}
       <td className="px-3 text-center align-middle">
         <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
-      </td>
-      <td className="px-3 text-center align-middle">
-        <button
-          className="text-gray-400 hover:text-gray-600 cursor-pointer"
-          onClick={() => onDetailClick?.(data)}
-        >
-          <SearchIcon className="w-5 h-5" />
-        </button>
       </td>
     </tr>
   );
@@ -343,40 +302,68 @@ export const OrganizationBdpiFlatTable = ({
   month,
   activeTab,
   filterType = "room",
-  onDetailClick,
+  hideValues = false,
+  searchKeyword = "",
+  onSearchResult,
 }: OrganizationBdpiFlatTableProps) => {
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const flatItems = flattenTree(data?.tree ?? [], filterType);
 
+  // 검색 필터링
+  const filteredItems = useMemo(() => {
+    if (!searchKeyword.trim()) {
+      return flatItems;
+    }
+
+    const keyword = searchKeyword.toLowerCase().trim();
+    return flatItems.filter((item) => {
+      const name =
+        item.type === "department"
+          ? (item.data as OrganizationDepartment).name
+          : (item.data as OrganizationMember).name;
+      return name.toLowerCase().includes(keyword);
+    });
+  }, [flatItems, searchKeyword]);
+
+  // 검색 결과 콜백
+  useEffect(() => {
+    if (onSearchResult && searchKeyword.trim()) {
+      onSearchResult(filteredItems.length);
+    }
+  }, [filteredItems.length, searchKeyword, onSearchResult]);
+
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     column: null,
-    direction: "desc",
+    direction: null,
   });
 
-  // 정렬 토글
+  // 정렬 토글 (3단계: null → asc → desc → null)
   const toggleSort = useCallback((column: SortColumn) => {
     setSortConfig((prev) => {
-      if (prev.column === column) {
-        return {
-          column,
-          direction: prev.direction === "asc" ? "desc" : "asc",
-        };
+      // 다른 컬럼 클릭 시 해당 컬럼 오름차순으로 시작
+      if (prev.column !== column) {
+        return { column, direction: "asc" };
       }
-      return {
-        column,
-        direction: "desc",
-      };
+      // 같은 컬럼 클릭 시 순환: asc → desc → null
+      if (prev.direction === "asc") {
+        return { column, direction: "desc" };
+      }
+      if (prev.direction === "desc") {
+        return { column: null, direction: null };
+      }
+      return { column, direction: "asc" };
     });
   }, []);
 
   // 정렬된 아이템
   const sortedItems = useMemo(() => {
-    if (!sortConfig.column) {
-      return flatItems;
+    // 정렬이 비활성화된 경우 원본 순서 유지
+    if (!sortConfig.column || !sortConfig.direction) {
+      return filteredItems;
     }
 
-    return [...flatItems].sort((a, b) => {
+    return [...filteredItems].sort((a, b) => {
       const aMetrics = a.data.metrics as BdpiMetrics;
       const bMetrics = b.data.metrics as BdpiMetrics;
 
@@ -411,7 +398,7 @@ export const OrganizationBdpiFlatTable = ({
       }
       return bNum - aNum;
     });
-  }, [flatItems, sortConfig]);
+  }, [filteredItems, sortConfig]);
 
   if (isLoading || isError || flatItems.length === 0) {
     return (
@@ -421,6 +408,17 @@ export const OrganizationBdpiFlatTable = ({
         ) : (
           <p className="text-gray-500">수집된 데이터가 없습니다.</p>
         )}
+      </div>
+    );
+  }
+
+  // 검색 결과가 없을 때
+  if (filteredItems.length === 0 && searchKeyword.trim()) {
+    return (
+      <div className="flex items-center justify-center min-h-[510px]">
+        <p className="text-gray-500">
+          '{searchKeyword}' 검색 결과가 없습니다.
+        </p>
       </div>
     );
   }
@@ -437,37 +435,40 @@ export const OrganizationBdpiFlatTable = ({
           <col style={{ width: "100px" }} />
           <col style={{ width: "100px" }} />
           <col style={{ width: "100px" }} />
-          <col style={{ width: "100px" }} />
         </colgroup>
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <th className={`${thStyle} text-left whitespace-nowrap`}>조직 이름</th>
+          <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
+            <th className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}>조직 이름</th>
             {SORTABLE_HEADERS.map((header) => {
-              const isActive = sortConfig.column === header.id;
-              const isDesc = sortConfig.direction === "desc";
+              const isActive = sortConfig.column === header.id && sortConfig.direction !== null;
+
+              // 정렬 아이콘 렌더링
+              const renderSortIcon = () => {
+                if (!isActive) {
+                  return <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />;
+                }
+                if (sortConfig.direction === "asc") {
+                  return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
+                }
+                return <ArrowDown className="w-4.5 h-4.5 text-blue-600" />;
+              };
+
               return (
                 <th
                   key={header.id}
-                  className={`${thStyle} w-[7%] cursor-pointer hover:bg-gray-100 select-none ${
+                  className={`${thStyle} w-[7%] cursor-pointer hover:bg-gray-100 select-none border-r border-gray-200 ${
                     isActive ? "bg-blue-50" : ""
                   }`}
                   onClick={() => toggleSort(header.id)}
                 >
-                  <div className="flex items-center justify-center gap-1">
+                  <div className="flex flex-col items-center justify-center gap-1">
                     <span>{header.label}</span>
-                    {isActive && (
-                      isDesc ? (
-                        <ArrowDown className="w-3 h-3 text-blue-600" />
-                      ) : (
-                        <ArrowUp className="w-3 h-3 text-blue-600" />
-                      )
-                    )}
+                    <span>{renderSortIcon()}</span>
                   </div>
                 </th>
               );
             })}
             <th className={`${thStyle} w-[7%]`}>전월비교</th>
-            <th className={`${thStyle} w-[7%]`}>상세</th>
           </tr>
         </thead>
         <tbody>
@@ -479,7 +480,7 @@ export const OrganizationBdpiFlatTable = ({
                   : `${(item.data as OrganizationMember).employeeID}-${index}`
               }
               item={item}
-              onDetailClick={onDetailClick}
+              hideValues={hideValues}
             />
           ))}
         </tbody>
