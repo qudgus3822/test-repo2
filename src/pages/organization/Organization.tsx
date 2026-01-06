@@ -228,35 +228,37 @@ const OrganizationPage = () => {
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
           {/* 좌측: 뷰타입 탭 + 플랫뷰 필터 */}
           <div className="flex items-center">
-            <button
-              onClick={() => setViewType("hierarchy")}
-              className={`cursor-pointer flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
-                viewType === "hierarchy"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <Network className="w-4 h-4" />
-              하이어라키뷰
-            </button>
-            <button
-              onClick={() => setViewType("flat")}
-              className={`cursor-pointer flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
-                viewType === "flat"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <List className="w-4 h-4" />
-              플랫뷰
-            </button>
+            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setViewType("hierarchy")}
+                className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors ${
+                  viewType === "hierarchy"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <Network className="w-4 h-4" />
+                하이어라키뷰
+              </button>
+              <button
+                onClick={() => setViewType("flat")}
+                className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                  viewType === "flat"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <List className="w-4 h-4" />
+                플랫뷰
+              </button>
+            </div>
 
             {/* 플랫뷰일 때만 실/팀/개인 필터 표시 */}
             {viewType === "flat" && (
-              <div className="flex items-center ml-4">
+              <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setFlatViewFilter("room")}
-                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
                     flatViewFilter === "room"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -266,7 +268,7 @@ const OrganizationPage = () => {
                 </button>
                 <button
                   onClick={() => setFlatViewFilter("team")}
-                  className={`cursor-pointer px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                     flatViewFilter === "team"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -276,7 +278,7 @@ const OrganizationPage = () => {
                 </button>
                 <button
                   onClick={() => setFlatViewFilter("member")}
-                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                     flatViewFilter === "member"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -286,17 +288,14 @@ const OrganizationPage = () => {
                 </button>
               </div>
             )}
-          </div>
 
-          {/* 우측: 평균/총합 필터 + 뷰타입별 영역 + 보기/숨기기 버튼 */}
-          <div className="flex items-center gap-2">
-            {/* 전체 탭: 평균/총합 필터 */}
-            {activeTab === "all" && (
-              <div className="flex items-center">
+            {/* 전체/BDPI 탭: 평균/총합 필터 */}
+            {(activeTab === "all" || activeTab === "bdpi") && (
+              <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setAggregationType("average")}
-                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
-                    aggregationType === "average"
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
+                    aggregationType === "average" || activeTab === "bdpi"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
@@ -304,17 +303,26 @@ const OrganizationPage = () => {
                   평균
                 </button>
                 <button
-                  onClick={() => setAggregationType("total")}
-                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
-                    aggregationType === "total"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  onClick={() =>
+                    activeTab !== "bdpi" && setAggregationType("total")
+                  }
+                  disabled={activeTab === "bdpi"}
+                  className={`px-4 py-1.5 border-l border-slate-200 text-sm font-medium transition-colors ${
+                    activeTab === "bdpi"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : aggregationType === "total"
+                      ? "bg-blue-600 text-white cursor-pointer"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
                   }`}
                 >
                   총합
                 </button>
               </div>
             )}
+          </div>
+
+          {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
+          <div className="flex items-center gap-2">
             {/* 플랫뷰: 검색 아이콘 버튼 */}
             {viewType === "flat" && (
               <Button

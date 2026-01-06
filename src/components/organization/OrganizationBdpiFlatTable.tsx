@@ -51,6 +51,8 @@ interface FlatItem {
   data: OrganizationDepartment | OrganizationMember;
   level: number;
   parentName?: string;
+  roomName?: string; // 실 이름 (level 2)
+  teamName?: string; // 팀 이름 (level 3)
 }
 
 // 정렬 가능한 컬럼 타입
@@ -179,11 +181,20 @@ const flattenTree = (
 ): FlatItem[] => {
   const result: FlatItem[] = [];
 
-  const traverse = (node: OrganizationNode, parentName?: string) => {
+  const traverse = (
+    node: OrganizationNode,
+    parentName?: string,
+    roomName?: string,
+    teamName?: string,
+  ) => {
     if (!node.isEvaluationTarget) return;
 
     if (node.type === "department") {
       const dept = node as OrganizationDepartment;
+
+      // 현재 노드의 레벨에 따라 roomName, teamName 업데이트
+      const currentRoomName = dept.level === 2 ? dept.name : roomName;
+      const currentTeamName = dept.level === 3 ? dept.name : teamName;
 
       if (filterType === "room" && dept.level === 2) {
         result.push({
@@ -198,11 +209,14 @@ const flattenTree = (
           data: dept,
           level: dept.level,
           parentName,
+          roomName: currentRoomName,
         });
       }
 
       if (dept.children) {
-        dept.children.forEach((child) => traverse(child, dept.name));
+        dept.children.forEach((child) =>
+          traverse(child, dept.name, currentRoomName, currentTeamName),
+        );
       }
     } else if (node.type === "member") {
       if (filterType === "member") {
@@ -211,6 +225,8 @@ const flattenTree = (
           data: node,
           level: node.level,
           parentName,
+          roomName,
+          teamName,
         });
       }
     }
@@ -225,9 +241,11 @@ const flattenTree = (
 const FlatRow = ({
   item,
   hideValues = false,
+  filterType,
 }: {
   item: FlatItem;
   hideValues?: boolean;
+  filterType: FlatViewFilterType;
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
@@ -243,21 +261,43 @@ const FlatRow = ({
 
   const member = !isDepartment ? (data as OrganizationMember) : null;
 
+  // 상위 조직 표시 텍스트 생성
+  const getParentInfo = () => {
+    if (filterType === "team" && item.roomName) {
+      return item.roomName;
+    }
+    if (filterType === "member" && (item.roomName || item.teamName)) {
+      const parts = [];
+      if (item.roomName) parts.push(item.roomName);
+      if (item.teamName) parts.push(item.teamName);
+      return parts.join(" > ");
+    }
+    return null;
+  };
+
+  const parentInfo = getParentInfo();
+
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
       <td className="px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]">
         {isDepartment ? (
-          <div className="flex items-center h-full">
-            <span className="font-medium text-gray-900">{displayName}</span>
-            {memberCount !== null && (
-              <span className="ml-1 text-sm text-gray-500">
-                ({memberCount})
-              </span>
+          <div className="flex flex-col justify-center h-full gap-0.5">
+            <div className="flex items-center">
+              <span className="font-medium text-gray-900">{displayName}</span>
+              {memberCount !== null && (
+                <span className="ml-1 text-sm text-gray-500">
+                  ({memberCount})
+                </span>
+              )}
+              <StatusBadge change={data.changes} />
+            </div>
+            {/* 팀 필터: 실 이름을 팀 이름 하단에 표시 */}
+            {parentInfo && (
+              <div className="text-sm text-gray-500">{parentInfo}</div>
             )}
-            <StatusBadge change={data.changes} />
           </div>
         ) : (
-          <div className="flex flex-col justify-center h-full">
+          <div className="flex flex-col justify-center h-full gap-0.5">
             <div className="flex items-center">
               <span className="font-medium text-gray-900">{displayName}</span>
               <span className="ml-2 text-sm text-gray-500">
@@ -268,7 +308,11 @@ const FlatRow = ({
               </span>
               <StatusBadge change={data.changes} />
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            {/* 개인 필터: 실 > 팀을 개인 이름 하단에 표시 */}
+            {parentInfo && (
+              <div className="text-sm text-gray-500">{parentInfo}</div>
+            )}
+            <div className="text-sm text-gray-500">
               {member!.email || getMemberEmail(member!.employeeID)}
             </div>
           </div>
@@ -481,6 +525,7 @@ export const OrganizationBdpiFlatTable = ({
               }
               item={item}
               hideValues={hideValues}
+              filterType={filterType}
             />
           ))}
         </tbody>

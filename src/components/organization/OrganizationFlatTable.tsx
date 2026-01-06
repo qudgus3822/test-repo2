@@ -50,6 +50,7 @@ import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
+import { MetricDetailInfo } from "./MetricDetailInfo";
 import {
   calculateSummaryCounts,
   SUMMARY_CATEGORIES,
@@ -92,6 +93,8 @@ interface FlatItem {
   data: OrganizationDepartment | OrganizationMember;
   level: number;
   parentName?: string;
+  roomName?: string; // 실 이름 (level 2)
+  teamName?: string; // 팀 이름 (level 3)
 }
 
 // 30개 지표 코드 목록 (순서대로) + BDPI
@@ -169,11 +172,20 @@ const flattenTree = (
 ): FlatItem[] => {
   const result: FlatItem[] = [];
 
-  const traverse = (node: OrganizationNode, parentName?: string) => {
+  const traverse = (
+    node: OrganizationNode,
+    parentName?: string,
+    roomName?: string,
+    teamName?: string,
+  ) => {
     if (!node.isEvaluationTarget) return;
 
     if (node.type === "department") {
       const dept = node as OrganizationDepartment;
+
+      // 현재 노드의 레벨에 따라 roomName, teamName 업데이트
+      const currentRoomName = dept.level === 2 ? dept.name : roomName;
+      const currentTeamName = dept.level === 3 ? dept.name : teamName;
 
       if (filterType === "room" && dept.level === 2) {
         result.push({
@@ -188,11 +200,14 @@ const flattenTree = (
           data: dept,
           level: dept.level,
           parentName,
+          roomName: currentRoomName,
         });
       }
 
       if (dept.children) {
-        dept.children.forEach((child) => traverse(child, dept.name));
+        dept.children.forEach((child) =>
+          traverse(child, dept.name, currentRoomName, currentTeamName),
+        );
       }
     } else if (node.type === "member") {
       if (filterType === "member") {
@@ -201,6 +216,8 @@ const flattenTree = (
           data: node,
           level: node.level,
           parentName,
+          roomName,
+          teamName,
         });
       }
     }
@@ -215,9 +232,11 @@ const flattenTree = (
 const FixedRow = ({
   item,
   summaryCounts,
+  filterType,
 }: {
   item: FlatItem;
   summaryCounts: SummaryCounts;
+  filterType: FlatViewFilterType;
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
@@ -232,21 +251,43 @@ const FixedRow = ({
 
   const member = !isDepartment ? (data as OrganizationMember) : null;
 
+  // 상위 조직 표시 텍스트 생성
+  const getParentInfo = () => {
+    if (filterType === "team" && item.roomName) {
+      return item.roomName;
+    }
+    if (filterType === "member" && (item.roomName || item.teamName)) {
+      const parts = [];
+      if (item.roomName) parts.push(item.roomName);
+      if (item.teamName) parts.push(item.teamName);
+      return parts.join(" > ");
+    }
+    return null;
+  };
+
+  const parentInfo = getParentInfo();
+
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
       <td className="px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]">
         {isDepartment ? (
-          <div className="flex items-center h-full">
-            <span className="font-medium text-gray-900">{displayName}</span>
-            {memberCount !== null && (
-              <span className="ml-1 text-sm text-gray-500">
-                ({memberCount})
-              </span>
+          <div className="flex flex-col justify-center h-full gap-0.5">
+            <div className="flex items-center">
+              <span className="font-medium text-gray-900">{displayName}</span>
+              {memberCount !== null && (
+                <span className="ml-1 text-sm text-gray-500">
+                  ({memberCount})
+                </span>
+              )}
+              <StatusBadge change={data.changes} />
+            </div>
+            {/* 팀 필터: 실 이름을 팀 이름 하단에 표시 */}
+            {parentInfo && (
+              <div className="text-sm text-gray-500">{parentInfo}</div>
             )}
-            <StatusBadge change={data.changes} />
           </div>
         ) : (
-          <div className="flex flex-col justify-center h-full">
+          <div className="flex flex-col justify-center h-full gap-0.5">
             <div className="flex items-center">
               <span className="font-medium text-gray-900">{displayName}</span>
               <span className="ml-2 text-sm text-gray-500">
@@ -257,7 +298,11 @@ const FixedRow = ({
               </span>
               <StatusBadge change={data.changes} />
             </div>
-            <div className="text-xs text-gray-500 mt-0.5">
+            {/* 개인 필터: 실 > 팀을 개인 이름 하단에 표시 */}
+            {parentInfo && (
+              <div className="text-sm text-gray-500">{parentInfo}</div>
+            )}
+            <div className="text-sm text-gray-500">
               {member!.email || getMemberEmail(member!.employeeID)}
             </div>
           </div>
@@ -283,6 +328,8 @@ interface SortableMetricHeaderProps {
   sortDirection: "asc" | "desc" | null;
   onSort: (code: string) => void;
   thBaseStyle: string;
+  isSelected?: boolean;
+  onSelect?: (code: string) => void;
 }
 
 const SortableMetricHeader = ({
@@ -292,6 +339,8 @@ const SortableMetricHeader = ({
   sortDirection,
   onSort,
   thBaseStyle,
+  isSelected = false,
+  onSelect,
 }: SortableMetricHeaderProps) => {
   const {
     attributes,
@@ -320,11 +369,17 @@ const SortableMetricHeader = ({
     return <ArrowDown className="w-4 h-4 text-blue-600" />;
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleSortClick = (e: React.MouseEvent) => {
     if (!isDragging) {
       e.stopPropagation();
       onSort(code);
     }
+  };
+
+  const handleSelectClick = () => {
+    // BDPI는 클릭 불가
+    if (code === "bdpi") return;
+    onSelect?.(code);
   };
 
   return (
@@ -332,8 +387,8 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[113px] select-none ${
-        isDragging ? "bg-blue-100" : isActive ? "bg-blue-50" : ""
+      className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[121px] select-none ${
+        isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
       <div className="flex flex-col items-center justify-center gap-1 h-full">
@@ -345,12 +400,15 @@ const SortableMetricHeader = ({
         >
           <GripHorizontal className="w-4 h-4 text-gray-400" />
         </div>
-        {/* 정렬 클릭 영역 */}
+        {/* displayName 영역 - 클릭 가능 */}
         <div
-          onClick={handleClick}
-          className="cursor-pointer flex flex-col items-center gap-1 hover:bg-gray-200 rounded px-1"
+          onClick={handleSelectClick}
+          className={`flex flex-col items-center rounded p-1 ${
+            code === "bdpi"
+              ? "cursor-default"
+              : "cursor-pointer hover:bg-gray-200"
+          }`}
         >
-          {/* displayName 영역 - 2줄 높이로 고정 */}
           <span className="h-[32px] flex items-center justify-center text-center leading-tight">
             {code === "bdpi" ? (
               "BDPI"
@@ -364,7 +422,12 @@ const SortableMetricHeader = ({
               METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
             )}
           </span>
-          {/* 정렬 아이콘 - 고정 높이 */}
+        </div>
+        {/* 정렬 클릭 영역 */}
+        <div
+          onClick={handleSortClick}
+          className="cursor-pointer flex items-center justify-center hover:bg-gray-200 rounded px-1"
+        >
           <span className="h-[20px] flex items-center justify-center">
             {renderSortIcon()}
           </span>
@@ -409,7 +472,8 @@ const ScrollableRow = ({
 
         // 총합 모드에서 해당 지표가 표시 대상이 아닌 경우 회색 처리
         const isDisabledInTotalMode =
-          aggregationType === "total" && !TOTAL_MODE_METRIC_CODES.includes(code);
+          aggregationType === "total" &&
+          !TOTAL_MODE_METRIC_CODES.includes(code);
 
         if (isDisabledInTotalMode) {
           return (
@@ -487,6 +551,21 @@ export const OrganizationFlatTable = ({
     column: null,
     direction: null,
   });
+
+  // 선택된 지표 코드 (상세 정보 표시용)
+  const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
+    null,
+  );
+
+  // 지표 선택 핸들러
+  const handleMetricSelect = useCallback((code: string) => {
+    setSelectedMetricCode((prev) => (prev === code ? null : code));
+  }, []);
+
+  // 지표 상세 정보 닫기 핸들러
+  const handleMetricDetailClose = useCallback(() => {
+    setSelectedMetricCode(null);
+  }, []);
 
   // 드래그 앤 드롭 센서 설정
   const sensors = useSensors(
@@ -616,9 +695,7 @@ export const OrganizationFlatTable = ({
   if (filteredItems.length === 0 && searchKeyword.trim()) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
-        <p className="text-gray-500">
-          '{searchKeyword}' 검색 결과가 없습니다.
-        </p>
+        <p className="text-gray-500">'{searchKeyword}' 검색 결과가 없습니다.</p>
       </div>
     );
   }
@@ -627,153 +704,167 @@ export const OrganizationFlatTable = ({
     "px-5 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
   return (
-    <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-      {/* 고정 영역 (좌측 5개 컬럼) */}
-      <div
-        className="flex-shrink-0 bg-white z-10"
-        style={{ boxShadow: "4px 0 8px -2px rgba(0, 0, 0, 0.1)" }}
-      >
-        <table className="border-collapse">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
-              <th
-                className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
-              >
-                조직 이름
-              </th>
-              {SUMMARY_CATEGORIES.map((cat) => {
-                const isActive =
-                  sortConfig.column === cat.id && sortConfig.direction !== null;
+    <>
+      {/* 지표 상세 정보 영역 */}
+      {selectedMetricCode && (
+        <MetricDetailInfo
+          metricCode={selectedMetricCode}
+          onClose={handleMetricDetailClose}
+        />
+      )}
 
-                const criteriaText =
-                  cat.id === "exceeds"
-                    ? "100% 이상"
-                    : cat.id === "achieved"
-                    ? "100% 미만"
-                    : cat.id === "good"
-                    ? "80% 미만"
-                    : "60% 미만";
-
-                // 정렬 아이콘 렌더링
-                const renderSortIcon = () => {
-                  if (!isActive) {
-                    return (
-                      <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />
-                    );
-                  }
-                  if (sortConfig.direction === "asc") {
-                    return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
-                  }
-                  return <ArrowDown className="w-4.5 h-4.5 text-blue-600" />;
-                };
-
-                return (
-                  <th
-                    key={cat.id}
-                    className={`px-4 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] h-[113px] cursor-pointer hover:brightness-95 select-none ${
-                      isActive ? "ring-2 ring-inset ring-blue-400" : ""
-                    }`}
-                    style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
-                    onClick={() => toggleSort(cat.id)}
-                  >
-                    <div className="flex flex-col items-center justify-center h-full gap-1">
-                      <span>
-                        {cat.id === "exceeds"
-                          ? "초과달성"
-                          : cat.id === "achieved"
-                          ? "우수"
-                          : cat.id === "good"
-                          ? "경고"
-                          : "위험"}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {criteriaText}
-                      </span>
-                      <span>{renderSortIcon()}</span>
-                    </div>
-                  </th>
-                );
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedItems.map((item, index) => {
-              const summaryCounts =
-                itemSummaryCountsMap.get(item) ??
-                calculateSummaryCounts(undefined);
-              return (
-                <FixedRow
-                  key={
-                    item.type === "department"
-                      ? (item.data as OrganizationDepartment).code
-                      : `${
-                          (item.data as OrganizationMember).employeeID
-                        }-${index}`
-                  }
-                  item={item}
-                  summaryCounts={summaryCounts}
-                />
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 스크롤 영역 (30개 지표 + BDPI) */}
-      <div className="flex-1 overflow-x-auto">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+      <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+        {/* 고정 영역 (좌측 5개 컬럼) */}
+        <div
+          className="flex-shrink-0 bg-white z-10"
+          style={{ boxShadow: "4px 0 8px -2px rgba(0, 0, 0, 0.1)" }}
         >
-          <table className="border-collapse table-fixed">
+          <table className="border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
-                <SortableContext
-                  items={metricOrder}
-                  strategy={horizontalListSortingStrategy}
+              <tr className="border-b border-gray-200 bg-gray-50 h-[121px]">
+                <th
+                  className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[121px]`}
                 >
-                  {metricOrder.map((code) => {
-                    const displayName = METRIC_CODE_DISPLAY_NAMES[code];
-                    const isActive =
-                      sortConfig.column === code &&
-                      sortConfig.direction !== null;
+                  조직 이름
+                </th>
+                {SUMMARY_CATEGORIES.map((cat) => {
+                  const isActive =
+                    sortConfig.column === cat.id &&
+                    sortConfig.direction !== null;
 
-                    return (
-                      <SortableMetricHeader
-                        key={code}
-                        code={code}
-                        displayName={displayName}
-                        isActive={isActive}
-                        sortDirection={sortConfig.direction}
-                        onSort={toggleSort}
-                        thBaseStyle={thBaseStyle}
-                      />
-                    );
-                  })}
-                </SortableContext>
+                  const criteriaText =
+                    cat.id === "exceeds"
+                      ? "100% 이상"
+                      : cat.id === "achieved"
+                      ? "100% 미만"
+                      : cat.id === "good"
+                      ? "80% 미만"
+                      : "60% 미만";
+
+                  // 정렬 아이콘 렌더링
+                  const renderSortIcon = () => {
+                    if (!isActive) {
+                      return (
+                        <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />
+                      );
+                    }
+                    if (sortConfig.direction === "asc") {
+                      return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
+                    }
+                    return <ArrowDown className="w-4.5 h-4.5 text-blue-600" />;
+                  };
+
+                  return (
+                    <th
+                      key={cat.id}
+                      className={`px-4 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] h-[121px] cursor-pointer hover:brightness-95 select-none ${
+                        isActive ? "ring-2 ring-inset ring-blue-400" : ""
+                      }`}
+                      style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
+                      onClick={() => toggleSort(cat.id)}
+                    >
+                      <div className="flex flex-col items-center justify-center h-full gap-1">
+                        <span>
+                          {cat.id === "exceeds"
+                            ? "초과달성"
+                            : cat.id === "achieved"
+                            ? "우수"
+                            : cat.id === "good"
+                            ? "경고"
+                            : "위험"}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {criteriaText}
+                        </span>
+                        <span>{renderSortIcon()}</span>
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {sortedItems.map((item, index) => (
-                <ScrollableRow
-                  key={
-                    item.type === "department"
-                      ? (item.data as OrganizationDepartment).code
-                      : `${
-                          (item.data as OrganizationMember).employeeID
-                        }-${index}`
-                  }
-                  item={item}
-                  metricOrder={metricOrder}
-                  hideValue={hideValues}
-                  aggregationType={aggregationType}
-                />
-              ))}
+              {sortedItems.map((item, index) => {
+                const summaryCounts =
+                  itemSummaryCountsMap.get(item) ??
+                  calculateSummaryCounts(undefined);
+                return (
+                  <FixedRow
+                    key={
+                      item.type === "department"
+                        ? (item.data as OrganizationDepartment).code
+                        : `${
+                            (item.data as OrganizationMember).employeeID
+                          }-${index}`
+                    }
+                    item={item}
+                    summaryCounts={summaryCounts}
+                    filterType={filterType}
+                  />
+                );
+              })}
             </tbody>
           </table>
-        </DndContext>
+        </div>
+
+        {/* 스크롤 영역 (30개 지표 + BDPI) */}
+        <div className="flex-1 overflow-x-auto">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <table className="border-collapse table-fixed">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50 h-[121px]">
+                  <SortableContext
+                    items={metricOrder}
+                    strategy={horizontalListSortingStrategy}
+                  >
+                    {metricOrder.map((code) => {
+                      const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+                      const isActive =
+                        sortConfig.column === code &&
+                        sortConfig.direction !== null;
+
+                      return (
+                        <SortableMetricHeader
+                          key={code}
+                          code={code}
+                          displayName={displayName}
+                          isActive={isActive}
+                          sortDirection={sortConfig.direction}
+                          onSort={toggleSort}
+                          thBaseStyle={thBaseStyle}
+                          isSelected={selectedMetricCode === code}
+                          onSelect={handleMetricSelect}
+                        />
+                      );
+                    })}
+                  </SortableContext>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedItems.map((item, index) => (
+                  <ScrollableRow
+                    key={
+                      item.type === "department"
+                        ? (item.data as OrganizationDepartment).code
+                        : `${
+                            (item.data as OrganizationMember).employeeID
+                          }-${index}`
+                    }
+                    item={item}
+                    metricOrder={metricOrder}
+                    hideValue={hideValues}
+                    aggregationType={aggregationType}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </DndContext>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
