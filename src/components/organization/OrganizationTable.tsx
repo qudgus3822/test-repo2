@@ -68,11 +68,25 @@ interface FlatTreeItem {
   isExpanded: boolean;
 }
 
+// 집계 타입
+export type AggregationType = "average" | "total";
+
+// 총합 모드에서 표시할 지표 코드 목록
+const TOTAL_MODE_METRIC_CODES = [
+  "BUG_COUNT",
+  "INCIDENT_COUNT",
+  "REVIEW_REQUEST_COUNT",
+  "REVIEW_PARTICIPATION_COUNT",
+  "COMMIT_FREQUENCY",
+  "DEPLOYMENT_FREQUENCY",
+];
+
 interface OrganizationTableProps {
   month: string;
   activeTab: TabType;
   hideValues?: boolean;
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
+  aggregationType?: AggregationType;
 }
 
 // 30개 지표 코드 목록 (순서대로) + BDPI
@@ -375,10 +389,12 @@ const ScrollableRow = ({
   item,
   metricOrder,
   hideValue = false,
+  aggregationType = "average",
 }: {
   item: FlatTreeItem;
   metricOrder: string[];
   hideValue?: boolean;
+  aggregationType?: AggregationType;
 }) => {
   const metrics = item.data.metrics as unknown as Record<string, MetricData>;
   const bdpiMetrics = item.data.metrics as BdpiMetrics;
@@ -386,7 +402,7 @@ const ScrollableRow = ({
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
       {metricOrder.map((code) => {
-        // BDPI 칼럼 특별 처리
+        // BDPI 칼럼 특별 처리 (총합 모드에서도 데이터 표시)
         if (code === "bdpi") {
           return (
             <td
@@ -397,6 +413,19 @@ const ScrollableRow = ({
                 ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
                 : "--"}
             </td>
+          );
+        }
+
+        // 총합 모드에서 해당 지표가 표시 대상이 아닌 경우 회색 처리
+        const isDisabledInTotalMode =
+          aggregationType === "total" && !TOTAL_MODE_METRIC_CODES.includes(code);
+
+        if (isDisabledInTotalMode) {
+          return (
+            <td
+              key={code}
+              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px] bg-gray-100"
+            />
           );
         }
 
@@ -428,6 +457,7 @@ export const OrganizationTable = ({
   month,
   activeTab,
   hideValues = false,
+  aggregationType = "average",
 }: OrganizationTableProps) => {
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const { expandedOrganizations, toggleOrganization, showMembers } =
@@ -614,6 +644,7 @@ export const OrganizationTable = ({
                   item={item}
                   metricOrder={metricOrder}
                   hideValue={hideValues}
+                  aggregationType={aggregationType}
                 />
               ))}
             </tbody>

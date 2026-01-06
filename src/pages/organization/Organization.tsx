@@ -90,6 +90,11 @@ const OrganizationPage = () => {
   const [flatViewFilter, setFlatViewFilter] =
     useState<FlatViewFilterType>("room");
 
+  // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
+  const [aggregationType, setAggregationType] = useState<"average" | "total">(
+    "average",
+  );
+
   // 보기/펼치기 상태
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -283,8 +288,33 @@ const OrganizationPage = () => {
             )}
           </div>
 
-          {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
+          {/* 우측: 평균/총합 필터 + 뷰타입별 영역 + 보기/숨기기 버튼 */}
           <div className="flex items-center gap-2">
+            {/* 전체 탭: 평균/총합 필터 */}
+            {activeTab === "all" && (
+              <div className="flex items-center">
+                <button
+                  onClick={() => setAggregationType("average")}
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-l-lg transition-colors ${
+                    aggregationType === "average"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  평균
+                </button>
+                <button
+                  onClick={() => setAggregationType("total")}
+                  className={`cursor-pointer px-4 py-2 text-sm font-medium rounded-r-lg transition-colors ${
+                    aggregationType === "total"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  총합
+                </button>
+              </div>
+            )}
             {/* 플랫뷰: 검색 아이콘 버튼 */}
             {viewType === "flat" && (
               <Button
@@ -390,6 +420,7 @@ const OrganizationPage = () => {
                   activeTab={activeTab}
                   hideValues={isExpanded}
                   onDetailClick={handleDetailClick}
+                  aggregationType={aggregationType}
                 />
               ) : (
                 <OrganizationFlatTable
@@ -400,6 +431,7 @@ const OrganizationPage = () => {
                   onDetailClick={handleDetailClick}
                   searchKeyword={activeSearchKeyword}
                   onSearchResult={setSearchResultCount}
+                  aggregationType={aggregationType}
                 />
               )}
             </div>

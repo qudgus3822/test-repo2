@@ -1,5 +1,6 @@
 export { OrganizationTabs } from "./OrganizationTabs";
 export { OrganizationTable } from "./OrganizationTable";
+export type { AggregationType } from "./OrganizationTable";
 export { OrganizationFlatTable } from "./OrganizationFlatTable";
 export type { FlatViewFilterType } from "./OrganizationFlatTable";
 export { OrganizationBdpiTable } from "./OrganizationBdpiTable";

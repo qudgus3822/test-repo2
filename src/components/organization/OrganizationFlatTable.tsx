@@ -62,6 +62,19 @@ import {
 // 플랫뷰 필터 타입
 export type FlatViewFilterType = "room" | "team" | "member";
 
+// 집계 타입
+export type AggregationType = "average" | "total";
+
+// 총합 모드에서 표시할 지표 코드 목록
+const TOTAL_MODE_METRIC_CODES = [
+  "BUG_COUNT",
+  "INCIDENT_COUNT",
+  "REVIEW_REQUEST_COUNT",
+  "REVIEW_PARTICIPATION_COUNT",
+  "COMMIT_FREQUENCY",
+  "DEPLOYMENT_FREQUENCY",
+];
+
 interface OrganizationFlatTableProps {
   month: string;
   activeTab: TabType;
@@ -70,6 +83,7 @@ interface OrganizationFlatTableProps {
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
   searchKeyword?: string;
   onSearchResult?: (resultCount: number) => void;
+  aggregationType?: AggregationType;
 }
 
 // 플랫 데이터 아이템 타입
@@ -365,10 +379,12 @@ const ScrollableRow = ({
   item,
   metricOrder,
   hideValue = false,
+  aggregationType = "average",
 }: {
   item: FlatItem;
   metricOrder: string[];
   hideValue?: boolean;
+  aggregationType?: AggregationType;
 }) => {
   const data = item.data;
   const metrics = data.metrics as unknown as Record<string, MetricData>;
@@ -377,7 +393,7 @@ const ScrollableRow = ({
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
       {metricOrder.map((code) => {
-        // BDPI 칼럼 특별 처리
+        // BDPI 칼럼 특별 처리 (총합 모드에서도 데이터 표시)
         if (code === "bdpi") {
           return (
             <td
@@ -388,6 +404,19 @@ const ScrollableRow = ({
                 ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
                 : "--"}
             </td>
+          );
+        }
+
+        // 총합 모드에서 해당 지표가 표시 대상이 아닌 경우 회색 처리
+        const isDisabledInTotalMode =
+          aggregationType === "total" && !TOTAL_MODE_METRIC_CODES.includes(code);
+
+        if (isDisabledInTotalMode) {
+          return (
+            <td
+              key={code}
+              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px] bg-gray-100"
+            />
           );
         }
 
@@ -422,6 +451,7 @@ export const OrganizationFlatTable = ({
   hideValues = false,
   searchKeyword = "",
   onSearchResult,
+  aggregationType = "average",
 }: OrganizationFlatTableProps) => {
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const flatItems = flattenTree(data?.tree ?? [], filterType);
@@ -737,6 +767,7 @@ export const OrganizationFlatTable = ({
                   item={item}
                   metricOrder={metricOrder}
                   hideValue={hideValues}
+                  aggregationType={aggregationType}
                 />
               ))}
             </tbody>
