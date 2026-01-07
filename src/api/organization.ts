@@ -109,3 +109,32 @@ export const updateEvaluationTargetsBulk = async (
 ): Promise<void> => {
   return apiPut<void>(`/departments/evaluation-targets/bulk`, request);
 };
+
+// 개인별 지표 순위 API 응답 타입
+export interface MemberMetricRanking {
+  metricName: string;
+  achievementRate: number;
+  category: string;
+}
+
+export interface MemberMetricRankingsResponse {
+  employeeId: string;
+  name: string;
+  yearMonth: string;
+  rankings: MemberMetricRanking[];
+}
+
+/**
+ * 개인별 지표 순위 조회 API
+ * @param employeeId - 사원 ID
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @returns 개인별 지표 순위 데이터
+ */
+export const fetchMemberMetricRankings = async (
+  employeeId: string,
+  yearMonth: string,
+): Promise<MemberMetricRankingsResponse> => {
+  return apiGet<MemberMetricRankingsResponse>(
+    `/departments/members/${employeeId}/metric-rankings?yearMonth=${yearMonth}`,
+  );
+};

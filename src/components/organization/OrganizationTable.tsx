@@ -263,7 +263,7 @@ const FixedDepartmentRow = ({
       {SUMMARY_CATEGORIES.map((cat) => (
         <td
           key={cat.id}
-          className="px-4 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[60px] h-[64px]"
+          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[72px] h-[64px]"
         >
           {summaryCounts[cat.id]}
         </td>
@@ -309,7 +309,7 @@ const FixedMemberRow = ({
       {SUMMARY_CATEGORIES.map((cat) => (
         <td
           key={cat.id}
-          className="px-4 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[60px] h-[64px]"
+          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[72px] h-[64px]"
         >
           {summaryCounts[cat.id]}
         </td>
@@ -361,7 +361,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[121px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -425,7 +425,7 @@ const ScrollableRow = ({
           return (
             <td
               key={code}
-              className="px-5 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
+              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
             >
               {bdpiMetrics?.bdpi?.score !== undefined
                 ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
@@ -443,7 +443,7 @@ const ScrollableRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px] bg-gray-50"
+              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
             />
           );
         }
@@ -457,7 +457,7 @@ const ScrollableRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
+            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
           >
             <HeatmapCell
               metricCode={code}
@@ -558,7 +558,7 @@ export const OrganizationTable = ({
   }
 
   const thBaseStyle =
-    "px-5 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
+    "px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
   return (
     <>
@@ -578,9 +578,9 @@ export const OrganizationTable = ({
         >
           <table className="border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 h-[121px]">
+              <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 <th
-                  className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[121px]`}
+                  className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
                 >
                   조직 이름
                 </th>
@@ -597,7 +597,7 @@ export const OrganizationTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className="px-4 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] h-[121px]"
+                      className="px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] h-[113px]"
                       style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
@@ -654,7 +654,7 @@ export const OrganizationTable = ({
           >
             <table className="border-collapse table-fixed">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 h-[121px]">
+                <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                   <SortableContext
                     items={metricOrder}
                     strategy={horizontalListSortingStrategy}

@@ -38,7 +38,6 @@ import {
   formatChangeDate,
   getChangeDetailWithSuffix,
   getMemberRoleOrPositionLabel,
-  getMemberEmail,
 } from "@/utils/organization";
 import {
   METRIC_CODE_NAMES,
@@ -51,6 +50,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 import { MetricDetailInfo } from "./MetricDetailInfo";
+import { MemberMetricRankingModal } from "./MemberMetricRankingModal";
 import {
   calculateSummaryCounts,
   SUMMARY_CATEGORIES,
@@ -228,18 +228,32 @@ const flattenTree = (
   return result;
 };
 
+// filterType에 따른 행 높이
+const getRowHeight = (filterType: FlatViewFilterType) => {
+  switch (filterType) {
+    case "team":
+    case "member":
+      return "h-[79px]";
+    default:
+      return "h-[64px]";
+  }
+};
+
 // 고정 영역 행 컴포넌트
 const FixedRow = ({
   item,
   summaryCounts,
   filterType,
+  onMemberClick,
 }: {
   item: FlatItem;
   summaryCounts: SummaryCounts;
   filterType: FlatViewFilterType;
+  onMemberClick?: (member: OrganizationMember, event: React.MouseEvent) => void;
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
+  const rowHeight = getRowHeight(filterType);
 
   const displayName = isDepartment
     ? (data as OrganizationDepartment).name
@@ -268,8 +282,12 @@ const FixedRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
-      <td className="px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]">
+    <tr
+      className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}
+    >
+      <td
+        className={`px-2 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}
+      >
         {isDepartment ? (
           <div className="flex flex-col justify-center h-full gap-0.5">
             <div className="flex items-center">
@@ -287,7 +305,10 @@ const FixedRow = ({
             )}
           </div>
         ) : (
-          <div className="flex flex-col justify-center h-full gap-0.5">
+          <div
+            className="flex flex-col justify-center h-full gap-0.5 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1"
+            onClick={(e) => onMemberClick?.(member!, e)}
+          >
             <div className="flex items-center">
               <span className="font-medium text-gray-900">{displayName}</span>
               <span className="ml-2 text-sm text-gray-500">
@@ -302,16 +323,13 @@ const FixedRow = ({
             {parentInfo && (
               <div className="text-sm text-gray-500">{parentInfo}</div>
             )}
-            <div className="text-sm text-gray-500">
-              {member!.email || getMemberEmail(member!.employeeID)}
-            </div>
           </div>
         )}
       </td>
       {SUMMARY_CATEGORIES.map((cat) => (
         <td
           key={cat.id}
-          className="px-4 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[60px] h-[64px]"
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[72px] ${rowHeight}`}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -387,7 +405,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`${thBaseStyle} border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[121px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -443,25 +461,30 @@ const ScrollableRow = ({
   metricOrder,
   hideValue = false,
   aggregationType = "average",
+  filterType = "room",
 }: {
   item: FlatItem;
   metricOrder: string[];
   hideValue?: boolean;
   aggregationType?: AggregationType;
+  filterType?: FlatViewFilterType;
 }) => {
   const data = item.data;
   const metrics = data.metrics as unknown as Record<string, MetricData>;
   const bdpiMetrics = data.metrics as BdpiMetrics;
+  const rowHeight = getRowHeight(filterType);
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
+    <tr
+      className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}
+    >
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리 (총합 모드에서도 데이터 표시)
         if (code === "bdpi") {
           return (
             <td
               key={code}
-              className="px-5 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
+              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
             >
               {bdpiMetrics?.bdpi?.score !== undefined
                 ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
@@ -479,7 +502,7 @@ const ScrollableRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px] bg-gray-100"
+              className={`px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight} bg-gray-50`}
             />
           );
         }
@@ -493,7 +516,7 @@ const ScrollableRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[90px] min-w-[90px] max-w-[90px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
           >
             <HeatmapCell
               metricCode={code}
@@ -565,6 +588,31 @@ export const OrganizationFlatTable = ({
   // 지표 상세 정보 닫기 핸들러
   const handleMetricDetailClose = useCallback(() => {
     setSelectedMetricCode(null);
+  }, []);
+
+  // 멤버 지표 순위 모달 상태
+  const [selectedMember, setSelectedMember] =
+    useState<OrganizationMember | null>(null);
+  const [modalPosition, setModalPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+
+  // 멤버 클릭 핸들러 (개인 필터일 때만 동작)
+  const handleMemberClick = useCallback(
+    (member: OrganizationMember, event: React.MouseEvent) => {
+      if (filterType !== "member") return;
+      // 클릭된 div의 위치 정보 가져오기
+      const rect = event.currentTarget.getBoundingClientRect();
+      setModalPosition({ x: rect.left, y: rect.bottom });
+      setSelectedMember(member);
+    },
+    [filterType],
+  );
+
+  // 멤버 모달 닫기 핸들러
+  const handleMemberModalClose = useCallback(() => {
+    setSelectedMember(null);
   }, []);
 
   // 드래그 앤 드롭 센서 설정
@@ -701,7 +749,7 @@ export const OrganizationFlatTable = ({
   }
 
   const thBaseStyle =
-    "px-5 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
+    "px-2 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
   return (
     <>
@@ -721,9 +769,9 @@ export const OrganizationFlatTable = ({
         >
           <table className="border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 h-[121px]">
+              <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 <th
-                  className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[121px]`}
+                  className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
                 >
                   조직 이름
                 </th>
@@ -757,7 +805,7 @@ export const OrganizationFlatTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className={`px-4 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[60px] h-[121px] cursor-pointer hover:brightness-95 select-none ${
+                      className={`px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] h-[113px] cursor-pointer hover:brightness-95 select-none ${
                         isActive ? "ring-2 ring-inset ring-blue-400" : ""
                       }`}
                       style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
@@ -800,6 +848,7 @@ export const OrganizationFlatTable = ({
                     item={item}
                     summaryCounts={summaryCounts}
                     filterType={filterType}
+                    onMemberClick={handleMemberClick}
                   />
                 );
               })}
@@ -816,7 +865,7 @@ export const OrganizationFlatTable = ({
           >
             <table className="border-collapse table-fixed">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50 h-[121px]">
+                <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                   <SortableContext
                     items={metricOrder}
                     strategy={horizontalListSortingStrategy}
@@ -858,6 +907,7 @@ export const OrganizationFlatTable = ({
                     metricOrder={metricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
+                    filterType={filterType}
                   />
                 ))}
               </tbody>
@@ -865,6 +915,15 @@ export const OrganizationFlatTable = ({
           </DndContext>
         </div>
       </div>
+
+      {/* 멤버 지표 순위 모달 */}
+      {selectedMember && filterType === "member" && (
+        <MemberMetricRankingModal
+          member={selectedMember}
+          position={modalPosition}
+          onClose={handleMemberModalClose}
+        />
+      )}
     </>
   );
 };

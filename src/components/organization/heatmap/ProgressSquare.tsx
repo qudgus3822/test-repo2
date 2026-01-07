@@ -76,10 +76,10 @@ export const ProgressSquare = ({
 
       {/* 값 텍스트 오버레이 */}
       <span
-        className={`absolute inset-0 flex items-center justify-center text-sm font-medium transition-opacity overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass} opacity-100`}
+        className={`absolute inset-0 flex items-center justify-center text-md font-bold transition-opacity overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass} opacity-100`}
         style={
           hasData
-            ? { textShadow: "0 1px 2px rgba(255, 255, 255, 0.8)" }
+            ? { textShadow: "0 1px 4px rgba(255, 255, 255, 0.8)" }
             : undefined
         }
       >

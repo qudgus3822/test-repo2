@@ -24,7 +24,6 @@ import {
   formatChangeDate,
   getChangeDetailWithSuffix,
   getMemberRoleOrPositionLabel,
-  getMemberEmail,
 } from "@/utils/organization";
 import { TREND_COLORS } from "@/styles/colors";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -174,6 +173,17 @@ const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
   );
 };
 
+// filterType에 따른 행 높이
+const getRowHeight = (filterType: FlatViewFilterType) => {
+  switch (filterType) {
+    case "team":
+    case "member":
+      return "h-[79px]";
+    default:
+      return "h-[64px]";
+  }
+};
+
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
   nodes: OrganizationNode[],
@@ -250,6 +260,7 @@ const FlatRow = ({
   const data = item.data;
   const isDepartment = item.type === "department";
   const bdpiMetrics = data.metrics as BdpiMetrics;
+  const rowHeight = getRowHeight(filterType);
 
   const displayName = isDepartment
     ? (data as OrganizationDepartment).name
@@ -278,8 +289,8 @@ const FlatRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
-      <td className="px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]">
+    <tr className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}>
+      <td className={`px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}>
         {isDepartment ? (
           <div className="flex flex-col justify-center h-full gap-0.5">
             <div className="flex items-center">
@@ -312,9 +323,6 @@ const FlatRow = ({
             {parentInfo && (
               <div className="text-sm text-gray-500">{parentInfo}</div>
             )}
-            <div className="text-sm text-gray-500">
-              {member!.email || getMemberEmail(member!.employeeID)}
-            </div>
           </div>
         )}
       </td>
@@ -324,7 +332,7 @@ const FlatRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] ${rowHeight}`}
           >
             <HeatmapCell
               metricCode={code}
