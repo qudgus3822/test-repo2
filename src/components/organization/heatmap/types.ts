@@ -4,9 +4,13 @@
  */
 
 import { SUMMARY_COLORS } from "@/styles/colors";
+import type { StatusCount, MetricStatusType } from "@/types/organization.types";
 
-// Summary 카테고리 타입
-export type SummaryCategory = "exceeds" | "achieved" | "good" | "caution";
+// Summary 카테고리 타입 (API 응답 기준)
+export type SummaryCategory = "overAchieved" | "excellent" | "warning" | "danger";
+
+// 기존 카테고리 타입 (하위 호환용)
+export type LegacySummaryCategory = "exceeds" | "achieved" | "good" | "caution";
 
 // Summary 카테고리 설정 인터페이스
 export interface SummaryCategoryConfig {
@@ -19,11 +23,11 @@ export interface SummaryCategoryConfig {
   textColor: string;
 }
 
-// Summary 카테고리 설정
+// Summary 카테고리 설정 (API 기준)
 export const SUMMARY_CATEGORIES: SummaryCategoryConfig[] = [
   {
-    id: "exceeds",
-    name: "Exceeds",
+    id: "overAchieved",
+    name: "OverAchieved",
     koreanName: "초과달성",
     minPercentage: 100,
     maxPercentage: Infinity,
@@ -31,27 +35,27 @@ export const SUMMARY_CATEGORIES: SummaryCategoryConfig[] = [
     textColor: SUMMARY_COLORS.text,
   },
   {
-    id: "achieved",
-    name: "Achieved",
-    koreanName: "달성",
+    id: "excellent",
+    name: "Excellent",
+    koreanName: "우수",
     minPercentage: 80,
     maxPercentage: 100,
     bgColor: SUMMARY_COLORS.achieved,
     textColor: SUMMARY_COLORS.text,
   },
   {
-    id: "good",
-    name: "Good",
-    koreanName: "양호",
+    id: "warning",
+    name: "Warning",
+    koreanName: "경고",
     minPercentage: 60,
     maxPercentage: 80,
     bgColor: SUMMARY_COLORS.good,
     textColor: SUMMARY_COLORS.text,
   },
   {
-    id: "caution",
-    name: "Caution",
-    koreanName: "주의",
+    id: "danger",
+    name: "Danger",
+    koreanName: "위험",
     minPercentage: 0,
     maxPercentage: 60,
     bgColor: SUMMARY_COLORS.caution,
@@ -61,10 +65,10 @@ export const SUMMARY_CATEGORIES: SummaryCategoryConfig[] = [
 
 // Summary 배경색 (hex) - SUMMARY_COLORS 참조
 export const SUMMARY_BG_COLORS: Record<SummaryCategory, string> = {
-  exceeds: SUMMARY_COLORS.exceeds,
-  achieved: SUMMARY_COLORS.achieved,
-  good: SUMMARY_COLORS.good,
-  caution: SUMMARY_COLORS.caution,
+  overAchieved: SUMMARY_COLORS.exceeds,
+  excellent: SUMMARY_COLORS.achieved,
+  warning: SUMMARY_COLORS.good,
+  danger: SUMMARY_COLORS.caution,
 };
 
 // Summary 컬럼 너비
@@ -77,13 +81,8 @@ export const SUMMARY_CATEGORY_MAP: Record<SummaryCategory, SummaryCategoryConfig
     {} as Record<SummaryCategory, SummaryCategoryConfig>
   );
 
-// Summary 카운트 타입
-export interface SummaryCounts {
-  exceeds: number;
-  achieved: number;
-  good: number;
-  caution: number;
-}
+// Summary 카운트 타입 (API에서 제공하는 StatusCount 재사용)
+export type SummaryCounts = StatusCount;
 
 // 정렬 설정 타입
 export interface SortConfig {
@@ -93,10 +92,14 @@ export interface SortConfig {
 
 // 지표 데이터 타입 (API 응답)
 export interface MetricData {
-  score: number;
+  score: number | null;
   isUsed: boolean;
-  value?: number;
+  value?: number | null;
   unit?: string;
+  avgRate?: number | null; // 달성률 (%, 100% 초과 가능)
+  totalValue?: number | null; // 총합 값 (aggregation=total일 때)
+  targetValue?: number | string | null; // 목표값
+  status?: MetricStatusType; // 달성 상태
 }
 
 // 컬럼 너비 상수
@@ -107,11 +110,11 @@ export const COLUMN_WIDTHS = {
   bdpi: 80,
 } as const;
 
-// 점수 등급별 카운트 계산
+// 점수 등급별 카운트 계산 (API statusCount가 없을 경우 대비)
 export const calculateSummaryCounts = (
   metrics: Record<string, MetricData> | undefined
 ): SummaryCounts => {
-  const counts: SummaryCounts = { exceeds: 0, achieved: 0, good: 0, caution: 0 };
+  const counts: SummaryCounts = { overAchieved: 0, excellent: 0, warning: 0, danger: 0 };
 
   if (!metrics) return counts;
 
@@ -119,14 +122,28 @@ export const calculateSummaryCounts = (
     if (!metric || typeof metric.score !== "number" || metric.isUsed === false) return;
 
     const score = metric.score;
-    const category = SUMMARY_CATEGORIES.find(
-      (cat) => score >= cat.minPercentage && score < cat.maxPercentage
-    );
 
-    if (category) {
-      counts[category.id]++;
+    // API 기준으로 카테고리 분류
+    if (score >= 100) {
+      counts.overAchieved++;
+    } else if (score >= 80) {
+      counts.excellent++;
+    } else if (score >= 60) {
+      counts.warning++;
+    } else {
+      counts.danger++;
     }
   });
 
   return counts;
+};
+
+// API statusCount를 SummaryCounts로 변환 (이미 동일 구조이므로 그대로 반환)
+export const convertStatusCountToSummaryCounts = (
+  statusCount: StatusCount | undefined
+): SummaryCounts => {
+  if (!statusCount) {
+    return { overAchieved: 0, excellent: 0, warning: 0, danger: 0 };
+  }
+  return statusCount;
 };

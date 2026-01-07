@@ -626,4 +626,4 @@ export const generateMockOrganizationMetricsData = (
 };
 
 // Mock 데이터 사용 여부 (개발 환경에서만 true)
-export const USE_MOCK_METRICS = true;
+export const USE_MOCK_METRICS = false;

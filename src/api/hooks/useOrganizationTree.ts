@@ -16,6 +16,9 @@ import type {
   OrganizationDepartment,
   OrganizationNode,
   ChangeInfo,
+  AggregationType,
+  FormatType,
+  FlatViewType,
 } from "@/types/organization.types";
 
 // 개발 환경에서 mockup changes 데이터 주입 여부
@@ -89,13 +92,25 @@ const injectMockChanges = (
   });
 };
 
+// 전체 탭 옵션 타입
+export interface AllTabOptions {
+  aggregation?: AggregationType;
+  format?: FormatType;
+  type?: FlatViewType;
+  sortBy?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
 // Query Keys
 export const organizationTreeKeys = {
   all: ["organizationTree"] as const,
   byMonth: (yearMonth: string) =>
     [...organizationTreeKeys.all, yearMonth] as const,
-  byMonthAndTab: (yearMonth: string, tab: TabType) =>
-    [...organizationTreeKeys.all, yearMonth, tab] as const,
+  byMonthAndTab: (yearMonth: string, tab: TabType, options?: AllTabOptions) =>
+    [...organizationTreeKeys.all, yearMonth, tab, options ?? {}] as const,
   tree: (yearMonth: string) =>
     [...organizationTreeKeys.all, "tree", yearMonth] as const,
   changeHistory: (yearMonth: string) =>
@@ -109,20 +124,32 @@ export const organizationTreeKeys = {
  * @param yearMonth - 조회 연월 (YYYY-MM 형식)
  * @param tab - 탭 타입 (all, bdpi, codeQuality, reviewQuality, developmentEfficiency)
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
+ * @param options - 전체 탭 추가 옵션 (aggregation, format, type 등)
  * @returns React Query 결과 객체
  */
 export const useOrganizationTree = (
   yearMonth: string,
   tab: TabType = "bdpi",
   enabled: boolean = true,
+  options?: AllTabOptions,
 ) => {
   return useQuery<OrganizationCompareResponse, Error>({
-    queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab),
+    queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab, options),
     queryFn: async () => {
       // "all" 탭일 경우 전체 지표 API 호출
       let response: OrganizationCompareResponse;
       if (tab === "all") {
-        response = await fetchOrganizationAllMetrics(yearMonth);
+        response = await fetchOrganizationAllMetrics({
+          yearMonth,
+          aggregation: options?.aggregation ?? "avg",
+          format: options?.format ?? "tree",
+          type: options?.type,
+          sortBy: options?.sortBy,
+          order: options?.order,
+          page: options?.page,
+          limit: options?.limit,
+          search: options?.search,
+        });
       } else {
         response = await fetchOrganizationByTab(yearMonth, tab);
       }

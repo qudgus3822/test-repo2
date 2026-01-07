@@ -5,48 +5,59 @@
  */
 
 import { useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import type { OrganizationMember } from "@/types/organization.types";
+import { fetchMemberMetricRankings } from "@/api/organization";
 import { getMemberEmail } from "@/utils/organization";
-import { METRIC_CODE_NAMES } from "@/utils/metrics";
 import { getAchievementRateColor } from "@/styles/colors";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ScoreLegend } from "./ScoreLegend";
 
-// 목업 데이터 (19개 지표)
-const MOCK_MEMBER_METRICS = [
-  { code: "TECH_DEBT", score: 125.5 },
-  { code: "CODE_COMPLEXITY", score: 112.3 },
-  { code: "CODE_DUPLICATION", score: 98.7 },
-  { code: "CODE_SMELL", score: 95.2 },
-  { code: "SECURITY_VULNERABILITIES", score: 88.4 },
-  { code: "REVIEW_SPEED", score: 82.1 },
-  { code: "REVIEW_RESPONSE_RATE", score: 78.9 },
-  { code: "REVIEW_PARTICIPATION_RATE", score: 75.6 },
-  { code: "REVIEW_ACCEPTANCE_RATE", score: 72.3 },
-  { code: "REVIEW_FEEDBACK_CONCRETENESS", score: 68.5 },
-  { code: "REVIEW_REQUEST_COUNT", score: 65.2 },
-  { code: "REVIEW_PARTICIPATION_COUNT", score: 58.7 },
-  { code: "REVIEW_PASS_RATE", score: 52.4 },
-  { code: "REVIEW_PARTICIPATION_NUMBER", score: 45.8 },
-  { code: "REVIEW_FEEDBACK_TIME", score: 38.6 },
-  { code: "REVIEW_COMPLETION_TIME", score: 32.1 },
-  { code: "PR_SIZE", score: 25.5 },
-  { code: "COMMIT_FREQUENCY", score: 18.9 },
-  { code: "LOC_PER_COMMIT", score: 12.3 },
-];
+// // 목업 데이터 (19개 지표)
+// const MOCK_MEMBER_METRICS = [
+//   { code: "TECH_DEBT", score: 125.5 },
+//   { code: "CODE_COMPLEXITY", score: 112.3 },
+//   { code: "CODE_DUPLICATION", score: 98.7 },
+//   { code: "CODE_SMELL", score: 95.2 },
+//   { code: "SECURITY_VULNERABILITIES", score: 88.4 },
+//   { code: "REVIEW_SPEED", score: 82.1 },
+//   { code: "REVIEW_RESPONSE_RATE", score: 78.9 },
+//   { code: "REVIEW_PARTICIPATION_RATE", score: 75.6 },
+//   { code: "REVIEW_ACCEPTANCE_RATE", score: 72.3 },
+//   { code: "REVIEW_FEEDBACK_CONCRETENESS", score: 68.5 },
+//   { code: "REVIEW_REQUEST_COUNT", score: 65.2 },
+//   { code: "REVIEW_PARTICIPATION_COUNT", score: 58.7 },
+//   { code: "REVIEW_PASS_RATE", score: 52.4 },
+//   { code: "REVIEW_PARTICIPATION_NUMBER", score: 45.8 },
+//   { code: "REVIEW_FEEDBACK_TIME", score: 38.6 },
+//   { code: "REVIEW_COMPLETION_TIME", score: 32.1 },
+//   { code: "PR_SIZE", score: 25.5 },
+//   { code: "COMMIT_FREQUENCY", score: 18.9 },
+//   { code: "LOC_PER_COMMIT", score: 12.3 },
+// ];
 
 interface MemberMetricRankingModalProps {
   member: OrganizationMember;
+  month: string;
   position: { x: number; y: number };
   onClose: () => void;
 }
 
 export const MemberMetricRankingModal = ({
   member,
+  month,
   position,
   onClose,
 }: MemberMetricRankingModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
+
+  // API 호출
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["memberMetricRankings", member.employeeID, month],
+    queryFn: () => fetchMemberMetricRankings(member.employeeID, month),
+    staleTime: 5 * 60 * 1000, // 5분
+  });
 
   // 외부 클릭 시 모달 닫기
   useEffect(() => {
@@ -65,12 +76,14 @@ export const MemberMetricRankingModal = ({
     };
   }, [onClose]);
 
-  // 목업 데이터를 점수 기준으로 정렬
-  const sortedMetrics = MOCK_MEMBER_METRICS.map((item) => ({
-    code: item.code,
-    name: METRIC_CODE_NAMES[item.code] || item.code,
-    score: item.score,
-  })).sort((a, b) => b.score - a.score);
+  // API 데이터를 점수 기준으로 정렬
+  const sortedMetrics = (data?.rankings ?? [])
+    .map((item) => ({
+      name: item.metricName,
+      score: item.achievementRate,
+      category: item.category,
+    }))
+    .sort((a, b) => b.score - a.score);
 
   // 모달 위치 계산 (클릭된 div 하단에 표시, 화면 밖으로 나가지 않도록)
   // 19개 지표 기준 높이: 헤더(65px) + 지표목록(422px) + 범례(40px) = 527px
@@ -134,43 +147,59 @@ export const MemberMetricRankingModal = ({
         </button>
       </div>
 
-      {/* 지표 목록 (19개 고정) */}
+      {/* 지표 목록 */}
       <div style={{ height: 422 }}>
-        <div className="px-5 py-3 space-y-[1px]">
-          {sortedMetrics.map(({ code, name, score }) => (
-            <div key={code} className="flex items-center gap-2">
-              {/* 지표명 */}
-              <div className="w-[100px] text-sm text-gray-700 truncate flex-shrink-0">
-                {name}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <LoadingSpinner />
+          </div>
+        ) : isError ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">데이터를 불러올 수 없습니다.</p>
+          </div>
+        ) : sortedMetrics.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-500">달성률 순위 데이터가 없습니다.</p>
+          </div>
+        ) : (
+          <div className="px-5 py-3 space-y-[1px]">
+            {sortedMetrics.map(({ name, score }, index) => (
+              <div key={`${name}-${index}`} className="flex items-center gap-2">
+                {/* 지표명 */}
+                <div className="w-[100px] text-sm text-gray-700 truncate flex-shrink-0">
+                  {name}
+                </div>
+                {/* 막대 그래프 */}
+                <div className="flex-1 h-[18px] bg-gray-100 rounded relative">
+                  <div
+                    className="h-full rounded"
+                    style={{
+                      width: score >= 100 ? "100%" : `${score}%`,
+                      backgroundColor: getAchievementRateColor(score),
+                    }}
+                  />
+                  {/* 점수 표시 */}
+                  <span
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium"
+                    style={{
+                      color: score >= 100 ? "#fff" : "#374151",
+                    }}
+                  >
+                    {score.toFixed(1)}%
+                  </span>
+                </div>
               </div>
-              {/* 막대 그래프 */}
-              <div className="flex-1 h-[18px] bg-gray-100 rounded relative">
-                <div
-                  className="h-full rounded"
-                  style={{
-                    width: score >= 100 ? "100%" : `${score}%`,
-                    backgroundColor: getAchievementRateColor(score),
-                  }}
-                />
-                {/* 점수 표시 */}
-                <span
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium"
-                  style={{
-                    color: score >= 100 ? "#fff" : "#374151",
-                  }}
-                >
-                  {score.toFixed(1)}%
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* 범례 */}
-      <div>
-        <ScoreLegend legendSize="small" />
-      </div>
+      {/* 범례 - 데이터가 있을 때만 표시 */}
+      {!isLoading && !isError && sortedMetrics.length > 0 && (
+        <div>
+          <ScoreLegend legendSize="small" />
+        </div>
+      )}
     </div>
   );
 };

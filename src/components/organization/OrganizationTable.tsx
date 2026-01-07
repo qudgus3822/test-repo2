@@ -322,7 +322,6 @@ const FixedMemberRow = ({
 interface SortableMetricHeaderProps {
   code: string;
   displayName: string[] | undefined;
-  thBaseStyle: string;
   isSelected?: boolean;
   onSelect?: (code: string) => void;
 }
@@ -330,7 +329,6 @@ interface SortableMetricHeaderProps {
 const SortableMetricHeader = ({
   code,
   displayName,
-  thBaseStyle,
   isSelected = false,
   onSelect,
 }: SortableMetricHeaderProps) => {
@@ -478,7 +476,21 @@ export const OrganizationTable = ({
   hideValues = false,
   aggregationType = "average",
 }: OrganizationTableProps) => {
-  const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
+  // 전체 탭일 경우 API 옵션 설정
+  const apiOptions =
+    activeTab === "all"
+      ? {
+          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          format: "tree" as const,
+        }
+      : undefined;
+
+  const { data, isLoading, isError } = useOrganizationTree(
+    month,
+    activeTab,
+    true,
+    apiOptions,
+  );
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
 
@@ -586,11 +598,11 @@ export const OrganizationTable = ({
                 </th>
                 {SUMMARY_CATEGORIES.map((cat) => {
                   const criteriaText =
-                    cat.id === "exceeds"
+                    cat.id === "overAchieved"
                       ? "100% 이상"
-                      : cat.id === "achieved"
+                      : cat.id === "excellent"
                       ? "100% 미만"
-                      : cat.id === "good"
+                      : cat.id === "warning"
                       ? "80% 미만"
                       : "60% 미만";
 
@@ -602,11 +614,11 @@ export const OrganizationTable = ({
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
                         <span>
-                          {cat.id === "exceeds"
+                          {cat.id === "overAchieved"
                             ? "초과달성"
-                            : cat.id === "achieved"
+                            : cat.id === "excellent"
                             ? "우수"
-                            : cat.id === "good"
+                            : cat.id === "warning"
                             ? "경고"
                             : "위험"}
                         </span>
@@ -667,7 +679,6 @@ export const OrganizationTable = ({
                           key={code}
                           code={code}
                           displayName={displayName}
-                          thBaseStyle={thBaseStyle}
                           isSelected={selectedMetricCode === code}
                           onSelect={handleMetricSelect}
                         />

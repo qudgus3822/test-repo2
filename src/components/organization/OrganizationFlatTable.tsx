@@ -345,7 +345,6 @@ interface SortableMetricHeaderProps {
   isActive: boolean;
   sortDirection: "asc" | "desc" | null;
   onSort: (code: string) => void;
-  thBaseStyle: string;
   isSelected?: boolean;
   onSelect?: (code: string) => void;
 }
@@ -356,7 +355,6 @@ const SortableMetricHeader = ({
   isActive,
   sortDirection,
   onSort,
-  thBaseStyle,
   isSelected = false,
   onSelect,
 }: SortableMetricHeaderProps) => {
@@ -540,7 +538,21 @@ export const OrganizationFlatTable = ({
   onSearchResult,
   aggregationType = "average",
 }: OrganizationFlatTableProps) => {
-  const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
+  // 전체 탭일 경우 API 옵션 설정
+  const apiOptions =
+    activeTab === "all"
+      ? {
+          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          format: "tree" as const,
+        }
+      : undefined;
+
+  const { data, isLoading, isError } = useOrganizationTree(
+    month,
+    activeTab,
+    true,
+    apiOptions,
+  );
   const flatItems = flattenTree(data?.tree ?? [], filterType);
 
   // 검색 필터링
@@ -693,16 +705,16 @@ export const OrganizationFlatTable = ({
         )
       ) {
         const aCounts = itemSummaryCountsMap.get(a) ?? {
-          exceeds: 0,
-          achieved: 0,
-          good: 0,
-          caution: 0,
+          overAchieved: 0,
+          excellent: 0,
+          warning: 0,
+          danger: 0,
         };
         const bCounts = itemSummaryCountsMap.get(b) ?? {
-          exceeds: 0,
-          achieved: 0,
-          good: 0,
-          caution: 0,
+          overAchieved: 0,
+          excellent: 0,
+          warning: 0,
+          danger: 0,
         };
         aValue = aCounts[sortConfig.column as keyof SummaryCounts] ?? 0;
         bValue = bCounts[sortConfig.column as keyof SummaryCounts] ?? 0;
@@ -781,11 +793,11 @@ export const OrganizationFlatTable = ({
                     sortConfig.direction !== null;
 
                   const criteriaText =
-                    cat.id === "exceeds"
+                    cat.id === "overAchieved"
                       ? "100% 이상"
-                      : cat.id === "achieved"
+                      : cat.id === "excellent"
                       ? "100% 미만"
-                      : cat.id === "good"
+                      : cat.id === "warning"
                       ? "80% 미만"
                       : "60% 미만";
 
@@ -813,11 +825,11 @@ export const OrganizationFlatTable = ({
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
                         <span>
-                          {cat.id === "exceeds"
+                          {cat.id === "overAchieved"
                             ? "초과달성"
-                            : cat.id === "achieved"
+                            : cat.id === "excellent"
                             ? "우수"
-                            : cat.id === "good"
+                            : cat.id === "warning"
                             ? "경고"
                             : "위험"}
                         </span>
@@ -884,7 +896,6 @@ export const OrganizationFlatTable = ({
                           isActive={isActive}
                           sortDirection={sortConfig.direction}
                           onSort={toggleSort}
-                          thBaseStyle={thBaseStyle}
                           isSelected={selectedMetricCode === code}
                           onSelect={handleMetricSelect}
                         />
@@ -920,6 +931,7 @@ export const OrganizationFlatTable = ({
       {selectedMember && filterType === "member" && (
         <MemberMetricRankingModal
           member={selectedMember}
+          month={month}
           position={modalPosition}
           onClose={handleMemberModalClose}
         />

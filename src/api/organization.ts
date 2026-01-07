@@ -3,6 +3,9 @@ import type {
   OrgHistoryResponse,
   OrgTypeSettingsResponse,
   TabType,
+  AggregationType,
+  FormatType,
+  FlatViewType,
 } from "@/types/organization.types";
 import { apiGet, apiPut } from "@/libs/fetch";
 import {
@@ -58,14 +61,45 @@ export const fetchOrganizationByTab = async (
 };
 
 /**
+ * 전체 지표 API 요청 파라미터 타입
+ */
+export interface FetchAllMetricsParams {
+  yearMonth: string;
+  aggregation?: AggregationType;
+  format?: FormatType;
+  type?: FlatViewType;
+  sortBy?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+/**
  * 전체 지표 포함 조직 데이터 조회 API
  * - 30개 개별 지표 + BDPI 포함
- * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @param params - API 요청 파라미터
  * @returns 조직 트리 데이터 (전체 지표 포함)
  */
 export const fetchOrganizationAllMetrics = async (
-  yearMonth: string,
+  params: FetchAllMetricsParams | string,
 ): Promise<OrganizationCompareResponse> => {
+  // 하위 호환: string으로 yearMonth만 전달된 경우
+  const normalizedParams: FetchAllMetricsParams =
+    typeof params === "string" ? { yearMonth: params } : params;
+
+  const {
+    yearMonth,
+    aggregation = "avg",
+    format = "tree",
+    type,
+    sortBy,
+    order,
+    page,
+    limit,
+    search,
+  } = normalizedParams;
+
   // Mock 모드일 경우 Mock 데이터 반환
   if (USE_MOCK_METRICS) {
     // 실제 API처럼 약간의 지연 추가
@@ -73,8 +107,23 @@ export const fetchOrganizationAllMetrics = async (
     return generateMockOrganizationMetricsData(yearMonth);
   }
 
-  // 실제 API 호출 (백엔드 개발 완료 후 사용)
-  return apiGet<OrganizationCompareResponse>(`/departments/monthly/metrics?yearMonth=${yearMonth}`);
+  // URL 쿼리 파라미터 구성
+  const queryParams = new URLSearchParams();
+  queryParams.set("yearMonth", yearMonth);
+  queryParams.set("aggregation", aggregation);
+
+  if (format) queryParams.set("format", format);
+  if (type && format === "list") queryParams.set("type", type);
+  if (sortBy && format === "list") queryParams.set("sortBy", sortBy);
+  if (order) queryParams.set("order", order);
+  if (page && format === "list") queryParams.set("page", String(page));
+  if (limit && format === "list") queryParams.set("limit", String(limit));
+  if (search) queryParams.set("search", search);
+
+  // 실제 API 호출
+  return apiGet<OrganizationCompareResponse>(
+    `/departments/monthly/metrics?${queryParams.toString()}`
+  );
 };
 
 /**

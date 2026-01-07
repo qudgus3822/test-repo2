@@ -85,10 +85,24 @@ export const PolicyStatusLabel = {
 // 지표 카테고리 키 타입 (API metrics 객체의 키로 사용)
 export type MetricCategoryKey = "quality" | "review" | "efficiency";
 
+// 지표 상태 타입 (달성 상태)
+export type MetricStatusType =
+  | "over_achieved" // 초과달성 (avgRate >= 101%)
+  | "excellent" // 우수 (excellent <= avgRate <= 100%)
+  | "warning" // 경고 (danger <= avgRate < excellent)
+  | "danger" // 위험 (avgRate < danger)
+  | null;
+
 // 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
 export interface MetricScoreValue {
-  score: number;
+  score: number | null;
   isUsed: boolean;
+  value?: number | null; // 월 평균값
+  unit?: string; // 단위
+  avgRate?: number | null; // 달성률 (%, 100% 초과 가능)
+  totalValue?: number | null; // 총합 값 (aggregation=total일 때)
+  targetValue?: number | string | null; // 목표값
+  status?: MetricStatusType; // 달성 상태
 }
 
 // 카테고리 점수 타입 (BDPI 탭용)
@@ -162,9 +176,18 @@ export type OrganizationMetrics =
   | ReviewQualityMetrics
   | DevelopmentEfficiencyMetrics;
 
+// 상태별 카운트 타입 (API에서 제공)
+export interface StatusCount {
+  overAchieved: number; // 초과달성 (avgRate >= 101%)
+  excellent: number; // 우수 (excellent <= avgRate <= 100%)
+  warning: number; // 경고 (danger <= avgRate < excellent)
+  danger: number; // 위험 (avgRate < danger)
+}
+
 // 점수 메트릭 (부서/멤버 공통)
 export interface ScoreMetrics {
   metrics: OrganizationMetrics; // 탭에 따라 다른 구조의 metrics (monthlyComparison 포함)
+  statusCount?: StatusCount; // API에서 제공하는 상태별 카운트
 }
 
 // 변경 카테고리 타입
@@ -235,14 +258,38 @@ export interface Period {
   month: number;
 }
 
+// 집계 타입
+export type AggregationType = "avg" | "total";
+
+// 포맷 타입
+export type FormatType = "tree" | "list";
+
+// 플랫뷰 타입
+export type FlatViewType = "member" | "team" | "division";
+
 // 조직 비교 API 요청 파라미터
 export interface OrganizationCompareRequest {
   yearMonth: string; // "yyyy-MM" 형식
+  aggregation?: AggregationType; // 집계 방식 (avg: 평균, total: 총합)
+  format?: FormatType; // 응답 형식 (tree: 하이어라키, list: 플랫)
+  type?: FlatViewType; // 플랫뷰 타입 (format=list일 때만 유효)
+  sortBy?: string; // 정렬 기준 (format=list일 때만 유효)
+  order?: "asc" | "desc"; // 정렬 순서
+  page?: number; // 페이지 번호 (format=list일 때만 유효)
+  limit?: number; // 페이지당 조회 수 (format=list일 때만 유효)
+  search?: string; // 검색어
+}
+
+// 임계값 타입
+export interface Thresholds {
+  excellent: number; // 우수 기준 (기본값: 80)
+  danger: number; // 위험 기준 (기본값: 10)
 }
 
 // 조직 비교 API 응답 타입
 export interface OrganizationCompareResponse {
   period: Period;
+  thresholds?: Thresholds; // 임계값 (신규 API)
   lastLdapSyncAt?: string; // 마지막 LDAP 동기화 시간 (ISO 8601)
   lastChangeAt?: string; // 마지막 변경 이력 시간 (ISO 8601)
   tree: OrganizationDepartment[];
