@@ -1,21 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Cable } from "lucide-react";
+import {
+  Search,
+  Cable,
+  Network,
+  List,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
 import {
   OrganizationTabs,
-  CompareGroupSelector,
   OrganizationTable,
+  OrganizationFlatTable,
+  OrganizationBdpiTable,
+  OrganizationBdpiFlatTable,
   ScoreLegend,
   OrganizationDetailModal,
+  type FlatViewFilterType,
 } from "@/components/organization";
 import { OrgChangeHistoryModal } from "@/components/dashboard";
 import type { OrganizationDetailItem } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
-import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 import type { OrganizationDepartment } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 
@@ -52,8 +63,6 @@ const OrganizationPage = () => {
     setPeriod,
     currentDate,
     setCurrentDate,
-    searchKeyword,
-    setSearchKeyword,
     expandAllTeams,
     expandAll,
     collapseToDefault,
@@ -62,11 +71,11 @@ const OrganizationPage = () => {
 
   const { setOrgHistoryModal } = useDashboardStore();
 
-  // 페이지 진입 시 초기화: 당월, BDPI 탭으로 설정
+  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
   useEffect(() => {
     setPeriod("monthly");
     setCurrentDate(new Date());
-    setActiveTab("bdpi");
+    setActiveTab("all");
   }, [setPeriod, setCurrentDate, setActiveTab]);
 
   // 상세 모달 상태
@@ -74,8 +83,70 @@ const OrganizationPage = () => {
   const [selectedDetailItem, setSelectedDetailItem] =
     useState<OrganizationDetailItem | null>(null);
 
-  // 추후 개발 예정 기능 표시 여부
-  const [isFunctionEnabled] = useState(false);
+  // 서브탭 상태: 하이어라키뷰 / 플랫뷰
+  const [viewType, setViewType] = useState<"hierarchy" | "flat">("hierarchy");
+
+  // 플랫뷰 필터: 실 / 팀 / 개인
+  const [flatViewFilter, setFlatViewFilter] =
+    useState<FlatViewFilterType>("division");
+
+  // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
+  const [aggregationType, setAggregationType] = useState<"average" | "total">(
+    "average",
+  );
+
+  // 보기/펼치기 상태
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // 검색 영역 표시 상태
+  const [isSearchAreaOpen, setIsSearchAreaOpen] = useState(false);
+
+  // 검색 입력 상태 (검색 영역 내 input)
+  const [searchInput, setSearchInput] = useState("");
+
+  // 실제 검색에 사용되는 키워드 (검색 버튼 클릭 또는 엔터 시 업데이트)
+  const [activeSearchKeyword, setActiveSearchKeyword] = useState("");
+
+  // 검색 결과 개수
+  const [searchResultCount, setSearchResultCount] = useState<number | null>(
+    null,
+  );
+
+  // 검색 실행 핸들러
+  const handleSearch = () => {
+    setActiveSearchKeyword(searchInput.trim());
+  };
+
+  // 검색 입력 엔터 핸들러
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // 플랫뷰 필터 변경 시 검색어 초기화
+  useEffect(() => {
+    setSearchInput("");
+    setActiveSearchKeyword("");
+    setSearchResultCount(null);
+  }, [flatViewFilter]);
+
+  // 검색 영역 닫힐 때 검색어 초기화
+  useEffect(() => {
+    if (!isSearchAreaOpen) {
+      setSearchInput("");
+      setActiveSearchKeyword("");
+      setSearchResultCount(null);
+    }
+  }, [isSearchAreaOpen]);
+
+  // 뷰타입 변경 시 검색어 초기화 및 검색 영역 숨김
+  useEffect(() => {
+    setSearchInput("");
+    setActiveSearchKeyword("");
+    setSearchResultCount(null);
+    setIsSearchAreaOpen(false);
+  }, [viewType]);
 
   // 상세 버튼 클릭 핸들러
   const handleDetailClick = (item: OrganizationDetailItem) => {
@@ -92,23 +163,37 @@ const OrganizationPage = () => {
   // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
   const yearMonth = formatYearMonth(currentDate);
 
+  // 탭별 API 옵션 설정 (하위 테이블 컴포넌트와 동일한 queryKey 사용을 위함)
+  const apiOptions = useMemo(() => {
+    if (activeTab === "all" || activeTab === "bdpi") {
+      return {
+        aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+        format: viewType === "hierarchy" ? ("tree" as const) : ("list" as const),
+        type: viewType === "flat" ? flatViewFilter : undefined,
+      };
+    }
+    return undefined;
+  }, [activeTab, aggregationType, viewType, flatViewFilter]);
+
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
   const { data, isLoading, isError } = useOrganizationTree(
     yearMonth,
     activeTab,
+    true,
+    apiOptions,
   );
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
-  // 달성률 기준 API 조회
-  const { data: criteriaData } = useAchievementCriteria(yearMonth);
-  const excellentThreshold = criteriaData?.thresholds.excellent ?? 80;
-  const dangerThreshold = criteriaData?.thresholds.danger ?? 70;
-
-  // 데이터가 있는지 확인 (isEvaluationTarget: true인 조직이 있는지)
-  const hasData =
-    !isLoading &&
-    !isError &&
-    organizations.filter((org) => org.isEvaluationTarget).length > 0;
+  // 데이터가 있는지 확인 (tree 또는 items에 isEvaluationTarget: true인 조직이 있는지)
+  const hasData = useMemo(() => {
+    if (isLoading || isError) return false;
+    // format=list 응답 (items 배열)
+    if (data?.items && data.items.length > 0) {
+      return data.items.some((item) => item.isEvaluationTarget);
+    }
+    // format=tree 응답 (tree 배열)
+    return organizations.filter((org) => org.isEvaluationTarget).length > 0;
+  }, [isLoading, isError, data?.items, organizations]);
 
   // 화면 진입 시 Level 1(부문)까지 펼침 상태로 초기화
   useEffect(() => {
@@ -138,8 +223,8 @@ const OrganizationPage = () => {
       <Card className="overflow-hidden">
         <OrganizationTabs />
 
-        {/* 첫 번째 줄: 기간 선택 + 통합검색 + 전체 팀 열기 */}
-        <div className="h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200">
+        {/* 첫 번째 줄: 기간 선택 */}
+        <div className="h-[84px] relative flex items-center p-4 border-b border-gray-200">
           <div className="flex items-center gap-5">
             <DateFilter
               period={period}
@@ -156,62 +241,256 @@ const OrganizationPage = () => {
               <Cable className="w-4 h-4" />
             </Button>
           </div>
-          {/* 통합검색 (추후 개발 예정) + 전체 팀 열기 버튼 */}
-          <div className="flex items-center gap-2">
-            {/* 통합검색 */}
-            <div
-              className={`relative ${!isFunctionEnabled ? "opacity-40" : ""}`}
-            >
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="추후 개발 예정"
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                disabled={!isFunctionEnabled}
-                className="pl-10 pr-4 py-2 w-[200px] border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:placeholder-gray-700"
-              />
+        </div>
+
+        {/* 서브탭: 하이어라키뷰 / 플랫뷰 */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          {/* 좌측: 뷰타입 탭 + 플랫뷰 필터 */}
+          <div className="flex items-center">
+            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setViewType("hierarchy")}
+                className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors ${
+                  viewType === "hierarchy"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <Network className="w-4 h-4" />
+                하이어라키뷰
+              </button>
+              <button
+                onClick={() => setViewType("flat")}
+                className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                  viewType === "flat"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <List className="w-4 h-4" />
+                플랫뷰
+              </button>
             </div>
-            {/* 전체 팀 열기/접기 버튼 */}
-            <Button variant="normal" size="sm" onClick={handleToggleTeams}>
-              {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+
+            {/* 플랫뷰일 때만 실/팀/개인 필터 표시 */}
+            {viewType === "flat" && (
+              <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setFlatViewFilter("division")}
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
+                    flatViewFilter === "division"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  실
+                </button>
+                <button
+                  onClick={() => setFlatViewFilter("team")}
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                    flatViewFilter === "team"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  팀
+                </button>
+                <button
+                  onClick={() => setFlatViewFilter("member")}
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                    flatViewFilter === "member"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  개인
+                </button>
+              </div>
+            )}
+
+            {/* 전체/BDPI 탭: 평균/총합 필터 */}
+            {(activeTab === "all" || activeTab === "bdpi") && (
+              <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setAggregationType("average")}
+                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
+                    aggregationType === "average" || activeTab === "bdpi"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  평균
+                </button>
+                <button
+                  onClick={() =>
+                    activeTab !== "bdpi" && setAggregationType("total")
+                  }
+                  disabled={activeTab === "bdpi"}
+                  className={`px-4 py-1.5 border-l border-slate-200 text-sm font-medium transition-colors ${
+                    activeTab === "bdpi"
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : aggregationType === "total"
+                      ? "bg-blue-600 text-white cursor-pointer"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
+                  }`}
+                >
+                  총합
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
+          <div className="flex items-center gap-2">
+            {/* 플랫뷰: 검색 아이콘 버튼 */}
+            {viewType === "flat" && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsSearchAreaOpen(!isSearchAreaOpen)}
+              >
+                <span className="flex items-center gap-1.5">
+                  <Search className="w-4 h-4" />
+                  통합 검색
+                  {isSearchAreaOpen ? (
+                    <ChevronUp className="w-5 h-5" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5" />
+                  )}
+                </span>
+              </Button>
+            )}
+            {/* 하이어라키뷰: 전체 팀 열기/접기 버튼 */}
+            {viewType === "hierarchy" && (
+              <Button variant="normal" size="sm" onClick={handleToggleTeams}>
+                {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+              </Button>
+            )}
+            {/* 보기/숨기기 버튼 */}
+            <Button
+              variant="normal"
+              size="sm"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <span className="flex items-center gap-1.5">
+                  <Eye className="w-4 h-4" />
+                  보기
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <EyeOff className="w-4 h-4" />
+                  숨기기
+                </span>
+              )}
             </Button>
           </div>
         </div>
 
-        {/* 두 번째 줄: 비교 그룹 + 비교 입력 (추후 개발 예정) */}
-        <div
-          className={`h-[84px] relative flex items-center justify-between p-4 border-b border-gray-200 ${
-            !isFunctionEnabled ? "cursor-not-allowed select-none" : ""
-          }`}
-        >
-          <CompareGroupSelector />
-          {/* 추후 개발 예정 안내 */}
-          {!isFunctionEnabled && (
-            <span className="absolute left-1/2 -translate-x-1/2 text-sm text-gray-400 font-medium">
-              추후 개발 예정
-            </span>
-          )}
-          {/* 비교 입력 버튼 */}
-          <Button variant="primary" size="sm" disabled={!isFunctionEnabled}>
-            비교 입력
-          </Button>
-        </div>
+        {/* 검색 영역: 플랫뷰일 때만 표시 */}
+        {viewType === "flat" && isSearchAreaOpen && (
+          <div className="px-4 py-3 border-b border-gray-200 gap-5 flex flex-col min-h-[120px]">
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder={
+                  flatViewFilter === "division"
+                    ? "실 이름을 입력하세요"
+                    : flatViewFilter === "team"
+                    ? "팀 이름을 입력하세요"
+                    : "이름을 입력하세요"
+                }
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="w-[calc(100%-55px)] h-10 px-4 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSearch}
+                className="w-[55px]"
+              >
+                검색
+              </Button>
+            </div>
+            {/* 검색 결과 메시지 */}
+            {activeSearchKeyword && searchResultCount !== null && (
+              <div className="text-sm flex items-center justify-center">
+                {searchResultCount > 0 ? (
+                  <span className="text-gray-600">
+                    검색 결과 총{" "}
+                    <span className="font-semibold text-blue-600">
+                      {searchResultCount}
+                    </span>
+                    건이 있습니다.
+                  </span>
+                ) : (
+                  <span className="text-gray-500">
+                    '{activeSearchKeyword}'에 대한 검색 결과가 없습니다.
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
-        {/* 조직 테이블 + 범례 (데이터가 있을 때만 범례 표시) */}
-        <div className="p-4 border-b border-gray-200">
-          <OrganizationTable
-            month={yearMonth}
-            activeTab={activeTab}
-            onDetailClick={handleDetailClick}
-          />
-        </div>
+        {/* 탭 콘텐츠 */}
+        {activeTab === "all" && (
+          <>
+            {/* 전체 탭 콘텐츠 */}
+            <div className="p-4 border-b border-gray-200">
+              {viewType === "hierarchy" ? (
+                <OrganizationTable
+                  month={yearMonth}
+                  activeTab={activeTab}
+                  hideValues={isExpanded}
+                  onDetailClick={handleDetailClick}
+                  aggregationType={aggregationType}
+                />
+              ) : (
+                <OrganizationFlatTable
+                  month={yearMonth}
+                  activeTab={activeTab}
+                  filterType={flatViewFilter}
+                  hideValues={isExpanded}
+                  onDetailClick={handleDetailClick}
+                  searchKeyword={activeSearchKeyword}
+                  onSearchResult={setSearchResultCount}
+                  aggregationType={aggregationType}
+                />
+              )}
+            </div>
 
-        {hasData && (
-          <ScoreLegend
-            excellentThreshold={excellentThreshold}
-            dangerThreshold={dangerThreshold}
-          />
+            {hasData && <ScoreLegend />}
+          </>
+        )}
+
+        {activeTab === "bdpi" && (
+          <>
+            {/* BDPI 탭 콘텐츠 */}
+            <div className="p-4 border-b border-gray-200">
+              {viewType === "hierarchy" ? (
+                <OrganizationBdpiTable
+                  month={yearMonth}
+                  activeTab={activeTab}
+                  hideValues={isExpanded}
+                />
+              ) : (
+                <OrganizationBdpiFlatTable
+                  month={yearMonth}
+                  activeTab={activeTab}
+                  filterType={flatViewFilter}
+                  hideValues={isExpanded}
+                  searchKeyword={activeSearchKeyword}
+                  onSearchResult={setSearchResultCount}
+                />
+              )}
+            </div>
+
+            {hasData && <ScoreLegend />}
+          </>
         )}
       </Card>
 

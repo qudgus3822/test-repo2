@@ -93,11 +93,10 @@ export const getMemberRoleLabel = (role: MemberRole): string => {
  * // Returns: "실장"
  * ```
  */
-export const getMemberPositionLabel = (
-  position?: MemberPosition,
-): string => {
+export const getMemberPositionLabel = (position?: MemberPosition): string => {
   if (!position) return "";
   const labels: Record<MemberPosition, string> = {
+    "": "",
     TEAM_LEADER: "팀장",
     DEPARTMENT_HEAD: "실장",
     OVERALL_MANAGER: "총괄",
@@ -234,9 +233,7 @@ export const getChangeTypeLabel = (type?: string): string => {
   }
   // DepartmentStatusLabel에서 찾기
   if (type in DepartmentStatusLabel) {
-    return DepartmentStatusLabel[
-      type as keyof typeof DepartmentStatusLabel
-    ];
+    return DepartmentStatusLabel[type as keyof typeof DepartmentStatusLabel];
   }
   // PolicyStatusLabel에서 찾기
   if (type in PolicyStatusLabel) {

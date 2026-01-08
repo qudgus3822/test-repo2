@@ -47,6 +47,7 @@ export const MemberRoleLabel = {
 
 // 직책 타입
 export type MemberPosition =
+  | "" // 없음 (일반 사원)
   | "TEAM_LEADER" // 팀장
   | "DEPARTMENT_HEAD" // 실장
   | "OVERALL_MANAGER"; // 총괄
@@ -84,10 +85,24 @@ export const PolicyStatusLabel = {
 // 지표 카테고리 키 타입 (API metrics 객체의 키로 사용)
 export type MetricCategoryKey = "quality" | "review" | "efficiency";
 
+// 지표 상태 타입 (달성 상태)
+export type MetricStatusType =
+  | "over_achieved" // 초과달성 (avgRate >= 101%)
+  | "excellent" // 우수 (excellent <= avgRate <= 100%)
+  | "warning" // 경고 (danger <= avgRate < excellent)
+  | "danger" // 위험 (avgRate < danger)
+  | null;
+
 // 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
 export interface MetricScoreValue {
-  score: number;
-  isUsed: boolean;
+  score: number | null; // 점수 (null: 데이터 없음)
+  isUsed: boolean; // 지표 수집 가능 여부 (aggregation=total일 때 6개 지표 외에는 false)
+  value?: number | null; // 월 평균값
+  unit?: string; // 단위
+  avgRate?: number | null; // 달성률 (%, 100% 초과 가능)
+  totalValue?: number | null; // 총합 값 (aggregation=total일 때, 6개 지표만 해당)
+  targetValue?: number | string | null; // 목표값
+  status?: MetricStatusType; // 달성 상태
 }
 
 // 카테고리 점수 타입 (BDPI 탭용)
@@ -161,9 +176,18 @@ export type OrganizationMetrics =
   | ReviewQualityMetrics
   | DevelopmentEfficiencyMetrics;
 
+// 상태별 카운트 타입 (API에서 제공)
+export interface StatusCount {
+  overAchieved: number; // 초과달성 (avgRate >= 101%)
+  excellent: number; // 우수 (excellent <= avgRate <= 100%)
+  warning: number; // 경고 (danger <= avgRate < excellent)
+  danger: number; // 위험 (avgRate < danger)
+}
+
 // 점수 메트릭 (부서/멤버 공통)
 export interface ScoreMetrics {
   metrics: OrganizationMetrics; // 탭에 따라 다른 구조의 metrics (monthlyComparison 포함)
+  statusCount?: StatusCount; // API에서 제공하는 상태별 카운트
 }
 
 // 변경 카테고리 타입
@@ -195,6 +219,10 @@ export interface OrganizationMember extends ScoreMetrics {
   status: MemberStatus; // 상태 (재직, 이동 전, 이동 후, 입사, 퇴사, 휴직, 복직, 직급변경, 직책변경)
   departmentCode: string; // 소속 부서 코드
   departmentName: string; // 소속 부서 이름
+  teamCode?: string; // 소속 팀 코드 (팀 소속일 경우)
+  teamName?: string; // 소속 팀 이름 (팀 소속일 경우)
+  divisionCode: string; // 소속 실 코드
+  divisionName: string; // 소속 실 이름
   level: number; // 조직 레벨 (소속 부서와 동일)
   isEvaluationTarget: boolean; // 평가 대상 여부
   isManager: boolean; // 실장/팀장 여부 (personalTitle 코드로 넘어오는 값과 동일)
@@ -230,17 +258,45 @@ export interface Period {
   month: number;
 }
 
+// 집계 타입
+export type AggregationType = "avg" | "total";
+
+// 포맷 타입
+export type FormatType = "tree" | "list";
+
+// 플랫뷰 타입
+export type FlatViewType = "member" | "team" | "division";
+
 // 조직 비교 API 요청 파라미터
 export interface OrganizationCompareRequest {
   yearMonth: string; // "yyyy-MM" 형식
+  aggregation?: AggregationType; // 집계 방식 (avg: 평균, total: 총합)
+  format?: FormatType; // 응답 형식 (tree: 하이어라키, list: 플랫)
+  type?: FlatViewType; // 플랫뷰 타입 (format=list일 때만 유효)
+  sortBy?: string; // 정렬 기준 (format=list일 때만 유효)
+  order?: "asc" | "desc"; // 정렬 순서
+  page?: number; // 페이지 번호 (format=list일 때만 유효)
+  limit?: number; // 페이지당 조회 수 (format=list일 때만 유효)
+  search?: string; // 검색어
+}
+
+// 임계값 타입
+export interface Thresholds {
+  excellent: number; // 우수 기준 (기본값: 80)
+  danger: number; // 위험 기준 (기본값: 10)
 }
 
 // 조직 비교 API 응답 타입
 export interface OrganizationCompareResponse {
   period: Period;
+  thresholds?: Thresholds; // 임계값 (신규 API)
   lastLdapSyncAt?: string; // 마지막 LDAP 동기화 시간 (ISO 8601)
   lastChangeAt?: string; // 마지막 변경 이력 시간 (ISO 8601)
-  tree: OrganizationDepartment[];
+  tree?: OrganizationDepartment[]; // format=tree 일 경우
+  items?: OrganizationNode[]; // format=list 일 경우
+  total?: number; // format=list 일 경우 전체 건수
+  page?: number; // format=list 일 경우 현재 페이지
+  totalPages?: number; // format=list 일 경우 전체 페이지 수
 }
 
 // ================================
@@ -249,10 +305,12 @@ export interface OrganizationCompareResponse {
 
 /**
  * 통합 탭 타입
- * - 조직비교/지표 공통: bdpi(전체), codeQuality, reviewQuality, developmentEfficiency
+ * - 조직비교: all(전체), bdpi(BDPI)
+ * - 지표관리: codeQuality, reviewQuality, developmentEfficiency
  */
 export type TabType =
-  | "bdpi" // BDPI (전체)
+  | "all" // 전체
+  | "bdpi" // BDPI
   | "codeQuality"
   | "reviewQuality"
   | "developmentEfficiency";

@@ -5,22 +5,119 @@ import {
   fetchOrgChangeHistory,
   fetchOrgTypeSettings,
   updateEvaluationTargetsBulk,
+  fetchOrganizationAllMetrics,
+  fetchOrganizationBdpiMetrics,
+  fetchMetricOrder,
+  updateMetricOrder,
 } from "@/api/organization";
-import type { BulkEvaluationTargetRequest } from "@/api/organization";
+import type {
+  BulkEvaluationTargetRequest,
+  MetricOrderResponse,
+  UpdateMetricOrderRequest,
+} from "@/api/organization";
 import type {
   OrganizationCompareResponse,
   OrgHistoryResponse,
   OrgTypeSettingsResponse,
   TabType,
+  OrganizationDepartment,
+  OrganizationNode,
+  ChangeInfo,
+  AggregationType,
+  FormatType,
+  FlatViewType,
 } from "@/types/organization.types";
+
+// 개발 환경에서 mockup changes 데이터 주입 여부
+const ENABLE_MOCK_CHANGES = import.meta.env.DEV;
+
+// Mockup changes 데이터
+const MOCK_DEPT_CHANGES: ChangeInfo[] = [
+  {
+    changeType: "CREATED",
+    changeDate: "2024-12-01",
+    category: "GROUP",
+    changeDetail: "신규 조직 생성",
+    processedBy: "LDAP",
+  },
+];
+
+const MOCK_MEMBER_CHANGES: ChangeInfo[] = [
+  {
+    changeType: "JOINED",
+    changeDate: "2024-12-15",
+    category: "HR",
+    changeDetail: "신규 입사",
+    processedBy: "LDAP",
+  },
+];
+
+const MOCK_POLICY_CHANGES: ChangeInfo[] = [
+  {
+    changeType: "ADD",
+    changeDate: "2024-12-10",
+    category: "POLICY",
+    changeDetail: "개발조직 유형 추가",
+    processedBy: "관리자",
+  },
+];
+
+// 트리에 mockup changes 주입 (일부 노드에만)
+const injectMockChanges = (
+  nodes: OrganizationDepartment[],
+  depth: number = 0,
+): OrganizationDepartment[] => {
+  return nodes.map((node, index) => {
+    const newNode = { ...node };
+
+    // 첫 번째 부문(level 1)에 조직 변경 뱃지 추가
+    if (node.level === 1 && index === 0 && !node.changes?.length) {
+      newNode.changes = MOCK_DEPT_CHANGES;
+    }
+
+    // 첫 번째 실(level 2)에 정책 변경 뱃지 추가
+    if (node.level === 2 && index === 0 && !node.changes?.length) {
+      newNode.changes = MOCK_POLICY_CHANGES;
+    }
+
+    // children 처리
+    if (node.children) {
+      newNode.children = node.children.map((child, childIndex) => {
+        if (child.type === "department") {
+          return injectMockChanges([child as OrganizationDepartment], depth + 1)[0];
+        } else if (child.type === "member") {
+          // 첫 번째 멤버에만 인사 변경 뱃지 추가
+          if (childIndex === 0 && !child.changes?.length) {
+            return { ...child, changes: MOCK_MEMBER_CHANGES };
+          }
+        }
+        return child;
+      }) as OrganizationNode[];
+    }
+
+    return newNode;
+  });
+};
+
+// 전체 탭 옵션 타입
+export interface AllTabOptions {
+  aggregation?: AggregationType;
+  format?: FormatType;
+  type?: FlatViewType;
+  sortBy?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+  search?: string;
+}
 
 // Query Keys
 export const organizationTreeKeys = {
   all: ["organizationTree"] as const,
   byMonth: (yearMonth: string) =>
     [...organizationTreeKeys.all, yearMonth] as const,
-  byMonthAndTab: (yearMonth: string, tab: TabType) =>
-    [...organizationTreeKeys.all, yearMonth, tab] as const,
+  byMonthAndTab: (yearMonth: string, tab: TabType, options?: AllTabOptions) =>
+    [...organizationTreeKeys.all, yearMonth, tab, options ?? {}] as const,
   tree: (yearMonth: string) =>
     [...organizationTreeKeys.all, "tree", yearMonth] as const,
   changeHistory: (yearMonth: string) =>
@@ -32,19 +129,60 @@ export const organizationTreeKeys = {
 /**
  * 탭별 조직도 트리 조회 Hook
  * @param yearMonth - 조회 연월 (YYYY-MM 형식)
- * @param tab - 탭 타입 (bdpi, codeQuality, reviewQuality, developmentEfficiency)
+ * @param tab - 탭 타입 (all, bdpi, codeQuality, reviewQuality, developmentEfficiency)
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
+ * @param options - 전체 탭 추가 옵션 (aggregation, format, type 등)
  * @returns React Query 결과 객체
  */
 export const useOrganizationTree = (
   yearMonth: string,
   tab: TabType = "bdpi",
   enabled: boolean = true,
+  options?: AllTabOptions,
 ) => {
   return useQuery<OrganizationCompareResponse, Error>({
-    queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab),
+    queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab, options),
     queryFn: async () => {
-      return fetchOrganizationByTab(yearMonth, tab);
+      let response: OrganizationCompareResponse;
+
+      // "all" 탭일 경우 전체 지표 API 호출
+      if (tab === "all") {
+        response = await fetchOrganizationAllMetrics({
+          yearMonth,
+          aggregation: options?.aggregation ?? "avg",
+          format: options?.format ?? "tree",
+          type: options?.type,
+          sortBy: options?.sortBy,
+          order: options?.order,
+          page: options?.page,
+          limit: options?.limit,
+          search: options?.search,
+        });
+      }
+      // "bdpi" 탭일 경우 BDPI 지표 API 호출 (options 유무 상관없이)
+      else if (tab === "bdpi") {
+        response = await fetchOrganizationBdpiMetrics({
+          yearMonth,
+          aggregation: options?.aggregation ?? "avg",
+          format: options?.format ?? "tree",
+          type: options?.type,
+          search: options?.search,
+        });
+      }
+      // 그 외 탭은 기존 API 호출
+      else {
+        response = await fetchOrganizationByTab(yearMonth, tab);
+      }
+
+      // 개발 환경에서 mockup changes 데이터 주입
+      if (ENABLE_MOCK_CHANGES && response.tree) {
+        response = {
+          ...response,
+          tree: injectMockChanges(response.tree),
+        };
+      }
+
+      return response;
     },
     enabled: enabled && !!yearMonth,
     staleTime: 2 * 60 * 1000, // 2분
@@ -122,6 +260,43 @@ export const useUpdateEvaluationTargetsBulk = () => {
     mutationFn: updateEvaluationTargetsBulk,
     onSuccess: () => {
       // 조직 관련 쿼리 무효화하여 최신 데이터 다시 조회
+      queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
+    },
+  });
+};
+
+// 지표 순서 Query Key
+export const metricOrderKeys = {
+  all: ["metricOrder"] as const,
+};
+
+/**
+ * 지표 순서 조회 Hook
+ * @returns React Query 결과 객체
+ */
+export const useMetricOrder = () => {
+  return useQuery<MetricOrderResponse, Error>({
+    queryKey: metricOrderKeys.all,
+    queryFn: fetchMetricOrder,
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+};
+
+/**
+ * 지표 순서 변경 Mutation Hook
+ * @returns React Query Mutation 결과 객체
+ */
+export const useUpdateMetricOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<MetricOrderResponse, Error, UpdateMetricOrderRequest>({
+    mutationFn: ({ fromIndex, toIndex }) => updateMetricOrder(fromIndex, toIndex),
+    onSuccess: (data) => {
+      // API 응답으로 지표 순서 캐시 업데이트
+      queryClient.setQueryData<MetricOrderResponse>(metricOrderKeys.all, data);
+
+      // 조직 데이터 쿼리 무효화하여 다시 조회하도록 함
+      // (전체 탭 > 하이어라키뷰 > 평균 필터 기준)
       queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
     },
   });

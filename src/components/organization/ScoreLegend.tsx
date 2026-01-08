@@ -1,51 +1,66 @@
-import { SCORE_COLORS } from "@/styles/colors";
-import { Tooltip } from "@/components/ui/Tooltip";
-import { Info } from "lucide-react";
+import { ACHIEVEMENT_RATE_COLORS } from "@/styles/colors";
 
 interface ScoreLegendProps {
-  excellentThreshold?: number; // 우수 기준 (기본값: 80)
-  dangerThreshold?: number; // 위험 기준 (기본값: 70)
+  legendSize?: "medium" | "small";
 }
+
+const LEGEND_STYLES = {
+  medium: {
+    container: "gap-6 py-8",
+    text: "text-sm",
+    colorBox: "w-4 h-4",
+    itemGap: "gap-2",
+    legendsGap: "gap-6",
+  },
+  small: {
+    container: "gap-1.5 py-2 px-3",
+    text: "text-xs",
+    colorBox: "w-2 h-3",
+    itemGap: "gap-1",
+    legendsGap: "gap-[8px]",
+  },
+};
 
 /**
  * 점수 범례 컴포넌트
- * excellentThreshold 이상 (초록), dangerThreshold ~ excellentThreshold 미만 (연한 초록), dangerThreshold 미만 (주황)
+ * 달성률 5단계: 0-25%, 25-50%, 50-75%, 75-100%, 100% 이상
  */
-export const ScoreLegend = ({
-  excellentThreshold = 80,
-  dangerThreshold = 70,
-}: ScoreLegendProps) => {
+export const ScoreLegend = ({ legendSize = "medium" }: ScoreLegendProps) => {
+  const styles = LEGEND_STYLES[legendSize];
+
   const legends = [
-    { color: SCORE_COLORS.excellent, label: `${excellentThreshold}% 이상` },
-    {
-      color: SCORE_COLORS.good,
-      label: `${dangerThreshold}% ~ ${excellentThreshold}% 미만`,
-    },
-    { color: SCORE_COLORS.danger, label: `${dangerThreshold}% 미만` },
+    { color: ACHIEVEMENT_RATE_COLORS.level1, label: "0-25% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level2, label: "25-50% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level3, label: "50-75% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level4, label: "75-100% 미만" },
+    { color: ACHIEVEMENT_RATE_COLORS.level5, label: "100% 이상" },
   ];
 
   return (
-    <div className="flex items-center justify-center gap-6 py-8">
-      <span className="text-sm text-gray-600 font-medium flex items-center gap-1.5">
-        달성률
-        <Tooltip
-          content="달성률은 지표관리 화면에서 설정된 값을 기준으로 반영합니다."
-          color="#6B7280"
-          maxWidth={250}
-        >
-          <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
-        </Tooltip>
+    <div
+      className={`flex items-center ${
+        legendSize === "small" ? "w-full justify-between" : "justify-center"
+      } ${styles.container}`}
+    >
+      <span
+        className={`${styles.text} text-gray-600 font-medium flex items-center gap-1.5`}
+      >
+        달성률 범례
       </span>
 
-      {legends.map((legend, index) => (
-        <div key={index} className="flex items-center gap-2">
-          <div
-            className="w-4 h-4 rounded"
-            style={{ backgroundColor: legend.color }}
-          />
-          <span className="text-sm text-gray-600">{legend.label}</span>
-        </div>
-      ))}
+      <div className={`flex items-center ${styles.legendsGap}`}>
+        {legends.map((legend, index) => (
+          <div key={index} className={`flex items-center ${styles.itemGap}`}>
+            <div
+              className={`${styles.colorBox} rounded`}
+              style={{ backgroundColor: legend.color }}
+            />
+            <span className={`${styles.text} text-gray-600`}>
+              {legend.label}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,10 @@
 export { OrganizationTabs } from "./OrganizationTabs";
-export { CompareGroupSelector } from "./CompareGroupSelector";
 export { OrganizationTable } from "./OrganizationTable";
+export type { AggregationType } from "./OrganizationTable";
+export { OrganizationFlatTable } from "./OrganizationFlatTable";
+export type { FlatViewFilterType } from "./OrganizationFlatTable";
+export { OrganizationBdpiTable } from "./OrganizationBdpiTable";
+export { OrganizationBdpiFlatTable } from "./OrganizationBdpiFlatTable";
 export { ScoreLegend } from "./ScoreLegend";
 export { OrganizationDetailModal } from "./OrganizationDetailModal";
 export type { OrganizationDetailItem } from "./OrganizationDetailModal";

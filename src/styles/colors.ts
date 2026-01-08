@@ -62,6 +62,15 @@ export const STATUS_COLORS = {
   info: "#06b6d4", // 정보
 } as const;
 
+// Summary 카테고리 색상 (조직비교 테이블)
+export const SUMMARY_COLORS = {
+  exceeds: "#5ED3C5", // 초과달성
+  achieved: "#B3D9F2", // 달성
+  good: "#FFE5A3", // 양호
+  caution: "#FFB5A7", // 주의
+  text: "#0F172B", // 텍스트 색상
+} as const;
+
 // 텍스트 색상
 export const TEXT_COLORS = {
   primary: "#111827", // 주요 텍스트
@@ -155,6 +164,30 @@ export const ACHIEVEMENT_COLORS = {
   danger: { bg: "#FEE2E2", text: "#DC2626" }, // 위험 (red-100, red-600)
 } as const;
 
+// 달성률 범례 색상 (5단계 - 히트맵/범례용)
+export const ACHIEVEMENT_RATE_COLORS = {
+  level1: "#E8F5E9", // 0-25% 미만
+  level2: "#C8E6C9", // 25-50% 미만
+  level3: "#A5D6A7", // 50-75% 미만
+  level4: "#81C784", // 75-100% 미만
+  level5: "#2E7D32", // 100% 이상
+  noData: "#F9FAFB", // 데이터 없음
+} as const;
+
+/**
+ * 달성률에 따른 배경 색상 결정 (5단계)
+ * @param score 달성률 (0-150 범위)
+ * @returns 배경 색상
+ */
+export const getAchievementRateColor = (score: number | null): string => {
+  if (score === null) return ACHIEVEMENT_RATE_COLORS.noData;
+  if (score >= 100) return ACHIEVEMENT_RATE_COLORS.level5;
+  if (score >= 75) return ACHIEVEMENT_RATE_COLORS.level4;
+  if (score >= 50) return ACHIEVEMENT_RATE_COLORS.level3;
+  if (score >= 25) return ACHIEVEMENT_RATE_COLORS.level2;
+  return ACHIEVEMENT_RATE_COLORS.level1;
+};
+
 // 변경 사항 색상
 export const CHANGE_COLORS = {
   changed: "#005FCC", // 변경된 값 (파란색)
@@ -177,5 +210,6 @@ export const COLORS = {
   codeReview: CODE_REVIEW_COLORS,
   reviewStatusBadge: REVIEW_STATUS_BADGE_COLORS,
   achievement: ACHIEVEMENT_COLORS,
+  achievementRate: ACHIEVEMENT_RATE_COLORS,
   change: CHANGE_COLORS,
 } as const;
