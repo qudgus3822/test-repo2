@@ -17,6 +17,12 @@ interface HeatmapCellProps {
   score: number | null;
   /** 값 숨기기 여부 */
   hideValue?: boolean;
+  /** 목표값 (API 응답) */
+  targetValue?: number | string | null;
+  /** 단위 (API 응답) */
+  unit?: string;
+  /** 툴팁 표시 여부 (기본값: true) */
+  showTooltip?: boolean;
 }
 
 export const HeatmapCell = ({
@@ -24,11 +30,15 @@ export const HeatmapCell = ({
   value,
   score,
   hideValue = false,
+  targetValue,
+  unit,
+  showTooltip = true,
 }: HeatmapCellProps) => {
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
   const handleMouseEnter = (e: React.MouseEvent) => {
+    if (!showTooltip) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setTooltipPosition({
       x: rect.left + rect.width / 2,
@@ -48,13 +58,17 @@ export const HeatmapCell = ({
       onMouseLeave={handleMouseLeave}
     >
       <ProgressSquare score={score} value={value} hideValue={hideValue} />
-      <MetricTooltip
-        metricCode={metricCode}
-        value={value}
-        score={score}
-        visible={tooltipVisible}
-        position={tooltipPosition}
-      />
+      {showTooltip && (
+        <MetricTooltip
+          metricCode={metricCode}
+          value={value}
+          score={score}
+          visible={tooltipVisible}
+          position={tooltipPosition}
+          targetValue={targetValue}
+          unit={unit}
+        />
+      )}
     </div>
   );
 };

@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 import type { OrganizationMember } from "@/types/organization.types";
 import { fetchMemberMetricRankings } from "@/api/organization";
 import { getMemberEmail } from "@/utils/organization";
+import { METRIC_CODE_NAMES } from "@/utils/metrics";
 import { getAchievementRateColor } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ScoreLegend } from "./ScoreLegend";
@@ -76,15 +77,27 @@ export const MemberMetricRankingModal = ({
     };
   }, [onClose]);
 
-  // API 데이터를 점수 기준으로 정렬
-  const sortedMetrics = (data?.rankings ?? [])
-    .map((item) => ({
-      name: item.metricName,
-      score: item.achievementRate,
-      category: item.category,
-    }))
-    .sort((a, b) => b.score - a.score);
+  // 하나라도 유효한 달성률이 있는지 확인
+  const hasAnyValidData = (data?.rankings ?? []).some(
+    (item) => typeof item.achievementRate === "number",
+  );
 
+  // API 데이터를 점수 기준으로 정렬 (유효한 데이터가 있으면 null 포함 전체 표시)
+  const sortedMetrics = hasAnyValidData
+    ? (data?.rankings ?? [])
+        .map((item) => ({
+          name: METRIC_CODE_NAMES[item.metricName] || item.metricName,
+          score: item.achievementRate,
+          category: item.category,
+        }))
+        // 숫자 값이 있는 항목을 먼저, null은 뒤로 정렬
+        .sort((a, b) => {
+          if (a.score === null && b.score === null) return 0;
+          if (a.score === null) return 1;
+          if (b.score === null) return -1;
+          return b.score - a.score;
+        })
+    : [];
   // 모달 위치 계산 (클릭된 div 하단에 표시, 화면 밖으로 나가지 않도록)
   // 19개 지표 기준 높이: 헤더(65px) + 지표목록(422px) + 범례(40px) = 527px
   const calculatePosition = () => {
@@ -159,7 +172,7 @@ export const MemberMetricRankingModal = ({
           </div>
         ) : sortedMetrics.length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500">달성률 순위 데이터가 없습니다.</p>
+            <p className="text-gray-500">수집된 데이터가 없습니다.</p>
           </div>
         ) : (
           <div className="px-5 py-3 space-y-[1px]">
@@ -171,21 +184,24 @@ export const MemberMetricRankingModal = ({
                 </div>
                 {/* 막대 그래프 */}
                 <div className="flex-1 h-[18px] bg-gray-100 rounded relative">
-                  <div
-                    className="h-full rounded"
-                    style={{
-                      width: score >= 100 ? "100%" : `${score}%`,
-                      backgroundColor: getAchievementRateColor(score),
-                    }}
-                  />
+                  {score !== null && (
+                    <div
+                      className="h-full rounded"
+                      style={{
+                        width: score >= 100 ? "100%" : `${score}%`,
+                        backgroundColor: getAchievementRateColor(score),
+                      }}
+                    />
+                  )}
                   {/* 점수 표시 */}
                   <span
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-medium"
                     style={{
-                      color: score >= 100 ? "#fff" : "#374151",
+                      color:
+                        score !== null && score >= 100 ? "#fff" : "#374151",
                     }}
                   >
-                    {score.toFixed(1)}%
+                    {score !== null ? `${score.toFixed(1)}%` : "--"}
                   </span>
                 </div>
               </div>

@@ -26,7 +26,7 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-[#E2E8F0] z-10">
+    <header className="fixed top-0 left-0 right-0 h-20 bg-white border-b border-[#E2E8F0] z-20">
       <div className="h-full flex items-center justify-between px-6">
         {/* 로고 */}
         <div className="flex items-center gap-3 w-16 lg:w-[200px] xl:w-[260px] transition-all duration-300">

@@ -7,7 +7,13 @@
  */
 
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { ArrowUp, ArrowDown, ArrowDownUp, GripHorizontal } from "lucide-react";
+import {
+  ArrowUp,
+  ArrowDown,
+  ArrowDownUp,
+  GripHorizontal,
+  Info,
+} from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -60,8 +66,8 @@ import {
   type SortConfig,
 } from "./heatmap/types";
 
-// 플랫뷰 필터 타입
-export type FlatViewFilterType = "room" | "team" | "member";
+// 플랫뷰 필터 타입 (API 파라미터와 동일)
+export type FlatViewFilterType = "division" | "team" | "member";
 
 // 집계 타입
 export type AggregationType = "average" | "total";
@@ -168,7 +174,7 @@ const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
   nodes: OrganizationNode[],
-  filterType: FlatViewFilterType = "room",
+  filterType: FlatViewFilterType = "division",
 ): FlatItem[] => {
   const result: FlatItem[] = [];
 
@@ -187,7 +193,7 @@ const flattenTree = (
       const currentRoomName = dept.level === 2 ? dept.name : roomName;
       const currentTeamName = dept.level === 3 ? dept.name : teamName;
 
-      if (filterType === "room" && dept.level === 2) {
+      if (filterType === "division" && dept.level === 2) {
         result.push({
           type: "department",
           data: dept,
@@ -266,15 +272,25 @@ const FixedRow = ({
   const member = !isDepartment ? (data as OrganizationMember) : null;
 
   // 상위 조직 표시 텍스트 생성
+  // API 응답의 divisionName, teamName 우선 사용, 없으면 item.roomName, item.teamName 사용
   const getParentInfo = () => {
-    if (filterType === "team" && item.roomName) {
-      return item.roomName;
+    // API 응답 필드 (format=list) - 타입 가드로 안전하게 접근
+    const dataWithApiFields = data as { divisionName?: string; teamName?: string };
+    const divisionName = dataWithApiFields.divisionName;
+    const teamNameFromApi = dataWithApiFields.teamName;
+
+    // 팀 필터: 실 이름 표시
+    if (filterType === "team") {
+      return divisionName || item.roomName || null;
     }
-    if (filterType === "member" && (item.roomName || item.teamName)) {
+    // 개인 필터: 실 > 팀 표시
+    if (filterType === "member") {
+      const division = divisionName || item.roomName;
+      const team = teamNameFromApi || item.teamName;
       const parts = [];
-      if (item.roomName) parts.push(item.roomName);
-      if (item.teamName) parts.push(item.teamName);
-      return parts.join(" > ");
+      if (division) parts.push(division);
+      if (team) parts.push(team);
+      return parts.length > 0 ? parts.join(" > ") : null;
     }
     return null;
   };
@@ -459,7 +475,7 @@ const ScrollableRow = ({
   metricOrder,
   hideValue = false,
   aggregationType = "average",
-  filterType = "room",
+  filterType = "division",
 }: {
   item: FlatItem;
   metricOrder: string[];
@@ -510,6 +526,8 @@ const ScrollableRow = ({
           metric && typeof metric.value === "number" && metric.isUsed !== false;
         const score = hasData ? metric?.score ?? null : null;
         const value = hasData ? metric?.value ?? null : null;
+        const targetValue = metric?.targetValue ?? null;
+        const unit = metric?.unit;
 
         return (
           <td
@@ -521,6 +539,8 @@ const ScrollableRow = ({
               score={score}
               value={value}
               hideValue={hideValue}
+              targetValue={targetValue}
+              unit={unit}
             />
           </td>
         );
@@ -532,7 +552,7 @@ const ScrollableRow = ({
 export const OrganizationFlatTable = ({
   month,
   activeTab,
-  filterType = "room",
+  filterType = "division",
   hideValues = false,
   searchKeyword = "",
   onSearchResult,
@@ -542,8 +562,12 @@ export const OrganizationFlatTable = ({
   const apiOptions =
     activeTab === "all"
       ? {
-          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
-          format: "tree" as const,
+          aggregation:
+            aggregationType === "average"
+              ? ("avg" as const)
+              : ("total" as const),
+          format: "list" as const,
+          type: filterType,
         }
       : undefined;
 
@@ -553,7 +577,25 @@ export const OrganizationFlatTable = ({
     true,
     apiOptions,
   );
-  const flatItems = flattenTree(data?.tree ?? [], filterType);
+
+  // API 응답에서 thresholds 추출
+  const thresholds = data?.thresholds;
+
+  // format=list일 경우 items 배열 사용, 아니면 tree를 flatten
+  const flatItems = useMemo(() => {
+    // format=list 응답 (items 배열이 있는 경우)
+    if (data?.items && data.items.length > 0) {
+      return data.items
+        .filter((node) => node.isEvaluationTarget)
+        .map((node) => ({
+          type: node.type,
+          data: node as OrganizationDepartment | OrganizationMember,
+          level: node.level,
+        })) as FlatItem[];
+    }
+    // format=tree 응답 (기존 로직)
+    return flattenTree(data?.tree ?? [], filterType);
+  }, [data?.items, data?.tree, filterType]);
 
   // 검색 필터링
   const filteredItems = useMemo(() => {
@@ -792,14 +834,12 @@ export const OrganizationFlatTable = ({
                     sortConfig.column === cat.id &&
                     sortConfig.direction !== null;
 
-                  const criteriaText =
-                    cat.id === "overAchieved"
-                      ? "100% 이상"
-                      : cat.id === "excellent"
-                      ? "100% 미만"
-                      : cat.id === "warning"
-                      ? "80% 미만"
-                      : "60% 미만";
+                  // API 응답의 thresholds 값 사용 (fallback: excellent=80, danger=60)
+                  const excellentThreshold = thresholds?.excellent ?? 80;
+                  const dangerThreshold = thresholds?.danger ?? 60;
+
+                  // 공통 기준 툴팁 텍스트
+                  const criteriaTooltip = `초과달성: 100% 초과\n우수: ${excellentThreshold}% 이상 ~ 100% 이하\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만\n위험: ${dangerThreshold}% 미만`;
 
                   // 정렬 아이콘 렌더링
                   const renderSortIcon = () => {
@@ -824,6 +864,9 @@ export const OrganizationFlatTable = ({
                       onClick={() => toggleSort(cat.id)}
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
+                        <Tooltip content={criteriaTooltip} maxWidth={250}>
+                          <Info className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
+                        </Tooltip>
                         <span>
                           {cat.id === "overAchieved"
                             ? "초과달성"
@@ -832,9 +875,6 @@ export const OrganizationFlatTable = ({
                             : cat.id === "warning"
                             ? "경고"
                             : "위험"}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {criteriaText}
                         </span>
                         <span>{renderSortIcon()}</span>
                       </div>

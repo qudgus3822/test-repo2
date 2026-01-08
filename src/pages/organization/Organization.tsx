@@ -88,7 +88,7 @@ const OrganizationPage = () => {
 
   // 플랫뷰 필터: 실 / 팀 / 개인
   const [flatViewFilter, setFlatViewFilter] =
-    useState<FlatViewFilterType>("room");
+    useState<FlatViewFilterType>("division");
 
   // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
   const [aggregationType, setAggregationType] = useState<"average" | "total">(
@@ -163,18 +163,37 @@ const OrganizationPage = () => {
   // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
   const yearMonth = formatYearMonth(currentDate);
 
+  // 탭별 API 옵션 설정 (하위 테이블 컴포넌트와 동일한 queryKey 사용을 위함)
+  const apiOptions = useMemo(() => {
+    if (activeTab === "all" || activeTab === "bdpi") {
+      return {
+        aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+        format: viewType === "hierarchy" ? ("tree" as const) : ("list" as const),
+        type: viewType === "flat" ? flatViewFilter : undefined,
+      };
+    }
+    return undefined;
+  }, [activeTab, aggregationType, viewType, flatViewFilter]);
+
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
   const { data, isLoading, isError } = useOrganizationTree(
     yearMonth,
     activeTab,
+    true,
+    apiOptions,
   );
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
-  // 데이터가 있는지 확인 (isEvaluationTarget: true인 조직이 있는지)
-  const hasData =
-    !isLoading &&
-    !isError &&
-    organizations.filter((org) => org.isEvaluationTarget).length > 0;
+  // 데이터가 있는지 확인 (tree 또는 items에 isEvaluationTarget: true인 조직이 있는지)
+  const hasData = useMemo(() => {
+    if (isLoading || isError) return false;
+    // format=list 응답 (items 배열)
+    if (data?.items && data.items.length > 0) {
+      return data.items.some((item) => item.isEvaluationTarget);
+    }
+    // format=tree 응답 (tree 배열)
+    return organizations.filter((org) => org.isEvaluationTarget).length > 0;
+  }, [isLoading, isError, data?.items, organizations]);
 
   // 화면 진입 시 Level 1(부문)까지 펼침 상태로 초기화
   useEffect(() => {
@@ -257,9 +276,9 @@ const OrganizationPage = () => {
             {viewType === "flat" && (
               <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
-                  onClick={() => setFlatViewFilter("room")}
+                  onClick={() => setFlatViewFilter("division")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
-                    flatViewFilter === "room"
+                    flatViewFilter === "division"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
@@ -375,7 +394,7 @@ const OrganizationPage = () => {
               <input
                 type="text"
                 placeholder={
-                  flatViewFilter === "room"
+                  flatViewFilter === "division"
                     ? "실 이름을 입력하세요"
                     : flatViewFilter === "team"
                     ? "팀 이름을 입력하세요"

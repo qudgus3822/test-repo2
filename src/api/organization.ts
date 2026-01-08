@@ -127,6 +127,35 @@ export const fetchOrganizationAllMetrics = async (
 };
 
 /**
+ * BDPI 지표 조직 데이터 조회 API
+ * - 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교 포함
+ * @param params - API 요청 파라미터
+ * @returns 조직 트리 데이터 (BDPI 지표 포함)
+ */
+export const fetchOrganizationBdpiMetrics = async (
+  params: FetchAllMetricsParams,
+): Promise<OrganizationCompareResponse> => {
+  const {
+    yearMonth,
+    aggregation = "avg",
+    format = "tree",
+    type,
+  } = params;
+
+  // URL 쿼리 파라미터 구성
+  const queryParams = new URLSearchParams();
+  queryParams.set("yearMonth", yearMonth);
+  queryParams.set("aggregation", aggregation);
+  queryParams.set("format", format);
+
+  if (type && format === "list") queryParams.set("type", type);
+
+  return apiGet<OrganizationCompareResponse>(
+    `/departments/monthly/bdpi?${queryParams.toString()}`
+  );
+};
+
+/**
  * 조직도 변경 이력 조회 API
  * @param yearMonth - 조회 연월 (YYYY-MM 형식)
  * @returns 변경 이력 데이터
@@ -162,7 +191,7 @@ export const updateEvaluationTargetsBulk = async (
 // 개인별 지표 순위 API 응답 타입
 export interface MemberMetricRanking {
   metricName: string;
-  achievementRate: number;
+  achievementRate: number | null;
   category: string;
 }
 
@@ -185,5 +214,37 @@ export const fetchMemberMetricRankings = async (
 ): Promise<MemberMetricRankingsResponse> => {
   return apiGet<MemberMetricRankingsResponse>(
     `/departments/members/${employeeId}/metric-rankings?yearMonth=${yearMonth}`,
+  );
+};
+
+// 지표 추세 타입
+export interface MetricTrend {
+  direction: "up" | "down" | "same" | "new" | "no_data" | null;
+  currentValue: number | null;
+  previousValue: number | null;
+  changeRate: number | null;
+}
+
+// 지표 정의 API 응답 타입
+export interface MetricDefinitionResponse {
+  metricCode: string;
+  title: string;
+  unit: string;
+  targetValue: string | null;
+  description: string;
+  formula: string | null;
+  trend: MetricTrend | null;
+}
+
+/**
+ * 지표 정의 조회 API
+ * @param metricCode - 지표 코드
+ * @returns 지표 정의 데이터
+ */
+export const fetchMetricDefinition = async (
+  metricCode: string,
+): Promise<MetricDefinitionResponse> => {
+  return apiGet<MetricDefinitionResponse>(
+    `/metrics/definitions/${metricCode}`,
   );
 };

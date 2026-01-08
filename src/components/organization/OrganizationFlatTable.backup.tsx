@@ -17,8 +17,8 @@ import {
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
-// 플랫뷰 필터 타입
-export type FlatViewFilterType = "room" | "team" | "member";
+// 플랫뷰 필터 타입 (API 파라미터와 동일)
+export type FlatViewFilterType = "division" | "team" | "member";
 
 interface OrganizationFlatTableProps {
   month: string;
@@ -84,7 +84,7 @@ const getScoreColor = (score: number | null): string => {
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
   nodes: OrganizationNode[],
-  filterType: FlatViewFilterType = "room",
+  filterType: FlatViewFilterType = "division",
 ): FlatItem[] => {
   const result: FlatItem[] = [];
 
@@ -94,7 +94,7 @@ const flattenTree = (
     if (node.type === "department") {
       const dept = node as OrganizationDepartment;
 
-      if (filterType === "room" && dept.level === 2) {
+      if (filterType === "division" && dept.level === 2) {
         result.push({
           type: "department",
           data: dept,
@@ -232,7 +232,7 @@ const ScrollableRow = ({ item }: { item: FlatItem }) => {
 export const OrganizationFlatTable = ({
   month,
   activeTab,
-  filterType = "room",
+  filterType = "division",
 }: OrganizationFlatTableProps) => {
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
   const flatItems = flattenTree(data?.tree ?? [], filterType);

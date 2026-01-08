@@ -6,6 +6,7 @@ import {
   fetchOrgTypeSettings,
   updateEvaluationTargetsBulk,
   fetchOrganizationAllMetrics,
+  fetchOrganizationBdpiMetrics,
 } from "@/api/organization";
 import type { BulkEvaluationTargetRequest } from "@/api/organization";
 import type {
@@ -136,8 +137,9 @@ export const useOrganizationTree = (
   return useQuery<OrganizationCompareResponse, Error>({
     queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, tab, options),
     queryFn: async () => {
-      // "all" 탭일 경우 전체 지표 API 호출
       let response: OrganizationCompareResponse;
+
+      // "all" 탭일 경우 전체 지표 API 호출
       if (tab === "all") {
         response = await fetchOrganizationAllMetrics({
           yearMonth,
@@ -150,7 +152,18 @@ export const useOrganizationTree = (
           limit: options?.limit,
           search: options?.search,
         });
-      } else {
+      }
+      // "bdpi" 탭일 경우 BDPI 지표 API 호출 (options 유무 상관없이)
+      else if (tab === "bdpi") {
+        response = await fetchOrganizationBdpiMetrics({
+          yearMonth,
+          aggregation: options?.aggregation ?? "avg",
+          format: options?.format ?? "tree",
+          type: options?.type,
+        });
+      }
+      // 그 외 탭은 기존 API 호출
+      else {
         response = await fetchOrganizationByTab(yearMonth, tab);
       }
 

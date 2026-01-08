@@ -32,10 +32,14 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 
+// 집계 타입
+export type AggregationType = "average" | "total";
+
 interface OrganizationBdpiTableProps {
   month: string;
   activeTab: TabType;
   hideValues?: boolean;
+  aggregationType?: AggregationType;
 }
 
 // BDPI 지표 코드 목록
@@ -188,6 +192,7 @@ const MemberRow = ({
               score={score}
               value={score}
               hideValue={hideValues}
+              showTooltip={false}
             />
           </td>
         );
@@ -275,6 +280,7 @@ const OrganizationRow = ({
                 score={score}
                 value={score}
                 hideValue={hideValues}
+                showTooltip={false}
               />
             </td>
           );
@@ -313,8 +319,18 @@ export const OrganizationBdpiTable = ({
   month,
   activeTab,
   hideValues = false,
+  aggregationType = "average",
 }: OrganizationBdpiTableProps) => {
-  const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
+  // BDPI 탭일 경우 API 옵션 설정
+  const apiOptions =
+    activeTab === "bdpi"
+      ? {
+          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          format: "tree" as const,
+        }
+      : undefined;
+
+  const { data, isLoading, isError } = useOrganizationTree(month, activeTab, true, apiOptions);
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
     .sort((a, b) => a.sortOrder - b.sortOrder);

@@ -32,8 +32,11 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 
-// 플랫뷰 필터 타입
-export type FlatViewFilterType = "room" | "team" | "member";
+// 플랫뷰 필터 타입 (API 파라미터와 동일)
+export type FlatViewFilterType = "division" | "team" | "member";
+
+// 집계 타입
+export type AggregationType = "average" | "total";
 
 interface OrganizationBdpiFlatTableProps {
   month: string;
@@ -42,6 +45,7 @@ interface OrganizationBdpiFlatTableProps {
   hideValues?: boolean;
   searchKeyword?: string;
   onSearchResult?: (resultCount: number) => void;
+  aggregationType?: AggregationType;
 }
 
 // 플랫 데이터 아이템 타입
@@ -187,7 +191,7 @@ const getRowHeight = (filterType: FlatViewFilterType) => {
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
   nodes: OrganizationNode[],
-  filterType: FlatViewFilterType = "room"
+  filterType: FlatViewFilterType = "division"
 ): FlatItem[] => {
   const result: FlatItem[] = [];
 
@@ -206,7 +210,7 @@ const flattenTree = (
       const currentRoomName = dept.level === 2 ? dept.name : roomName;
       const currentTeamName = dept.level === 3 ? dept.name : teamName;
 
-      if (filterType === "room" && dept.level === 2) {
+      if (filterType === "division" && dept.level === 2) {
         result.push({
           type: "department",
           data: dept,
@@ -273,15 +277,25 @@ const FlatRow = ({
   const member = !isDepartment ? (data as OrganizationMember) : null;
 
   // 상위 조직 표시 텍스트 생성
+  // API 응답의 divisionName, teamName 우선 사용, 없으면 item.roomName, item.teamName 사용
   const getParentInfo = () => {
-    if (filterType === "team" && item.roomName) {
-      return item.roomName;
+    // API 응답 필드 (format=list) - 타입 가드로 안전하게 접근
+    const dataWithApiFields = data as { divisionName?: string; teamName?: string };
+    const divisionName = dataWithApiFields.divisionName;
+    const teamNameFromApi = dataWithApiFields.teamName;
+
+    // 팀 필터: 실 이름 표시
+    if (filterType === "team") {
+      return divisionName || item.roomName || null;
     }
-    if (filterType === "member" && (item.roomName || item.teamName)) {
+    // 개인 필터: 실 > 팀 표시
+    if (filterType === "member") {
+      const division = divisionName || item.roomName;
+      const team = teamNameFromApi || item.teamName;
       const parts = [];
-      if (item.roomName) parts.push(item.roomName);
-      if (item.teamName) parts.push(item.teamName);
-      return parts.join(" > ");
+      if (division) parts.push(division);
+      if (team) parts.push(team);
+      return parts.length > 0 ? parts.join(" > ") : null;
     }
     return null;
   };
@@ -339,6 +353,7 @@ const FlatRow = ({
               score={score}
               value={score}
               hideValue={hideValues}
+              showTooltip={false}
             />
           </td>
         );
@@ -353,13 +368,39 @@ const FlatRow = ({
 export const OrganizationBdpiFlatTable = ({
   month,
   activeTab,
-  filterType = "room",
+  filterType = "division",
   hideValues = false,
   searchKeyword = "",
   onSearchResult,
+  aggregationType = "average",
 }: OrganizationBdpiFlatTableProps) => {
-  const { data, isLoading, isError } = useOrganizationTree(month, activeTab);
-  const flatItems = flattenTree(data?.tree ?? [], filterType);
+  // BDPI 탭일 경우 API 옵션 설정
+  const apiOptions =
+    activeTab === "bdpi"
+      ? {
+          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          format: "list" as const,
+          type: filterType,
+        }
+      : undefined;
+
+  const { data, isLoading, isError } = useOrganizationTree(month, activeTab, true, apiOptions);
+
+  // format=list일 경우 items 배열 사용, 아니면 tree를 flatten
+  const flatItems = useMemo(() => {
+    // format=list 응답 (items 배열이 있는 경우)
+    if (data?.items && data.items.length > 0) {
+      return data.items
+        .filter((node) => node.isEvaluationTarget)
+        .map((node) => ({
+          type: node.type,
+          data: node as OrganizationDepartment | OrganizationMember,
+          level: node.level,
+        })) as FlatItem[];
+    }
+    // format=tree 응답 (기존 로직)
+    return flattenTree(data?.tree ?? [], filterType);
+  }, [data?.items, data?.tree, filterType]);
 
   // 검색 필터링
   const filteredItems = useMemo(() => {

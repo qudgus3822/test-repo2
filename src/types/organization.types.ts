@@ -95,12 +95,12 @@ export type MetricStatusType =
 
 // 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
 export interface MetricScoreValue {
-  score: number | null;
-  isUsed: boolean;
+  score: number | null; // 점수 (null: 데이터 없음)
+  isUsed: boolean; // 지표 수집 가능 여부 (aggregation=total일 때 6개 지표 외에는 false)
   value?: number | null; // 월 평균값
   unit?: string; // 단위
   avgRate?: number | null; // 달성률 (%, 100% 초과 가능)
-  totalValue?: number | null; // 총합 값 (aggregation=total일 때)
+  totalValue?: number | null; // 총합 값 (aggregation=total일 때, 6개 지표만 해당)
   targetValue?: number | string | null; // 목표값
   status?: MetricStatusType; // 달성 상태
 }
@@ -292,7 +292,11 @@ export interface OrganizationCompareResponse {
   thresholds?: Thresholds; // 임계값 (신규 API)
   lastLdapSyncAt?: string; // 마지막 LDAP 동기화 시간 (ISO 8601)
   lastChangeAt?: string; // 마지막 변경 이력 시간 (ISO 8601)
-  tree: OrganizationDepartment[];
+  tree?: OrganizationDepartment[]; // format=tree 일 경우
+  items?: OrganizationNode[]; // format=list 일 경우
+  total?: number; // format=list 일 경우 전체 건수
+  page?: number; // format=list 일 경우 현재 페이지
+  totalPages?: number; // format=list 일 경우 전체 페이지 수
 }
 
 // ================================

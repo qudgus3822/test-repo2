@@ -8,8 +8,7 @@ import { createPortal } from "react-dom";
 import {
   getMetricName,
   getMetricUnit,
-  getMetricDescription,
-  getMetricTarget,
+  getMetricTooltipDescription,
 } from "@/utils/metrics";
 import { SUMMARY_CATEGORIES } from "./types";
 
@@ -24,6 +23,10 @@ interface MetricTooltipProps {
   visible: boolean;
   /** 툴팁 위치 */
   position: { x: number; y: number };
+  /** 목표값 (API 응답) */
+  targetValue?: number | string | null;
+  /** 단위 (API 응답) */
+  unit?: string;
 }
 
 /**
@@ -32,7 +35,7 @@ interface MetricTooltipProps {
 const getAchievementCategory = (score: number | null) => {
   if (score === null) return null;
   return SUMMARY_CATEGORIES.find(
-    (cat) => score >= cat.minPercentage && score < cat.maxPercentage
+    (cat) => score >= cat.minPercentage && score < cat.maxPercentage,
   );
 };
 
@@ -42,14 +45,25 @@ export const MetricTooltip = ({
   score,
   visible,
   position,
+  targetValue,
 }: MetricTooltipProps) => {
   if (!visible) return null;
 
   const metricName = getMetricName(metricCode);
-  const unit = getMetricUnit(metricCode);
-  const description = getMetricDescription(metricCode);
-  const targetValue = getMetricTarget(metricCode);
+  // METRIC_CODE_UNITS 매핑값 사용 (API 응답값 대신)
+  const displayUnit = getMetricUnit(metricCode);
+  const description = getMetricTooltipDescription(metricCode);
   const achievementCategory = getAchievementCategory(score);
+
+  // 목표값 포맷팅
+  const formattedTargetValue =
+    targetValue !== null && targetValue !== undefined
+      ? typeof targetValue === "number"
+        ? Number.isInteger(targetValue)
+          ? `${targetValue}`
+          : `${targetValue.toFixed(1)}`
+        : `${targetValue}`
+      : "--";
 
   // 현재값 포맷팅
   const formattedValue =
@@ -89,7 +103,9 @@ export const MetricTooltip = ({
             <div className="text-md font-medium text-gray-900">
               {formattedValue}
               {value !== null && (
-                <span className="text-sm font-normal ml-0.5">{unit}</span>
+                <span className="text-sm font-normal ml-0.5">
+                  {displayUnit}
+                </span>
               )}
             </div>
           </div>
@@ -97,7 +113,7 @@ export const MetricTooltip = ({
           <div className="flex-1">
             <div className="text-xs text-gray-400 mb-1">목표값</div>
             <div className="text-md font-medium text-gray-900">
-              {targetValue || "--"}
+              {formattedTargetValue}
             </div>
           </div>
         </div>
@@ -119,7 +135,9 @@ export const MetricTooltip = ({
             <div className="flex items-center gap-1.5">
               <div
                 className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: achievementCategory?.bgColor ?? "#9CA3AF" }}
+                style={{
+                  backgroundColor: achievementCategory?.bgColor ?? "#9CA3AF",
+                }}
               />
               <span className="text-md font-medium text-gray-900">
                 {achievementCategory?.koreanName ?? "데이터 없음"}

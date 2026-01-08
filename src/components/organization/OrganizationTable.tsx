@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback } from "react";
-import { ChevronRight, ChevronDown, GripHorizontal } from "lucide-react";
+import { ChevronRight, ChevronDown, GripHorizontal, Info } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -451,6 +451,8 @@ const ScrollableRow = ({
           metric && typeof metric.value === "number" && metric.isUsed !== false;
         const score = hasData ? metric?.score ?? null : null;
         const value = hasData ? metric?.value ?? null : null;
+        const targetValue = metric?.targetValue ?? null;
+        const unit = metric?.unit;
 
         return (
           <td
@@ -462,6 +464,8 @@ const ScrollableRow = ({
               score={score}
               value={value}
               hideValue={hideValue}
+              targetValue={targetValue}
+              unit={unit}
             />
           </td>
         );
@@ -480,7 +484,10 @@ export const OrganizationTable = ({
   const apiOptions =
     activeTab === "all"
       ? {
-          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          aggregation:
+            aggregationType === "average"
+              ? ("avg" as const)
+              : ("total" as const),
           format: "tree" as const,
         }
       : undefined;
@@ -536,6 +543,9 @@ export const OrganizationTable = ({
       });
     }
   }, []);
+
+  // API 응답에서 thresholds 추출
+  const thresholds = data?.thresholds;
 
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
@@ -597,14 +607,12 @@ export const OrganizationTable = ({
                   조직 이름
                 </th>
                 {SUMMARY_CATEGORIES.map((cat) => {
-                  const criteriaText =
-                    cat.id === "overAchieved"
-                      ? "100% 이상"
-                      : cat.id === "excellent"
-                      ? "100% 미만"
-                      : cat.id === "warning"
-                      ? "80% 미만"
-                      : "60% 미만";
+                  // API 응답의 thresholds 값 사용 (fallback: excellent=80, danger=60)
+                  const excellentThreshold = thresholds?.excellent ?? 80;
+                  const dangerThreshold = thresholds?.danger ?? 60;
+
+                  // 공통 기준 툴팁 텍스트
+                  const criteriaTooltip = `초과달성: 100% 초과\n우수: ${excellentThreshold}% 이상 ~ 100% 이하\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만\n위험: ${dangerThreshold}% 미만`;
 
                   return (
                     <th
@@ -613,6 +621,9 @@ export const OrganizationTable = ({
                       style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
+                        <Tooltip content={criteriaTooltip} maxWidth={250}>
+                          <Info className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
+                        </Tooltip>
                         <span>
                           {cat.id === "overAchieved"
                             ? "초과달성"
@@ -621,9 +632,6 @@ export const OrganizationTable = ({
                             : cat.id === "warning"
                             ? "경고"
                             : "위험"}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {criteriaText}
                         </span>
                       </div>
                     </th>
