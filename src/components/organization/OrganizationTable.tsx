@@ -6,7 +6,7 @@
  * - 지표 칼럼 드래그 앤 드롭 정렬 기능
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ChevronRight, ChevronDown, GripHorizontal, Info } from "lucide-react";
 import {
   DndContext,
@@ -47,7 +47,11 @@ import {
   METRIC_CODE_ORDER,
 } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import {
+  useOrganizationTree,
+  useMetricOrder,
+  useUpdateMetricOrder,
+} from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
@@ -501,8 +505,19 @@ export const OrganizationTable = ({
   const { expandedOrganizations, toggleOrganization, showMembers } =
     useOrganizationStore();
 
+  // 지표 순서 조회 및 변경 hooks
+  const { data: metricOrderData } = useMetricOrder();
+  const updateMetricOrderMutation = useUpdateMetricOrder();
+
   // 지표 순서 상태 (드래그로 변경 가능)
   const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
+
+  // API에서 조회한 순서로 상태 업데이트
+  useEffect(() => {
+    if (metricOrderData?.order && metricOrderData.order.length > 0) {
+      setMetricOrder(metricOrderData.order);
+    }
+  }, [metricOrderData]);
 
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
@@ -536,13 +551,23 @@ export const OrganizationTable = ({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setMetricOrder((items) => {
-        const oldIndex = items.indexOf(active.id as string);
-        const newIndex = items.indexOf(over.id as string);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const oldIndex = metricOrder.indexOf(active.id as string);
+      const newIndex = metricOrder.indexOf(over.id as string);
+
+      // 낙관적 업데이트: 로컬 상태 먼저 변경
+      setMetricOrder((items) => arrayMove(items, oldIndex, newIndex));
+
+      // API 호출하여 순서 저장 (응답값으로 캐시 자동 업데이트)
+      updateMetricOrderMutation.mutate(
+        { fromIndex: oldIndex, toIndex: newIndex },
+        {
+          onError: (error) => {
+            console.error("지표 순서 저장 실패:", error);
+          },
+        },
+      );
     }
-  }, []);
+  }, [metricOrder, updateMetricOrderMutation]);
 
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;

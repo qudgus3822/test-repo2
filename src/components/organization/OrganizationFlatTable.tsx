@@ -51,7 +51,11 @@ import {
   METRIC_CODE_ORDER,
 } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import {
+  useOrganizationTree,
+  useMetricOrder,
+  useUpdateMetricOrder,
+} from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
@@ -558,7 +562,7 @@ export const OrganizationFlatTable = ({
   onSearchResult,
   aggregationType = "average",
 }: OrganizationFlatTableProps) => {
-  // 전체 탭일 경우 API 옵션 설정
+  // 전체 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
     activeTab === "all"
       ? {
@@ -568,6 +572,7 @@ export const OrganizationFlatTable = ({
               : ("total" as const),
           format: "list" as const,
           type: filterType,
+          search: searchKeyword.trim() || undefined,
         }
       : undefined;
 
@@ -578,10 +583,15 @@ export const OrganizationFlatTable = ({
     apiOptions,
   );
 
+  // 지표 순서 조회 및 변경 hooks
+  const { data: metricOrderData } = useMetricOrder();
+  const updateMetricOrderMutation = useUpdateMetricOrder();
+
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;
 
   // format=list일 경우 items 배열 사용, 아니면 tree를 flatten
+  // 검색은 API에서 처리하므로 클라이언트 필터링 불필요
   const flatItems = useMemo(() => {
     // format=list 응답 (items 배열이 있는 경우)
     if (data?.items && data.items.length > 0) {
@@ -597,31 +607,22 @@ export const OrganizationFlatTable = ({
     return flattenTree(data?.tree ?? [], filterType);
   }, [data?.items, data?.tree, filterType]);
 
-  // 검색 필터링
-  const filteredItems = useMemo(() => {
-    if (!searchKeyword.trim()) {
-      return flatItems;
-    }
-
-    const keyword = searchKeyword.toLowerCase().trim();
-    return flatItems.filter((item) => {
-      const name =
-        item.type === "department"
-          ? (item.data as OrganizationDepartment).name
-          : (item.data as OrganizationMember).name;
-      return name.toLowerCase().includes(keyword);
-    });
-  }, [flatItems, searchKeyword]);
-
-  // 검색 결과 콜백
+  // 검색 결과 콜백 (API 검색 결과 기반)
   useEffect(() => {
     if (onSearchResult && searchKeyword.trim()) {
-      onSearchResult(filteredItems.length);
+      onSearchResult(flatItems.length);
     }
-  }, [filteredItems.length, searchKeyword, onSearchResult]);
+  }, [flatItems.length, searchKeyword, onSearchResult]);
 
   // 지표 순서 상태 (드래그로 변경 가능)
   const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
+
+  // API에서 조회한 순서로 상태 업데이트
+  useEffect(() => {
+    if (metricOrderData?.order && metricOrderData.order.length > 0) {
+      setMetricOrder(metricOrderData.order);
+    }
+  }, [metricOrderData]);
 
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -686,13 +687,23 @@ export const OrganizationFlatTable = ({
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setMetricOrder((items) => {
-        const oldIndex = items.indexOf(active.id as string);
-        const newIndex = items.indexOf(over.id as string);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const oldIndex = metricOrder.indexOf(active.id as string);
+      const newIndex = metricOrder.indexOf(over.id as string);
+
+      // 낙관적 업데이트: 로컬 상태 먼저 변경
+      setMetricOrder((items) => arrayMove(items, oldIndex, newIndex));
+
+      // API 호출하여 순서 저장 (응답값으로 캐시 자동 업데이트)
+      updateMetricOrderMutation.mutate(
+        { fromIndex: oldIndex, toIndex: newIndex },
+        {
+          onError: (error) => {
+            console.error("지표 순서 저장 실패:", error);
+          },
+        },
+      );
     }
-  }, []);
+  }, [metricOrder, updateMetricOrderMutation]);
 
   // 정렬 토글 (3단계: null → asc → desc → null)
   const toggleSort = useCallback((column: string) => {
@@ -715,14 +726,14 @@ export const OrganizationFlatTable = ({
   // 각 아이템의 summary counts 미리 계산
   const itemSummaryCountsMap = useMemo(() => {
     const map = new Map<FlatItem, SummaryCounts>();
-    filteredItems.forEach((item) => {
+    flatItems.forEach((item) => {
       const counts = calculateSummaryCounts(
         item.data.metrics as unknown as Record<string, MetricData>,
       );
       map.set(item, counts);
     });
     return map;
-  }, [filteredItems]);
+  }, [flatItems]);
 
   // Summary 카테고리 ID 목록
   const summaryCategoryIds = SUMMARY_CATEGORIES.map((cat) => cat.id);
@@ -731,10 +742,10 @@ export const OrganizationFlatTable = ({
   const sortedItems = useMemo(() => {
     // 정렬이 비활성화된 경우 원본 순서 유지
     if (!sortConfig.column || !sortConfig.direction) {
-      return filteredItems;
+      return flatItems;
     }
 
-    return [...filteredItems].sort((a, b) => {
+    return [...flatItems].sort((a, b) => {
       let aValue: number;
       let bValue: number;
 
@@ -779,7 +790,7 @@ export const OrganizationFlatTable = ({
       }
       return bValue - aValue;
     });
-  }, [filteredItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds]);
+  }, [flatItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds]);
 
   if (isLoading || isError || flatItems.length === 0) {
     return (
@@ -794,7 +805,7 @@ export const OrganizationFlatTable = ({
   }
 
   // 검색 결과가 없을 때
-  if (filteredItems.length === 0 && searchKeyword.trim()) {
+  if (flatItems.length === 0 && searchKeyword.trim()) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
         <p className="text-gray-500">'{searchKeyword}' 검색 결과가 없습니다.</p>

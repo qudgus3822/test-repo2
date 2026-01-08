@@ -7,8 +7,14 @@ import {
   updateEvaluationTargetsBulk,
   fetchOrganizationAllMetrics,
   fetchOrganizationBdpiMetrics,
+  fetchMetricOrder,
+  updateMetricOrder,
 } from "@/api/organization";
-import type { BulkEvaluationTargetRequest } from "@/api/organization";
+import type {
+  BulkEvaluationTargetRequest,
+  MetricOrderResponse,
+  UpdateMetricOrderRequest,
+} from "@/api/organization";
 import type {
   OrganizationCompareResponse,
   OrgHistoryResponse,
@@ -160,6 +166,7 @@ export const useOrganizationTree = (
           aggregation: options?.aggregation ?? "avg",
           format: options?.format ?? "tree",
           type: options?.type,
+          search: options?.search,
         });
       }
       // 그 외 탭은 기존 API 호출
@@ -253,6 +260,43 @@ export const useUpdateEvaluationTargetsBulk = () => {
     mutationFn: updateEvaluationTargetsBulk,
     onSuccess: () => {
       // 조직 관련 쿼리 무효화하여 최신 데이터 다시 조회
+      queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
+    },
+  });
+};
+
+// 지표 순서 Query Key
+export const metricOrderKeys = {
+  all: ["metricOrder"] as const,
+};
+
+/**
+ * 지표 순서 조회 Hook
+ * @returns React Query 결과 객체
+ */
+export const useMetricOrder = () => {
+  return useQuery<MetricOrderResponse, Error>({
+    queryKey: metricOrderKeys.all,
+    queryFn: fetchMetricOrder,
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+};
+
+/**
+ * 지표 순서 변경 Mutation Hook
+ * @returns React Query Mutation 결과 객체
+ */
+export const useUpdateMetricOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<MetricOrderResponse, Error, UpdateMetricOrderRequest>({
+    mutationFn: ({ fromIndex, toIndex }) => updateMetricOrder(fromIndex, toIndex),
+    onSuccess: (data) => {
+      // API 응답으로 지표 순서 캐시 업데이트
+      queryClient.setQueryData<MetricOrderResponse>(metricOrderKeys.all, data);
+
+      // 조직 데이터 쿼리 무효화하여 다시 조회하도록 함
+      // (전체 탭 > 하이어라키뷰 > 평균 필터 기준)
       queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
     },
   });

@@ -374,19 +374,21 @@ export const OrganizationBdpiFlatTable = ({
   onSearchResult,
   aggregationType = "average",
 }: OrganizationBdpiFlatTableProps) => {
-  // BDPI 탭일 경우 API 옵션 설정
+  // BDPI 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
     activeTab === "bdpi"
       ? {
           aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
           format: "list" as const,
           type: filterType,
+          search: searchKeyword.trim() || undefined,
         }
       : undefined;
 
   const { data, isLoading, isError } = useOrganizationTree(month, activeTab, true, apiOptions);
 
   // format=list일 경우 items 배열 사용, 아니면 tree를 flatten
+  // 검색은 API에서 처리하므로 클라이언트 필터링 불필요
   const flatItems = useMemo(() => {
     // format=list 응답 (items 배열이 있는 경우)
     if (data?.items && data.items.length > 0) {
@@ -402,28 +404,12 @@ export const OrganizationBdpiFlatTable = ({
     return flattenTree(data?.tree ?? [], filterType);
   }, [data?.items, data?.tree, filterType]);
 
-  // 검색 필터링
-  const filteredItems = useMemo(() => {
-    if (!searchKeyword.trim()) {
-      return flatItems;
-    }
-
-    const keyword = searchKeyword.toLowerCase().trim();
-    return flatItems.filter((item) => {
-      const name =
-        item.type === "department"
-          ? (item.data as OrganizationDepartment).name
-          : (item.data as OrganizationMember).name;
-      return name.toLowerCase().includes(keyword);
-    });
-  }, [flatItems, searchKeyword]);
-
-  // 검색 결과 콜백
+  // 검색 결과 콜백 (API 검색 결과 기반)
   useEffect(() => {
     if (onSearchResult && searchKeyword.trim()) {
-      onSearchResult(filteredItems.length);
+      onSearchResult(flatItems.length);
     }
-  }, [filteredItems.length, searchKeyword, onSearchResult]);
+  }, [flatItems.length, searchKeyword, onSearchResult]);
 
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -453,10 +439,10 @@ export const OrganizationBdpiFlatTable = ({
   const sortedItems = useMemo(() => {
     // 정렬이 비활성화된 경우 원본 순서 유지
     if (!sortConfig.column || !sortConfig.direction) {
-      return filteredItems;
+      return flatItems;
     }
 
-    return [...filteredItems].sort((a, b) => {
+    return [...flatItems].sort((a, b) => {
       const aMetrics = a.data.metrics as BdpiMetrics;
       const bMetrics = b.data.metrics as BdpiMetrics;
 
@@ -491,7 +477,7 @@ export const OrganizationBdpiFlatTable = ({
       }
       return bNum - aNum;
     });
-  }, [filteredItems, sortConfig]);
+  }, [flatItems, sortConfig]);
 
   if (isLoading || isError || flatItems.length === 0) {
     return (
@@ -506,7 +492,7 @@ export const OrganizationBdpiFlatTable = ({
   }
 
   // 검색 결과가 없을 때
-  if (filteredItems.length === 0 && searchKeyword.trim()) {
+  if (flatItems.length === 0 && searchKeyword.trim()) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
         <p className="text-gray-500">

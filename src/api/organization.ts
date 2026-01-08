@@ -7,7 +7,7 @@ import type {
   FormatType,
   FlatViewType,
 } from "@/types/organization.types";
-import { apiGet, apiPut } from "@/libs/fetch";
+import { apiGet, apiPatch, apiPut } from "@/libs/fetch";
 import {
   generateMockOrganizationMetricsData,
   USE_MOCK_METRICS,
@@ -140,6 +140,7 @@ export const fetchOrganizationBdpiMetrics = async (
     aggregation = "avg",
     format = "tree",
     type,
+    search,
   } = params;
 
   // URL 쿼리 파라미터 구성
@@ -149,6 +150,7 @@ export const fetchOrganizationBdpiMetrics = async (
   queryParams.set("format", format);
 
   if (type && format === "list") queryParams.set("type", type);
+  if (search) queryParams.set("search", search);
 
   return apiGet<OrganizationCompareResponse>(
     `/departments/monthly/bdpi?${queryParams.toString()}`
@@ -247,4 +249,36 @@ export const fetchMetricDefinition = async (
   return apiGet<MetricDefinitionResponse>(
     `/metrics/definitions/${metricCode}`,
   );
+};
+
+// 지표 순서 응답 타입
+export interface MetricOrderResponse {
+  order: string[];
+}
+
+// 지표 순서 변경 요청 타입
+export interface UpdateMetricOrderRequest {
+  fromIndex: number;
+  toIndex: number;
+}
+
+/**
+ * 지표 순서 조회 API
+ * @returns 지표 순서 배열
+ */
+export const fetchMetricOrder = async (): Promise<MetricOrderResponse> => {
+  return apiGet<MetricOrderResponse>(`/metrics/order`);
+};
+
+/**
+ * 지표 순서 변경 API
+ * @param fromIndex - 이동할 지표의 현재 인덱스
+ * @param toIndex - 이동할 지표의 목표 인덱스
+ * @returns 변경된 지표 순서 배열
+ */
+export const updateMetricOrder = async (
+  fromIndex: number,
+  toIndex: number,
+): Promise<MetricOrderResponse> => {
+  return apiPatch<MetricOrderResponse>(`/metrics/order`, { fromIndex, toIndex });
 };

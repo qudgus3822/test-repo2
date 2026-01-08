@@ -132,7 +132,12 @@ export const MetricDetailInfo = ({
             {isLoading ? (
               <LoadingSpinner size="sm" showMessage={false} />
             ) : (
-              <div className="text-sm text-gray-900">{metricTarget}</div>
+              <div className="text-sm text-gray-900">
+                {metricTarget}
+                {metricTarget !== "-" && metricUnit !== "-" && (
+                  <span className="text-gray-500 ml-1">{metricUnit}</span>
+                )}
+              </div>
             )}
           </div>
 
