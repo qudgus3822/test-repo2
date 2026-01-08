@@ -73,21 +73,33 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               id: "code",
               value: data.quality.score,
               label: "코드 품질",
-              sublabel: `${data.quality.achievedMetrics}/${data.quality.totalMetrics}개 달성`,
+              sublabel: `${
+                data.quality.achievedMetrics === 0
+                  ? "-"
+                  : data.quality.achievedMetrics
+              }/${data.quality.totalMetrics}개 달성`,
               color: CHART_COLORS.blue,
             },
             {
               id: "review",
               value: data.review.score,
               label: "리뷰 품질",
-              sublabel: `${data.review.achievedMetrics}/${data.review.totalMetrics}개 달성`,
+              sublabel: `${
+                data.review.achievedMetrics === 0
+                  ? "-"
+                  : data.review.achievedMetrics
+              }/${data.review.totalMetrics}개 달성`,
               color: CHART_COLORS.yellow,
             },
             {
               id: "efficiency",
               value: data.efficiency.score,
               label: "개발 효율",
-              sublabel: `${data.efficiency.achievedMetrics}/${data.efficiency.totalMetrics}개 달성`,
+              sublabel: `${
+                data.efficiency.achievedMetrics === 0
+                  ? "-"
+                  : data.efficiency.achievedMetrics
+              }/${data.efficiency.totalMetrics}개 달성`,
               color: CHART_COLORS.lightYellow,
             },
           ]
@@ -118,7 +130,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
           <div className="flex flex-col items-center w-full">
             <div className="text-center mb-2">
               <div className="text-4xl font-bold text-gray-900 mb-2">
-                {bdpiAverage.value.toFixed(1)}
+                {bdpiAverage.value === 0 ? "-" : bdpiAverage.value.toFixed(1)}
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-sm font-medium text-gray-700">
@@ -183,6 +195,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                 color={metric.color}
                 label={metric.label}
                 sublabel={metric.sublabel}
+                noDataLabel={metric.value === 0 ? "-" : undefined}
               />
             </div>
             <div className="flex justify-center pt-1">
