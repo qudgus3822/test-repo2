@@ -1,6 +1,10 @@
-const express = require("express");
-const path = require("path");
-const compression = require("compression");
+import express from "express";
+import path from "path";
+import compression from "compression";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -17,7 +21,7 @@ app.use(
 );
 
 // SPA 라우팅 - 모든 경로에서 index.html 반환
-app.get("*", (req, res) => {
+app.get("/{*splat}", (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
