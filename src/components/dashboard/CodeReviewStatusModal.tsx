@@ -62,7 +62,7 @@ const SortableHeader = ({
       className="px-3 py-3 text-center font-medium text-gray-500 cursor-pointer hover:bg-gray-100 select-none"
       onClick={() => onSort(column)}
     >
-      <div className="flex items-center justify-center gap-1">
+      <div className="flex items-center justify-center gap-0.5">
         <span>{label}</span>
         {isActive ? (
           currentDirection === "asc" ? (
@@ -86,7 +86,7 @@ export const CodeReviewStatusModal = () => {
 
   // 페이지네이션 상태
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
 
   // 정렬 상태
   const [sortColumn, setSortColumn] = useState<CodeReviewSortBy>("collectedAt");
@@ -139,15 +139,26 @@ export const CodeReviewStatusModal = () => {
     return list.map((r) => `• ${r.name}(${r.team})`).join("\n");
   };
 
+  // Raw Data 보기 클릭 핸들러
+  const handleRawDataClick = (mrId: number) => {
+    window.open(`/raw-data/${mrId}`, "_blank");
+  };
+
   if (!shouldRender) return null;
 
   // 로딩/에러 상태 처리
   const summary = data?.summary ?? {
     totalMrCount: 0,
-    completedCount: 0,
-    completedRate: 0,
-    incompleteCount: 0,
-    incompleteRate: 0,
+    completed: {
+      count: 0,
+      rate: 0,
+      breakdown: { singleContributor: 0, multipleContributors: 0 },
+    },
+    incomplete: {
+      count: 0,
+      rate: 0,
+      breakdown: { singleContributor: 0, multipleContributors: 0 },
+    },
   };
   const items = data?.items ?? [];
   const pagination = data?.pagination ?? {
@@ -193,9 +204,9 @@ export const CodeReviewStatusModal = () => {
 
           {/* 본문 */}
           <div className="flex-1 overflow-hidden px-6 py-3 flex flex-col gap-3">
-            {/* 총 MR 수 */}
+            {/* 총 머지된 MR 수 */}
             <div className="gap-4 flex items-center">
-              <span className="text-gray-700">총 MR 수 </span>
+              <span className="text-gray-700">총 머지된 MR 수 </span>
               <span className="text-2xl font-bold text-gray-900">
                 {summary.totalMrCount}건
               </span>
@@ -206,42 +217,117 @@ export const CodeReviewStatusModal = () => {
               <div className="text-gray-700 flex items-center gap-2">
                 리뷰 진행률
               </div>
-              <div className="flex h-9 rounded-md overflow-hidden text-sm">
-                {isLoading ? (
-                  <div className="flex items-center justify-center w-full bg-gray-100">
-                    <LoadingSpinner size="sm" showMessage={false} />
+              {isLoading ? (
+                <div className="flex items-center justify-center h-20 bg-gray-100 rounded-md">
+                  <LoadingSpinner size="sm" showMessage={false} />
+                </div>
+              ) : (
+                <div className="flex">
+                  {/* 리뷰 완료 */}
+                  <div className="flex-1 border border-gray-200 border-r-0 rounded-l-lg py-3 px-0.5">
+                    <div className="text-sm font-medium text-gray-900 mb-2 text-center">
+                      리뷰 완료 {summary.completed.count}개 (
+                      {summary.completed.rate.toFixed(1)}%)
+                    </div>
+                    <div className="flex h-6 rounded overflow-hidden text-xs">
+                      {summary.completed.breakdown.singleContributor > 0 && (
+                        <div
+                          className="flex items-center justify-center font-medium"
+                          style={{
+                            width: `${
+                              (summary.completed.breakdown.singleContributor /
+                                summary.completed.count) *
+                              100
+                            }%`,
+                            backgroundColor: CODE_REVIEW_COLORS.completedSingle,
+                            color: CODE_REVIEW_COLORS.progressText,
+                          }}
+                        >
+                          MR 기여자 1명{" "}
+                          {summary.completed.breakdown.singleContributor}개
+                        </div>
+                      )}
+                      {summary.completed.breakdown.multipleContributors > 0 && (
+                        <div
+                          className="flex items-center justify-center font-medium"
+                          style={{
+                            width: `${
+                              (summary.completed.breakdown
+                                .multipleContributors /
+                                summary.completed.count) *
+                              100
+                            }%`,
+                            backgroundColor:
+                              CODE_REVIEW_COLORS.completedMultiple,
+                            color: CODE_REVIEW_COLORS.progressText,
+                          }}
+                        >
+                          MR기여자 2명이상{" "}
+                          {summary.completed.breakdown.multipleContributors}개
+                        </div>
+                      )}
+                      {summary.completed.count === 0 && (
+                        <div className="flex-1 bg-gray-100 flex items-center justify-center text-gray-400">
+                          데이터 없음
+                        </div>
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    {summary.completedRate > 0 && (
-                      <div
-                        className="flex items-center justify-center font-medium"
-                        style={{
-                          width: `${summary.completedRate}%`,
-                          backgroundColor: CODE_REVIEW_COLORS.completed,
-                          color: CODE_REVIEW_COLORS.completedText,
-                        }}
-                      >
-                        완료 {summary.completedCount}개 (
-                        {Math.round(summary.completedRate)}%)
-                      </div>
-                    )}
-                    {summary.incompleteRate > 0 && (
-                      <div
-                        className="flex items-center justify-center font-medium"
-                        style={{
-                          width: `${summary.incompleteRate}%`,
-                          backgroundColor: CODE_REVIEW_COLORS.incomplete,
-                          color: CODE_REVIEW_COLORS.incompleteText,
-                        }}
-                      >
-                        미완료 {summary.incompleteCount}개 (
-                        {Math.round(summary.incompleteRate)}%)
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
+
+                  {/* 리뷰 미완료 */}
+                  <div className="flex-1 border border-gray-200 rounded-r-lg py-3 px-0.5">
+                    <div className="text-sm font-medium text-gray-900 mb-2 text-center">
+                      리뷰 미완료 {summary.incomplete.count}개 (
+                      {summary.incomplete.rate.toFixed(1)}%)
+                    </div>
+                    <div className="flex h-6 rounded overflow-hidden text-xs">
+                      {summary.incomplete.breakdown.singleContributor > 0 && (
+                        <div
+                          className="flex items-center justify-center font-medium"
+                          style={{
+                            width: `${
+                              (summary.incomplete.breakdown.singleContributor /
+                                summary.incomplete.count) *
+                              100
+                            }%`,
+                            backgroundColor:
+                              CODE_REVIEW_COLORS.incompleteSingle,
+                            color: CODE_REVIEW_COLORS.progressText,
+                          }}
+                        >
+                          MR 기여자 1명{" "}
+                          {summary.incomplete.breakdown.singleContributor}개
+                        </div>
+                      )}
+                      {summary.incomplete.breakdown.multipleContributors >
+                        0 && (
+                        <div
+                          className="flex items-center justify-center font-medium"
+                          style={{
+                            width: `${
+                              (summary.incomplete.breakdown
+                                .multipleContributors /
+                                summary.incomplete.count) *
+                              100
+                            }%`,
+                            backgroundColor:
+                              CODE_REVIEW_COLORS.incompleteMultiple,
+                            color: CODE_REVIEW_COLORS.progressText,
+                          }}
+                        >
+                          MR기여자 2명이상{" "}
+                          {summary.incomplete.breakdown.multipleContributors}개
+                        </div>
+                      )}
+                      {summary.incomplete.count === 0 && (
+                        <div className="flex-1 bg-gray-100 flex items-center justify-center text-gray-400">
+                          데이터 없음
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 리뷰 현황 목록 */}
@@ -254,13 +340,14 @@ export const CodeReviewStatusModal = () => {
                 <div className="bg-gray-50">
                   <table className="w-full table-fixed">
                     <colgroup>
+                      <col className="w-[12%]" />
+                      <col className="w-[9%]" />
+                      <col className="w-[12%]" />
                       <col className="w-[14%]" />
-                      <col className="w-[11%]" />
                       <col className="w-[14%]" />
-                      <col className="w-[16%]" />
-                      <col className="w-[16%]" />
-                      <col className="w-[16%]" />
-                      <col className="w-[11%]" />
+                      <col className="w-[14%]" />
+                      <col className="w-[10%]" />
+                      <col className="w-[13%]" />
                     </colgroup>
                     <thead>
                       <tr>
@@ -309,12 +396,15 @@ export const CodeReviewStatusModal = () => {
                           currentDirection={sortDirection}
                           onSort={handleSort}
                         />
+                        <th className="px-3 py-3 text-center font-medium text-gray-500">
+                          Raw Data
+                        </th>
                       </tr>
                     </thead>
                   </table>
                 </div>
-                {/* 테이블 본문 - 15행 기준 높이 고정 */}
-                <div className="min-h-[554px]">
+                {/* 테이블 본문 - 10행 기준 높이 고정 */}
+                <div className="min-h-[365px]">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <LoadingSpinner />
@@ -334,13 +424,14 @@ export const CodeReviewStatusModal = () => {
                   ) : (
                     <table className="w-full table-fixed">
                       <colgroup>
+                        <col className="w-[12%]" />
+                        <col className="w-[9%]" />
+                        <col className="w-[12%]" />
                         <col className="w-[14%]" />
-                        <col className="w-[11%]" />
                         <col className="w-[14%]" />
-                        <col className="w-[16%]" />
-                        <col className="w-[16%]" />
-                        <col className="w-[16%]" />
-                        <col className="w-[11%]" />
+                        <col className="w-[14%]" />
+                        <col className="w-[10%]" />
+                        <col className="w-[13%]" />
                       </colgroup>
                       <tbody className="divide-y divide-gray-100">
                         {items.map((item: ReviewItem, index: number) => (
@@ -405,6 +496,14 @@ export const CodeReviewStatusModal = () => {
                             </td>
                             <td className="px-3 py-1 text-center">
                               <StatusBadge status={item.status} />
+                            </td>
+                            <td className="px-3 py-1 text-center">
+                              <button
+                                onClick={() => handleRawDataClick(item.mrId)}
+                                className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                              >
+                                보기
+                              </button>
                             </td>
                           </tr>
                         ))}
