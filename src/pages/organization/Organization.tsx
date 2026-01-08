@@ -223,7 +223,7 @@ const OrganizationPage = () => {
       />
 
       {/* 조직도 변경 히스토리 모달 */}
-      <OrgChangeHistoryModal />
+      <OrgChangeHistoryModal targetMonth={yearMonth} />
     </div>
   );
 };
