@@ -46,10 +46,11 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
   const [isApplying, setIsApplying] = useState(false);
 
   // 비율 설정 조회 API
-  const { data: weightSettingsData, isLoading } = useWeightSettings(
-    month,
-    true,
-  );
+  const {
+    data: weightSettingsData,
+    isLoading,
+    refetch,
+  } = useWeightSettings(month, true, true);
 
   // API 데이터가 로드되면 해당 카테고리의 가중치 적용
   useEffect(() => {
@@ -143,6 +144,7 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
           weight: m.weight,
         })),
       });
+      await refetch();
       onApply?.();
     } catch {
       window.confirm("비율 설정 저장 중 오류가 발생했습니다.");

@@ -114,9 +114,10 @@ export const updateTargetValues = async (
  */
 export const fetchWeightSettings = async (
   month: string,
+  pending: boolean,
 ): Promise<WeightSettingsResponse> => {
   return apiGet<WeightSettingsResponse>(
-    `/metrics/weight-settings?month=${month}`,
+    `/metrics/weight-settings?month=${month}&pending=${pending}`,
   );
 };
 
