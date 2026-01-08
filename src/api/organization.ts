@@ -8,10 +8,6 @@ import type {
   FlatViewType,
 } from "@/types/organization.types";
 import { apiGet, apiPatch, apiPut } from "@/libs/fetch";
-import {
-  generateMockOrganizationMetricsData,
-  USE_MOCK_METRICS,
-} from "@/mocks/organizationMetrics.mock";
 
 // 개발조직 일괄 변경 요청 타입
 export interface EvaluationTargetChange {
@@ -99,13 +95,6 @@ export const fetchOrganizationAllMetrics = async (
     limit,
     search,
   } = normalizedParams;
-
-  // Mock 모드일 경우 Mock 데이터 반환
-  if (USE_MOCK_METRICS) {
-    // 실제 API처럼 약간의 지연 추가
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    return generateMockOrganizationMetricsData(yearMonth);
-  }
 
   // URL 쿼리 파라미터 구성
   const queryParams = new URLSearchParams();
