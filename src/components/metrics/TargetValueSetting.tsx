@@ -5,12 +5,13 @@ import {
   getCategoryLabel,
   getMetricUnit,
   getMetricName,
+  convertToMetricsListData,
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
-import { useTargetValues } from "@/api/hooks/useTargetValues";
 import { updateTargetValues } from "@/api/metrics";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Button } from "@/components/ui/Button";
+import { useMetricsPreview } from "@/api/hooks/useMetricsPreview";
 
 // 범주별 스타일 정의
 const getCategoryStyle = (category: MetricCategory) => {
@@ -97,35 +98,42 @@ export const TargetValueSetting = ({
   const [editedMetrics, setEditedMetrics] = useState<TargetValueMetric[]>([]);
   const [errors, setErrors] = useState<Record<number, ValidationError>>({});
   const [isApplying, setIsApplying] = useState(false);
+  // 지표 미리보기 데이터 조회
+  const { data: metricsData, isLoading, refetch } = useMetricsPreview();
 
-  // 3개 범주의 목표값 조회
-  const { data: qualityData, isLoading: isLoadingQuality } = useTargetValues(
-    "quality",
-    month,
-    true,
-  );
-  const { data: reviewData, isLoading: isLoadingReview } = useTargetValues(
-    "review",
-    month,
-    true,
-  );
-  const { data: efficiencyData, isLoading: isLoadingEfficiency } =
-    useTargetValues("efficiency", month, true);
+  // [변경: 2026-01-08 13:25, 김병현 수정] 3개 범주의 목표값 조회 및 변환
+  const qualityData = React.useMemo(() => {
+    if (!metricsData) {
+      return [];
+    }
+    return convertToMetricsListData(metricsData, MetricCategory.CODE_QUALITY);
+  }, [metricsData]);
 
-  const isLoading = isLoadingQuality || isLoadingReview || isLoadingEfficiency;
+  const reviewData = React.useMemo(() => {
+    if (!metricsData) {
+      return [];
+    }
+    return convertToMetricsListData(metricsData, MetricCategory.REVIEW_QUALITY);
+  }, [metricsData]);
+
+  const efficiencyData = React.useMemo(() => {
+    if (!metricsData) {
+      return [];
+    }
+    return convertToMetricsListData(
+      metricsData,
+      MetricCategory.DEVELOPMENT_EFFICIENCY,
+    );
+  }, [metricsData]);
 
   // API 데이터가 로드되면 editedMetrics 초기화
   useEffect(() => {
-    if (qualityData && reviewData && efficiencyData) {
-      const allMetrics = [
-        ...qualityData.metrics,
-        ...reviewData.metrics,
-        ...efficiencyData.metrics,
-      ];
+    if (metricsData) {
+      const allMetrics = [...qualityData, ...reviewData, ...efficiencyData];
       setEditedMetrics(allMetrics);
       setErrors({});
     }
-  }, [qualityData, reviewData, efficiencyData]);
+  }, [qualityData, reviewData, efficiencyData, metricsData]);
 
   // 데이터 변경 시 부모에게 알림
   useEffect(() => {
@@ -213,6 +221,7 @@ export const TargetValueSetting = ({
 
       await Promise.all(updatePromises);
       onApply?.();
+      refetch();
     } catch {
       window.confirm("목표값 저장 중 오류가 발생했습니다.");
     } finally {
