@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Settings } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/Button";
@@ -59,12 +59,20 @@ export const MetricStandardSettingModal = ({
     duration: 200,
   });
 
-  //
+  // [변경: 2026-01-08 12:15, 김병현 수정] useCallback으로 메모이제이션하여 불필요한 재생성 방지
+  const resetPreviewData = useCallback(async () => {
+    // 변경내역 취소 API 호출
+    await cancelPendingChanges();
+    // 쿼리 캐시 무효화 (다음에 모달 열릴 때 새로 조회)
+    await queryClient.invalidateQueries({ queryKey: metricsPreviewKeys.all });
+    await queryClient.invalidateQueries({ queryKey: pendingSummaryKeys.all });
+  }, [queryClient]);
+
   useEffect(() => {
     if (isOpen) {
       resetPreviewData();
     }
-  }, [isOpen]);
+  }, [isOpen, resetPreviewData]);
 
   // 지표 미리보기 데이터 조회 (모달이 열릴 때만 조회)
   const {
@@ -80,7 +88,14 @@ export const MetricStandardSettingModal = ({
 
   // 달성률 기준 조회
   const { data: criteriaData } = useAchievementCriteria(month);
-  const excellentThreshold = criteriaData?.thresholds.excellent ?? 80;
+  const excellentThreshold = useMemo(() => {
+    if (pendingSummary) {
+      if (pendingSummary.achievementCriteriaExcellent) {
+        return pendingSummary.achievementCriteriaExcellent;
+      }
+    }
+    return criteriaData?.thresholds.excellent ?? 80;
+  }, [criteriaData, pendingSummary]);
   const dangerThreshold = criteriaData?.thresholds.danger ?? 70;
 
   // API 응답에서 변경 사항 데이터 추출
@@ -155,13 +170,7 @@ export const MetricStandardSettingModal = ({
 
   // 변경 초기화 확인
   const [isResetting, setIsResetting] = useState(false);
-  const resetPreviewData = async () => {
-    // 변경내역 취소 API 호출
-    await cancelPendingChanges();
-    // 쿼리 캐시 무효화 (다음에 모달 열릴 때 새로 조회)
-    await queryClient.invalidateQueries({ queryKey: metricsPreviewKeys.all });
-    await queryClient.invalidateQueries({ queryKey: pendingSummaryKeys.all });
-  };
+
   const handleResetConfirm = async () => {
     setIsResetting(true);
     try {
