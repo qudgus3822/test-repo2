@@ -166,22 +166,40 @@ export const AchievementRateSetting = ({
             />
             <span className="font-medium text-gray-900">우수 기준</span>
           </div>
-          <div className="flex items-center gap-3 mb-1 pl-1">
-            <input
-              type="number"
-              step="1"
-              value={excellentThreshold}
-              onChange={(e) =>
-                setExcellentThreshold(Math.floor(Number(e.target.value)))
-              }
-              onKeyDown={handleKeyDown}
-              className={`flex-1 px-3 py-2 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
-                isExcellentThresholdValid
-                  ? "border-gray-200 focus:ring-blue-500"
-                  : "border-red-300 focus:ring-red-500"
-              }`}
-            />
-            <span className="text-gray-600 whitespace-nowrap">% 이상</span>
+          <div className="flex items-center gap-3 mb-2 w-full justify-between">
+            <div className="flex items-center gap-3 w-[47%] justify-start pl-1">
+              <input
+                type="number"
+                step="1"
+                value={excellentThreshold}
+                onChange={(e) =>
+                  setExcellentThreshold(Math.floor(Number(e.target.value)))
+                }
+                onKeyDown={handleKeyDown}
+                className={`w-[80%] px-4 py-2.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                  isExcellentThresholdValid
+                    ? "border-gray-200 focus:ring-blue-500"
+                    : "border-red-300 focus:ring-red-500"
+                }`}
+              />
+              <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                % 이상
+              </span>
+            </div>
+            <span className="text-sm text-gray-600 whitespace-nowrap w-[6%] text-center">
+              ~
+            </span>
+            <div className="flex items-center gap-3 w-[47%] justify-end">
+              <input
+                type="number"
+                value={100}
+                disabled
+                className="w-[80%] px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+              />
+              <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
+                % 이하
+              </span>
+            </div>
           </div>
           {!isExcellentThresholdValid && (
             <p className="text-red-500 mb-1 pl-1">
@@ -189,7 +207,7 @@ export const AchievementRateSetting = ({
             </p>
           )}
           <p className="text-gray-500 pl-1">
-            달성률이 이 값 이상이면 초록색 체크 아이콘이 표시됩니다.
+            달성률이 이 범위에 있으면 초록색 체크 아이콘이 표시됩니다.
           </p>
         </div>
 
@@ -279,7 +297,9 @@ export const AchievementRateSetting = ({
                 className="w-4 h-4"
                 style={{ color: excellentConfig.color }}
               />
-              <span className="text-gray-700">{excellentThreshold}% 이상</span>
+              <span className="text-gray-700">
+                {excellentThreshold}% ~ 100% 이하
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <WarningIcon
