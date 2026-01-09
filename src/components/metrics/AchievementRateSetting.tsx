@@ -171,10 +171,12 @@ export const AchievementRateSetting = ({
               <input
                 type="number"
                 step="1"
-                value={excellentThreshold}
-                onChange={(e) =>
-                  setExcellentThreshold(Math.floor(Number(e.target.value)))
-                }
+                value={String(excellentThreshold)}
+                onChange={(e) => {
+                  // 앞의 0 제거 후 숫자로 변환
+                  const trimmedValue = e.target.value.replace(/^0+/, "") || "0";
+                  setExcellentThreshold(Math.floor(Number(trimmedValue)));
+                }}
                 onKeyDown={handleKeyDown}
                 className={`w-[80%] px-4 py-2.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
                   isExcellentThresholdValid
@@ -265,10 +267,12 @@ export const AchievementRateSetting = ({
             <input
               type="number"
               step="1"
-              value={dangerThreshold}
-              onChange={(e) =>
-                setDangerThreshold(Math.floor(Number(e.target.value)))
-              }
+              value={String(dangerThreshold)}
+              onChange={(e) => {
+                // 앞의 0 제거 후 숫자로 변환
+                const trimmedValue = e.target.value.replace(/^0+/, "") || "0";
+                setDangerThreshold(Math.floor(Number(trimmedValue)));
+              }}
               onKeyDown={handleKeyDown}
               className={`flex-1 px-3 py-2 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
                 isDangerThresholdValid

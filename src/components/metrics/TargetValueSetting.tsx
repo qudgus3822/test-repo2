@@ -55,6 +55,10 @@ const validateTargetValue = (value: string): ValidationError => {
     return "invalid";
   }
 
+  if(Number(trimmedValue) <= 0) {
+    return "empty";
+  }
+
   return null;
 };
 
