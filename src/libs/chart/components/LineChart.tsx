@@ -155,7 +155,7 @@ export const LineChart = ({
               dataKey={key}
               stroke={isDashed ? dashedColor : colors[index % colors.length]}
               strokeWidth={1}
-              strokeDasharray={isDashed ? "1 1" : undefined}
+              strokeDasharray={isDashed ? "5 5" : undefined}
               dot={showDots && !isDashed ? { r: 4 } : false}
               activeDot={showDots ? { r: 6 } : false}
             />

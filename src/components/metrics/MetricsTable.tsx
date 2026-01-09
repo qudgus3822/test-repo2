@@ -1,5 +1,6 @@
 import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
+import { MetricsTabs } from "./MetricsTabs";
 import { Search, ArrowDownUp, Info, ArrowUp, ArrowDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { MetricItem } from "@/types/metrics.types";
@@ -49,17 +50,18 @@ interface MetricsTableProps {
   month: string;
 }
 
-interface Tab {
-  id: TabType;
-  label: string;
-  count: number;
-  category?: MetricCategory;
-}
+// 탭 ID별 카테고리 매핑 (필터링용)
+const TAB_CATEGORY_MAP: Record<TabType, MetricCategory | null> = {
+  all: null,
+  bdpi: null,
+  codeQuality: MetricCategory.CODE_QUALITY,
+  reviewQuality: MetricCategory.REVIEW_QUALITY,
+  developmentEfficiency: MetricCategory.DEVELOPMENT_EFFICIENCY,
+};
 
 export const MetricsTable = ({ month }: MetricsTableProps) => {
   const {
     activeTab,
-    setActiveTab,
     achievementRateFilter,
     setAchievementRateFilter,
     achievementRateExcellentThreshold,
@@ -157,42 +159,13 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
 
   const tableHeight = getTableHeight();
 
-  const tabs: Tab[] = [
-    {
-      id: "bdpi",
-      label: "전체",
-      count: achievementRateFilteredAllMetrics.length,
-    },
-    {
-      id: "codeQuality",
-      label: "코드품질",
-      count: codeQualityCount,
-      category: MetricCategory.CODE_QUALITY,
-    },
-    {
-      id: "reviewQuality",
-      label: "리뷰품질",
-      count: reviewQualityCount,
-      category: MetricCategory.REVIEW_QUALITY,
-    },
-    {
-      id: "developmentEfficiency",
-      label: "개발효율",
-      count: developmentEfficiencyCount,
-      category: MetricCategory.DEVELOPMENT_EFFICIENCY,
-    },
-  ];
-
   // 활성 탭에 따라 지표 필터링 (이미 달성률 필터가 적용된 metrics 사용)
   const filteredMetrics =
     activeTab === "bdpi"
       ? achievementRateFilteredAllMetrics
-      : achievementRateFilteredAllMetrics.filter((m) => {
-          const activeTabData = tabs.find((t) => t.id === activeTab);
-          return (
-            activeTabData?.category && m.category === activeTabData.category
-          );
-        });
+      : achievementRateFilteredAllMetrics.filter(
+          (m) => m.category === TAB_CATEGORY_MAP[activeTab],
+        );
 
   // 프론트에서 달성률 기준값에 따라 status 계산
   const metricsWithCalculatedStatus = filteredMetrics.map((metric) => ({
@@ -236,23 +209,14 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   return (
     <div className="space-y-4">
       {/* Tabs와 달성률 필터 */}
-      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-2">
         {/* Tabs 영역 */}
-        <div className="flex space-x-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`pb-4 px-1 text-sm font-medium border-b-2 -mb-[20px] transition-colors cursor-pointer ${
-                activeTab === tab.id
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab.label}({tab.count})
-            </button>
-          ))}
-        </div>
+        <MetricsTabs
+          allCount={achievementRateFilteredAllMetrics.length}
+          codeQualityCount={codeQualityCount}
+          reviewQualityCount={reviewQualityCount}
+          developmentEfficiencyCount={developmentEfficiencyCount}
+        />
         <div className="flex items-center gap-3">
           {/* 달성률 필터 */}
           <AchievementRateFilter
