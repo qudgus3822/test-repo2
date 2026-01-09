@@ -58,17 +58,25 @@ const convertApiToOrgItemState = (
   return tree.map((root) => convertNode(root, true));
 };
 
-export const OrgChangeHistoryModal = () => {
+interface OrgChangeHistoryModalProps {
+  targetMonth?: string; // [변경: 2026-01-08 12:00, 김병현 수정] YYYY-MM 형식의 대상 월
+}
+
+export const OrgChangeHistoryModal = ({
+  targetMonth,
+}: OrgChangeHistoryModalProps) => {
   const { isOrgHistoryModalOpen, setOrgHistoryModal } = useDashboardStore();
 
   const [currentMonthData, setCurrentMonthData] = useState<OrgItemState[]>([]);
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // 당월 계산
-  const currentMonth = useMemo(() => getCurrentYearMonth(), []);
+  // [변경: 2026-01-08 12:00, 김병현 수정] targetMonth가 없으면 현재 월 사용
+  const currentMonth = useMemo(() => {
+    return targetMonth ?? getCurrentYearMonth();
+  }, [targetMonth]);
 
-  // API에서 당월 조직 데이터 조회
+  // [변경: 2026-01-08 12:00, 김병현 수정] targetMonth에 대한 조직 데이터 조회
   const { data: currentMonthApiData, isLoading } = useOrgTypeSettings(
     currentMonth,
     isOrgHistoryModalOpen,
@@ -123,9 +131,9 @@ export const OrgChangeHistoryModal = () => {
 
   if (!shouldRender) return null;
 
-  // 현재 날짜 기준 당월 라벨
-  const now = new Date();
-  const currentMonthLabel = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
+  // [변경: 2026-01-08 12:05, 김병현 수정] targetMonth(currentMonth) 기준으로 라벨 생성
+  const [year, month] = currentMonth.split("-").map(Number);
+  const currentMonthLabel = `${year}년 ${month}월`;
 
   // 마지막 동기화 일자
   const lastSyncDate = formatDisplayDateTime(currentMonthApiData?.timestamp);
