@@ -1,4 +1,9 @@
-import { MetricCategory, MetricStatus } from "@/types/metrics.types";
+import {
+  MetricCategory,
+  MetricStatus,
+  type MetricsListData,
+  type TargetValueMetric,
+} from "@/types/metrics.types";
 import type { ThresholdType } from "@/types/serviceStability.types";
 import { CheckCircle2, AlertCircle, CircleX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -789,3 +794,46 @@ export const calculateMetricStatus = (
   }
   return MetricStatus.DANGER;
 };
+
+/**
+ * MetricsListData를 TargetValueMetric[] 배열로 변환하는 함수
+ * [변경: 2026-01-08 13:23, 김병현 수정] MetricsListData -> TargetValueMetric[] 변환 함수로 수정
+ * @param metricsListData - 변환할 MetricsListData
+ * @param targetCategory - 필터링할 범주 (선택사항)
+ * @returns TargetValueMetric[] 배열
+ */
+export function convertToMetricsListData(
+  metricsListData: MetricsListData,
+  targetCategory?: MetricCategory,
+): TargetValueMetric[] {
+  // [변경: 2026-01-08 13:23, 김병현 수정] MetricCategory enum을 string으로 변환하는 헬퍼 함수
+  const categoryToString = (category: MetricCategory): string => {
+    switch (category) {
+      case MetricCategory.CODE_QUALITY:
+        return "quality";
+      case MetricCategory.REVIEW_QUALITY:
+        return "review";
+      case MetricCategory.DEVELOPMENT_EFFICIENCY:
+        return "efficiency";
+      default:
+        return "quality";
+    }
+  };
+
+  // MetricItem을 TargetValueMetric으로 변환
+  let metrics = metricsListData.metrics.map((metricItem) => ({
+    metricName: metricItem.name,
+    category: categoryToString(metricItem.category),
+    targetValue: metricItem.targetValue,
+    unit: metricItem.unit,
+    metricCode: metricItem.metricCode,
+  }));
+
+  // targetCategory가 지정된 경우 해당 범주만 필터링
+  if (targetCategory) {
+    const targetCategoryString = categoryToString(targetCategory);
+    metrics = metrics.filter((m) => m.category === targetCategoryString);
+  }
+
+  return metrics;
+}

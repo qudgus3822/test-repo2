@@ -14,10 +14,10 @@ export const weightSettingsKeys = {
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
  * @returns React Query 결과 객체
  */
-export const useWeightSettings = (month: string, enabled: boolean = true) => {
+export const useWeightSettings = (month: string, enabled: boolean = true, pending : boolean = false) => {
   return useQuery<WeightSettingsResponse, Error>({
     queryKey: weightSettingsKeys.byMonth(month),
-    queryFn: () => fetchWeightSettings(month),
+    queryFn: () => fetchWeightSettings(month, pending),
     enabled,
     staleTime: 0, // 항상 최신 데이터 조회
   });

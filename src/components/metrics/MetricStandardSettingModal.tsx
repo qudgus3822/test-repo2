@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Settings } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/Button";
@@ -58,6 +58,13 @@ export const MetricStandardSettingModal = ({
   const { shouldRender, isAnimating } = useModalAnimation(isOpen, {
     duration: 200,
   });
+
+  //
+  useEffect(() => {
+    if (isOpen) {
+      resetPreviewData();
+    }
+  }, [isOpen]);
 
   // 지표 미리보기 데이터 조회 (모달이 열릴 때만 조회)
   const {
@@ -148,14 +155,17 @@ export const MetricStandardSettingModal = ({
 
   // 변경 초기화 확인
   const [isResetting, setIsResetting] = useState(false);
+  const resetPreviewData = async () => {
+    // 변경내역 취소 API 호출
+    await cancelPendingChanges();
+    // 쿼리 캐시 무효화 (다음에 모달 열릴 때 새로 조회)
+    await queryClient.invalidateQueries({ queryKey: metricsPreviewKeys.all });
+    await queryClient.invalidateQueries({ queryKey: pendingSummaryKeys.all });
+  };
   const handleResetConfirm = async () => {
     setIsResetting(true);
     try {
-      // 변경내역 취소 API 호출
-      await cancelPendingChanges();
-      // 쿼리 캐시 무효화 (다음에 모달 열릴 때 새로 조회)
-      await queryClient.invalidateQueries({ queryKey: metricsPreviewKeys.all });
-      await queryClient.invalidateQueries({ queryKey: pendingSummaryKeys.all });
+      await resetPreviewData();
       // 팝업창 닫기 + 설정 화면 모두 닫기
       setIsSettingsResetConfirmModalOpen(false);
       onClose();
