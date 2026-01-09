@@ -352,7 +352,7 @@ export const MetricStandardSettingModal = ({
                               className="w-3.5 h-3.5"
                               style={{ color: excellentConfig.color }}
                             />
-                            {excellentThreshold}% 이상
+                            {excellentThreshold}% 이상 ~ 100% 이하
                           </span>
                           <span
                             className="flex items-center gap-1"

@@ -145,6 +145,15 @@ export const CHANGE_TYPE_BADGE_COLORS = {
 
 // 코드 리뷰 진행률 색상
 export const CODE_REVIEW_COLORS = {
+  // 완료 - 진행률 바
+  completedSingle: "#4CAF50", // MR 기여자 1명
+  completedMultiple: "#69956B", // MR 기여자 2명 이상
+  // 미완료 - 진행률 바
+  incompleteSingle: "#ACACAC", // MR 기여자 1명
+  incompleteMultiple: "#787878", // MR 기여자 2명 이상
+  // 텍스트 색상
+  progressText: "#FFFFFF", // 진행률 바 텍스트 (white)
+  // Legacy (기존 호환)
   completed: "#22C55E", // 완료 (green-500)
   completedText: "#FFFFFF", // 완료 텍스트 (white)
   incomplete: "#D1D5DB", // 미완료 (gray-300)

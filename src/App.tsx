@@ -13,6 +13,7 @@ import ProjectsPage from "@/pages/projects/Projects";
 import OrganizationPage from "@/pages/organization/Organization";
 import IncidentsPage from "@/pages/incidents/Incidents";
 import SettingsPage from "@/pages/settings/Settings";
+import RawDataViewer from "@/pages/raw-data/RawDataViewer";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             {/* 공개 라우트 */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/logout" element={<LogoutPage />} />
+            <Route path="/raw-data/:mrId" element={<RawDataViewer />} />
 
             {/* 보호된 라우트 - 로그인 필요 */}
             <Route element={<ProtectedRoute />}>

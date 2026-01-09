@@ -34,15 +34,27 @@ export interface ReviewItem {
   contributorCount: number; // MR 기여자 수
   contributors: ReviewerInfo[]; // MR 기여자 목록
   status: ReviewStatus; // 상태
+  rawDataUrl: string; // 원시 데이터 URL
+}
+
+// 리뷰 상태별 breakdown 데이터
+export interface ReviewBreakdown {
+  singleContributor: number; // MR 기여자 1명
+  multipleContributors: number; // MR 기여자 2명 이상
+}
+
+// 리뷰 상태별 상세 데이터
+export interface ReviewStatusDetail {
+  count: number; // 건수
+  rate: number; // 비율
+  breakdown: ReviewBreakdown; // 기여자별 breakdown
 }
 
 // Summary 데이터
 export interface CodeReviewSummary {
   totalMrCount: number; // 총 MR 건수
-  completedCount: number; // 완료된 MR 수
-  completedRate: number; // 완료 비율
-  incompleteCount: number; // 미완료 MR 수
-  incompleteRate: number; // 미완료 비율
+  completed: ReviewStatusDetail; // 완료 상세
+  incomplete: ReviewStatusDetail; // 미완료 상세
 }
 
 // Pagination 데이터
@@ -71,6 +83,7 @@ export type CodeReviewSortBy =
 
 // API 요청 파라미터
 export interface CodeReviewProgressParams {
+  yearMonth?: string; // YYYY-MM 형식 (예: 2025-12)
   page?: number;
   limit?: number;
   sortBy?: CodeReviewSortBy;
