@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MetricCategory } from "@/types/metrics.types";
 import { getCategoryLabel, getMetricName } from "@/utils/metrics";
 import { useWeightSettings } from "@/api/hooks/useWeightSettings";
@@ -17,6 +17,37 @@ const getCategoryValue = (category: MetricCategory): string => {
       return "efficiency";
     default:
       return "quality";
+  }
+};
+
+// 유효성 검사 에러 타입
+type ValidationError = "empty" | "invalid" | null;
+
+// 가중치 유효성 검사 함수
+const validateWeight = (value: string): ValidationError => {
+  const trimmedValue = value.trim();
+  if (trimmedValue === "" || trimmedValue === "0") {
+    return "empty";
+  }
+
+  // 1~3 사이의 정수만 허용
+  const numValue = parseInt(trimmedValue, 10);
+  if (isNaN(numValue) || numValue < 1 || numValue > 3) {
+    return "invalid";
+  }
+
+  return null;
+};
+
+// 에러 메시지 반환
+const getErrorMessage = (error: ValidationError): string => {
+  switch (error) {
+    case "empty":
+      return "가중치는 1~3 사이의 정수를 입력해주세요.";
+    case "invalid":
+      return "1~3 사이의 정수를 입력해주세요.";
+    default:
+      return "";
   }
 };
 
@@ -42,7 +73,7 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
     MetricCategory.CODE_QUALITY,
   );
   const [editedMetrics, setEditedMetrics] = useState<MetricWithWeight[]>([]);
-  const [errors, setErrors] = useState<Map<string, string>>(new Map());
+  const [errors, setErrors] = useState<Record<string, ValidationError>>({});
   const [isApplying, setIsApplying] = useState(false);
 
   // 비율 설정 조회 API
@@ -70,7 +101,7 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
       } else {
         setEditedMetrics([]);
       }
-      setErrors(new Map());
+      setErrors({});
     }
   }, [weightSettingsData, selectedCategory]);
 
@@ -88,47 +119,28 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
 
   // 가중치 변경 핸들러
   const handleWeightChange = (metricCode: string, value: string) => {
-    const newErrors = new Map(errors);
-
-    // 빈 값 허용 (입력 중)
-    if (value === "") {
-      const updated = editedMetrics.map((m) =>
-        m.metricCode === metricCode ? { ...m, weight: 0 } : m,
-      );
-      setEditedMetrics(updated);
-      newErrors.delete(metricCode);
-      setErrors(newErrors);
-      return;
-    }
-
-    const numValue = parseInt(value, 10);
-
-    // 유효성 검증
-    if (isNaN(numValue) || numValue < 1 || numValue > 3) {
-      newErrors.set(metricCode, "1~3 사이의 정수를 입력해주세요.");
-      setErrors(newErrors);
-      return;
-    }
-
-    // 정상 값 설정
-    newErrors.delete(metricCode);
-    setErrors(newErrors);
-
     const updated = editedMetrics.map((m) =>
-      m.metricCode === metricCode ? { ...m, weight: numValue } : m,
+      m.metricCode === metricCode ? { ...m, weight: value === "" ? 0 : parseInt(value, 10) } : m,
     );
     setEditedMetrics(updated);
+
+    // 유효성 검사 실행
+    const error = validateWeight(value);
+    setErrors((prev) => ({ ...prev, [metricCode]: error }));
   };
 
   // 균등 분배
   // const handleDistributeEvenly = () => {
   //   const updated = editedMetrics.map((m) => ({ ...m, weight: 1 }));
   //   setEditedMetrics(updated);
-  //   setErrors(new Map());
+  //   setErrors({});
   // };
 
   // 에러 여부 확인
-  const hasErrors = errors.size > 0;
+  const hasErrors = editedMetrics.some((metric) => {
+    const error = errors[metric.metricCode] ?? validateWeight(String(metric.weight));
+    return error !== null;
+  });
 
   // 변경사항 적용 핸들러
   const handleApply = async () => {
@@ -221,50 +233,58 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
                 </colgroup>
                 <tbody>
                   {editedMetrics.map((metric) => {
-                    const error = errors.get(metric.metricCode);
+                    const error = errors[metric.metricCode];
+                    const hasError = error !== null && error !== undefined;
                     return (
-                      <tr
-                        key={metric.metricCode}
-                        className="h-[51px] border-b border-gray-100"
-                      >
-                        <td className="px-2 text-gray-900">
-                          <div className="flex flex-col">
-                            <span>{getMetricName(metric.metricCode)}</span>
-                            {error && (
-                              <span className="text-red-500">{error}</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-2">
-                          <div className="flex justify-center">
-                            <input
-                              type="number"
-                              min={1}
-                              max={3}
-                              value={metric.weight || ""}
-                              onChange={(e) =>
-                                handleWeightChange(
-                                  metric.metricCode,
-                                  e.target.value,
-                                )
-                              }
-                              onKeyDown={(e) => {
-                                if (["e", "E", "+", "-", "."].includes(e.key)) {
-                                  e.preventDefault();
+                      <React.Fragment key={metric.metricCode}>
+                        <tr
+                          className={`h-[51px] ${
+                            hasError ? "" : "border-b border-gray-100"
+                          }`}
+                        >
+                          <td className="px-2 text-gray-900">
+                            {getMetricName(metric.metricCode)}
+                          </td>
+                          <td className="px-2">
+                            <div className="flex justify-center">
+                              <input
+                                type="number"
+                                min={1}
+                                max={3}
+                                value={metric.weight || ""}
+                                onChange={(e) =>
+                                  handleWeightChange(
+                                    metric.metricCode,
+                                    e.target.value,
+                                  )
                                 }
-                              }}
-                              className={`w-20 text-center text-gray-700 px-2 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                                error
-                                  ? "border-red-300 bg-red-50"
-                                  : "border-gray-200"
-                              }`}
-                            />
-                          </div>
-                        </td>
-                        <td className="px-2 text-gray-700 text-center">
-                          {calculateRatio(metric.weight)}%
-                        </td>
-                      </tr>
+                                onKeyDown={(e) => {
+                                  if (["e", "E", "+", "-", "."].includes(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }}
+                                className={`w-20 text-center text-gray-700 px-2 py-1.5 bg-gray-50 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent ${
+                                  hasError
+                                    ? "border-red-300 bg-red-50 focus:ring-red-500"
+                                    : "border-gray-200 focus:ring-blue-500"
+                                }`}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-2 text-gray-700 text-center">
+                            {calculateRatio(metric.weight)}%
+                          </td>
+                        </tr>
+                        {hasError && (
+                          <tr className="border-b border-gray-100">
+                            <td colSpan={3} className="px-2 pb-1 pt-0">
+                              <span className="text-xs text-red-500">
+                                {getErrorMessage(error)}
+                              </span>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
