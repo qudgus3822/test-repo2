@@ -140,6 +140,7 @@ export interface PendingSummaryResponse {
   hasPending: boolean; // 변경 대기 항목 존재 여부
   targetValue: PendingSummaryCategoryCount; // 목표값 변경 개수
   achievementCriteria: number; // 달성률 기준 변경 개수
+  achievementCriteriaExcellent: number; // 달성률 기준 우수 변경 개수
   weight: PendingSummaryCategoryCount; // 비율설정 변경 개수
 }
 
