@@ -83,6 +83,7 @@ export type CodeReviewSortBy =
 
 // API 요청 파라미터
 export interface CodeReviewProgressParams {
+  yearMonth?: string; // YYYY-MM 형식 (예: 2025-12)
   page?: number;
   limit?: number;
   sortBy?: CodeReviewSortBy;

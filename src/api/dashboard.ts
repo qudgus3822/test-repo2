@@ -76,13 +76,25 @@ export const fetchCodeReviewProgress = async (
   params: CodeReviewProgressParams = {},
 ): Promise<CodeReviewProgressResponse> => {
   const {
+    yearMonth,
     page = 1,
     limit = 15,
     sortBy = "collectedAt",
     sortOrder = "desc",
   } = params;
 
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+    sortBy,
+    sortOrder,
+  });
+
+  if (yearMonth) {
+    queryParams.set("yearMonth", yearMonth);
+  }
+
   return apiGet<CodeReviewProgressResponse>(
-    `/reviews/progress?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`,
+    `/reviews/progress?${queryParams.toString()}`,
   );
 };

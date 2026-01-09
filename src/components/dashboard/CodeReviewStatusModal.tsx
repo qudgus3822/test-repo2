@@ -3,7 +3,7 @@ import { X, ArrowDownUp, ArrowUp, ArrowDown } from "lucide-react";
 import { useModalAnimation } from "@/hooks";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useCodeReviewProgress } from "@/api/hooks/useCodeReviewProgress";
-import { formatDateString } from "@/utils/date";
+import { formatDateString, formatYearMonth } from "@/utils/date";
 import {
   CODE_REVIEW_COLORS,
   REVIEW_STATUS_BADGE_COLORS,
@@ -79,7 +79,8 @@ const SortableHeader = ({
 };
 
 export const CodeReviewStatusModal = () => {
-  const { isCodeReviewModalOpen, setCodeReviewModal } = useDashboardStore();
+  const { isCodeReviewModalOpen, setCodeReviewModal, currentDate } =
+    useDashboardStore();
   const { shouldRender, isAnimating } = useModalAnimation(
     isCodeReviewModalOpen,
   );
@@ -92,9 +93,13 @@ export const CodeReviewStatusModal = () => {
   const [sortColumn, setSortColumn] = useState<CodeReviewSortBy>("collectedAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
+  // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
+  const yearMonth = formatYearMonth(currentDate);
+
   // API 호출
   const { data, isLoading, isError } = useCodeReviewProgress(
     {
+      yearMonth,
       page: currentPage,
       limit: itemsPerPage,
       sortBy: sortColumn,
