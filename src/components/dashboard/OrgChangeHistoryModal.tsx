@@ -2,11 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { X } from "lucide-react";
 import { OrgTypeLegend } from "@/components/ui/OrgTypeLegend";
 import { OrgItemRow, type OrgItemState } from "@/components/ui/OrgItemRow";
-import { LastSyncInfo } from "@/components/ui/LastSyncInfo";
 import { ChangeHistoryList } from "@/components/ui/ChangeHistoryList";
 import { useOrgTypeSettings } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { formatDisplayDateTime } from "@/utils/date";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import type { OrgTypeSettingsNode } from "@/types/organization.types";
 
@@ -135,9 +133,6 @@ export const OrgChangeHistoryModal = ({
   const [year, month] = currentMonth.split("-").map(Number);
   const currentMonthLabel = `${year}년 ${month}월`;
 
-  // 마지막 동기화 일자
-  const lastSyncDate = formatDisplayDateTime(currentMonthApiData?.timestamp);
-
   return (
     <>
       {/* 오버레이 */}
@@ -164,7 +159,6 @@ export const OrgChangeHistoryModal = ({
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">조직도</h2>
               <div className="flex items-center gap-4">
-                <LastSyncInfo syncDate={lastSyncDate} />
                 <button
                   onClick={handleClose}
                   className="text-gray-400 hover:text-gray-600 cursor-pointer"
@@ -178,7 +172,7 @@ export const OrgChangeHistoryModal = ({
           {/* 콘텐츠 - 2단 레이아웃 */}
           <div className="flex-1 overflow-hidden flex w-full">
             {/* 당월 */}
-            <div className="w-[400px] shrink-0 border-r border-gray-200 flex flex-col">
+            <div className="w-[400px] h-full shrink-0 border-r border-gray-200 flex flex-col">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -216,7 +210,7 @@ export const OrgChangeHistoryModal = ({
             </div>
 
             {/* 실/팀 변경 이력 */}
-            <div className="w-[750px] shrink-0 flex flex-col">
+            <div className="w-[750px] h-full shrink-0 flex flex-col">
               <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-gray-800">
