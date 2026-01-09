@@ -3,19 +3,19 @@ import { useNavigate } from "react-router-dom";
 import logoBlack from "@/assets/images/bithumb_logo_black_vertical.png";
 import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useAuth } from "@/api/hooks/useAuth";
 
 export default function Header() {
   const { formattedDate: lastUpdatedAt } = useLastAggregatedAt();
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const setLoggedOut = useAuthStore((state) => state.setLoggedOut);
+  const { logout } = useAuth();
 
   const handleProfileClick = () => {
     if (user) {
       // 로그인 상태: 로그아웃 확인
       if (window.confirm("로그아웃 하시겠습니까?")) {
-        setLoggedOut();
-        navigate("/login");
+        logout();
       }
     } else {
       // 비로그인 상태: 로그인 페이지 이동 확인

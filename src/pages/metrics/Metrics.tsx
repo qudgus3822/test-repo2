@@ -59,7 +59,8 @@ const MetricsPage = () => {
   const { isProcessing } = useSyncStatus();
 
   // 지표 리스트 API 호출 (모달에서 사용)
-  const { data: metricsListData } = useMetricsList(month);
+  const { data: metricsListData, refetch: metricsListRefetch } =
+    useMetricsList(month);
   const metrics = metricsListData?.metrics ?? [];
 
   // activeTab을 MetricCategory로 변환
@@ -76,7 +77,7 @@ const MetricsPage = () => {
     }
   };
 
-  // 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
+  // [변경: 2026-01-08 11:45, 김병현 수정] 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
     const isAnyModalOpen =
       isMetricsDetailModalOpen ||
@@ -84,33 +85,35 @@ const MetricsPage = () => {
       isSettingsChangeConfirmModalOpen ||
       isMetricStandardSettingModalOpen;
 
-    if (!isAnyModalOpen) return;
+    if (isAnyModalOpen) {
+      // 현재 스타일 저장
+      const originalOverflow = document.body.style.overflow;
+      const originalPaddingRight = document.body.style.paddingRight;
 
-    // 현재 스타일 저장
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
+      // 스크롤바 너비 계산
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
 
-    // 스크롤바 너비 계산
-    const scrollbarWidth =
-      window.innerWidth - document.documentElement.clientWidth;
+      // 스크롤 잠금 및 레이아웃 시프트 방지
+      document.body.classList.add("overflow-hidden");
+      if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+      }
 
-    // 스크롤 잠금 및 레이아웃 시프트 방지
-    document.body.classList.add("overflow-hidden");
-    if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
+      // 모달이 닫힐 때 원래 상태로 복원
+      return () => {
+        document.body.classList.remove("overflow-hidden");
+        document.body.style.overflow = originalOverflow;
+        document.body.style.paddingRight = originalPaddingRight;
+        metricsListRefetch();
+      };
     }
-
-    // 모달이 닫힐 때 원래 상태로 복원
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-    };
   }, [
     isMetricsDetailModalOpen,
     isMetricRateSettingModalOpen,
     isSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
+    metricsListRefetch,
   ]);
 
   // 변경사항 확정
