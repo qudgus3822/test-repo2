@@ -226,6 +226,12 @@ export const CodeReviewStatusModal = () => {
                 <div className="flex items-center justify-center h-20 bg-gray-100 rounded-md">
                   <LoadingSpinner size="sm" showMessage={false} />
                 </div>
+              ) : summary.totalMrCount === 0 ? (
+                <div className="flex items-center justify-center h-[78px] bg-gray-100 rounded-md border border-gray-200">
+                  <span className="text-gray-500">
+                    수집된 데이터가 없습니다.
+                  </span>
+                </div>
               ) : (
                 <div className="flex">
                   {/* 리뷰 완료 */}
@@ -352,7 +358,7 @@ export const CodeReviewStatusModal = () => {
               {/* 테이블 */}
               <div className="flex-1 flex flex-col overflow-hidden border border-gray-200 rounded-lg">
                 {/* 테이블 헤더 */}
-                <div className="bg-gray-50">
+                <div className="bg-gray-50 border-b border-gray-200">
                   <table className="w-full table-fixed">
                     <colgroup>
                       <col className="w-[12%]" />
@@ -431,7 +437,7 @@ export const CodeReviewStatusModal = () => {
                       </span>
                     </div>
                   ) : items.length === 0 ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex items-center py-4 justify-center h-full">
                       <span className="text-gray-500">
                         수집된 데이터가 없습니다.
                       </span>
