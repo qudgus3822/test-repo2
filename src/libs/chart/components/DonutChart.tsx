@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { TREND_COLORS, CHART_COLORS } from "@/styles/colors";
 
@@ -45,14 +46,15 @@ export const DonutChart = ({
   trend,
   noDataLabel,
 }: DonutChartProps) => {
+  const uniqueId = useId();
   const percentage = (value / maxValue) * 100;
   const data = [
     { name: "value", value: value },
     { name: "remaining", value: maxValue - value },
   ];
 
-  // 그라데이션 ID 생성 (고유값)
-  const gradientId = gradient?.id || `donut-gradient-${Math.random().toString(36).substring(2, 11)}`;
+  // 그라데이션 ID 생성 (React useId 사용으로 SSR 호환 및 고유성 보장)
+  const gradientId = gradient?.id || `donut-gradient${uniqueId}`;
   const fillColor = gradient ? `url(#${gradientId})` : color;
 
   return (

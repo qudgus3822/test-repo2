@@ -73,10 +73,21 @@ export const apiFetch = async (
     },
   };
 
-  // URL 처리: 상대 경로인 경우 baseUrl 추가
-  let url: RequestInfo | URL = input;
-  if (typeof input === "string" && !input.startsWith("http")) {
+  // URL 처리: 상대 경로만 허용하고 baseUrl 추가 (SSRF 방지)
+  let url: string;
+  if (typeof input === "string") {
+    // 외부 URL 차단 - 상대 경로만 허용
+    if (input.startsWith("http://") || input.startsWith("https://")) {
+      throw new Error("외부 URL은 허용되지 않습니다. 상대 경로를 사용해주세요.");
+    }
     url = `${env.apiBaseUrl}${input.startsWith("/") ? input : `/${input}`}`;
+  } else {
+    // Request 객체나 URL 객체의 경우 baseUrl 검증
+    const inputUrl = input instanceof Request ? input.url : input.toString();
+    if (!inputUrl.startsWith(env.apiBaseUrl)) {
+      throw new Error("허용되지 않은 URL입니다.");
+    }
+    url = inputUrl;
   }
 
   const response = await fetch(url, mergedOptions);
