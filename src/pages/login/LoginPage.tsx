@@ -7,7 +7,7 @@ import { env } from "@/env";
 
 const LoginPage = () => {
   const [isAdminLogin, setIsAdminLogin] = useState(false);
-  const { login, isLoggingIn, loginError } = useAuth();
+  const { login, isLoggingIn, loginError, logout } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(false);
@@ -20,6 +20,8 @@ const LoginPage = () => {
       setEmail(rememberedEmail);
       setRememberEmail(true);
     }
+
+    logout();
   }, []);
 
   const handleOktaLogin = () => {
@@ -36,7 +38,18 @@ const LoginPage = () => {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "로그인에 실패했습니다.";
-      setErrorMessage(message);
+      setErrorMessage(convertErrorMessage(message));
+    }
+  };
+
+  const convertErrorMessage = (message: string) => {
+    switch (message) {
+      case "Member not found in LDAP directory":
+        return "접근 권한이 없습니다.";
+      case "User account is inactive":
+        return "사용자 계정이 비활성화되었습니다. 관리자에게 문의하세요.";
+      default:
+        return message;
     }
   };
 
