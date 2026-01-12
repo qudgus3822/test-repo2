@@ -20,7 +20,10 @@ import type {
 } from "@/types/organization.types";
 import { MemberPositionLabel } from "@/types/organization.types";
 import { formatDisplayDateTime } from "@/utils/date";
-import { getMemberEmail, getMemberRoleOrPositionLabel } from "@/utils/organization";
+import {
+  getMemberEmail,
+  getMemberRoleOrPositionLabel,
+} from "@/utils/organization";
 import { OrganizationTypeSettingModal } from "./OrganizationTypeSettingModal";
 import { OrganizationHistoryModal } from "./OrganizationHistoryModal";
 import { useOrganizationTreeBasic } from "@/api/hooks/useOrganizationTree";
@@ -173,37 +176,6 @@ const TeamList = ({
           </div>
         ) : (
           <>
-            {/* 팀 목록 */}
-            {teams.map((team) => (
-              <div
-                key={team.code}
-                className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
-                  selectedCode === team.code
-                    ? "bg-orange-50 border-l-orange-400"
-                    : "border-l-transparent"
-                }`}
-                onClick={() => onSelect(team.code)}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center gap-2">
-                    <OrgTypeBadge
-                      isEvaluationTarget={team.isEvaluationTarget}
-                      fixedWidth
-                    />
-                    <span className="font-medium text-gray-900 text-sm">
-                      {team.name}
-                    </span>
-                    <ChangesBadgeGroup changes={team.changes} />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
-                      {team.memberCount}명
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                  </div>
-                </div>
-              </div>
-            ))}
             {/* 실 직속 멤버 (멤버 목록 UI 스타일) */}
             {departmentDirectMembers.map((member) => {
               const roleLabel = getMemberRoleOrPositionLabel(
@@ -240,6 +212,37 @@ const TeamList = ({
                 </div>
               );
             })}
+            {/* 팀 목록 */}
+            {teams.map((team) => (
+              <div
+                key={team.code}
+                className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
+                  selectedCode === team.code
+                    ? "bg-orange-50 border-l-orange-400"
+                    : "border-l-transparent"
+                }`}
+                onClick={() => onSelect(team.code)}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <OrgTypeBadge
+                      isEvaluationTarget={team.isEvaluationTarget}
+                      fixedWidth
+                    />
+                    <span className="font-medium text-gray-900 text-sm">
+                      {team.name}
+                    </span>
+                    <ChangesBadgeGroup changes={team.changes} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">
+                      {team.memberCount}명
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </>
         )}
       </div>
