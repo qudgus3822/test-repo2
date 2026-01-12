@@ -113,7 +113,6 @@ const MetricsPage = () => {
         document.body.style.paddingRight = originalPaddingRight;
         metricsListRefetch();
         lastUpdatedRefetch();
-        console.log("지표 리스트 및 최종 집계일 재조회");
         criteriaRefetch();
       };
     }
