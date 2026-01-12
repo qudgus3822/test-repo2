@@ -71,6 +71,7 @@ export const MetricStandardSettingModal = ({
   useEffect(() => {
     if (isOpen) {
       resetPreviewData();
+      setActiveSettingType(null);
     }
   }, [isOpen, resetPreviewData]);
 
