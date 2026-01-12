@@ -9,7 +9,7 @@ import { formatKoreanDateTime } from "@/libs/date/format";
  * @returns 한국 형식으로 포맷된 마지막 집계 시간 문자열
  */
 export function useLastAggregatedAt() {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["lastAggregatedAt"],
     queryFn: fetchLastAggregatedAt,
     staleTime: 1000 * 60 * 5, // 5분
@@ -34,5 +34,6 @@ export function useLastAggregatedAt() {
     isLoading,
     isError,
     rawDate: data?.lastAggregatedAt,
+    refetch,
   };
 }

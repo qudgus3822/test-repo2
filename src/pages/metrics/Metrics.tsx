@@ -17,6 +17,7 @@ import { useSyncStatus } from "@/api/hooks/useSyncStatus";
 import { Button } from "@/components/ui";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Settings } from "lucide-react";
+import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
 
 const MetricsPage = () => {
   const {
@@ -62,6 +63,7 @@ const MetricsPage = () => {
   const { data: metricsListData, refetch: metricsListRefetch } =
     useMetricsList(month);
   const metrics = metricsListData?.metrics ?? [];
+  const { refetch: lastUpdatedRefetch } = useLastAggregatedAt();
 
   // activeTab을 MetricCategory로 변환
   const getSelectedCategory = (): MetricCategory => {
@@ -106,6 +108,7 @@ const MetricsPage = () => {
         document.body.style.overflow = originalOverflow;
         document.body.style.paddingRight = originalPaddingRight;
         metricsListRefetch();
+        lastUpdatedRefetch();
       };
     }
   }, [
@@ -114,6 +117,7 @@ const MetricsPage = () => {
     isSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
     metricsListRefetch,
+    lastUpdatedRefetch,
   ]);
 
   // 변경사항 확정
