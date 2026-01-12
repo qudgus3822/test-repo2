@@ -48,7 +48,6 @@ const getCategoryStyle = (category: MetricCategory) => {
 
 interface MetricsTableProps {
   month: string;
-  criteriaData?: ReturnType<typeof useAchievementCriteria>["data"];
 }
 
 // 탭 ID별 카테고리 매핑 (필터링용)
@@ -60,7 +59,7 @@ const TAB_CATEGORY_MAP: Record<TabType, MetricCategory | null> = {
   developmentEfficiency: MetricCategory.DEVELOPMENT_EFFICIENCY,
 };
 
-export const MetricsTable = ({ month, criteriaData }: MetricsTableProps) => {
+export const MetricsTable = ({ month }: MetricsTableProps) => {
   const {
     activeTab,
     achievementRateFilter,
@@ -78,7 +77,7 @@ export const MetricsTable = ({ month, criteriaData }: MetricsTableProps) => {
   const metrics = data?.metrics ?? [];
 
   // 달성률 기준 API 조회
-  // const { data: criteriaData } = useAchievementCriteria(month);
+  const { data: criteriaData, isFetching } = useAchievementCriteria(month);
 
   // API 데이터가 로드되면 store에 저장
   useEffect(() => {
@@ -90,6 +89,7 @@ export const MetricsTable = ({ month, criteriaData }: MetricsTableProps) => {
     criteriaData,
     setAchievementRateExcellentThreshold,
     setAchievementRateDangerThreshold,
+    isFetching,
   ]);
 
   // 비율 정렬 상태 (asc: 오름차순, desc: 내림차순, null: 정렬 없음)
