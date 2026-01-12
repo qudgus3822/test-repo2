@@ -195,7 +195,7 @@ export const MetricsPreviewTable = ({
                             className="text-sm font-medium"
                             style={{ color: iconColor }}
                           >
-                            {Math.round(metric.achievementRate)}%
+                            {metric.achievementRate}%
                           </span>
                         </>
                       );
