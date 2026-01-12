@@ -108,7 +108,7 @@ export const useAuth = () => {
     return result;
   };
 
-  const logout = async () => {
+  const logout =  async () => {
     try {
       await logoutMutation.mutateAsync();
       navigate("/login");

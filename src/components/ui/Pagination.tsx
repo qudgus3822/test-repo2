@@ -45,8 +45,8 @@ export const Pagination = ({
   onPageChange,
   displayMode = "both",
 }: PaginationProps) => {
-  const isPrevDisabled = currentPage === 1;
-  const isNextDisabled = currentPage === totalPages;
+  const isPrevDisabled = currentPage === 1 || totalPages === 0;
+  const isNextDisabled = currentPage === totalPages || totalPages === 0;
 
   const handlePrevious = () => {
     if (!isPrevDisabled) {
@@ -90,7 +90,7 @@ export const Pagination = ({
         )}
       </button>
       <span className="text-sm text-gray-600">
-        {currentPage} / {totalPages}
+        {totalPages === 0 ? "-" : currentPage} / {totalPages === 0 ? "-" : totalPages}
       </span>
       <button
         onClick={handleNext}

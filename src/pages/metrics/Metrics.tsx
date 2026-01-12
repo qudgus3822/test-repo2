@@ -18,6 +18,7 @@ import { Button } from "@/components/ui";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Settings } from "lucide-react";
 import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
+import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 
 const MetricsPage = () => {
   const {
@@ -49,6 +50,9 @@ const MetricsPage = () => {
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
+
+  const { data: criteriaData, refetch: criteriaRefetch } =
+    useAchievementCriteria(month);
 
   // 선택된 날짜가 현재 년/월과 일치하는지 확인
   const now = new Date();
@@ -109,6 +113,7 @@ const MetricsPage = () => {
         document.body.style.paddingRight = originalPaddingRight;
         metricsListRefetch();
         lastUpdatedRefetch();
+        criteriaRefetch();
       };
     }
   }, [
@@ -190,7 +195,7 @@ const MetricsPage = () => {
 
       {/* 지표 리스트 */}
       <Card className="w-full">
-        <MetricsTable month={month} />
+        <MetricsTable month={month} criteriaData={criteriaData} />
       </Card>
 
       {/* 지표 리스트 - 지표 상세보기 모달 */}
