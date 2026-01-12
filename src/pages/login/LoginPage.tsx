@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import logoWhite from "@/assets/images/bithumb_logo_white_vertical.png";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/api/hooks/useAuth";
@@ -12,8 +12,9 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const hasLoggedOut = useRef(false);
 
-  // 컴포넌트 마운트 시 저장된 이메일 불러오기
+  // [변경: 2026-01-12 15:40, 김병현 수정] 컴포넌트 마운트 시 저장된 이메일 불러오기 및 강제 로그아웃
   useEffect(() => {
     const rememberedEmail = getRememberedEmail();
     if (rememberedEmail) {
@@ -21,8 +22,12 @@ const LoginPage = () => {
       setRememberEmail(true);
     }
 
-    logout();
-  }, []);
+    // 최초 마운트 시에만 로그아웃 실행
+    if (!hasLoggedOut.current) {
+      hasLoggedOut.current = true;
+      logout();
+    }
+  }, [logout]);
 
   const handleOktaLogin = () => {
     // Okta 로그인 페이지로 리다이렉트
