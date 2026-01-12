@@ -211,20 +211,20 @@ export const useOrganizationTreeBasic = (
 
 /**
  * 조직도 변경 이력 조회 Hook
- * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식), 미입력시 전체 기간 조회
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
  * @returns React Query 결과 객체
  */
 export const useOrgChangeHistory = (
-  yearMonth: string,
+  yearMonth?: string,
   enabled: boolean = true,
 ) => {
   return useQuery<OrgHistoryResponse, Error>({
-    queryKey: organizationTreeKeys.changeHistory(yearMonth),
+    queryKey: organizationTreeKeys.changeHistory(yearMonth ?? "all"),
     queryFn: async () => {
       return fetchOrgChangeHistory(yearMonth);
     },
-    enabled: enabled && !!yearMonth,
+    enabled,
     staleTime: 2 * 60 * 1000, // 2분
   });
 };

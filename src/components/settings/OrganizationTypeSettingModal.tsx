@@ -1,9 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeLegend } from "@/components/ui/OrgTypeLegend";
 import { OrgItemRow, type OrgItemState } from "@/components/ui/OrgItemRow";
 import { LastSyncInfo } from "@/components/ui/LastSyncInfo";
+import { Toast } from "@/components/ui/Toast";
 import {
   useOrgTypeSettings,
   useUpdateEvaluationTargetsBulk,
@@ -96,6 +98,7 @@ export const OrganizationTypeSettingModal = ({
   const [currentMonthData, setCurrentMonthData] = useState<OrgItemState[]>([]);
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
 
   // 전월/당월 계산
   const { currentMonth, prevMonth } = useMemo(() => getYearMonths(), []);
@@ -192,6 +195,10 @@ export const OrganizationTypeSettingModal = ({
     setCurrentMonthData(updateType(currentMonthData));
   };
 
+  const handleCloseErrorToast = useCallback(() => {
+    setShowErrorToast(false);
+  }, []);
+
   const handleSave = () => {
     const changes = extractAllEvaluationTargets(currentMonthData);
     updateEvaluationTargets(
@@ -203,7 +210,7 @@ export const OrganizationTypeSettingModal = ({
         },
         onError: (error) => {
           console.error("조직 유형 변경 실패:", error);
-          alert("조직 유형 변경에 실패했습니다.");
+          setShowErrorToast(true);
         },
       },
     );
@@ -229,7 +236,7 @@ export const OrganizationTypeSettingModal = ({
     "",
   );
 
-  return (
+  return createPortal(
     <>
       {/* 오버레이 */}
       <div
@@ -246,7 +253,7 @@ export const OrganizationTypeSettingModal = ({
         }`}
       >
         <div
-          className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[649px] flex flex-col"
+          className="relative bg-white rounded-lg shadow-xl w-full max-w-4xl h-[649px] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 헤더 */}
@@ -286,7 +293,7 @@ export const OrganizationTypeSettingModal = ({
               <div className="flex-1 overflow-y-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full py-8">
-                    <LoadingSpinner />
+                    <LoadingSpinner showMessage={false} />
                   </div>
                 ) : prevMonthData.length === 0 ? (
                   <div className="flex items-center justify-center h-full py-8">
@@ -322,7 +329,7 @@ export const OrganizationTypeSettingModal = ({
               <div className="flex-1 overflow-y-auto">
                 {isLoading ? (
                   <div className="flex items-center justify-center h-full py-8">
-                    <LoadingSpinner />
+                    <LoadingSpinner showMessage={false} />
                   </div>
                 ) : currentMonthData.length === 0 ? (
                   <div className="flex items-center justify-center h-full py-8">
@@ -366,9 +373,26 @@ export const OrganizationTypeSettingModal = ({
               {isSaving ? "저장 중..." : "수정 완료"}
             </Button>
           </div>
+
+          {/* 저장 중 로딩 오버레이 */}
+          {isSaving && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg z-10">
+              <LoadingSpinner showMessage={false} />
+            </div>
+          )}
         </div>
       </div>
-    </>
+
+      {/* 에러 토스트 */}
+      <Toast
+        message={"수정이 완료되지 않았습니다.\n다시 시도해주세요."}
+        isVisible={showErrorToast}
+        onClose={handleCloseErrorToast}
+        duration={3000}
+        variant="error"
+      />
+    </>,
+    document.body,
   );
 };
 

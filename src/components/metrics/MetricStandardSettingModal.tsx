@@ -438,6 +438,9 @@ export const MetricStandardSettingModal = ({
         title="변경사항을 반영하시겠습니까?"
         description={`변경된 설정은 즉시 반영되며,\n새로운 설정 기준에 따라 당월 데이터가 전체 재집계됩니다.\n이 작업은 되돌릴 수 없습니다.`}
         isLoading={isApplying}
+        errorMessage={
+          "변경사항 반영 중 오류가 발생했습니다.\n다시 시도해주세요."
+        }
       />
 
       {/* 변경 초기화 확인 팝업 */}
@@ -448,6 +451,9 @@ export const MetricStandardSettingModal = ({
         title="변경사항을 초기화하시겠습니까?"
         description={`현재 변경된 설정은 모두 초기화되며,\n이 작업은 되돌릴 수 없습니다.`}
         isLoading={isResetting}
+        errorMessage={
+          "변경내역 초기화 중 오류가 발생했습니다.\n다시 시도해주세요."
+        }
       />
     </>
   );
