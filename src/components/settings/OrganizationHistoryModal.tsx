@@ -13,32 +13,19 @@ import type {
 import { ChangeCategoryLabel } from "@/types/organization.types";
 import { formatDisplayDateTime } from "@/utils/date";
 
-// 현재 월 가져오기 (YYYY-MM 형식)
-const getCurrentYearMonth = (): string => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  return `${year}-${month}`;
-};
-
 export const OrganizationHistoryModal = () => {
   const { isOrgHistoryModalOpen, closeOrgHistoryModal } = useSettingsStore();
   const { shouldRender, isAnimating } = useModalAnimation(
     isOrgHistoryModalOpen,
   );
 
-  // 필터 상태
+  // 필터 상태 (Phase 2에서 개발 예정)
   const [selectedType, setSelectedType] = useState<OrgHistoryFilterType>("ALL");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
 
-  // 페이지네이션 상태
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  // API 호출 (현재 월 기준)
-  const yearMonth = getCurrentYearMonth();
+  // API 호출 (전체 기간, limit=2000, yearMonth 미전달)
   const { data, isLoading, error } = useOrgChangeHistory(
-    yearMonth,
+    undefined,
     isOrgHistoryModalOpen,
   );
 
@@ -67,19 +54,14 @@ export const OrganizationHistoryModal = () => {
     return result;
   }, [data?.changes, selectedType, selectedCategory]);
 
-  // 페이지네이션 계산
-  // const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  // 전체 데이터 표시 (스크롤로 확인)
+  const displayData = filteredData;
 
   const handleClose = () => {
     closeOrgHistoryModal();
     // 모달 닫을 때 필터 초기화
     setSelectedType("ALL");
     setSelectedCategory("ALL");
-    setCurrentPage(1);
   };
 
   if (!shouldRender) return null;
@@ -132,11 +114,11 @@ export const OrganizationHistoryModal = () => {
             <div className="[scrollbar-gutter:stable] pr-[15px]">
               <table className="w-full table-fixed">
                 <colgroup>
-                  <col className="w-[16%]" />
+                  <col className="w-[17%]" />
                   <col className="w-[8%]" />
                   <col className="w-[11%]" />
                   <col className="w-[16%]" />
-                  <col className="w-[30%]" />
+                  <col className="w-[29%]" />
                   <col className="w-[19%]" />
                 </colgroup>
                 <thead>
@@ -167,15 +149,15 @@ export const OrganizationHistoryModal = () => {
               ) : (
                 <table className="w-full table-fixed">
                   <colgroup>
-                    <col className="w-[16%]" />
+                    <col className="w-[17%]" />
                     <col className="w-[8%]" />
                     <col className="w-[11%]" />
                     <col className="w-[16%]" />
-                    <col className="w-[30%]" />
+                    <col className="w-[29%]" />
                     <col className="w-[19%]" />
                   </colgroup>
                   <tbody>
-                    {paginatedData.length === 0 ? (
+                    {displayData.length === 0 ? (
                       <tr>
                         <td
                           colSpan={6}
@@ -185,51 +167,49 @@ export const OrganizationHistoryModal = () => {
                         </td>
                       </tr>
                     ) : (
-                      paginatedData.map(
-                        (item: OrgHistoryItem, index: number) => (
-                          <tr
-                            key={`${item.target}-${item.changeDate}-${index}`}
-                            className="border-b border-gray-100 hover:bg-gray-50"
+                      displayData.map((item: OrgHistoryItem, index: number) => (
+                        <tr
+                          key={`${item.target}-${item.changeDate}-${index}`}
+                          className="border-b border-gray-100 hover:bg-gray-50"
+                        >
+                          <td className="px-3 py-2.5 text-sm text-gray-900">
+                            {formatDisplayDateTime(item.changeDate)}
+                          </td>
+                          <td className="px-3 py-2.5 text-center text-sm">
+                            {ChangeCategoryLabel[item.category] ||
+                              item.category}
+                          </td>
+                          <td className="px-3 py-2.5 text-center">
+                            <ChangeTypeBadge
+                              type={item.changeType}
+                              fixedWidth
+                            />
+                          </td>
+                          <td
+                            className="px-3 py-2.5 text-sm text-gray-900 text-center truncate"
+                            title={item.name}
                           >
-                            <td className="px-3 py-2.5 text-sm text-gray-900">
-                              {formatDisplayDateTime(item.changeDate)}
-                            </td>
-                            <td className="px-3 py-2.5 text-center text-sm">
-                              {ChangeCategoryLabel[item.category] ||
-                                item.category}
-                            </td>
-                            <td className="px-3 py-2.5 text-center">
-                              <ChangeTypeBadge
-                                type={item.changeType}
-                                fixedWidth
-                              />
-                            </td>
-                            <td
-                              className="px-3 py-2.5 text-sm text-gray-900 text-center truncate"
-                              title={item.name}
-                            >
-                              {item.name || "-"}
-                            </td>
-                            <td
-                              className="px-3 py-2.5 text-sm text-gray-700 truncate"
-                              title={item.changeDetail}
-                            >
-                              {item.changeDetail || "-"}
-                            </td>
-                            <td
-                              className={`px-3 py-2.5 text-sm text-center truncate ${
-                                item.processedBy &&
-                                item.processedBy !== "자동(LDAP)"
-                                  ? "text-blue-600 font-medium"
-                                  : "text-gray-600"
-                              }`}
-                              title={item.processedBy}
-                            >
-                              {item.processedBy || "-"}
-                            </td>
-                          </tr>
-                        ),
-                      )
+                            {item.name || "-"}
+                          </td>
+                          <td
+                            className="px-3 py-2.5 text-sm text-gray-700 truncate"
+                            title={item.changeDetail}
+                          >
+                            {item.changeDetail || "-"}
+                          </td>
+                          <td
+                            className={`px-3 py-2.5 text-sm text-center truncate ${
+                              item.processedBy &&
+                              item.processedBy !== "자동(LDAP)"
+                                ? "text-blue-600 font-medium"
+                                : "text-gray-600"
+                            }`}
+                            title={item.processedBy}
+                          >
+                            {item.processedBy || "-"}
+                          </td>
+                        </tr>
+                      ))
                     )}
                   </tbody>
                 </table>

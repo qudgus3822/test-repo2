@@ -69,7 +69,7 @@ export const ChangeHistoryList = ({
 
   if (filteredData.length === 0) {
     return (
-      <div className="p-4 text-center text-gray-500 text-sm">
+      <div className="flex items-center justify-center h-full p-4 text-gray-500 text-sm">
         변경 이력이 없습니다.
       </div>
     );

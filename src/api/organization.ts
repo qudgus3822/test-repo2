@@ -148,13 +148,18 @@ export const fetchOrganizationBdpiMetrics = async (
 
 /**
  * 조직도 변경 이력 조회 API
- * @param yearMonth - 조회 연월 (YYYY-MM 형식)
+ * @param yearMonth - 조회 연월 (YYYY-MM 형식), 미입력시 전체 기간 조회
  * @returns 변경 이력 데이터
  */
 export const fetchOrgChangeHistory = async (
-  yearMonth: string,
+  yearMonth?: string,
 ): Promise<OrgHistoryResponse> => {
-  return apiGet<OrgHistoryResponse>(`/departments/change-history?yearMonth=${yearMonth}`);
+  const params = new URLSearchParams();
+  params.append("limit", "2000");
+  if (yearMonth) {
+    params.append("yearMonth", yearMonth);
+  }
+  return apiGet<OrgHistoryResponse>(`/departments/change-history?${params.toString()}`);
 };
 
 /**
