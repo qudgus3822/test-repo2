@@ -123,6 +123,7 @@ const MetricsPage = () => {
     isMetricStandardSettingModalOpen,
     metricsListRefetch,
     lastUpdatedRefetch,
+    criteriaRefetch,
   ]);
 
   // 변경사항 확정
