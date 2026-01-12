@@ -1,5 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Toast } from "@/components/ui/Toast";
 import { useModalAnimation } from "@/hooks";
 
 interface ConfirmPopupProps {
@@ -11,6 +13,9 @@ interface ConfirmPopupProps {
   isLoading?: boolean;
   confirmText?: string;
   cancelText?: string;
+  showError?: boolean;
+  onErrorClose?: () => void;
+  errorMessage?: string;
 }
 
 export const ConfirmPopup = ({
@@ -22,6 +27,9 @@ export const ConfirmPopup = ({
   isLoading = false,
   confirmText = "확인",
   cancelText = "취소",
+  showError = false,
+  onErrorClose,
+  errorMessage = "다시 시도해주세요.",
 }: ConfirmPopupProps) => {
   const { shouldRender, isAnimating } = useModalAnimation(isOpen, {
     duration: 200,
@@ -45,7 +53,7 @@ export const ConfirmPopup = ({
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
-        <div className="bg-white rounded-lg grid grid-cols-1 gap-4 shadow-xl w-[400px] p-7">
+        <div className="relative bg-white rounded-lg grid grid-cols-1 gap-4 shadow-xl w-[400px] p-7">
           {/* 아이콘 */}
           <div className="flex justify-center py-1">
             <AlertTriangle className="w-10 h-10 text-red-500" />
@@ -82,8 +90,24 @@ export const ConfirmPopup = ({
               {isLoading ? "처리 중..." : confirmText}
             </Button>
           </div>
+
+          {/* 로딩 오버레이 */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+              <LoadingSpinner showMessage={false} />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* 에러 토스트 */}
+      <Toast
+        message={errorMessage}
+        isVisible={showError}
+        onClose={onErrorClose ?? (() => {})}
+        duration={3000}
+        variant="error"
+      />
     </>
   );
 };
