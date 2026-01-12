@@ -22,7 +22,7 @@ export const AchievementRateSetting = ({
   month,
   onApply,
 }: AchievementRateSettingProps) => {
-  const { achievementRateExcellentThreshold, achievementRateDangerThreshold } =
+  const { achievementRateExcellentThreshold, achievementRateDangerThreshold, setAchievementRateExcellentThreshold, setAchievementRateDangerThreshold } =
     useMetricsStore();
 
   const [excellentThreshold, setExcellentThreshold] = useState(
@@ -134,6 +134,8 @@ export const AchievementRateSetting = ({
       window.confirm("달성률 기준 저장 중 오류가 발생했습니다.");
     } finally {
       setIsApplying(false);
+      setAchievementRateExcellentThreshold(excellentThreshold);
+      setAchievementRateDangerThreshold(dangerThreshold);
     }
   };
 

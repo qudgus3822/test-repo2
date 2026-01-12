@@ -51,7 +51,7 @@ const MetricsPage = () => {
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
 
-  const { data: criteriaData, refetch: criteriaRefetch } =
+  const { refetch: criteriaRefetch } =
     useAchievementCriteria(month);
 
   // 선택된 날짜가 현재 년/월과 일치하는지 확인
@@ -196,7 +196,7 @@ const MetricsPage = () => {
 
       {/* 지표 리스트 */}
       <Card className="w-full">
-        <MetricsTable month={month} criteriaData={criteriaData} />
+        <MetricsTable month={month} />
       </Card>
 
       {/* 지표 리스트 - 지표 상세보기 모달 */}
