@@ -357,7 +357,7 @@ export const MetricsTable = ({ month, criteriaData }: MetricsTableProps) => {
                                 className="text-sm font-medium"
                                 style={{ color: iconColor }}
                               >
-                                {Math.round(metric.achievementRate)}%
+                                {metric.achievementRate}%
                               </span>
                             </>
                           );
