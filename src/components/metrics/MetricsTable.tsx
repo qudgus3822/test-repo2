@@ -60,6 +60,8 @@ const TAB_CATEGORY_MAP: Record<TabType, MetricCategory | null> = {
 };
 
 export const MetricsTable = ({ month }: MetricsTableProps) => {
+  const activeTab = useMetricsStore((state) => state.activeTab);
+  const achievementRateFilter = useMetricsStore(
     (state) => state.achievementRateFilter,
   );
   const setAchievementRateFilter = useMetricsStore(
@@ -80,9 +82,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const setIsMetricsDetailModalOpen = useMetricsStore(
     (state) => state.setIsMetricsDetailModalOpen,
   );
-  const setSelectedMetric = useMetricsStore(
-    (state) => state.setSelectedMetric,
-  );
+
+  const setSelectedMetric = useMetricsStore((state) => state.setSelectedMetric);
 
   // API 호출
   const { data, isLoading, error } = useMetricsList(month);

@@ -38,7 +38,6 @@ export const MetricStandardSettingModal = ({
     useState<SettingType | null>(null);
 
   // store에서 확인 팝업 상태 가져오기
-  );
   const isSettingsResetConfirmModalOpen = useMetricsStore(
     (state) => state.isSettingsResetConfirmModalOpen,
   );
@@ -47,6 +46,9 @@ export const MetricStandardSettingModal = ({
   );
   const setIsSettingsResetConfirmModalOpen = useMetricsStore(
     (state) => state.setIsSettingsResetConfirmModalOpen,
+  );
+  const isSettingsChangeConfirmModalOpen = useMetricsStore(
+    (state) => state.isSettingsChangeConfirmModalOpen,
   );
 
   // 상태별 아이콘 설정
