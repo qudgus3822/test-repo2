@@ -52,7 +52,7 @@ export const METRIC_CODE_NAMES: Record<string, string> = {
   PR_SIZE: "MR크기",
   COMMIT_FREQUENCY: "커밋빈도",
   LOC_PER_COMMIT: "커밋당라인수",
-  LEAD_TIME: "평균장애해결시간",
+  LEAD_TIME: "장애해결시간",
   FAILURE_DETECTION_TIME: "장애탐지시간",
   FAILURE_DIAGNOSIS_TIME: "장애진단시간",
   FAILURE_RECOVERY_TIME: "장애복구시간",

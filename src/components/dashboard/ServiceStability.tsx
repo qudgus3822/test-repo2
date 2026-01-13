@@ -21,6 +21,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
     error,
   } = useServiceStability(month);
 
+  console.log("서비스 안정성 데이터:", serviceStabilityData);
   // 서비스 안정성 데이터 가공
   const metrics = useMemo(
     () =>
@@ -113,9 +114,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
     return (
       <Card className="w-full h-auto">
         <div className="grid grid-cols-1 gap-4">
-          <h3 className="text-lg font-semibold text-gray-900">
-            서비스 안정성
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">서비스 안정성</h3>
           <div className="flex items-center justify-center min-h-[152px]">
             {isLoading ? (
               <LoadingSpinner />
@@ -130,62 +129,63 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
   return (
     <Card className="w-full h-auto">
       <div className="grid grid-cols-1 gap-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          서비스 안정성
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900">서비스 안정성</h3>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-        {metrics.map((metric) => {
-          const Icon = getStatusIcon(metric.status);
-          const iconColor = getStatusColor(metric.status);
-          return (
-            <div key={metric.id} className="flex flex-col items-center gap-2.5">
-              {/* 아이콘 */}
+          {metrics.map((metric) => {
+            const Icon = getStatusIcon(metric.status);
+            const iconColor = getStatusColor(metric.status);
+            return (
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center`}
+                key={metric.id}
+                className="flex flex-col items-center gap-2.5"
               >
-                <Icon className="w-7 h-7" style={{ color: iconColor }} />
-              </div>
-
-              {/* 메트릭 값 */}
-              <div className="lg:text-2xl text-xl font-bold text-gray-900">
-                {metric.value}
-              </div>
-
-              {/* 목표치 값 */}
-              <div className="flex justify-center items-center py-1 px-4 bg-[#DFDFDF] rounded-[45px]">
-                <span className="text-sm text-center tracking-[-1.17px] text-[#62748E]">
-                  {metric.target}
-                </span>
-              </div>
-
-              {/* 트렌드 */}
-              <div className="flex items-center gap-1 text-sm">
-                <div>전월대비</div>
+                {/* 아이콘 */}
                 <div
-                  className="flex items-center gap-1 font-medium"
-                  style={{
-                    color: metric.trend.isPositive
-                      ? TREND_COLORS.increase
-                      : TREND_COLORS.decrease,
-                  }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center`}
                 >
-                  <span>
-                    {metric.trend.isPositive ? (
-                      <img src={upIcon} alt="up" />
-                    ) : (
-                      <img src={downIcon} alt="down" />
-                    )}
+                  <Icon className="w-7 h-7" style={{ color: iconColor }} />
+                </div>
+
+                {/* 메트릭 값 */}
+                <div className="lg:text-2xl text-xl font-bold text-gray-900">
+                  {metric.value}
+                </div>
+
+                {/* 목표치 값 */}
+                <div className="flex justify-center items-center py-1 px-4 bg-[#DFDFDF] rounded-[45px]">
+                  <span className="text-sm text-center tracking-[-1.17px] text-[#62748E]">
+                    {metric.target}
                   </span>
-                  <span>{Math.abs(metric.trend.value)}%</span>
+                </div>
+
+                {/* 트렌드 */}
+                <div className="flex items-center gap-1 text-sm">
+                  <div>전월대비</div>
+                  <div
+                    className="flex items-center gap-1 font-medium"
+                    style={{
+                      color: metric.trend.isPositive
+                        ? TREND_COLORS.increase
+                        : TREND_COLORS.decrease,
+                    }}
+                  >
+                    <span>
+                      {metric.trend.isPositive ? (
+                        <img src={upIcon} alt="up" />
+                      ) : (
+                        <img src={downIcon} alt="down" />
+                      )}
+                    </span>
+                    <span>{Math.abs(metric.trend.value)}%</span>
+                  </div>
+                </div>
+                {/* 레이블 */}
+                <div className="text-md text-gray-500 font-bold">
+                  {metric.label}
                 </div>
               </div>
-              {/* 레이블 */}
-              <div className="text-md text-gray-500 font-bold">
-                {metric.label}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
         </div>
       </div>
     </Card>
