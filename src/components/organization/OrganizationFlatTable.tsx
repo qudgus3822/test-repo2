@@ -617,12 +617,29 @@ export const OrganizationFlatTable = ({
   // 지표 순서 상태 (드래그로 변경 가능)
   const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
 
-  // API에서 조회한 순서로 상태 업데이트
+  // API에서 조회한 순서로 상태 업데이트 (우선순위: 저장된 순서 > API 응답 순서 > 기본 순서)
   useEffect(() => {
     if (metricOrderData?.order && metricOrderData.order.length > 0) {
+      // 저장된 지표 순서가 있으면 사용
       setMetricOrder(metricOrderData.order);
+    } else if (data?.items && data.items.length > 0 && data.items[0].metrics) {
+      // API 응답의 metrics 객체 키 순서 사용 (format=list)
+      const apiMetricOrder = Object.keys(data.items[0].metrics);
+      // BDPI 키를 소문자로 변환 (기존 코드와 일관성 유지)
+      const normalizedOrder = apiMetricOrder.map((key) =>
+        key === "BDPI" ? "bdpi" : key,
+      );
+      setMetricOrder(normalizedOrder);
+    } else if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
+      // API 응답의 metrics 객체 키 순서 사용 (format=tree)
+      const apiMetricOrder = Object.keys(data.tree[0].metrics);
+      // BDPI가 없으면 마지막에 추가
+      if (!apiMetricOrder.includes("bdpi")) {
+        apiMetricOrder.push("bdpi");
+      }
+      setMetricOrder(apiMetricOrder);
     }
-  }, [metricOrderData]);
+  }, [metricOrderData, data]);
 
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({

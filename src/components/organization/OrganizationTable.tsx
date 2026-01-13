@@ -512,12 +512,21 @@ export const OrganizationTable = ({
   // 지표 순서 상태 (드래그로 변경 가능)
   const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
 
-  // API에서 조회한 순서로 상태 업데이트
+  // API에서 조회한 순서로 상태 업데이트 (우선순위: 저장된 순서 > API 응답 순서 > 기본 순서)
   useEffect(() => {
     if (metricOrderData?.order && metricOrderData.order.length > 0) {
+      // 저장된 지표 순서가 있으면 사용
       setMetricOrder(metricOrderData.order);
+    } else if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
+      // API 응답의 metrics 객체 키 순서 사용
+      const apiMetricOrder = Object.keys(data.tree[0].metrics);
+      // BDPI가 없으면 마지막에 추가
+      if (!apiMetricOrder.includes("bdpi")) {
+        apiMetricOrder.push("bdpi");
+      }
+      setMetricOrder(apiMetricOrder);
     }
-  }, [metricOrderData]);
+  }, [metricOrderData, data]);
 
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
