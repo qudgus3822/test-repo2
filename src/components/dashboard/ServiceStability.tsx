@@ -21,7 +21,6 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
     error,
   } = useServiceStability(month);
 
-  console.log("서비스 안정성 데이터:", serviceStabilityData);
   // 서비스 안정성 데이터 가공
   const metrics = useMemo(
     () =>
