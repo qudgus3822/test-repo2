@@ -38,16 +38,12 @@ export const MetricStandardSettingModal = ({
     useState<SettingType | null>(null);
 
   // store에서 확인 팝업 상태 가져오기
-  );
-  const isSettingsResetConfirmModalOpen = useMetricsStore(
-    (state) => state.isSettingsResetConfirmModalOpen,
-  );
-  const setIsSettingsChangeConfirmModalOpen = useMetricsStore(
-    (state) => state.setIsSettingsChangeConfirmModalOpen,
-  );
-  const setIsSettingsResetConfirmModalOpen = useMetricsStore(
-    (state) => state.setIsSettingsResetConfirmModalOpen,
-  );
+  const {
+    isSettingsChangeConfirmModalOpen,
+    isSettingsResetConfirmModalOpen,
+    setIsSettingsChangeConfirmModalOpen,
+    setIsSettingsResetConfirmModalOpen,
+  } = useMetricsStore();
 
   // 상태별 아이콘 설정
   const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);

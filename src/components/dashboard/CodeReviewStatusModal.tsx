@@ -79,14 +79,8 @@ const SortableHeader = ({
 };
 
 export const CodeReviewStatusModal = () => {
-
-  const isCodeReviewModalOpen = useDashboardStore(
-    (state) => state.isCodeReviewModalOpen,
-  );
-  const setCodeReviewModal = useDashboardStore(
-    (state) => state.setCodeReviewModal,
-  );
-  const currentDate = useDashboardStore((state) => state.currentDate);
+  const { isCodeReviewModalOpen, setCodeReviewModal, currentDate } =
+    useDashboardStore();
   const { shouldRender, isAnimating } = useModalAnimation(
     isCodeReviewModalOpen,
   );

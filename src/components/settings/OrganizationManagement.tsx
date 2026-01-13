@@ -400,9 +400,7 @@ export const OrganizationManagement = () => {
   const [selectedTeamCode, setSelectedTeamCode] = useState<string | null>(null);
   const [isAutoSyncEnabled] = useState(true);
   const [isOrgTypeModalOpen, setIsOrgTypeModalOpen] = useState(false);
-  const openOrgHistoryModal = useSettingsStore(
-    (state) => state.openOrgHistoryModal,
-  );
+  const { openOrgHistoryModal } = useSettingsStore();
 
   // API에서 조직 데이터 조회 (현재 월 기준, 기본 tree 엔드포인트)
   const yearMonth = getCurrentYearMonth();

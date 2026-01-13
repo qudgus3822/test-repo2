@@ -14,12 +14,7 @@ import { ChangeCategoryLabel } from "@/types/organization.types";
 import { formatDisplayDateTime } from "@/utils/date";
 
 export const OrganizationHistoryModal = () => {
-  const isOrgHistoryModalOpen = useSettingsStore(
-    (state) => state.isOrgHistoryModalOpen,
-  );
-  const closeOrgHistoryModal = useSettingsStore(
-    (state) => state.closeOrgHistoryModal,
-  );
+  const { isOrgHistoryModalOpen, closeOrgHistoryModal } = useSettingsStore();
   const { shouldRender, isAnimating } = useModalAnimation(
     isOrgHistoryModalOpen,
   );
