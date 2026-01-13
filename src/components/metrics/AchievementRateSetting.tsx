@@ -22,8 +22,18 @@ export const AchievementRateSetting = ({
   month,
   onApply,
 }: AchievementRateSettingProps) => {
-  const { achievementRateExcellentThreshold, achievementRateDangerThreshold, setAchievementRateExcellentThreshold, setAchievementRateDangerThreshold } =
-    useMetricsStore();
+  const achievementRateExcellentThreshold = useMetricsStore(
+    (state) => state.achievementRateExcellentThreshold,
+  );
+  const achievementRateDangerThreshold = useMetricsStore(
+    (state) => state.achievementRateDangerThreshold,
+  );
+  const setAchievementRateExcellentThreshold = useMetricsStore(
+    (state) => state.setAchievementRateExcellentThreshold,
+  );
+  const setAchievementRateDangerThreshold = useMetricsStore(
+    (state) => state.setAchievementRateDangerThreshold,
+  );
 
   const [excellentThreshold, setExcellentThreshold] = useState(
     achievementRateExcellentThreshold,

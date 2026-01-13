@@ -214,8 +214,15 @@ const OrganizationRow = ({
   depth: number;
   hideValues?: boolean;
 }) => {
-  const { expandedOrganizations, toggleOrganization, showMembers } =
-    useOrganizationStore();
+  const expandedOrganizations = useOrganizationStore(
+    (state) => state.expandedOrganizations,
+  );
+  const toggleOrganization = useOrganizationStore(
+    (state) => state.toggleOrganization,
+  );
+  const showMembers = useOrganizationStore(
+    (state) => state.showMembers,
+  );
   const isExpanded = expandedOrganizations.has(org.code);
   const hasChildren = org.children && org.children.length > 0;
   const paddingLeft = 16 + depth * 24;

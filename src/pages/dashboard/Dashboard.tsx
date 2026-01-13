@@ -14,8 +14,13 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import { Button } from "@/components/ui/Button";
 
 const DashboardPage = () => {
-  const { period, setPeriod, currentDate, setCurrentDate, setOrgHistoryModal } =
-    useDashboardStore((state) => state);
+  const period = useDashboardStore((state) => state.period);
+  const setPeriod = useDashboardStore((state) => state.setPeriod);
+  const currentDate = useDashboardStore((state) => state.currentDate);
+  const setCurrentDate = useDashboardStore((state) => state.setCurrentDate);
+  const setOrgHistoryModal = useDashboardStore(
+    (state) => state.setOrgHistoryModal,
+  );
 
   // 페이지 진입 시 초기화: 당월로 설정
   useEffect(() => {

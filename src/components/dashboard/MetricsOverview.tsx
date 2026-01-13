@@ -39,7 +39,9 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
   } = useCompanyQuality(month);
 
   // 코드 리뷰 현황 모달 상태
-  const { setCodeReviewModal } = useDashboardStore();
+  const setCodeReviewModal = useDashboardStore(
+    (state) => state.setCodeReviewModal,
+  );
 
   // API 에러 시 목업 데이터 사용
   const data = error ? MOCK_COMPANY_QUALITY_DATA : companyQualityData;
