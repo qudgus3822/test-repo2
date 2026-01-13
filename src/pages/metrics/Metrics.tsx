@@ -51,8 +51,7 @@ const MetricsPage = () => {
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
 
-  const { refetch: criteriaRefetch } =
-    useAchievementCriteria(month);
+  const { refetch: criteriaRefetch } = useAchievementCriteria(month);
 
   // 선택된 날짜가 현재 년/월과 일치하는지 확인
   const now = new Date();
@@ -125,6 +124,11 @@ const MetricsPage = () => {
     lastUpdatedRefetch,
     criteriaRefetch,
   ]);
+
+  useEffect(() => {
+    setActiveTab("bdpi");
+    setAchievementRateFilter("all");
+  }, [currentDate, setAchievementRateFilter, setActiveTab]);
 
   // 변경사항 확정
   const handleConfirmChanges = () => {
