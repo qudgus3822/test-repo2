@@ -1,13 +1,21 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import logoWhite from "@/assets/images/bithumb_logo_white_vertical.png";
 import { Button } from "@/components/ui/Button";
-import { useAuth } from "@/api/hooks/useAuth";
+import { useLogin, useLogout } from "@/api/hooks/useAuth";
 import { getRememberedEmail } from "@/api/auth";
+import { useAuthStore } from "@/store/useAuthStore";
 import { env } from "@/env";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [isAdminLogin, setIsAdminLogin] = useState(false);
-  const { login, isLoggingIn, loginError, logout } = useAuth();
+
+  // useAuth() 대신 개별 훅 사용 (useCurrentUser API 호출 방지)
+  const loginMutation = useLogin();
+  const logoutMutation = useLogout();
+  const user = useAuthStore((state) => state.user);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(false);
@@ -16,17 +24,19 @@ const LoginPage = () => {
 
   // [변경: 2026-01-12 15:40, 김병현 수정] 컴포넌트 마운트 시 저장된 이메일 불러오기 및 강제 로그아웃
   useEffect(() => {
-    // 최초 마운트 시에만 로그아웃 실행
+    // 최초 마운트 시에만 로그아웃 실행 (Zustand 스토어에 유저 정보가 있는 경우에만)
     if (!hasLoggedOut.current) {
       hasLoggedOut.current = true;
-      logout();
+      if (user) {
+        logoutMutation.mutate();
+      }
       const rememberedEmail = getRememberedEmail();
       if (rememberedEmail) {
         setEmail(rememberedEmail);
         setRememberEmail(true);
       }
     }
-  }, [logout]);
+  }, [user, logoutMutation]);
 
   const handleOktaLogin = () => {
     // Okta 로그인 페이지로 리다이렉트
@@ -38,7 +48,8 @@ const LoginPage = () => {
     setErrorMessage("");
 
     try {
-      await login({ email, password, rememberEmail });
+      await loginMutation.mutateAsync({ email, password, rememberEmail });
+      navigate("/dashboard");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "로그인에 실패했습니다.";
@@ -166,15 +177,15 @@ const LoginPage = () => {
             </div>
 
             {/* 에러 메시지 */}
-            {(errorMessage || loginError) && (
+            {(errorMessage || loginMutation.error) && (
               <div className="rounded-md p-3 text-center text-md text-red-600">
-                {errorMessage || loginError?.message}
+                {errorMessage || loginMutation.error?.message}
               </div>
             )}
 
             {/* 로그인 버튼 */}
-            <Button type="submit" fullWidth disabled={isLoggingIn}>
-              {isLoggingIn ? "로그인 중..." : "로그인"}
+            <Button type="submit" fullWidth disabled={loginMutation.isPending}>
+              {loginMutation.isPending ? "로그인 중..." : "로그인"}
             </Button>
 
             <div className="text-center">
