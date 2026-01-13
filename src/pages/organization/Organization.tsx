@@ -56,20 +56,20 @@ const getDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
 };
 
 const OrganizationPage = () => {
-  const activeTab = useOrganizationStore((state) => state.activeTab);
-  const setActiveTab = useOrganizationStore((state) => state.setActiveTab);
-  const period = useOrganizationStore((state) => state.period);
-  const setPeriod = useOrganizationStore((state) => state.setPeriod);
-  const currentDate = useOrganizationStore((state) => state.currentDate);
-  const setCurrentDate = useOrganizationStore((state) => state.setCurrentDate);
-  const expandAllTeams = useOrganizationStore((state) => state.expandAllTeams);
-  const expandAll = useOrganizationStore((state) => state.expandAll);
-  const collapseToDefault = useOrganizationStore((state) => state.collapseToDefault);
-  const isTeamsExpanded = useOrganizationStore((state) => state.isTeamsExpanded);
+  const {
+    activeTab,
+    setActiveTab,
+    period,
+    setPeriod,
+    currentDate,
+    setCurrentDate,
+    expandAllTeams,
+    expandAll,
+    collapseToDefault,
+    isTeamsExpanded,
+  } = useOrganizationStore();
 
-  const setOrgHistoryModal = useDashboardStore(
-    (state) => state.setOrgHistoryModal,
-  );
+  const { setOrgHistoryModal } = useDashboardStore();
 
   // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
   useEffect(() => {

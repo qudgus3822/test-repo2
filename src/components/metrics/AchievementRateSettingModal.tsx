@@ -29,18 +29,12 @@ export const AchievementRateSettingModal = ({
   metrics,
   onSave,
 }: AchievementRateSettingModalProps) => {
-  const achievementRateExcellentThreshold = useMetricsStore(
-    (state) => state.achievementRateExcellentThreshold,
-  );
-  const achievementRateDangerThreshold = useMetricsStore(
-    (state) => state.achievementRateDangerThreshold,
-  );
-  const setAchievementRateExcellentThreshold = useMetricsStore(
-    (state) => state.setAchievementRateExcellentThreshold,
-  );
-  const setAchievementRateDangerThreshold = useMetricsStore(
-    (state) => state.setAchievementRateDangerThreshold,
-  );
+  const {
+    achievementRateExcellentThreshold,
+    achievementRateDangerThreshold,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
+  } = useMetricsStore();
 
   const [editedMetrics, setEditedMetrics] = useState<MetricItem[]>(metrics);
   const [excellentThreshold, setExcellentThreshold] = useState(
