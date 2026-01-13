@@ -425,7 +425,7 @@ export const CodeReviewStatusModal = () => {
                   </table>
                 </div>
                 {/* 테이블 본문 - 10행 기준 높이 고정 */}
-                <div className="min-h-[365px]">
+                <div className="min-h-[365px] flex flex-col">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <LoadingSpinner />
@@ -437,7 +437,7 @@ export const CodeReviewStatusModal = () => {
                       </span>
                     </div>
                   ) : items.length === 0 ? (
-                    <div className="flex items-center py-4 justify-center h-full">
+                    <div className="flex items-center justify-center flex-1">
                       <span className="text-gray-500">
                         수집된 데이터가 없습니다.
                       </span>

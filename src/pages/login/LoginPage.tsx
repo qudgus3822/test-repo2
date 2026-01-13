@@ -16,16 +16,15 @@ const LoginPage = () => {
 
   // [변경: 2026-01-12 15:40, 김병현 수정] 컴포넌트 마운트 시 저장된 이메일 불러오기 및 강제 로그아웃
   useEffect(() => {
-    const rememberedEmail = getRememberedEmail();
-    if (rememberedEmail) {
-      setEmail(rememberedEmail);
-      setRememberEmail(true);
-    }
-
     // 최초 마운트 시에만 로그아웃 실행
     if (!hasLoggedOut.current) {
       hasLoggedOut.current = true;
       logout();
+      const rememberedEmail = getRememberedEmail();
+      if (rememberedEmail) {
+        setEmail(rememberedEmail);
+        setRememberEmail(true);
+      }
     }
   }, [logout]);
 
