@@ -51,6 +51,11 @@ const MetricsPage = () => {
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
 
+  // 날짜 변경 시 달성률 필터 초기화
+  useEffect(() => {
+    setAchievementRateFilter("all");
+  }, [month, setAchievementRateFilter]);
+
   const { refetch: criteriaRefetch } =
     useAchievementCriteria(month);
 

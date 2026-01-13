@@ -427,11 +427,11 @@ export const CodeReviewStatusModal = () => {
                 {/* 테이블 본문 - 10행 기준 높이 고정 */}
                 <div className="min-h-[365px] flex flex-col">
                   {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex-1 flex items-center justify-center">
                       <LoadingSpinner />
                     </div>
                   ) : isError ? (
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex-1 flex items-center justify-center">
                       <span className="text-red-500">
                         데이터를 불러오는 데 실패했습니다.
                       </span>
