@@ -63,7 +63,12 @@ interface OrgChangeHistoryModalProps {
 export const OrgChangeHistoryModal = ({
   targetMonth,
 }: OrgChangeHistoryModalProps) => {
-  const { isOrgHistoryModalOpen, setOrgHistoryModal } = useDashboardStore();
+  const isOrgHistoryModalOpen = useDashboardStore(
+    (state) => state.isOrgHistoryModalOpen,
+  );
+  const setOrgHistoryModal = useDashboardStore(
+    (state) => state.setOrgHistoryModal,
+  );
 
   const [currentMonthData, setCurrentMonthData] = useState<OrgItemState[]>([]);
   const [shouldRender, setShouldRender] = useState(false);
