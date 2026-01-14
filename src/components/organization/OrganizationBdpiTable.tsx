@@ -1,7 +1,7 @@
 /**
  * OrganizationBdpiTable 컴포넌트
  * - BDPI 탭용 테이블 (하이어라키뷰)
- * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교 컬럼
+ * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월대비 컬럼
  * - 히트맵 시각화 (HeatmapCell 사용)
  */
 
@@ -69,8 +69,8 @@ const ChangeRateDisplay = ({
         color: isUp
           ? TREND_COLORS.increase
           : isDown
-            ? TREND_COLORS.decrease
-            : undefined,
+          ? TREND_COLORS.decrease
+          : undefined,
       }}
     >
       {(isUp || isDown) && (
@@ -87,7 +87,8 @@ const ChangeRateDisplay = ({
 
 // 변경이력 툴팁 내용 생성
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
-  const { changeDate, changeEndDate, changeDetail, changeType, category } = change;
+  const { changeDate, changeEndDate, changeDetail, changeType, category } =
+    change;
 
   const formattedDate = changeEndDate
     ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
@@ -104,7 +105,9 @@ const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
 };
 
 const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
-  return changes.map((change) => getSingleChangeTooltipContent(change)).join("\n");
+  return changes
+    .map((change) => getSingleChangeTooltipContent(change))
+    .join("\n");
 };
 
 // 상태 뱃지 컴포넌트
@@ -220,9 +223,7 @@ const OrganizationRow = ({
   const toggleOrganization = useOrganizationStore(
     (state) => state.toggleOrganization,
   );
-  const showMembers = useOrganizationStore(
-    (state) => state.showMembers,
-  );
+  const showMembers = useOrganizationStore((state) => state.showMembers);
   const isExpanded = expandedOrganizations.has(org.code);
   const hasChildren = org.children && org.children.length > 0;
   const paddingLeft = 16 + depth * 24;
@@ -332,12 +333,20 @@ export const OrganizationBdpiTable = ({
   const apiOptions =
     activeTab === "bdpi"
       ? {
-          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          aggregation:
+            aggregationType === "average"
+              ? ("avg" as const)
+              : ("total" as const),
           format: "tree" as const,
         }
       : undefined;
 
-  const { data, isLoading, isError } = useOrganizationTree(month, activeTab, true, apiOptions);
+  const { data, isLoading, isError } = useOrganizationTree(
+    month,
+    activeTab,
+    true,
+    apiOptions,
+  );
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
     .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -369,12 +378,24 @@ export const OrganizationBdpiTable = ({
         </colgroup>
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
-            <th className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}>조직 이름</th>
-            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>코드품질</th>
-            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>리뷰품질</th>
-            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>개발효율</th>
-            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>BDPI</th>
-            <th className={`${thStyle} w-[7%]`}>전월비교</th>
+            <th
+              className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}
+            >
+              조직 이름
+            </th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>
+              코드품질
+            </th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>
+              리뷰품질
+            </th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>
+              개발효율
+            </th>
+            <th className={`${thStyle} w-[7%] border-r border-gray-200`}>
+              BDPI
+            </th>
+            <th className={`${thStyle} w-[7%]`}>전월대비</th>
           </tr>
         </thead>
         <tbody>
