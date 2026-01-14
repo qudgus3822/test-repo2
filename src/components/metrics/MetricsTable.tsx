@@ -87,7 +87,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
 
   // API 호출
   const { data, isLoading, error } = useMetricsList(month);
-  const metrics = data?.metrics ?? [];
+  // [변경: 2026-01-14 12:15, 김병현 수정] useMemo로 감싸서 매 렌더링마다 새 배열 생성 방지
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics]);
 
   // 달성률 기준 API 조회
   const { data: criteriaData, isFetching } = useAchievementCriteria(month);
