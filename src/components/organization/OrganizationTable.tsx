@@ -454,10 +454,10 @@ const ScrollableRow = ({
         const hasData =
           metric && typeof metric.value === "number" && metric.isUsed !== false;
         const score = hasData ? metric?.score ?? null : null;
-        // 총합 모드일 경우 totalValue 사용, 없으면 value 사용
+        // 총합 모드일 경우 totalValue 사용 (없으면 "--" 표시)
         const value = hasData
           ? aggregationType === "total"
-            ? metric?.totalValue ?? metric?.value ?? null
+            ? metric?.totalValue ?? null
             : metric?.value ?? null
           : null;
         const targetValue = metric?.targetValue ?? null;
