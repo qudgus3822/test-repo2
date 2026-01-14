@@ -453,7 +453,12 @@ const ScrollableRow = ({
         const hasData =
           metric && typeof metric.value === "number" && metric.isUsed !== false;
         const score = hasData ? metric?.score ?? null : null;
-        const value = hasData ? metric?.value ?? null : null;
+        // 총합 모드일 경우 totalValue 사용, 없으면 value 사용
+        const value = hasData
+          ? aggregationType === "total"
+            ? metric?.totalValue ?? metric?.value ?? null
+            : metric?.value ?? null
+          : null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
 
