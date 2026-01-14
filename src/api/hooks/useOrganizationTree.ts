@@ -294,10 +294,7 @@ export const useUpdateMetricOrder = () => {
     onSuccess: (data) => {
       // API 응답으로 지표 순서 캐시 업데이트
       queryClient.setQueryData<MetricOrderResponse>(metricOrderKeys.all, data);
-
-      // 조직 데이터 쿼리 무효화하여 다시 조회하도록 함
-      // (전체 탭 > 하이어라키뷰 > 평균 필터 기준)
-      queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
+      // 조회 API 재호출은 필터 변경 시에만 수행 (Organization.tsx에서 처리)
     },
   });
 };
