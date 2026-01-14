@@ -1,7 +1,7 @@
 /**
  * OrganizationBdpiFlatTable 컴포넌트
  * - BDPI 탭용 플랫 테이블
- * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교, 상세 컬럼
+ * - 조직 이름, 코드품질, 리뷰품질, 개발효율, BDPI, 전월대비, 상세 컬럼
  * - 헤더별 정렬 기능 포함
  * - 히트맵 시각화 (HeatmapCell 사용)
  */
@@ -101,8 +101,8 @@ const ChangeRateDisplay = ({
         color: isUp
           ? TREND_COLORS.increase
           : isDown
-            ? TREND_COLORS.decrease
-            : undefined,
+          ? TREND_COLORS.decrease
+          : undefined,
       }}
     >
       {(isUp || isDown) && (
@@ -191,7 +191,7 @@ const getRowHeight = (filterType: FlatViewFilterType) => {
 // 트리를 플랫 배열로 변환하는 함수
 const flattenTree = (
   nodes: OrganizationNode[],
-  filterType: FlatViewFilterType = "division"
+  filterType: FlatViewFilterType = "division",
 ): FlatItem[] => {
   const result: FlatItem[] = [];
 
@@ -280,7 +280,10 @@ const FlatRow = ({
   // API 응답의 divisionName, teamName 우선 사용, 없으면 item.roomName, item.teamName 사용
   const getParentInfo = () => {
     // API 응답 필드 (format=list) - 타입 가드로 안전하게 접근
-    const dataWithApiFields = data as { divisionName?: string; teamName?: string };
+    const dataWithApiFields = data as {
+      divisionName?: string;
+      teamName?: string;
+    };
     const divisionName = dataWithApiFields.divisionName;
     const teamNameFromApi = dataWithApiFields.teamName;
 
@@ -303,8 +306,12 @@ const FlatRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}>
-      <td className={`px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}>
+    <tr
+      className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}
+    >
+      <td
+        className={`px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}
+      >
         {isDepartment ? (
           <div className="flex flex-col justify-center h-full gap-0.5">
             <div className="flex items-center">
@@ -378,14 +385,22 @@ export const OrganizationBdpiFlatTable = ({
   const apiOptions =
     activeTab === "bdpi"
       ? {
-          aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+          aggregation:
+            aggregationType === "average"
+              ? ("avg" as const)
+              : ("total" as const),
           format: "list" as const,
           type: filterType,
           search: searchKeyword.trim() || undefined,
         }
       : undefined;
 
-  const { data, isLoading, isError } = useOrganizationTree(month, activeTab, true, apiOptions);
+  const { data, isLoading, isError } = useOrganizationTree(
+    month,
+    activeTab,
+    true,
+    apiOptions,
+  );
 
   // format=list일 경우 items 배열 사용, 아니면 tree를 flatten
   // 검색은 API에서 처리하므로 클라이언트 필터링 불필요
@@ -495,9 +510,7 @@ export const OrganizationBdpiFlatTable = ({
   if (flatItems.length === 0 && searchKeyword.trim()) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
-        <p className="text-gray-500">
-          '{searchKeyword}' 검색 결과가 없습니다.
-        </p>
+        <p className="text-gray-500">'{searchKeyword}' 검색 결과가 없습니다.</p>
       </div>
     );
   }
@@ -517,9 +530,15 @@ export const OrganizationBdpiFlatTable = ({
         </colgroup>
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
-            <th className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}>조직 이름</th>
+            <th
+              className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}
+            >
+              조직 이름
+            </th>
             {SORTABLE_HEADERS.map((header) => {
-              const isActive = sortConfig.column === header.id && sortConfig.direction !== null;
+              const isActive =
+                sortConfig.column === header.id &&
+                sortConfig.direction !== null;
 
               // 정렬 아이콘 렌더링
               const renderSortIcon = () => {
@@ -547,7 +566,7 @@ export const OrganizationBdpiFlatTable = ({
                 </th>
               );
             })}
-            <th className={`${thStyle} w-[7%]`}>전월비교</th>
+            <th className={`${thStyle} w-[7%]`}>전월대비</th>
           </tr>
         </thead>
         <tbody>

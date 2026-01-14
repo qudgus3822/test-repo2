@@ -31,7 +31,6 @@ import type {
   OrganizationMember,
   OrganizationNode,
   TabType,
-  BdpiMetrics,
   ChangeInfo,
 } from "@/types/organization.types";
 import {
@@ -416,20 +415,22 @@ const ScrollableRow = ({
   aggregationType?: AggregationType;
 }) => {
   const metrics = item.data.metrics as unknown as Record<string, MetricData>;
-  const bdpiMetrics = item.data.metrics as BdpiMetrics;
 
   return (
     <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리 (총합 모드에서도 데이터 표시)
-        if (code === "bdpi") {
+        if (code === "bdpi" || code === "BDPI") {
+          // API 응답의 metrics에서 BDPI 데이터 조회 (대소문자 모두 확인)
+          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
+          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
           return (
             <td
               key={code}
               className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
             >
-              {bdpiMetrics?.bdpi?.score !== undefined
-                ? `${bdpiMetrics.bdpi.score.toFixed(0)}%`
+              {bdpiValue !== undefined && bdpiValue !== null
+                ? `${bdpiValue.toFixed(0)}%`
                 : "--"}
             </td>
           );
@@ -453,7 +454,12 @@ const ScrollableRow = ({
         const hasData =
           metric && typeof metric.value === "number" && metric.isUsed !== false;
         const score = hasData ? metric?.score ?? null : null;
-        const value = hasData ? metric?.value ?? null : null;
+        // 총합 모드일 경우 totalValue 사용 (없으면 "--" 표시)
+        const value = hasData
+          ? aggregationType === "total"
+            ? metric?.totalValue ?? null
+            : metric?.value ?? null
+          : null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
 
@@ -534,9 +540,9 @@ export const OrganizationTable = ({
     // API 응답의 metrics 객체 키 순서 사용 (fresh 데이터)
     if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
       const apiMetricOrder = Object.keys(data.tree[0].metrics);
-      // BDPI가 없으면 마지막에 추가
-      if (!apiMetricOrder.includes("bdpi")) {
-        apiMetricOrder.push("bdpi");
+      // BDPI가 없으면 마지막에 추가 (대소문자 모두 확인)
+      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
+        apiMetricOrder.push("BDPI");
       }
       setGlobalMetricOrder(apiMetricOrder);
     }

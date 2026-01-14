@@ -39,7 +39,9 @@ const TAB_ENDPOINT_MAP: Record<TabType, string> = {
 export const fetchOrganizationTree = async (
   yearMonth: string,
 ): Promise<OrganizationCompareResponse> => {
-  return apiGet<OrganizationCompareResponse>(`/departments/monthly/tree?yearMonth=${yearMonth}`);
+  return apiGet<OrganizationCompareResponse>(
+    `/departments/monthly/tree?yearMonth=${yearMonth}`,
+  );
 };
 
 /**
@@ -53,7 +55,9 @@ export const fetchOrganizationByTab = async (
   tab: TabType,
 ): Promise<OrganizationCompareResponse> => {
   const endpoint = TAB_ENDPOINT_MAP[tab];
-  return apiGet<OrganizationCompareResponse>(`/departments/monthly/${endpoint}?yearMonth=${yearMonth}`);
+  return apiGet<OrganizationCompareResponse>(
+    `/departments/monthly/${endpoint}?yearMonth=${yearMonth}`,
+  );
 };
 
 /**
@@ -111,13 +115,13 @@ export const fetchOrganizationAllMetrics = async (
 
   // 실제 API 호출
   return apiGet<OrganizationCompareResponse>(
-    `/departments/monthly/metrics?${queryParams.toString()}`
+    `/departments/monthly/metrics?${queryParams.toString()}`,
   );
 };
 
 /**
  * BDPI 지표 조직 데이터 조회 API
- * - 코드품질, 리뷰품질, 개발효율, BDPI, 전월비교 포함
+ * - 코드품질, 리뷰품질, 개발효율, BDPI, 전월대비 포함
  * @param params - API 요청 파라미터
  * @returns 조직 트리 데이터 (BDPI 지표 포함)
  */
@@ -142,7 +146,7 @@ export const fetchOrganizationBdpiMetrics = async (
   if (search) queryParams.set("search", search);
 
   return apiGet<OrganizationCompareResponse>(
-    `/departments/monthly/bdpi?${queryParams.toString()}`
+    `/departments/monthly/bdpi?${queryParams.toString()}`,
   );
 };
 
@@ -159,7 +163,9 @@ export const fetchOrgChangeHistory = async (
   if (yearMonth) {
     params.append("yearMonth", yearMonth);
   }
-  return apiGet<OrgHistoryResponse>(`/departments/change-history?${params.toString()}`);
+  return apiGet<OrgHistoryResponse>(
+    `/departments/change-history?${params.toString()}`,
+  );
 };
 
 /**
@@ -170,7 +176,9 @@ export const fetchOrgChangeHistory = async (
 export const fetchOrgTypeSettings = async (
   yearMonth: string,
 ): Promise<OrgTypeSettingsResponse> => {
-  return apiGet<OrgTypeSettingsResponse>(`/departments/org-type-settings?yearMonth=${yearMonth}`);
+  return apiGet<OrgTypeSettingsResponse>(
+    `/departments/org-type-settings?yearMonth=${yearMonth}`,
+  );
 };
 
 /**
@@ -240,9 +248,7 @@ export interface MetricDefinitionResponse {
 export const fetchMetricDefinition = async (
   metricCode: string,
 ): Promise<MetricDefinitionResponse> => {
-  return apiGet<MetricDefinitionResponse>(
-    `/metrics/definitions/${metricCode}`,
-  );
+  return apiGet<MetricDefinitionResponse>(`/metrics/definitions/${metricCode}`);
 };
 
 // 지표 순서 응답 타입
@@ -274,5 +280,8 @@ export const updateMetricOrder = async (
   fromIndex: number,
   toIndex: number,
 ): Promise<MetricOrderResponse> => {
-  return apiPatch<MetricOrderResponse>(`/metrics/order`, { fromIndex, toIndex });
+  return apiPatch<MetricOrderResponse>(`/metrics/order`, {
+    fromIndex,
+    toIndex,
+  });
 };
