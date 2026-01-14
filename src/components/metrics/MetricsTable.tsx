@@ -82,7 +82,6 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const setIsMetricsDetailModalOpen = useMetricsStore(
     (state) => state.setIsMetricsDetailModalOpen,
   );
-
   const setSelectedMetric = useMetricsStore((state) => state.setSelectedMetric);
 
   // API 호출
