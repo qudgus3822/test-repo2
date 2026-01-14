@@ -47,6 +47,14 @@ interface OrganizationStore {
    * 전체 팀 펼침 상태 (버튼 텍스트 토글용)
    */
   isTeamsExpanded: boolean;
+  /**
+   * 지표 칼럼 순서 (드래그앤드롭으로 변경된 순서, null이면 API 응답 순서 사용)
+   */
+  metricOrder: string[] | null;
+  /**
+   * 지표 칼럼 드래그앤드롭 발생 여부 (필터 변경 시 API 재호출 트리거용)
+   */
+  isMetricColumnDragged: boolean;
 }
 
 interface OrganizationAction {
@@ -102,6 +110,18 @@ interface OrganizationAction {
    * 기본 상태로 접기 (초기 화면 진입 시와 동일)
    */
   collapseToDefault: (orgIds: string[]) => void;
+  /**
+   * 지표 칼럼 순서 설정 (드래그앤드롭 시)
+   */
+  setMetricOrder: (order: string[]) => void;
+  /**
+   * 지표 칼럼 순서 초기화 (필터 변경 시 API 응답 순서 사용하도록)
+   */
+  clearMetricOrder: () => void;
+  /**
+   * 지표 칼럼 드래그앤드롭 발생 여부 설정
+   */
+  setIsMetricColumnDragged: (isDragged: boolean) => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -122,6 +142,8 @@ const initState: OrganizationStore = {
   expandedOrganizations: new Set(DEFAULT_EXPANDED_CODES), // 초기: IT부문만 펼침 (실 단위까지 보임)
   showMembers: true, // 기본: 멤버 표시
   isTeamsExpanded: false, // 초기: 팀 접힌 상태
+  metricOrder: null, // 초기: API 응답 순서 사용
+  isMetricColumnDragged: false, // 초기: 드래그 발생 안 함
 };
 
 export const useOrganizationStore = create<
@@ -174,4 +196,8 @@ export const useOrganizationStore = create<
       showMembers: true,
       isTeamsExpanded: false,
     })),
+  setMetricOrder: (order: string[]) => set({ metricOrder: order }),
+  clearMetricOrder: () => set({ metricOrder: null }),
+  setIsMetricColumnDragged: (isDragged: boolean) =>
+    set({ isMetricColumnDragged: isDragged }),
 }));

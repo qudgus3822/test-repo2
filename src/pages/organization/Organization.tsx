@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Search,
   Cable,
@@ -26,7 +26,11 @@ import { OrgChangeHistoryModal } from "@/components/dashboard";
 import type { OrganizationDetailItem } from "@/components/organization";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
-import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
+import {
+  useOrganizationTree,
+  organizationTreeKeys,
+} from "@/api/hooks/useOrganizationTree";
+import { useQueryClient } from "@tanstack/react-query";
 import type { OrganizationDepartment } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 
@@ -67,9 +71,14 @@ const OrganizationPage = () => {
     expandAll,
     collapseToDefault,
     isTeamsExpanded,
+    isMetricColumnDragged,
+    clearMetricOrder,
+    setIsMetricColumnDragged,
   } = useOrganizationStore();
 
   const { setOrgHistoryModal } = useDashboardStore();
+
+  const queryClient = useQueryClient();
 
   // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
   useEffect(() => {
@@ -164,16 +173,69 @@ const OrganizationPage = () => {
   const yearMonth = formatYearMonth(currentDate);
 
   // 탭별 API 옵션 설정 (하위 테이블 컴포넌트와 동일한 queryKey 사용을 위함)
+  // 주의: Query Key 일치를 위해 테이블 컴포넌트의 apiOptions 구조와 정확히 동일해야 함
   const apiOptions = useMemo(() => {
     if (activeTab === "all" || activeTab === "bdpi") {
-      return {
+      const baseOptions = {
         aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
-        format: viewType === "hierarchy" ? ("tree" as const) : ("list" as const),
-        type: viewType === "flat" ? flatViewFilter : undefined,
       };
+
+      if (viewType === "hierarchy") {
+        // OrganizationTable과 동일한 구조 (type 필드 없음)
+        return {
+          ...baseOptions,
+          format: "tree" as const,
+        };
+      } else {
+        // OrganizationFlatTable과 동일한 구조 (search 필드 포함)
+        return {
+          ...baseOptions,
+          format: "list" as const,
+          type: flatViewFilter,
+          search: activeSearchKeyword.trim() || undefined,
+        };
+      }
     }
     return undefined;
-  }, [activeTab, aggregationType, viewType, flatViewFilter]);
+  }, [activeTab, aggregationType, viewType, flatViewFilter, activeSearchKeyword]);
+
+  // 이전 필터 값을 추적하는 ref (필터 변경 감지용)
+  const prevFiltersRef = useRef({ viewType, flatViewFilter, aggregationType });
+
+  // 필터 변경 시 드래그 플래그가 true이면 API 재호출하여 칼럼 순서 동기화
+  useEffect(() => {
+    const prevFilters = prevFiltersRef.current;
+    const filtersChanged =
+      prevFilters.viewType !== viewType ||
+      prevFilters.flatViewFilter !== flatViewFilter ||
+      prevFilters.aggregationType !== aggregationType;
+
+    // 이전 필터 값 업데이트
+    prevFiltersRef.current = { viewType, flatViewFilter, aggregationType };
+
+    // 필터가 실제로 변경되었고, 드래그 플래그가 true일 때만 API 재호출
+    if (filtersChanged && isMetricColumnDragged) {
+      // 지표 순서 초기화 (API 응답 순서 사용하도록)
+      clearMetricOrder();
+      // 현재 뷰에 해당하는 쿼리 캐시 완전 제거 (stale 데이터 사용 방지)
+      queryClient.removeQueries({
+        queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, activeTab, apiOptions),
+      });
+      // 플래그 초기화
+      setIsMetricColumnDragged(false);
+    }
+  }, [
+    viewType,
+    flatViewFilter,
+    aggregationType,
+    isMetricColumnDragged,
+    clearMetricOrder,
+    setIsMetricColumnDragged,
+    queryClient,
+    yearMonth,
+    activeTab,
+    apiOptions,
+  ]);
 
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
   const { data, isLoading, isError } = useOrganizationTree(

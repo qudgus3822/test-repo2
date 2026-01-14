@@ -53,11 +53,11 @@ import {
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
-  useMetricOrder,
   useUpdateMetricOrder,
 } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
+import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 import { MetricDetailInfo } from "./MetricDetailInfo";
 import { MemberMetricRankingModal } from "./MemberMetricRankingModal";
@@ -576,16 +576,25 @@ export const OrganizationFlatTable = ({
         }
       : undefined;
 
-  const { data, isLoading, isError } = useOrganizationTree(
+  const { data, isLoading, isError, isFetching } = useOrganizationTree(
     month,
     activeTab,
     true,
     apiOptions,
   );
 
-  // 지표 순서 조회 및 변경 hooks
-  const { data: metricOrderData } = useMetricOrder();
+  // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();
+
+  // 전역 스토어에서 지표 순서 상태 가져오기 (뷰 전환 시에도 유지됨)
+  const {
+    metricOrder: globalMetricOrder,
+    setMetricOrder: setGlobalMetricOrder,
+    setIsMetricColumnDragged,
+  } = useOrganizationStore();
+
+  // 실제 사용할 지표 순서 (전역 스토어에 값이 있으면 사용, 없으면 기본값)
+  const metricOrder = globalMetricOrder ?? ALL_METRIC_CODES;
 
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;
@@ -614,32 +623,32 @@ export const OrganizationFlatTable = ({
     }
   }, [flatItems.length, searchKeyword, onSearchResult]);
 
-  // 지표 순서 상태 (드래그로 변경 가능)
-  const [metricOrder, setMetricOrder] = useState<string[]>(ALL_METRIC_CODES);
-
-  // API에서 조회한 순서로 상태 업데이트 (우선순위: 저장된 순서 > API 응답 순서 > 기본 순서)
+  // API에서 조회한 순서로 상태 업데이트 (데이터가 fresh하고, 전역 스토어에 값이 없을 때만)
   useEffect(() => {
-    if (metricOrderData?.order && metricOrderData.order.length > 0) {
-      // 저장된 지표 순서가 있으면 사용
-      setMetricOrder(metricOrderData.order);
-    } else if (data?.items && data.items.length > 0 && data.items[0].metrics) {
-      // API 응답의 metrics 객체 키 순서 사용 (format=list)
+    // 데이터를 로딩 중이거나 가져오는 중이면 대기
+    if (isLoading || isFetching) return;
+    // 전역 스토어에 이미 순서가 있으면 (드래그앤드롭으로 설정된 경우) API 응답으로 덮어쓰지 않음
+    if (globalMetricOrder !== null) return;
+
+    // API 응답의 metrics 객체 키 순서 사용 (fresh 데이터)
+    if (data?.items && data.items.length > 0 && data.items[0].metrics) {
+      // format=list 응답
       const apiMetricOrder = Object.keys(data.items[0].metrics);
       // BDPI 키를 소문자로 변환 (기존 코드와 일관성 유지)
       const normalizedOrder = apiMetricOrder.map((key) =>
         key === "BDPI" ? "bdpi" : key,
       );
-      setMetricOrder(normalizedOrder);
+      setGlobalMetricOrder(normalizedOrder);
     } else if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
-      // API 응답의 metrics 객체 키 순서 사용 (format=tree)
+      // format=tree 응답
       const apiMetricOrder = Object.keys(data.tree[0].metrics);
       // BDPI가 없으면 마지막에 추가
       if (!apiMetricOrder.includes("bdpi")) {
         apiMetricOrder.push("bdpi");
       }
-      setMetricOrder(apiMetricOrder);
+      setGlobalMetricOrder(apiMetricOrder);
     }
-  }, [metricOrderData, data]);
+  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching]);
 
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -700,27 +709,35 @@ export const OrganizationFlatTable = ({
   );
 
   // 드래그 종료 핸들러
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      const oldIndex = metricOrder.indexOf(active.id as string);
-      const newIndex = metricOrder.indexOf(over.id as string);
+      if (over && active.id !== over.id) {
+        const oldIndex = metricOrder.indexOf(active.id as string);
+        const newIndex = metricOrder.indexOf(over.id as string);
 
-      // 낙관적 업데이트: 로컬 상태 먼저 변경
-      setMetricOrder((items) => arrayMove(items, oldIndex, newIndex));
+        // 낙관적 업데이트: 전역 스토어 상태 먼저 변경 (뷰 전환 시에도 유지됨)
+        const newOrder = arrayMove([...metricOrder], oldIndex, newIndex);
+        setGlobalMetricOrder(newOrder);
 
-      // API 호출하여 순서 저장 (응답값으로 캐시 자동 업데이트)
-      updateMetricOrderMutation.mutate(
-        { fromIndex: oldIndex, toIndex: newIndex },
-        {
-          onError: (error) => {
-            console.error("지표 순서 저장 실패:", error);
+        // API 호출하여 순서 저장 (저장 완료 후 플래그 설정)
+        updateMetricOrderMutation.mutate(
+          { fromIndex: oldIndex, toIndex: newIndex },
+          {
+            onSuccess: () => {
+              // 저장 API 완료 후 드래그 플래그 설정 (필터 변경 시 API 재호출 트리거)
+              setIsMetricColumnDragged(true);
+            },
+            onError: (error) => {
+              console.error("지표 순서 저장 실패:", error);
+            },
           },
-        },
-      );
-    }
-  }, [metricOrder, updateMetricOrderMutation]);
+        );
+      }
+    },
+    [metricOrder, updateMetricOrderMutation, setGlobalMetricOrder, setIsMetricColumnDragged],
+  );
 
   // 정렬 토글 (3단계: null → asc → desc → null)
   const toggleSort = useCallback((column: string) => {
