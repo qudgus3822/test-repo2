@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Info, Settings } from "lucide-react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
@@ -69,14 +70,19 @@ export const MetricsPreviewTable = ({
   onSettingClick,
 }: MetricsPreviewTableProps) => {
   // 프론트에서 달성률 기준값에 따라 status 계산
-  const metricsWithCalculatedStatus = metrics.map((metric) => ({
-    ...metric,
-    status: calculateMetricStatus(
-      metric.achievementRate,
-      excellentThreshold,
-      dangerThreshold,
-    ),
-  }));
+  // [변경: 2026-01-14 12:00, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const metricsWithCalculatedStatus = useMemo(
+    () =>
+      metrics.map((metric) => ({
+        ...metric,
+        status: calculateMetricStatus(
+          metric.achievementRate,
+          excellentThreshold,
+          dangerThreshold,
+        ),
+      })),
+    [metrics, excellentThreshold, dangerThreshold],
+  );
 
   // 로딩 또는 데이터 없음 상태
   const isEmptyState = isLoading || metrics.length === 0;

@@ -501,8 +501,15 @@ export const OrganizationTable = ({
     true,
     apiOptions,
   );
-  const { expandedOrganizations, toggleOrganization, showMembers } =
-    useOrganizationStore();
+  const expandedOrganizations = useOrganizationStore(
+    (state) => state.expandedOrganizations,
+  );
+  const toggleOrganization = useOrganizationStore(
+    (state) => state.toggleOrganization,
+  );
+  const showMembers = useOrganizationStore(
+    (state) => state.showMembers,
+  );
 
   // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();

@@ -8,7 +8,8 @@ const tabs: { id: TabType; label: string }[] = [
 ];
 
 export const OrganizationTabs = () => {
-  const { activeTab, setActiveTab } = useOrganizationStore();
+  const activeTab = useOrganizationStore((state) => state.activeTab);
+  const setActiveTab = useOrganizationStore((state) => state.setActiveTab);
 
   return (
     <div className="flex items-center justify-between border-b border-gray-200 pb-3">

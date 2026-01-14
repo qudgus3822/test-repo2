@@ -2,7 +2,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
 import { MetricsTabs } from "./MetricsTabs";
 import { Search, ArrowDownUp, Info, ArrowUp, ArrowDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
@@ -60,21 +60,34 @@ const TAB_CATEGORY_MAP: Record<TabType, MetricCategory | null> = {
 };
 
 export const MetricsTable = ({ month }: MetricsTableProps) => {
-  const {
-    activeTab,
-    achievementRateFilter,
-    setAchievementRateFilter,
-    achievementRateExcellentThreshold,
-    achievementRateDangerThreshold,
-    setAchievementRateExcellentThreshold,
-    setAchievementRateDangerThreshold,
-    setIsMetricsDetailModalOpen,
-    setSelectedMetric,
-  } = useMetricsStore((state) => state);
+  const activeTab = useMetricsStore((state) => state.activeTab);
+  const achievementRateFilter = useMetricsStore(
+    (state) => state.achievementRateFilter,
+  );
+  const setAchievementRateFilter = useMetricsStore(
+    (state) => state.setAchievementRateFilter,
+  );
+  const achievementRateExcellentThreshold = useMetricsStore(
+    (state) => state.achievementRateExcellentThreshold,
+  );
+  const achievementRateDangerThreshold = useMetricsStore(
+    (state) => state.achievementRateDangerThreshold,
+  );
+  const setAchievementRateExcellentThreshold = useMetricsStore(
+    (state) => state.setAchievementRateExcellentThreshold,
+  );
+  const setAchievementRateDangerThreshold = useMetricsStore(
+    (state) => state.setAchievementRateDangerThreshold,
+  );
+  const setIsMetricsDetailModalOpen = useMetricsStore(
+    (state) => state.setIsMetricsDetailModalOpen,
+  );
+  const setSelectedMetric = useMetricsStore((state) => state.setSelectedMetric);
 
   // API 호출
   const { data, isLoading, error } = useMetricsList(month);
-  const metrics = data?.metrics ?? [];
+  // [변경: 2026-01-14 12:15, 김병현 수정] useMemo로 감싸서 매 렌더링마다 새 배열 생성 방지
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics]);
 
   // 달성률 기준 API 조회
   const { data: criteriaData, isFetching } = useAchievementCriteria(month);
@@ -102,33 +115,42 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const dangerThreshold = achievementRateDangerThreshold;
 
   // 먼저 달성률 필터 적용
-  const achievementRateFilteredAllMetrics = metrics.filter((m) => {
-    if (achievementRateFilter === "all") return true;
-    if (achievementRateFilter === "excellent") {
-      return m.achievementRate >= excellentThreshold;
-    }
-    if (achievementRateFilter === "warning") {
-      return (
-        m.achievementRate >= dangerThreshold &&
-        m.achievementRate < excellentThreshold
-      );
-    }
-    if (achievementRateFilter === "danger") {
-      return m.achievementRate < dangerThreshold;
-    }
-    return true;
-  });
+  // [변경: 2026-01-14 12:05, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const achievementRateFilteredAllMetrics = useMemo(() => {
+    return metrics.filter((m) => {
+      if (achievementRateFilter === "all") return true;
+      if (achievementRateFilter === "excellent") {
+        return m.achievementRate >= excellentThreshold;
+      }
+      if (achievementRateFilter === "warning") {
+        return (
+          m.achievementRate >= dangerThreshold &&
+          m.achievementRate < excellentThreshold
+        );
+      }
+      if (achievementRateFilter === "danger") {
+        return m.achievementRate < dangerThreshold;
+      }
+      return true;
+    });
+  }, [metrics, achievementRateFilter, excellentThreshold, dangerThreshold]);
 
   // 카테고리별 개수 계산 (달성률 필터 적용 후)
-  const codeQualityCount = achievementRateFilteredAllMetrics.filter(
-    (m) => m.category === MetricCategory.CODE_QUALITY,
-  ).length;
-  const reviewQualityCount = achievementRateFilteredAllMetrics.filter(
-    (m) => m.category === MetricCategory.REVIEW_QUALITY,
-  ).length;
-  const developmentEfficiencyCount = achievementRateFilteredAllMetrics.filter(
-    (m) => m.category === MetricCategory.DEVELOPMENT_EFFICIENCY,
-  ).length;
+  // [변경: 2026-01-14 12:05, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const { codeQualityCount, reviewQualityCount, developmentEfficiencyCount } =
+    useMemo(() => {
+      return {
+        codeQualityCount: achievementRateFilteredAllMetrics.filter(
+          (m) => m.category === MetricCategory.CODE_QUALITY,
+        ).length,
+        reviewQualityCount: achievementRateFilteredAllMetrics.filter(
+          (m) => m.category === MetricCategory.REVIEW_QUALITY,
+        ).length,
+        developmentEfficiencyCount: achievementRateFilteredAllMetrics.filter(
+          (m) => m.category === MetricCategory.DEVELOPMENT_EFFICIENCY,
+        ).length,
+      };
+    }, [achievementRateFilteredAllMetrics]);
 
   // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
   const getTableHeight = () => {
@@ -161,22 +183,29 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   const tableHeight = getTableHeight();
 
   // 활성 탭에 따라 지표 필터링 (이미 달성률 필터가 적용된 metrics 사용)
-  const filteredMetrics =
-    activeTab === "bdpi"
+  // [변경: 2026-01-14 12:05, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const filteredMetrics = useMemo(() => {
+    return activeTab === "bdpi"
       ? achievementRateFilteredAllMetrics
       : achievementRateFilteredAllMetrics.filter(
           (m) => m.category === TAB_CATEGORY_MAP[activeTab],
         );
+  }, [activeTab, achievementRateFilteredAllMetrics]);
 
   // 프론트에서 달성률 기준값에 따라 status 계산
-  const metricsWithCalculatedStatus = filteredMetrics.map((metric) => ({
-    ...metric,
-    status: calculateMetricStatus(
-      metric.achievementRate,
-      excellentThreshold,
-      dangerThreshold,
-    ),
-  }));
+  // [변경: 2026-01-14 12:00, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const metricsWithCalculatedStatus = useMemo(
+    () =>
+      filteredMetrics.map((metric) => ({
+        ...metric,
+        status: calculateMetricStatus(
+          metric.achievementRate,
+          excellentThreshold,
+          dangerThreshold,
+        ),
+      })),
+    [filteredMetrics, excellentThreshold, dangerThreshold],
+  );
 
   // 비율 정렬
   const handleRatioSort = () => {
@@ -190,13 +219,16 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   };
 
   // 정렬된 지표 목록
-  const sortedMetrics = [...metricsWithCalculatedStatus].sort((a, b) => {
-    if (ratioSortOrder === null) return 0;
-    if (ratioSortOrder === "asc") {
-      return a.weightRatio - b.weightRatio;
-    }
-    return b.weightRatio - a.weightRatio;
-  });
+  // [변경: 2026-01-14 12:10, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const sortedMetrics = useMemo(() => {
+    return [...metricsWithCalculatedStatus].sort((a, b) => {
+      if (ratioSortOrder === null) return 0;
+      if (ratioSortOrder === "asc") {
+        return a.weightRatio - b.weightRatio;
+      }
+      return b.weightRatio - a.weightRatio;
+    });
+  }, [metricsWithCalculatedStatus, ratioSortOrder]);
 
   // 지표 상세보기 모달 열기
   const handleMetricsDetailClick = (metric: MetricItem) => {

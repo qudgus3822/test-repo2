@@ -14,7 +14,8 @@ export const MetricsTabs = ({
   reviewQualityCount,
   developmentEfficiencyCount,
 }: MetricsTabsProps) => {
-  const { activeTab, setActiveTab } = useMetricsStore();
+  const activeTab = useMetricsStore((state) => state.activeTab);
+  const setActiveTab = useMetricsStore((state) => state.setActiveTab);
 
   const tabs: { id: TabType; label: string; count: number }[] = [
     { id: "bdpi", label: "전체", count: allCount },

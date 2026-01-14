@@ -78,8 +78,6 @@ const OrganizationPage = () => {
 
   const { setOrgHistoryModal } = useDashboardStore();
 
-  const queryClient = useQueryClient();
-
   // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
   useEffect(() => {
     setPeriod("monthly");
@@ -177,7 +175,8 @@ const OrganizationPage = () => {
   const apiOptions = useMemo(() => {
     if (activeTab === "all" || activeTab === "bdpi") {
       const baseOptions = {
-        aggregation: aggregationType === "average" ? ("avg" as const) : ("total" as const),
+        aggregation:
+          aggregationType === "average" ? ("avg" as const) : ("total" as const),
       };
 
       if (viewType === "hierarchy") {
@@ -197,7 +196,13 @@ const OrganizationPage = () => {
       }
     }
     return undefined;
-  }, [activeTab, aggregationType, viewType, flatViewFilter, activeSearchKeyword]);
+  }, [
+    activeTab,
+    aggregationType,
+    viewType,
+    flatViewFilter,
+    activeSearchKeyword,
+  ]);
 
   // 이전 필터 값을 추적하는 ref (필터 변경 감지용)
   const prevFiltersRef = useRef({ viewType, flatViewFilter, aggregationType });
@@ -219,7 +224,11 @@ const OrganizationPage = () => {
       clearMetricOrder();
       // 현재 뷰에 해당하는 쿼리 캐시 완전 제거 (stale 데이터 사용 방지)
       queryClient.removeQueries({
-        queryKey: organizationTreeKeys.byMonthAndTab(yearMonth, activeTab, apiOptions),
+        queryKey: organizationTreeKeys.byMonthAndTab(
+          yearMonth,
+          activeTab,
+          apiOptions,
+        ),
       });
       // 플래그 초기화
       setIsMetricColumnDragged(false);

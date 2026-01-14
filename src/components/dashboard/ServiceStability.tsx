@@ -3,7 +3,11 @@ import { Card } from "@/components/ui/Card";
 import { TREND_COLORS, GOAL_STATUS_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
 import upIcon from "@/assets/icons/up_icon_green.svg";
-import { getStatusIcon, getStatusColor } from "@/utils/metrics";
+import {
+  getStatusIcon,
+  getStatusColor,
+  convertMetricNameToGeneralName,
+} from "@/utils/metrics";
 import { useServiceStability } from "@/api/hooks/useServiceStability";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
@@ -28,7 +32,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
         ? [
             {
               id: "deployment",
-              label: serviceStabilityData.deploymentFrequency.metricName,
+              label: convertMetricNameToGeneralName(serviceStabilityData.deploymentFrequency.metricName),
               value: `${serviceStabilityData.deploymentFrequency.value}회`,
               target: `${serviceStabilityData.deploymentFrequency.targetValue}회`,
               trend: {
@@ -46,7 +50,9 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
             },
             {
               id: "success",
-              label: serviceStabilityData.deploymentSuccessRate.metricName,
+              label: convertMetricNameToGeneralName(
+                serviceStabilityData.deploymentSuccessRate.metricName,
+              ),
               value: `${serviceStabilityData.deploymentSuccessRate.value}%`,
               target: `${serviceStabilityData.deploymentSuccessRate.targetValue}%`,
               trend: {
@@ -64,7 +70,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
             },
             {
               id: "mttr",
-              label: serviceStabilityData.mttr.metricName,
+              label: convertMetricNameToGeneralName(serviceStabilityData.mttr.metricName),
               value: `${serviceStabilityData.mttr.value}시간`,
               target: `${serviceStabilityData.mttr.targetValue}시간 이하`,
               trend: {
@@ -77,7 +83,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
             },
             {
               id: "mttd",
-              label: serviceStabilityData.mttd.metricName,
+              label: convertMetricNameToGeneralName(serviceStabilityData.mttd.metricName),
               value: `${serviceStabilityData.mttd.value}시간`,
               target: `${serviceStabilityData.mttd.targetValue}시간 이하`,
               trend: {
@@ -90,7 +96,7 @@ export const ServiceStability = ({ month }: ServiceStabilityProps) => {
             },
             {
               id: "incidents",
-              label: serviceStabilityData.incidentCount.metricName,
+              label: convertMetricNameToGeneralName(serviceStabilityData.incidentCount.metricName),
               value: `${serviceStabilityData.incidentCount.value}건`,
               target: `${serviceStabilityData.incidentCount.targetValue}건 이하`,
               trend: {
