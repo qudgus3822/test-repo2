@@ -2,7 +2,7 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
 import { MetricsTabs } from "./MetricsTabs";
 import { Search, ArrowDownUp, Info, ArrowUp, ArrowDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
@@ -182,14 +182,19 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
         );
 
   // 프론트에서 달성률 기준값에 따라 status 계산
-  const metricsWithCalculatedStatus = filteredMetrics.map((metric) => ({
-    ...metric,
-    status: calculateMetricStatus(
-      metric.achievementRate,
-      excellentThreshold,
-      dangerThreshold,
-    ),
-  }));
+  // [변경: 2026-01-14 12:00, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
+  const metricsWithCalculatedStatus = useMemo(
+    () =>
+      filteredMetrics.map((metric) => ({
+        ...metric,
+        status: calculateMetricStatus(
+          metric.achievementRate,
+          excellentThreshold,
+          dangerThreshold,
+        ),
+      })),
+    [filteredMetrics, excellentThreshold, dangerThreshold],
+  );
 
   // 비율 정렬
   const handleRatioSort = () => {
