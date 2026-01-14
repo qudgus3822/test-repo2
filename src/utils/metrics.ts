@@ -304,24 +304,32 @@ export const METRIC_CODE_FORMULAS: Record<string, string> = {
   // 코드품질 (9개)
   TECH_DEBT: "기술부채 = SonarQube에서 측정한 기술부채 시간",
   CODE_COMPLEXITY: "코드복잡도 = 순환복잡도(Cyclomatic Complexity) 평균값",
-  CODE_DUPLICATION: "코드중복률 = (중복 코드 라인 수 ÷ 전체 코드 라인 수) × 100",
+  CODE_DUPLICATION:
+    "코드중복률 = (중복 코드 라인 수 ÷ 전체 코드 라인 수) × 100",
   CODE_SMELL: "코드스멜 = SonarQube에서 탐지한 코드스멜 수",
   SECURITY_VULNERABILITIES: "보안취약점수 = SonarQube에서 탐지한 보안취약점 수",
   BUG_COUNT: "버그발생수 = Jira Bug 타입 이슈 수",
   INCIDENT_COUNT: "장애발생수 = P1~P3 등급 장애 수",
-  TEST_COVERAGE: "테스트커버리지 = (테스트된 코드 라인 수 ÷ 전체 코드 라인 수) × 100",
+  TEST_COVERAGE:
+    "테스트커버리지 = (테스트된 코드 라인 수 ÷ 전체 코드 라인 수) × 100",
   CODE_DEFECT_DENSITY: "코드결함밀도 = (결함 수 ÷ 총 코드 라인 수) × 1000",
   // 리뷰품질 (12개)
   REVIEW_SPEED: "리뷰속도 = 리뷰어 지정 후 첫 응답까지 걸린 평균 시간",
-  REVIEW_RESPONSE_RATE: "리뷰요청응답률 = (응답한 리뷰 수 ÷ 요청받은 리뷰 수) × 100",
-  REVIEW_PARTICIPATION_RATE: "리뷰참여율 = (리뷰 참여 인원 ÷ 전체 팀원 수) × 100",
-  REVIEW_ACCEPTANCE_RATE: "리뷰제안수용률 = (수용된 제안 수 ÷ 전체 제안 수) × 100",
-  REVIEW_FEEDBACK_CONCRETENESS: "피드백구체성 = (구체적 피드백 수 ÷ 전체 피드백 수) × 100",
+  REVIEW_RESPONSE_RATE:
+    "리뷰요청응답률 = (응답한 리뷰 수 ÷ 요청받은 리뷰 수) × 100",
+  REVIEW_PARTICIPATION_RATE:
+    "리뷰참여율 = (리뷰 참여 인원 ÷ 전체 팀원 수) × 100",
+  REVIEW_ACCEPTANCE_RATE:
+    "리뷰제안수용률 = (수용된 제안 수 ÷ 전체 제안 수) × 100",
+  REVIEW_FEEDBACK_CONCRETENESS:
+    "피드백구체성 = (구체적 피드백 수 ÷ 전체 피드백 수) × 100",
   REVIEW_REQUEST_COUNT: "리뷰요청수 = 리뷰어가 1명 이상 할당된 MR 수",
   REVIEW_PARTICIPATION_COUNT: "리뷰참여수 = 리뷰어로 참여하고 머지된 MR 수",
   REVIEW_PASS_RATE: "초회통과율 = (수정 없이 승인된 MR 수 ÷ 전체 MR 수) × 100",
-  REVIEW_PARTICIPATION_NUMBER: "코드리뷰참여수치 = 리뷰 참여 건수 × 피드백 구체성 점수",
-  REVIEW_FEEDBACK_TIME: "피드백반영시간 = Discussion 생성부터 해결까지 평균 시간",
+  REVIEW_PARTICIPATION_NUMBER:
+    "코드리뷰참여수치 = 리뷰 참여 건수 × 피드백 구체성 점수",
+  REVIEW_FEEDBACK_TIME:
+    "피드백반영시간 = Discussion 생성부터 해결까지 평균 시간",
   REVIEW_COMPLETION_TIME: "리뷰완료시간 = 첫 코멘트부터 승인까지 평균 시간",
   REVIEW_REVIEWER_DIVERSE: "리뷰어다양성 = 1 - 지니계수(리뷰어 분포)",
   // 개발효율 (9개)
@@ -329,8 +337,10 @@ export const METRIC_CODE_FORMULAS: Record<string, string> = {
   COMMIT_FREQUENCY: "커밋빈도 = 측정 기간 내 커밋 총 횟수",
   LOC_PER_COMMIT: "커밋당라인수 = 전체 변경 라인 수 ÷ 커밋 횟수",
   LEAD_TIME: "평균장애해결시간 = 장애 발생부터 복구까지 평균 소요 시간",
-  FAILURE_DETECTION_TIME: "장애탐지시간 = 장애 발생부터 탐지까지 평균 소요 시간",
-  FAILURE_DIAGNOSIS_TIME: "장애진단시간 = 장애 탐지부터 원인 파악까지 평균 소요 시간",
+  FAILURE_DETECTION_TIME:
+    "장애탐지시간 = 장애 발생부터 탐지까지 평균 소요 시간",
+  FAILURE_DIAGNOSIS_TIME:
+    "장애진단시간 = 장애 탐지부터 원인 파악까지 평균 소요 시간",
   FAILURE_RECOVERY_TIME: "장애복구시간 = 원인 파악부터 복구까지 평균 소요 시간",
   DEPLOYMENT_FREQUENCY: "배포빈도 = 측정 기간 내 배포 총 횟수",
   DEPLOYMENT_SUCCESS_RATE: "배포성공률 = (성공한 배포 수 ÷ 전체 배포 수) × 100",
@@ -836,4 +846,25 @@ export function convertToMetricsListData(
   }
 
   return metrics;
+}
+
+/*
+ * 지표 이름을 일반적인 한글 이름으로 변환합니다.
+ * @param metricName - 지표 이름 (예: "MTTR")
+ * @returns 일반적인 한글 이름 (예: "장애해결시간")
+ *
+ */
+export function convertMetricNameToGeneralName(metricName: string): string {
+  switch (metricName) {
+    case "MTTR":
+      return "장애해결시간";
+    case "MTTD":
+      return "장애탐지시간";
+    case "TTCI":
+      return "장애진단시간";
+    case "장애 발생건수":
+      return "장애해결수";
+    default:
+      return metricName;
+  }
 }
