@@ -4,7 +4,7 @@ import {
   type MetricsListData,
   type TargetValueMetric,
 } from "@/types/metrics.types";
-import type { ThresholdType } from "@/types/serviceStability.types";
+import type { StatusType as ServiceStabilityStatus } from "@/types/serviceStability.types";
 import { CheckCircle2, AlertCircle, CircleX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { STATUS_COLORS, TEXT_COLORS, PALETTE_COLORS } from "@/styles/colors";
@@ -625,9 +625,9 @@ export const getCategoryStyle = (category: MetricCategory) => {
 };
 
 /**
- * 상태 타입 정의 (MetricStatus와 ThresholdType 통합)
+ * 상태 타입 정의 (MetricStatus와 ServiceStabilityStatus 통합)
  */
-export type StatusType = MetricStatus | ThresholdType;
+export type StatusType = MetricStatus | ServiceStabilityStatus;
 
 /**
  * 상태 아이콘 설정 인터페이스
@@ -654,16 +654,18 @@ export interface StatusIconConfig {
  * // Returns: CheckCircle2
  * ```
  */
-export const getStatusIcon = (status: StatusType): LucideIcon => {
+export const getStatusIcon = (status: StatusType | null): LucideIcon => {
+  if (!status) return AlertCircle;
   const iconMap: Record<string, LucideIcon> = {
     // MetricStatus (enum 값)
     excellent: CheckCircle2, // EXCELLENT (우수)
     warning: AlertCircle, // WARNING (경고)
     danger: CircleX, // DANGER (위험 - 빨간색 X)
-    // 기존 호환성을 위한 매핑
-    achieved: CheckCircle2,
-    not_achieved: CircleX,
-    // ThresholdType
+    // ServiceStabilityStatus
+    over_achieved: CheckCircle2, // 초과 달성
+    achieved: CheckCircle2, // 달성
+    not_achieved: CircleX, // 미달성
+    // 기존 호환성
     good: CheckCircle2,
   };
   return iconMap[status] || AlertCircle;
@@ -684,16 +686,18 @@ export const getStatusIcon = (status: StatusType): LucideIcon => {
  * // Returns: "#10b981"
  * ```
  */
-export const getStatusColor = (status: StatusType): string => {
+export const getStatusColor = (status: StatusType | null): string => {
+  if (!status) return TEXT_COLORS.secondary;
   const colorMap: Record<string, string> = {
     // MetricStatus (enum 값)
     excellent: STATUS_COLORS.excellent, // EXCELLENT (우수 - 초록색)
     warning: STATUS_COLORS.warning, // WARNING (경고 - 주황색)
     danger: STATUS_COLORS.danger, // DANGER (위험 - 빨간색)
-    // 기존 호환성을 위한 매핑
-    achieved: STATUS_COLORS.excellent, // 초록색
-    not_achieved: STATUS_COLORS.danger, // 빨간색
-    // ThresholdType
+    // ServiceStabilityStatus
+    over_achieved: STATUS_COLORS.excellent, // 초과 달성 - 초록색
+    achieved: STATUS_COLORS.excellent, // 달성 - 초록색
+    not_achieved: STATUS_COLORS.danger, // 미달성 - 빨간색
+    // 기존 호환성
     good: STATUS_COLORS.excellent, // 초록색
   };
   return colorMap[status] || TEXT_COLORS.secondary; // 기본값: 회색
@@ -715,7 +719,15 @@ export const getStatusColor = (status: StatusType): string => {
  * // Returns: { icon: CheckCircle2, color: "#10b981", bgColor: "#10b98120", label: "달성" }
  * ```
  */
-export const getStatusIconConfig = (status: StatusType): StatusIconConfig => {
+export const getStatusIconConfig = (status: StatusType | null): StatusIconConfig => {
+  if (!status) {
+    return {
+      icon: AlertCircle,
+      color: TEXT_COLORS.secondary,
+      bgColor: `${TEXT_COLORS.secondary}20`,
+      label: "데이터 없음",
+    };
+  }
   const configMap: Record<string, StatusIconConfig> = {
     // MetricStatus - 지표 상태 (달성률)
     achieved: {
@@ -736,7 +748,14 @@ export const getStatusIconConfig = (status: StatusType): StatusIconConfig => {
       bgColor: `${STATUS_COLORS.danger}20`,
       label: "미달성",
     },
-    // ThresholdType - 목표 달성 상태
+    // ServiceStabilityStatus - 초과 달성
+    over_achieved: {
+      icon: CheckCircle2,
+      color: STATUS_COLORS.excellent,
+      bgColor: `${STATUS_COLORS.excellent}20`,
+      label: "초과달성",
+    },
+    // 기존 호환성
     excellent: {
       icon: CheckCircle2,
       color: STATUS_COLORS.excellent,
@@ -846,25 +865,4 @@ export function convertToMetricsListData(
   }
 
   return metrics;
-}
-
-/*
- * 지표 이름을 일반적인 한글 이름으로 변환합니다.
- * @param metricName - 지표 이름 (예: "MTTR")
- * @returns 일반적인 한글 이름 (예: "장애해결시간")
- *
- */
-export function convertMetricNameToGeneralName(metricName: string): string {
-  switch (metricName) {
-    case "MTTR":
-      return "장애해결시간";
-    case "MTTD":
-      return "장애탐지시간";
-    case "TTCI":
-      return "장애진단시간";
-    case "장애 발생건수":
-      return "장애해결수";
-    default:
-      return metricName;
-  }
 }
