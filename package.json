@@ -7,6 +7,8 @@
     "dev": "vite",
     "dev:host": "vite --host",
     "build": "npm run lint && tsc -b && vite build",
+    "build:dev": "npm run lint && tsc -b && vite build --mode development",
+    "build:prod": "npm run lint && tsc -b && vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "ngrok": "~/.local/bin/ngrok start --config ngrok.yml barcode-plus-front"
