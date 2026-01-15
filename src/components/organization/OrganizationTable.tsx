@@ -441,7 +441,10 @@ const ScrollableRow = ({
           aggregationType === "total" &&
           !TOTAL_MODE_METRIC_CODES.includes(code);
 
-        if (isDisabledInTotalMode) {
+        const metric = metrics?.[code];
+
+        // 총합 모드에서 해당 지표가 표시 대상이 아닌 경우 또는 isUsed가 false인 경우(수집불가 지표) 회색 처리
+        if (isDisabledInTotalMode || metric?.isUsed === false) {
           return (
             <td
               key={code}
@@ -450,9 +453,8 @@ const ScrollableRow = ({
           );
         }
 
-        const metric = metrics?.[code];
         const hasData =
-          metric && typeof metric.value === "number" && metric.isUsed !== false;
+          metric && typeof metric.value === "number";
         const score = hasData ? metric?.score ?? null : null;
         // 총합 모드일 경우 totalValue 사용 (없으면 "--" 표시)
         const value = hasData
