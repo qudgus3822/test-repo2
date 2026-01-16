@@ -275,12 +275,12 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
               <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
                 <th className="px-4 py-3 w-[25%]">지표명</th>
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>
-                <th className="px-4 py-3 w-[12%]">현재값</th>
+                <th className="px-4 py-3 w-[12%] text-center">현재값</th>
 
-                <th className="px-4 py-3 w-[12%]">목표값</th>
-                <th className="px-4 py-3 w-[12%]">달성률</th>
-                <th className="px-4 py-3 w-[12%]">
-                  <div className="flex items-center gap-1.5">
+                <th className="px-4 py-3 w-[12%] text-center">목표값</th>
+                <th className="px-4 py-3 w-[12%] text-center">달성률</th>
+                <th className="px-4 py-3 w-[12%] text-center">
+                  <div className="flex items-center justify-center gap-1.5">
                     비율
                     <span
                       className="flex items-center cursor-pointer"
@@ -310,7 +310,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                     </span>
                   </div>
                 </th>
-                <th className="px-4 py-3 w-[12%]">상세</th>
+                <th className="px-4 py-3 w-[12%] text-center">상세</th>
               </tr>
             </thead>
             <tbody>
@@ -360,17 +360,17 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                         );
                       })()}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="px-4 py-3 text-sm text-gray-900 text-center">
                       {metric.currentValue === null
                         ? "--"
                         : `${metric.currentValue}${metric.unit}`}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-gray-600 text-center">
                       {metric.targetValue}
                       {metric.unit}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center justify-center space-x-2">
                         {metric.achievementRate === null ? (
                           <span className="text-sm text-gray-400">--</span>
                         ) : (
@@ -395,10 +395,10 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
+                    <td className="px-4 py-3 text-sm text-gray-600 text-center">
                       {metric.weightRatio.toFixed(1)}%
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-center">
                       <button
                         className="text-gray-400 hover:text-gray-600 cursor-pointer"
                         onClick={() => handleMetricsDetailClick(metric)}
