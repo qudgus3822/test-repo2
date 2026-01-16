@@ -367,8 +367,9 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                       })()}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      {metric.currentValue}
-                      {getMetricUnit(metric.metricCode)}
+                      {metric.currentValue === null
+                        ? "--"
+                        : `${metric.currentValue}${getMetricUnit(metric.metricCode)}`}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {metric.targetValue}
@@ -376,24 +377,28 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">
-                        {(() => {
-                          const Icon = getStatusIcon(metric.status);
-                          const iconColor = getStatusColor(metric.status);
-                          return (
-                            <>
-                              <Icon
-                                className="w-5 h-5"
-                                style={{ color: iconColor }}
-                              />
-                              <span
-                                className="text-sm font-medium"
-                                style={{ color: iconColor }}
-                              >
-                                {metric.achievementRate}%
-                              </span>
-                            </>
-                          );
-                        })()}
+                        {metric.achievementRate === null ? (
+                          <span className="text-sm text-gray-400">--</span>
+                        ) : (
+                          (() => {
+                            const Icon = getStatusIcon(metric.status);
+                            const iconColor = getStatusColor(metric.status);
+                            return (
+                              <>
+                                <Icon
+                                  className="w-5 h-5"
+                                  style={{ color: iconColor }}
+                                />
+                                <span
+                                  className="text-sm font-medium"
+                                  style={{ color: iconColor }}
+                                >
+                                  {metric.achievementRate}%
+                                </span>
+                              </>
+                            );
+                          })()
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
