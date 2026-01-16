@@ -1,17 +1,11 @@
 /**
  * MetricDetailInfo 컴포넌트
  * - 지표 상세 정보 표시 영역
- * - 지표명, 단위, 상세 설명: 유틸 함수에서 가져옴
- * - 목표값, 계산식, 전월대비 추세: API 응답값 사용
+ * - 모든 데이터는 API 응답값 사용 (지표명, 단위, 상세 설명, 목표값, 계산식, 전월대비 추세)
  */
 
 import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  METRIC_CODE_NAMES,
-  METRIC_CODE_UNITS,
-  METRIC_CODE_DETAIL_DESCRIPTIONS,
-} from "@/utils/metrics";
 import { TREND_COLORS } from "@/styles/colors";
 import { fetchMetricDefinition, type MetricTrend } from "@/api/organization";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -71,12 +65,10 @@ export const MetricDetailInfo = ({
     staleTime: 5 * 60 * 1000, // 5분
   });
 
-  // 유틸 함수에서 가져오는 값
-  const metricName = METRIC_CODE_NAMES[metricCode] || metricCode;
-  const metricUnit = METRIC_CODE_UNITS[metricCode] || "-";
-  const metricDescription = METRIC_CODE_DETAIL_DESCRIPTIONS[metricCode] || "-";
-
   // API 응답값에서 가져오는 값
+  const metricName = data?.title || metricCode;
+  const metricUnit = data?.unit || "-";
+  const metricDescription = data?.description || "-";
   const metricTarget = data?.targetValue || "-";
   const metricFormula = data?.formula || "";
   const trend = data?.trend;

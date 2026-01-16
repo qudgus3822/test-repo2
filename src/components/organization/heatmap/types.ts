@@ -100,6 +100,8 @@ export interface MetricData {
   totalValue?: number | null; // 총합 값 (aggregation=total일 때)
   targetValue?: number | string | null; // 목표값
   status?: MetricStatusType; // 달성 상태
+  metricName?: string; // 지표명
+  metricDisplayName?: string; // 지표 표시명 (줄바꿈 포함 문자열)
 }
 
 // 컬럼 너비 상수

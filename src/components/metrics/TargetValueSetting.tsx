@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
-import {
-  getCategoryLabel,
-  getMetricUnit,
-  getMetricName,
-  convertToMetricsListData,
-} from "@/utils/metrics";
+import { getCategoryLabel, convertToMetricsListData } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { updateTargetValues } from "@/api/metrics";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -290,7 +285,7 @@ export const TargetValueSetting = ({
                       }`}
                     >
                       <td className="px-2 text-gray-900">
-                        {getMetricName(metric.metricCode)}
+                        {metric.metricName}
                       </td>
                       <td className="px-2 text-center">
                         {(() => {
@@ -323,7 +318,7 @@ export const TargetValueSetting = ({
                             }`}
                           />
                           <span className="text-gray-500 whitespace-nowrap">
-                            {getMetricUnit(metric.metricCode)}
+                            {metric.unit}
                           </span>
                         </div>
                       </td>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { MetricCategory } from "@/types/metrics.types";
-import { getCategoryLabel, getMetricName } from "@/utils/metrics";
+import { getCategoryLabel } from "@/utils/metrics";
 import { useWeightSettings } from "@/api/hooks/useWeightSettings";
 import { updateWeightSettings } from "@/api/metrics";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -60,6 +60,7 @@ const CATEGORIES = [
 
 interface MetricWithWeight {
   metricCode: string;
+  metricName: string;
   weight: number;
 }
 
@@ -95,6 +96,7 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
         setEditedMetrics(
           categorySetting.metrics.map((m) => ({
             metricCode: m.metricCode,
+            metricName: m.metricName,
             weight: m.weight,
           })),
         );
@@ -243,7 +245,7 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
                           }`}
                         >
                           <td className="px-2 text-gray-900">
-                            {getMetricName(metric.metricCode)}
+                            {metric.metricName}
                           </td>
                           <td className="px-2">
                             <div className="flex justify-center">

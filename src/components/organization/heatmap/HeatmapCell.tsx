@@ -11,6 +11,8 @@ import { MetricTooltip } from "./MetricTooltip";
 interface HeatmapCellProps {
   /** 지표 코드 */
   metricCode: string;
+  /** 지표명 (API 응답) */
+  metricName?: string;
   /** 실제 값 */
   value: number | null;
   /** 달성률 (0-150) */
@@ -27,6 +29,7 @@ interface HeatmapCellProps {
 
 export const HeatmapCell = ({
   metricCode,
+  metricName,
   value,
   score,
   hideValue = false,
@@ -61,6 +64,7 @@ export const HeatmapCell = ({
       {showTooltip && (
         <MetricTooltip
           metricCode={metricCode}
+          metricName={metricName}
           value={value}
           score={score}
           visible={tooltipVisible}

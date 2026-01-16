@@ -1,10 +1,6 @@
 import type { MetricItem } from "@/types/metrics.types";
 import { X } from "lucide-react";
-import {
-  getCategoryLabel,
-  getCategoryStyle,
-  getMetricName,
-} from "@/utils/metrics";
+import { getCategoryLabel, getCategoryStyle } from "@/utils/metrics";
 import { useModalAnimation } from "@/hooks";
 
 interface MetricsDetailModalProps {
@@ -43,7 +39,7 @@ export const MetricsDetailModal = ({
           {/* 헤더 */}
           <div className="flex items-start justify-between p-6 border-b border-gray-200 ">
             <h2 className="text-lg font-semibold text-gray-900">
-              {getMetricName(metric.metricCode)} 상세 정보
+              {metric.name} 상세 정보
             </h2>
             <button
               onClick={onClose}
@@ -83,7 +79,7 @@ export const MetricsDetailModal = ({
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
                   <div className="text-xs text-gray-500 mb-1">데이터 소스</div>
                   <div className="text-sm font-medium text-gray-900">
-                    {metric.sources?.join(", ") || metric.dataSource || "-"}
+                    {metric.sources?.join(", ") || "-"}
                   </div>
                 </div>
               </div>
@@ -99,14 +95,14 @@ export const MetricsDetailModal = ({
                   <div className="text-xs text-gray-500 mb-1">현재값</div>
                   <div className="text-sm font-semibold text-blue-600">
                     {metric.currentValue}
-                    {getMetricUnit(metric.metricCode)}
+                    {metric.unit}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
                   <div className="text-xs text-gray-500 mb-1">목표값</div>
                   <div className="text-sm font-medium text-gray-900">
                     {metric.targetValue}
-                    {getMetricUnit(metric.metricCode)}
+                    {metric.unit}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg px-4 py-3">
@@ -140,7 +136,7 @@ export const MetricsDetailModal = ({
                 지표 설명
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-4 py-3">
-                {metric.tooltipDescription || metric.description || "-"}
+                {metric.tooltip || metric.description || "-"}
               </p>
             </div>
           </div>

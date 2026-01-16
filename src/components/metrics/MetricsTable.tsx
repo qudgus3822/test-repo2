@@ -11,8 +11,6 @@ import {
   getStatusIcon,
   getStatusColor,
   calculateMetricStatus,
-  getMetricUnit,
-  getMetricName,
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -333,14 +331,10 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                   >
                     <td className="px-4 py-3 text-sm text-gray-900">
                       <div className="flex items-center space-x-2">
-                        <span>{getMetricName(metric.metricCode)}</span>
-                        {(metric.tooltipDescription || metric.description) && (
+                        <span>{metric.name}</span>
+                        {metric.tooltip && (
                           <Tooltip
-                            content={
-                              metric.tooltipDescription ||
-                              metric.description ||
-                              ""
-                            }
+                            content={metric.tooltip}
                             color="#6B7280"
                             maxWidth={250}
                           >
@@ -369,11 +363,11 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                     <td className="px-4 py-3 text-sm text-gray-900">
                       {metric.currentValue === null
                         ? "--"
-                        : `${metric.currentValue}${getMetricUnit(metric.metricCode)}`}
+                        : `${metric.currentValue}${metric.unit}`}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {metric.targetValue}
-                      {getMetricUnit(metric.metricCode)}
+                      {metric.unit}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center space-x-2">

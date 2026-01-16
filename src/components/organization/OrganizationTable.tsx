@@ -6,7 +6,7 @@
  * - 지표 칼럼 드래그 앤 드롭 정렬 기능
  */
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { ChevronRight, ChevronDown, GripHorizontal, Info } from "lucide-react";
 import {
   DndContext,
@@ -40,11 +40,6 @@ import {
   getMemberRoleOrPositionLabel,
   getMemberEmail,
 } from "@/utils/organization";
-import {
-  METRIC_CODE_NAMES,
-  METRIC_CODE_DISPLAY_NAMES,
-  METRIC_CODE_ORDER,
-} from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
@@ -91,14 +86,6 @@ interface OrganizationTableProps {
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
   aggregationType?: AggregationType;
 }
-
-// 30개 지표 코드 목록 (순서대로) + BDPI
-const ALL_METRIC_CODES = [
-  ...Object.keys(METRIC_CODE_ORDER).sort(
-    (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
-  ),
-  "bdpi", // BDPI를 마지막에 추가
-];
 
 // 변경이력 툴팁 내용 생성
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
@@ -323,7 +310,8 @@ const FixedMemberRow = ({
 // 드래그 가능한 지표 헤더 컴포넌트
 interface SortableMetricHeaderProps {
   code: string;
-  displayName: string[] | undefined;
+  displayName: string | undefined; // API 응답값 (줄바꿈 포함 문자열)
+  metricName: string | undefined; // fallback용 지표명
   isSelected?: boolean;
   onSelect?: (code: string) => void;
 }
@@ -331,6 +319,7 @@ interface SortableMetricHeaderProps {
 const SortableMetricHeader = ({
   code,
   displayName,
+  metricName,
   isSelected = false,
   onSelect,
 }: SortableMetricHeaderProps) => {
@@ -355,6 +344,9 @@ const SortableMetricHeader = ({
     if (code === "bdpi") return;
     onSelect?.(code);
   };
+
+  // displayName을 줄바꿈으로 분리하여 배열로 변환
+  const displayNameLines = displayName?.split("\n");
 
   return (
     <th
@@ -386,14 +378,14 @@ const SortableMetricHeader = ({
           <span className="h-[32px] flex items-center justify-center text-center leading-tight">
             {code === "bdpi" ? (
               "BDPI"
-            ) : displayName ? (
+            ) : displayNameLines ? (
               <>
-                {displayName[0]}
+                {displayNameLines[0]}
                 <br />
-                {displayName[1]}
+                {displayNameLines[1]}
               </>
             ) : (
-              METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
+              metricName?.slice(0, 4) || code.slice(0, 4)
             )}
           </span>
         </div>
@@ -529,26 +521,32 @@ export const OrganizationTable = ({
     setIsMetricColumnDragged,
   } = useOrganizationStore();
 
-  // 실제 사용할 지표 순서 (전역 스토어에 값이 있으면 사용, 없으면 기본값)
-  const metricOrder = globalMetricOrder ?? ALL_METRIC_CODES;
-
-  // API에서 조회한 순서로 상태 업데이트 (데이터가 fresh하고, 전역 스토어에 값이 없을 때만)
-  useEffect(() => {
-    // 데이터를 로딩 중이거나 가져오는 중이면 대기
-    if (isLoading || isFetching) return;
-    // 전역 스토어에 이미 순서가 있으면 (드래그앤드롭으로 설정된 경우) API 응답으로 덮어쓰지 않음
-    if (globalMetricOrder !== null) return;
-
-    // API 응답의 metrics 객체 키 순서 사용 (fresh 데이터)
+  // API 응답에서 지표 순서 추출
+  const getMetricOrderFromApi = useCallback(() => {
     if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
       const apiMetricOrder = Object.keys(data.tree[0].metrics);
       // BDPI가 없으면 마지막에 추가 (대소문자 모두 확인)
       if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
         apiMetricOrder.push("BDPI");
       }
-      setGlobalMetricOrder(apiMetricOrder);
+      return apiMetricOrder;
     }
-  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching]);
+    return [];
+  }, [data]);
+
+  // 실제 사용할 지표 순서 (전역 스토어 > API 응답 순서)
+  const metricOrder = globalMetricOrder ?? getMetricOrderFromApi();
+
+  // API에서 조회한 순서로 전역 스토어 업데이트 (최초 1회)
+  useEffect(() => {
+    if (isLoading || isFetching) return;
+    if (globalMetricOrder !== null) return;
+
+    const apiOrder = getMetricOrderFromApi();
+    if (apiOrder.length > 0) {
+      setGlobalMetricOrder(apiOrder);
+    }
+  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching, getMetricOrderFromApi]);
 
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
@@ -610,6 +608,23 @@ export const OrganizationTable = ({
 
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;
+
+  // API 응답에서 지표 정보(metricName, metricDisplayName) 추출
+  const metricInfoMap = useMemo(() => {
+    const map: Record<string, { metricName?: string; metricDisplayName?: string }> = {};
+    if (data?.tree && data.tree.length > 0) {
+      const firstMetrics = data.tree[0].metrics as unknown as Record<string, MetricData>;
+      if (firstMetrics) {
+        Object.entries(firstMetrics).forEach(([code, metric]) => {
+          map[code] = {
+            metricName: metric?.metricName,
+            metricDisplayName: metric?.metricDisplayName,
+          };
+        });
+      }
+    }
+    return map;
+  }, [data?.tree]);
 
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
@@ -744,13 +759,14 @@ export const OrganizationTable = ({
                     strategy={horizontalListSortingStrategy}
                   >
                     {metricOrder.map((code) => {
-                      const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+                      const metricInfo = metricInfoMap[code];
 
                       return (
                         <SortableMetricHeader
                           key={code}
                           code={code}
-                          displayName={displayName}
+                          displayName={metricInfo?.metricDisplayName}
+                          metricName={metricInfo?.metricName}
                           isSelected={selectedMetricCode === code}
                           onSelect={handleMetricSelect}
                         />

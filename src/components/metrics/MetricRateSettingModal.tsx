@@ -4,7 +4,7 @@ import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { getCategoryLabel, getMetricName } from "@/utils/metrics";
+import { getCategoryLabel } from "@/utils/metrics";
 import { updateWeightSettings } from "@/api/metrics";
 import { useWeightSettings } from "@/api/hooks/useWeightSettings";
 import { useModalAnimation } from "@/hooks";
@@ -319,7 +319,7 @@ export const MetricRateSettingModal = ({
                           <tr key={key} className="border-b border-gray-100">
                             <td className="px-3 py-4 text-sm text-gray-900">
                               <div className="flex items-center gap-2 justify-between">
-                                <span>{getMetricName(metric.metricCode)}</span>
+                                <span>{metric.name}</span>
                                 {error && (
                                   <span className="text-xs text-red-500">
                                     {error}

@@ -7,8 +7,6 @@ import {
   getStatusIcon,
   getStatusColor,
   calculateMetricStatus,
-  getMetricUnit,
-  getMetricName,
 } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -147,12 +145,10 @@ export const MetricsPreviewTable = ({
               >
                 <td className="px-4 text-sm text-gray-900">
                   <div className="flex items-center space-x-2">
-                    <span>{getMetricName(metric.metricCode)}</span>
-                    {(metric.tooltipDescription || metric.description) && (
+                    <span>{metric.name}</span>
+                    {(metric.tooltip || metric.description) && (
                       <Tooltip
-                        content={
-                          metric.tooltipDescription || metric.description || ""
-                        }
+                        content={metric.tooltip || metric.description || ""}
                         color="#6B7280"
                         maxWidth={250}
                       >
@@ -180,11 +176,11 @@ export const MetricsPreviewTable = ({
                 </td>
                 <td className="px-4 text-sm text-gray-900">
                   {metric.currentValue}
-                  {getMetricUnit(metric.metricCode)}
+                  {metric.unit}
                 </td>
                 <td className="px-4 text-sm text-gray-600">
                   {metric.targetValue}
-                  {getMetricUnit(metric.metricCode)}
+                  {metric.unit}
                 </td>
                 <td className="px-4">
                   <div className="flex items-center space-x-2">

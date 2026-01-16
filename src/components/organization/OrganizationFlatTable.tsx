@@ -44,11 +44,6 @@ import {
   getChangeDetailWithSuffix,
   getMemberRoleOrPositionLabel,
 } from "@/utils/organization";
-import {
-  METRIC_CODE_NAMES,
-  METRIC_CODE_DISPLAY_NAMES,
-  METRIC_CODE_ORDER,
-} from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
@@ -105,14 +100,6 @@ interface FlatItem {
   roomName?: string; // 실 이름 (level 2)
   teamName?: string; // 팀 이름 (level 3)
 }
-
-// 30개 지표 코드 목록 (순서대로) + BDPI
-const ALL_METRIC_CODES = [
-  ...Object.keys(METRIC_CODE_ORDER).sort(
-    (a, b) => METRIC_CODE_ORDER[a] - METRIC_CODE_ORDER[b],
-  ),
-  "bdpi", // BDPI를 마지막에 추가
-];
 
 // 변경이력 툴팁 내용 생성
 const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
@@ -360,7 +347,8 @@ const FixedRow = ({
 // 드래그 가능한 지표 헤더 컴포넌트
 interface SortableMetricHeaderProps {
   code: string;
-  displayName: string[] | undefined;
+  displayName: string | undefined; // API 응답값 (줄바꿈 포함 문자열)
+  metricName: string | undefined; // fallback용 지표명
   isActive: boolean;
   sortDirection: "asc" | "desc" | null;
   onSort: (code: string) => void;
@@ -371,6 +359,7 @@ interface SortableMetricHeaderProps {
 const SortableMetricHeader = ({
   code,
   displayName,
+  metricName,
   isActive,
   sortDirection,
   onSort,
@@ -417,6 +406,9 @@ const SortableMetricHeader = ({
     onSelect?.(code);
   };
 
+  // displayName을 줄바꿈으로 분리하여 배열로 변환
+  const displayNameLines = displayName?.split("\n");
+
   return (
     <th
       ref={setNodeRef}
@@ -447,14 +439,14 @@ const SortableMetricHeader = ({
           <span className="h-[32px] flex items-center justify-center text-center leading-tight">
             {code === "bdpi" ? (
               "BDPI"
-            ) : displayName ? (
+            ) : displayNameLines ? (
               <>
-                {displayName[0]}
+                {displayNameLines[0]}
                 <br />
-                {displayName[1]}
+                {displayNameLines[1]}
               </>
             ) : (
-              METRIC_CODE_NAMES[code]?.slice(0, 4) || code.slice(0, 4)
+              metricName?.slice(0, 4) || code.slice(0, 4)
             )}
           </span>
         </div>
@@ -601,11 +593,62 @@ export const OrganizationFlatTable = ({
     setIsMetricColumnDragged,
   } = useOrganizationStore();
 
-  // 실제 사용할 지표 순서 (전역 스토어에 값이 있으면 사용, 없으면 기본값)
-  const metricOrder = globalMetricOrder ?? ALL_METRIC_CODES;
+  // API 응답에서 지표 순서 추출
+  const getMetricOrderFromApi = useCallback(() => {
+    // format=list 응답
+    if (data?.items && data.items.length > 0 && data.items[0].metrics) {
+      const apiMetricOrder = Object.keys(data.items[0].metrics);
+      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
+        apiMetricOrder.push("BDPI");
+      }
+      return apiMetricOrder;
+    }
+    // format=tree 응답
+    if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
+      const apiMetricOrder = Object.keys(data.tree[0].metrics);
+      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
+        apiMetricOrder.push("BDPI");
+      }
+      return apiMetricOrder;
+    }
+    return [];
+  }, [data]);
+
+  // 실제 사용할 지표 순서 (전역 스토어 > API 응답 순서)
+  const metricOrder = globalMetricOrder ?? getMetricOrderFromApi();
 
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;
+
+  // API 응답에서 지표 정보(metricName, metricDisplayName) 추출
+  const metricInfoMap = useMemo(() => {
+    const map: Record<string, { metricName?: string; metricDisplayName?: string }> = {};
+    // format=list 응답
+    if (data?.items && data.items.length > 0) {
+      const firstMetrics = data.items[0].metrics as unknown as Record<string, MetricData>;
+      if (firstMetrics) {
+        Object.entries(firstMetrics).forEach(([code, metric]) => {
+          map[code] = {
+            metricName: metric?.metricName,
+            metricDisplayName: metric?.metricDisplayName,
+          };
+        });
+      }
+    }
+    // format=tree 응답
+    else if (data?.tree && data.tree.length > 0) {
+      const firstMetrics = data.tree[0].metrics as unknown as Record<string, MetricData>;
+      if (firstMetrics) {
+        Object.entries(firstMetrics).forEach(([code, metric]) => {
+          map[code] = {
+            metricName: metric?.metricName,
+            metricDisplayName: metric?.metricDisplayName,
+          };
+        });
+      }
+    }
+    return map;
+  }, [data?.items, data?.tree]);
 
   // format=list일 경우 items 배열 사용, 아니면 tree를 flatten
   // 검색은 API에서 처리하므로 클라이언트 필터링 불필요
@@ -631,32 +674,16 @@ export const OrganizationFlatTable = ({
     }
   }, [flatItems.length, searchKeyword, onSearchResult]);
 
-  // API에서 조회한 순서로 상태 업데이트 (데이터가 fresh하고, 전역 스토어에 값이 없을 때만)
+  // API에서 조회한 순서로 전역 스토어 업데이트 (최초 1회)
   useEffect(() => {
-    // 데이터를 로딩 중이거나 가져오는 중이면 대기
     if (isLoading || isFetching) return;
-    // 전역 스토어에 이미 순서가 있으면 (드래그앤드롭으로 설정된 경우) API 응답으로 덮어쓰지 않음
     if (globalMetricOrder !== null) return;
 
-    // API 응답의 metrics 객체 키 순서 사용 (fresh 데이터)
-    if (data?.items && data.items.length > 0 && data.items[0].metrics) {
-      // format=list 응답 - API 응답 키 순서 그대로 사용
-      const apiMetricOrder = Object.keys(data.items[0].metrics);
-      // BDPI가 없으면 마지막에 추가 (대소문자 모두 확인)
-      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
-        apiMetricOrder.push("BDPI");
-      }
-      setGlobalMetricOrder(apiMetricOrder);
-    } else if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
-      // format=tree 응답
-      const apiMetricOrder = Object.keys(data.tree[0].metrics);
-      // BDPI가 없으면 마지막에 추가 (대소문자 모두 확인)
-      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
-        apiMetricOrder.push("BDPI");
-      }
-      setGlobalMetricOrder(apiMetricOrder);
+    const apiOrder = getMetricOrderFromApi();
+    if (apiOrder.length > 0) {
+      setGlobalMetricOrder(apiOrder);
     }
-  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching]);
+  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching, getMetricOrderFromApi]);
 
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -976,7 +1003,7 @@ export const OrganizationFlatTable = ({
                     strategy={horizontalListSortingStrategy}
                   >
                     {metricOrder.map((code) => {
-                      const displayName = METRIC_CODE_DISPLAY_NAMES[code];
+                      const metricInfo = metricInfoMap[code];
                       const isActive =
                         sortConfig.column === code &&
                         sortConfig.direction !== null;
@@ -985,7 +1012,8 @@ export const OrganizationFlatTable = ({
                         <SortableMetricHeader
                           key={code}
                           code={code}
-                          displayName={displayName}
+                          displayName={metricInfo?.metricDisplayName}
+                          metricName={metricInfo?.metricName}
                           isActive={isActive}
                           sortDirection={sortConfig.direction}
                           onSort={toggleSort}
