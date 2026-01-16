@@ -4,7 +4,7 @@ import type { ProjectSummary } from "@/types/project.types";
 
 interface SummaryCardProps {
   title: string;
-  summary: ProjectSummary;
+  summary: ProjectSummary | null;
 }
 
 export const SummaryCard = ({ title, summary }: SummaryCardProps) => (
@@ -13,33 +13,51 @@ export const SummaryCard = ({ title, summary }: SummaryCardProps) => (
     <div className="flex items-start justify-between">
       <span className="text-md font-mediumtext-gray-700">{title}</span>
       <div className="text-right">
-        <span className="text-3xl font-bold text-gray-900">
-          {summary.count}
-        </span>
-        <span className="text-xl text-gray-900 ml-1">건</span>
+        {summary?.count == null ? (
+          <span className="text-3xl font-bold text-gray-400">--</span>
+        ) : (
+          <>
+            <span className="text-3xl font-bold text-gray-900">
+              {summary.count}
+            </span>
+            <span className="text-xl text-gray-900 ml-1">건</span>
+          </>
+        )}
       </div>
     </div>
     {/* 완료, 업데이트, 생성 프로젝트 수 */}
     <div className="grid grid-cols-3 gap-4">
       <div className="flex flex-col items-center space-y-1">
         <FolderCheck className="w-5.5 h-5.5 text-green-500" />
-        <div className="text-xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
-          {summary.completed}개
-        </div>
+        {summary?.completed == null ? (
+          <div className="text-xl font-bold text-gray-400">--</div>
+        ) : (
+          <div className="text-xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
+            {summary.completed}개
+          </div>
+        )}
         <div className="text-md text-gray-600">완료</div>
       </div>
       <div className="flex flex-col items-center space-y-1">
         <FolderSync className="w-5.5 h-5.5 text-blue-500" />
-        <div className="text-xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
-          {summary.updated}개
-        </div>
+        {summary?.updated == null ? (
+          <div className="text-xl font-bold text-gray-400">--</div>
+        ) : (
+          <div className="text-xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
+            {summary.updated}개
+          </div>
+        )}
         <div className="text-md text-gray-600">업데이트</div>
       </div>
       <div className="flex flex-col items-center space-y-1">
         <FolderPlus className="w-5.5 h-5.5 text-purple-500" />
-        <div className="text-xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
-          {summary.created}개
-        </div>
+        {summary?.created == null ? (
+          <div className="text-xl font-bold text-gray-400">--</div>
+        ) : (
+          <div className="text-xl font-bold text-gray-900 flex-shrink-0 whitespace-nowrap">
+            {summary.created}개
+          </div>
+        )}
         <div className="text-md text-gray-600">생성</div>
       </div>
     </div>

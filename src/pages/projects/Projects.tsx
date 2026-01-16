@@ -2,12 +2,6 @@ import { useState } from "react";
 import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
-import {
-  mockTfSummary,
-  mockOperationSummary,
-  mockTfProjects,
-  mockOperationItems,
-} from "./mockData";
 import { SummaryCard } from "./components/SummaryCard";
 import { ProjectTabs, type ProjectTabType } from "./components/ProjectTabs";
 import { ProjectTable } from "./components/ProjectTable";
@@ -48,8 +42,8 @@ const ProjectsPage = () => {
 
       {/* 요약 카드 */}
       <div className="flex gap-4">
-        <SummaryCard title="TF 프로젝트" summary={mockTfSummary} />
-        <SummaryCard title="운영" summary={mockOperationSummary} />
+        <SummaryCard title="TF 프로젝트" summary={null} />
+        <SummaryCard title="운영" summary={null} />
       </div>
 
       {/* 탭 + 테이블 */}
@@ -59,19 +53,19 @@ const ProjectsPage = () => {
           <ProjectTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            tfCount={mockTfSummary.count}
-            operationCount={mockOperationItems.length}
+            tfCount={0}
+            operationCount={0}
           />
         </div>
 
         {/* 테이블 */}
         <div className="p-4">
           {activeTab === "tf" ? (
-            <ProjectTable projects={mockTfProjects} />
+            <ProjectTable projects={[]} />
           ) : (
             <>
               <InfoBanner message="운영은 에픽의 유형(버그/장애/에프터잡 등)이 분류되지 않아 상세 지표가 제공되지 않습니다." />
-              <OperationTable items={mockOperationItems} />
+              <OperationTable items={[]} />
             </>
           )}
         </div>

@@ -10,7 +10,6 @@ import { X } from "lucide-react";
 import type { OrganizationMember } from "@/types/organization.types";
 import { fetchMemberMetricRankings } from "@/api/organization";
 import { getMemberEmail } from "@/utils/organization";
-import { METRIC_CODE_NAMES } from "@/utils/metrics";
 import { getAchievementRateColor } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ScoreLegend } from "./ScoreLegend";
@@ -86,7 +85,7 @@ export const MemberMetricRankingModal = ({
   const sortedMetrics = hasAnyValidData
     ? (data?.rankings ?? [])
         .map((item) => ({
-          name: METRIC_CODE_NAMES[item.metricName] || item.metricName,
+          name: item.metricName,
           score: item.achievementRate,
           category: item.category,
         }))

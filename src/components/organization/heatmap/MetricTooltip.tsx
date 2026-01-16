@@ -5,16 +5,13 @@
  */
 
 import { createPortal } from "react-dom";
-import {
-  getMetricName,
-  getMetricUnit,
-  getMetricTooltipDescription,
-} from "@/utils/metrics";
 import { SUMMARY_CATEGORIES } from "./types";
 
 interface MetricTooltipProps {
   /** 지표 코드 */
   metricCode: string;
+  /** 지표명 (API 응답) */
+  metricName?: string;
   /** 실제 값 */
   value: number | null;
   /** 달성률 (0-150) */
@@ -41,18 +38,19 @@ const getAchievementCategory = (score: number | null) => {
 
 export const MetricTooltip = ({
   metricCode,
+  metricName,
   value,
   score,
   visible,
   position,
   targetValue,
+  unit,
 }: MetricTooltipProps) => {
   if (!visible) return null;
 
-  const metricName = getMetricName(metricCode);
-  // METRIC_CODE_UNITS 매핑값 사용 (API 응답값 대신)
-  const displayUnit = getMetricUnit(metricCode);
-  const description = getMetricTooltipDescription(metricCode);
+  const displayMetricName = metricName || metricCode;
+  // API 응답값 사용
+  const displayUnit = unit ?? "";
   const achievementCategory = getAchievementCategory(score);
 
   // 목표값 포맷팅
@@ -86,12 +84,7 @@ export const MetricTooltip = ({
     >
       {/* 헤더: 지표명 */}
       <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-        <div className="font-medium text-gray-800 text-base">{metricName}</div>
-        {description && (
-          <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-            {description}
-          </div>
-        )}
+        <div className="font-medium text-gray-800 text-base">{displayMetricName}</div>
       </div>
 
       {/* 본문: 현재값 / 목표값 */}

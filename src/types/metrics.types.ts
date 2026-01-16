@@ -47,10 +47,9 @@ export interface MetricItem {
   weightRatio: number; // 비율 (11.1%, 11.2%)
   metricCode: string; // 지표 코드 (예: "TECH_DEBT")
   unit: string; // 단위 (hour, count, percent, %, 건, 분 등)
-  description?: string; // 설명
-  tooltipDescription?: string; // 툴팁 설명 (mode=preview API 응답용)
-  dataSource?: string; // 데이터 소스 (예: "Sonarqube", "Gitlab")
-  sources?: string[]; // 데이터 소스 배열 (mode=preview API 응답용)
+  description?: string; // 상세 설명
+  tooltip?: string; // 툴팁 설명 (짧은 설명)
+  sources?: string[]; // 데이터 소스 배열 (예: ["sonarqube", "gitlab"])
 }
 
 // ==================== 달성률 기준 설정 ====================

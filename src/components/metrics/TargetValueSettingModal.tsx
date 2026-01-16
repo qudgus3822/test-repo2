@@ -3,11 +3,7 @@ import type { MetricItem, TargetValueMetric } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import {
-  getCategoryLabel,
-  getMetricUnit,
-  getMetricName,
-} from "@/utils/metrics";
+import { getCategoryLabel } from "@/utils/metrics";
 import { PALETTE_COLORS } from "@/styles/colors";
 import { useTargetValues } from "@/api/hooks/useTargetValues";
 import { updateTargetValues } from "@/api/metrics";
@@ -348,7 +344,7 @@ export const TargetValueSettingModal = ({
                               }`}
                             >
                               <td className="px-4 text-sm text-gray-900">
-                                {getMetricName(metric.metricCode)}
+                                {metric.metricName}
                               </td>
                               <td className="px-4 text-sm text-center">
                                 {(() => {
@@ -369,7 +365,7 @@ export const TargetValueSettingModal = ({
                               </td>
                               <td className="px-4 text-sm text-gray-900">
                                 {getCurrentValue(metric.metricCode)}
-                                {getMetricUnit(metric.metricCode)}
+                                {metric.unit}
                               </td>
                               <td className="px-4">
                                 <div className="flex items-center gap-2">
@@ -389,7 +385,7 @@ export const TargetValueSettingModal = ({
                                     }`}
                                   />
                                   <span className="w-[45px] text-sm text-gray-600 whitespace-nowrap">
-                                    {getMetricUnit(metric.metricCode)}
+                                    {metric.unit}
                                   </span>
                                 </div>
                               </td>
