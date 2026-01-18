@@ -66,12 +66,28 @@ export const MetricDetailInfo = ({
   });
 
   // API 응답값에서 가져오는 값
-  const metricName = data?.title || metricCode;
-  const metricUnit = data?.unit || "-";
-  const metricDescription = data?.description || "-";
-  const metricTarget = data?.targetValue || "-";
+  const metricName = data?.title || "--";
+  const metricUnit = data?.unit || "--";
+  const metricDescription = data?.description || "--";
+  const metricTarget = data?.targetValue || "--";
   const metricFormula = data?.formula || "";
   const trend = data?.trend;
+
+  // 로딩 중일 때 전체 영역에 로딩 스피너 표시
+  if (isLoading) {
+    return (
+      <div className="mb-4 p-5 border-2 border-blue-700 rounded-lg bg-blue-50 relative min-h-[200px] flex items-center justify-center">
+        {/* 닫기 버튼 */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-1 hover:bg-gray-100 rounded cursor-pointer"
+        >
+          <X className="w-5 h-5 text-gray-500" />
+        </button>
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="mb-4 p-5 border-2 border-blue-700 rounded-lg bg-blue-50 relative">
@@ -104,14 +120,14 @@ export const MetricDetailInfo = ({
           {/* 계산식 */}
           <div>
             <div className="text-sm text-gray-500 mb-1">계산식</div>
-            {isLoading ? (
-              <LoadingSpinner size="sm" showMessage={false} />
-            ) : metricFormula ? (
+            {metricFormula ? (
               <div className="text-sm text-gray-900 bg-white border border-gray-200 rounded px-3 py-2">
                 {metricFormula}
               </div>
             ) : (
-              <div className="text-sm text-gray-400">-</div>
+              <div className="inline-block bg-white border border-gray-200 rounded px-3 py-2">
+                <span className="text-sm text-gray-400">--</span>
+              </div>
             )}
           </div>
         </div>
@@ -121,16 +137,12 @@ export const MetricDetailInfo = ({
           {/* 설정된 목표값 */}
           <div>
             <div className="text-sm text-gray-500 mb-1">설정된 목표값</div>
-            {isLoading ? (
-              <LoadingSpinner size="sm" showMessage={false} />
-            ) : (
-              <div className="text-sm text-gray-900">
-                {metricTarget}
-                {metricTarget !== "-" && metricUnit !== "-" && (
-                  <span className="text-gray-500 ml-1">{metricUnit}</span>
-                )}
-              </div>
-            )}
+            <div className="text-sm text-gray-900">
+              {metricTarget}
+              {metricTarget !== "-" && metricUnit !== "-" && (
+                <span className="ml-1">{metricUnit}</span>
+              )}
+            </div>
           </div>
 
           {/* 전월 대비 지표 추세 */}
@@ -138,13 +150,9 @@ export const MetricDetailInfo = ({
             <div className="text-sm text-gray-500 mb-1">
               전월 대비 지표 추세
             </div>
-            {isLoading ? (
-              <LoadingSpinner size="sm" showMessage={false} />
-            ) : (
-              <div className="inline-block bg-white border border-gray-200 rounded px-3 py-2">
-                <TrendDisplay trend={trend} />
-              </div>
-            )}
+            <div className="inline-block bg-white border border-gray-200 rounded px-3 py-2">
+              <TrendDisplay trend={trend} />
+            </div>
           </div>
         </div>
       </div>
@@ -152,7 +160,9 @@ export const MetricDetailInfo = ({
       {/* 지표 상세 설명 - 전체 너비 */}
       <div className="mt-4">
         <div className="text-sm text-gray-500 mb-1">지표 상세 설명</div>
-        <div className="text-sm text-gray-900">{metricDescription}</div>
+        <div className="text-sm text-gray-900 whitespace-pre-line">
+          {metricDescription}
+        </div>
       </div>
     </div>
   );
