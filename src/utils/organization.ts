@@ -72,6 +72,7 @@ export const getMemberRoleLabel = (role: MemberRole): string => {
     MANAGER: "과장",
     DEPUTY_MANAGER: "차장",
     GENERAL_MANAGER: "부장",
+    EXECUTIVE_DIRECTOR: "상무이사",
   };
   return labels[role] || role;
 };
