@@ -35,7 +35,8 @@ export type MemberRole =
   | "ASSISTANT_MANAGER" // 대리
   | "MANAGER" // 과장
   | "DEPUTY_MANAGER" // 차장
-  | "GENERAL_MANAGER"; // 부장
+  | "GENERAL_MANAGER" // 부장
+  | "EXECUTIVE_DIRECTOR"; // 상무이사
 
 export const MemberRoleLabel = {
   STAFF: "사원",
@@ -43,6 +44,7 @@ export const MemberRoleLabel = {
   MANAGER: "과장",
   DEPUTY_MANAGER: "차장",
   GENERAL_MANAGER: "부장",
+  EXECUTIVE_DIRECTOR: "상무이사",
 };
 
 // 직책 타입

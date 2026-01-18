@@ -44,7 +44,7 @@ export const fetchUserManagement = async (
 ): Promise<UserManagementResponse> => {
   const {
     page = 1,
-    limit = 10,
+    limit = 200,
     search,
     status,
     sortBy,
