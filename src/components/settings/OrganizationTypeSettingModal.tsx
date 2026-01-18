@@ -261,7 +261,7 @@ export const OrganizationTypeSettingModal = ({
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  조직 유형 수정
+                  조직 유형 설정
                 </h2>
                 <LastSyncInfo syncDate={lastSyncDate} />
               </div>
@@ -370,7 +370,7 @@ export const OrganizationTypeSettingModal = ({
               onClick={handleSave}
               disabled={isSaving}
             >
-              {isSaving ? "저장 중..." : "수정 완료"}
+              {isSaving ? "저장 중..." : "설정 완료"}
             </Button>
           </div>
 

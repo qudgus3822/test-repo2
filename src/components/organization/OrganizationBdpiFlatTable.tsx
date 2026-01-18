@@ -87,7 +87,8 @@ const ChangeRateDisplay = ({
 
   const { changePercent, direction } = comparison;
 
-  if (direction === "new") {
+  // 전월 데이터 없음 또는 당월 데이터 없음
+  if (direction === "new" || direction === "no_data") {
     return <span className="text-gray-400">--</span>;
   }
 

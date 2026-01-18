@@ -113,7 +113,7 @@ export interface CategoryScoreValue {
 }
 
 // 전월대비 타입
-export type MonthlyComparisonDirection = "up" | "down" | "same" | "new";
+export type MonthlyComparisonDirection = "up" | "down" | "same" | "new" | "no_data";
 
 export interface MonthlyComparison {
   changePercent: number;
