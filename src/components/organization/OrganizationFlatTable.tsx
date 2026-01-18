@@ -518,6 +518,7 @@ const ScrollableRow = ({
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
+        const description = metric?.tooltip;
 
         return (
           <td
@@ -532,6 +533,7 @@ const ScrollableRow = ({
               hideValue={hideValue}
               targetValue={targetValue}
               unit={unit}
+              description={description}
             />
           </td>
         );
