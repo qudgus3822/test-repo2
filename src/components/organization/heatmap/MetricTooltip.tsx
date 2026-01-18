@@ -106,7 +106,18 @@ export const MetricTooltip = ({
           <div className="flex-1">
             <div className="text-xs text-gray-400 mb-1">목표값</div>
             <div className="text-md font-medium text-gray-900">
-              {formattedTargetValue}
+              {targetValue !== null && targetValue !== undefined ? (
+                <>
+                  {formattedTargetValue}
+                  {displayUnit && (
+                    <span className="text-sm font-normal ml-0.5">
+                      {displayUnit}
+                    </span>
+                  )}
+                </>
+              ) : (
+                "--"
+              )}
             </div>
           </div>
         </div>

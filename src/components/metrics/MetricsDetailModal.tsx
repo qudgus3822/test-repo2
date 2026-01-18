@@ -135,8 +135,8 @@ export const MetricsDetailModal = ({
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 지표 설명
               </h3>
-              <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-4 py-3">
-                {metric.tooltip || metric.description || "-"}
+              <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-4 py-3 whitespace-pre-line">
+                {metric.description || "--"}
               </p>
             </div>
           </div>

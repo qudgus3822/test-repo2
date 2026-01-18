@@ -70,16 +70,6 @@ export type FlatViewFilterType = "division" | "team" | "member";
 // 집계 타입
 export type AggregationType = "average" | "total";
 
-// 총합 모드에서 표시할 지표 코드 목록
-const TOTAL_MODE_METRIC_CODES = [
-  "BUG_COUNT",
-  "INCIDENT_COUNT",
-  "REVIEW_REQUEST_COUNT",
-  "REVIEW_PARTICIPATION_COUNT",
-  "COMMIT_FREQUENCY",
-  "DEPLOYMENT_FREQUENCY",
-];
-
 interface OrganizationFlatTableProps {
   month: string;
   activeTab: TabType;
@@ -402,7 +392,7 @@ const SortableMetricHeader = ({
 
   const handleSelectClick = () => {
     // BDPI는 클릭 불가
-    if (code === "bdpi") return;
+    if (code === "bdpi" || code === "BDPI") return;
     onSelect?.(code);
   };
 
@@ -431,7 +421,7 @@ const SortableMetricHeader = ({
         <div
           onClick={handleSelectClick}
           className={`flex flex-col items-center rounded p-1 ${
-            code === "bdpi"
+            code === "bdpi" || code === "BDPI"
               ? "cursor-default"
               : "cursor-pointer hover:bg-gray-200"
           }`}
@@ -504,15 +494,10 @@ const ScrollableRow = ({
           );
         }
 
-        // 총합 모드에서 해당 지표가 표시 대상이 아닌 경우 회색 처리
-        const isDisabledInTotalMode =
-          aggregationType === "total" &&
-          !TOTAL_MODE_METRIC_CODES.includes(code);
-
         const metric = metrics?.[code];
 
-        // 총합 모드에서 해당 지표가 표시 대상이 아닌 경우 또는 isUsed가 false인 경우(수집불가 지표) 회색 처리
-        if (isDisabledInTotalMode || metric?.isUsed === false) {
+        // isUsed가 false인 경우(수집불가 지표) 회색 처리
+        if (metric?.isUsed === false) {
           return (
             <td
               key={code}
@@ -532,6 +517,7 @@ const ScrollableRow = ({
           : null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
+        const metricName = metric?.metricName;
 
         return (
           <td
@@ -540,6 +526,7 @@ const ScrollableRow = ({
           >
             <HeatmapCell
               metricCode={code}
+              metricName={metricName}
               score={score}
               value={value}
               hideValue={hideValue}

@@ -146,9 +146,9 @@ export const MetricsPreviewTable = ({
                 <td className="px-4 text-sm text-gray-900">
                   <div className="flex items-center space-x-2">
                     <span>{metric.name}</span>
-                    {(metric.tooltip || metric.description) && (
+                    {metric.tooltip && (
                       <Tooltip
-                        content={metric.tooltip || metric.description || ""}
+                        content={metric.tooltip || ""}
                         color="#6B7280"
                         maxWidth={250}
                       >
@@ -175,8 +175,9 @@ export const MetricsPreviewTable = ({
                   })()}
                 </td>
                 <td className="px-4 text-sm text-gray-900">
-                  {metric.currentValue}
-                  {metric.unit}
+                  {metric.currentValue === null
+                    ? "--"
+                    : `${metric.currentValue}${metric.unit}`}
                 </td>
                 <td className="px-4 text-sm text-gray-600">
                   {metric.targetValue}
@@ -184,24 +185,28 @@ export const MetricsPreviewTable = ({
                 </td>
                 <td className="px-4">
                   <div className="flex items-center space-x-2">
-                    {(() => {
-                      const Icon = getStatusIcon(metric.status);
-                      const iconColor = getStatusColor(metric.status);
-                      return (
-                        <>
-                          <Icon
-                            className="w-5 h-5"
-                            style={{ color: iconColor }}
-                          />
-                          <span
-                            className="text-sm font-medium"
-                            style={{ color: iconColor }}
-                          >
-                            {metric.achievementRate}%
-                          </span>
-                        </>
-                      );
-                    })()}
+                    {metric.achievementRate === null ? (
+                      <span className="text-sm text-gray-400">--</span>
+                    ) : (
+                      (() => {
+                        const Icon = getStatusIcon(metric.status);
+                        const iconColor = getStatusColor(metric.status);
+                        return (
+                          <>
+                            <Icon
+                              className="w-5 h-5"
+                              style={{ color: iconColor }}
+                            />
+                            <span
+                              className="text-sm font-medium"
+                              style={{ color: iconColor }}
+                            >
+                              {metric.achievementRate}%
+                            </span>
+                          </>
+                        );
+                      })()
+                    )}
                   </div>
                 </td>
                 <td className="px-4 text-sm text-gray-600">
