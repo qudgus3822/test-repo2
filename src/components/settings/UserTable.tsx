@@ -59,7 +59,7 @@ export const UserTable = ({ users }: UserTableProps) => (
               </td>
               <td className="px-4 py-3 text-center">{user.role}</td>
               <td className="px-4 py-3 text-center">
-                {formatDate(user.registeredAt)}
+                {user.registeredAt ? formatDate(user.registeredAt) : "-"}
               </td>
             </tr>
           ))
