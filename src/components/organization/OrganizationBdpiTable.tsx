@@ -365,8 +365,9 @@ export const OrganizationBdpiTable = ({
 
   const thStyle = "px-3 py-3 text-center text-sm font-medium text-gray-700";
 
+  // [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경
   return (
-    <div className="overflow-x-auto border border-gray-200 rounded-lg">
+    <div className="overflow-auto h-full border border-gray-200 rounded-lg">
       <table className="w-full table-fixed">
         <colgroup>
           <col />
@@ -376,7 +377,7 @@ export const OrganizationBdpiTable = ({
           <col style={{ width: "100px" }} />
           <col style={{ width: "100px" }} />
         </colgroup>
-        <thead>
+        <thead className="sticky top-0 z-10">
           <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
             <th
               className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}

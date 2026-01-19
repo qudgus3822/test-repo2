@@ -85,8 +85,9 @@ export const MetricsPreviewTable = ({
   // 로딩 또는 데이터 없음 상태
   const isEmptyState = isLoading || metrics.length === 0;
 
+  // [변경: 2026-01-19 00:45, 김병현 수정] 2중 스크롤 방지 - 부모 컨테이너에서 스크롤 처리
   return (
-    <div className="overflow-x-auto">
+    <div className="h-full overflow-auto">
       {isEmptyState ? (
         <div className="flex items-center justify-center h-[200px]">
           {isLoading ? (
@@ -97,7 +98,7 @@ export const MetricsPreviewTable = ({
         </div>
       ) : (
         <table className="w-full">
-          <thead>
+          <thead className="sticky top-0 bg-white z-10">
             <tr className="h-[45px] border-b border-gray-200 text-left text-sm font-medium text-gray-700">
               <th className="px-4 w-[25%]">지표명</th>
               <th className="px-4 w-[15%] text-center">범주</th>

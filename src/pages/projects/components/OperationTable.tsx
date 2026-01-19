@@ -34,10 +34,11 @@ export const OperationTable = ({ items }: OperationTableProps) => {
     );
   }
 
+  // [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-auto h-full">
       <table className="w-full">
-        <thead>
+        <thead className="sticky top-0 bg-white z-10">
           <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
             <th className="px-4 py-3 min-w-[200px]">운영 에픽명</th>
             <th className="px-4 py-3 text-center">

@@ -300,14 +300,17 @@ const OrganizationPage = () => {
     }
   };
 
+  // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* 탭 메뉴 */}
-      <Card className="overflow-hidden">
-        <OrganizationTabs />
+      <Card className="overflow-hidden flex-1 min-h-0 flex flex-col">
+        <div className="flex-shrink-0">
+          <OrganizationTabs />
+        </div>
 
         {/* 첫 번째 줄: 기간 선택 */}
-        <div className="h-[84px] relative flex items-center p-4 border-b border-gray-200">
+        <div className="flex-shrink-0 h-[84px] relative flex items-center p-4 border-b border-gray-200">
           <div className="flex items-center gap-5">
             <DateFilter
               period={period}
@@ -327,7 +330,7 @@ const OrganizationPage = () => {
         </div>
 
         {/* 서브탭: 하이어라키뷰 / 플랫뷰 */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200">
           {/* 좌측: 뷰타입 탭 + 플랫뷰 필터 */}
           <div className="flex items-center">
             <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
@@ -472,7 +475,7 @@ const OrganizationPage = () => {
 
         {/* 검색 영역: 플랫뷰일 때만 표시 */}
         {viewType === "flat" && isSearchAreaOpen && (
-          <div className="px-4 py-3 border-b border-gray-200 gap-5 flex flex-col min-h-[120px]">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-gray-200 gap-5 flex flex-col min-h-[120px]">
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -519,62 +522,64 @@ const OrganizationPage = () => {
           </div>
         )}
 
-        {/* 탭 콘텐츠 */}
-        {activeTab === "all" && (
-          <>
-            {/* 전체 탭 콘텐츠 */}
-            <div className="p-4 border-b border-gray-200">
-              {viewType === "hierarchy" ? (
-                <OrganizationTable
-                  month={yearMonth}
-                  activeTab={activeTab}
-                  hideValues={isExpanded}
-                  onDetailClick={handleDetailClick}
-                  aggregationType={aggregationType}
-                />
-              ) : (
-                <OrganizationFlatTable
-                  month={yearMonth}
-                  activeTab={activeTab}
-                  filterType={flatViewFilter}
-                  hideValues={isExpanded}
-                  onDetailClick={handleDetailClick}
-                  searchKeyword={activeSearchKeyword}
-                  onSearchResult={setSearchResultCount}
-                  aggregationType={aggregationType}
-                />
-              )}
-            </div>
+        {/* 탭 콘텐츠 - 테이블 내부에서 스크롤 */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          {activeTab === "all" && (
+            <>
+              {/* 전체 탭 콘텐츠 */}
+              <div className="p-4 border-b border-gray-200 flex-1 min-h-0">
+                {viewType === "hierarchy" ? (
+                  <OrganizationTable
+                    month={yearMonth}
+                    activeTab={activeTab}
+                    hideValues={isExpanded}
+                    onDetailClick={handleDetailClick}
+                    aggregationType={aggregationType}
+                  />
+                ) : (
+                  <OrganizationFlatTable
+                    month={yearMonth}
+                    activeTab={activeTab}
+                    filterType={flatViewFilter}
+                    hideValues={isExpanded}
+                    onDetailClick={handleDetailClick}
+                    searchKeyword={activeSearchKeyword}
+                    onSearchResult={setSearchResultCount}
+                    aggregationType={aggregationType}
+                  />
+                )}
+              </div>
 
-            {hasData && <ScoreLegend />}
-          </>
-        )}
+              {hasData && <ScoreLegend />}
+            </>
+          )}
 
-        {activeTab === "bdpi" && (
-          <>
-            {/* BDPI 탭 콘텐츠 */}
-            <div className="p-4 border-b border-gray-200">
-              {viewType === "hierarchy" ? (
-                <OrganizationBdpiTable
-                  month={yearMonth}
-                  activeTab={activeTab}
-                  hideValues={isExpanded}
-                />
-              ) : (
-                <OrganizationBdpiFlatTable
-                  month={yearMonth}
-                  activeTab={activeTab}
-                  filterType={flatViewFilter}
-                  hideValues={isExpanded}
-                  searchKeyword={activeSearchKeyword}
-                  onSearchResult={setSearchResultCount}
-                />
-              )}
-            </div>
+          {activeTab === "bdpi" && (
+            <>
+              {/* BDPI 탭 콘텐츠 */}
+              <div className="p-4 border-b border-gray-200 flex-1 min-h-0">
+                {viewType === "hierarchy" ? (
+                  <OrganizationBdpiTable
+                    month={yearMonth}
+                    activeTab={activeTab}
+                    hideValues={isExpanded}
+                  />
+                ) : (
+                  <OrganizationBdpiFlatTable
+                    month={yearMonth}
+                    activeTab={activeTab}
+                    filterType={flatViewFilter}
+                    hideValues={isExpanded}
+                    searchKeyword={activeSearchKeyword}
+                    onSearchResult={setSearchResultCount}
+                  />
+                )}
+              </div>
 
-            {hasData && <ScoreLegend />}
-          </>
-        )}
+              {hasData && <ScoreLegend />}
+            </>
+          )}
+        </div>
       </Card>
 
       {/* 조직/멤버 상세 모달 */}
