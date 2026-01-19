@@ -153,70 +153,74 @@ const MetricsPage = () => {
     console.log("Changes confirmed");
   };
 
+  // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
-    <div className="flex flex-col gap-6">
-      {/* 헤더 - 날짜 필터 */}
-      <div>
-        <Card className="w-full">
-          <div className="w-full flex items-center justify-between gap-4">
-            <DateFilter
-              period={period}
-              onPeriodChange={setPeriod}
-              currentDate={currentDate}
-              onDateChange={setCurrentDate}
-            />
-            {/* 지표 기준 설정 버튼 (당월에만 표시) */}
-            {isCurrentMonth && (
-              <Tooltip
-                maxWidth={400}
-                content={
-                  isProcessing
-                    ? "현재 집계가 진행중이므로 추가 설정은 불가능합니다."
-                    : ""
-                }
-                direction="bottom"
-              >
-                <div className="flex items-center gap-4">
-                  {isProcessing && (
-                    <span className="text-sm text-gray-500 flex items-center gap-1.5">
-                      <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
-                      집계 진행중
-                    </span>
-                  )}
-                  <Button
-                    variant="setting"
-                    size="sm"
-                    onClick={() => setIsMetricStandardSettingModalOpen(true)}
-                    disabled={isProcessing}
-                  >
-                    <Settings className="w-4 h-4 mr-1" />
-                    지표 기준 설정
-                  </Button>
-                </div>
-              </Tooltip>
-            )}
+    <div className="flex flex-col gap-6 h-full overflow-hidden select-none">
+      {/* 상단 고정 영역 */}
+      <div className="flex-shrink-0 flex flex-col gap-6">
+        {/* 헤더 - 날짜 필터 */}
+        <div>
+          <Card className="w-full">
+            <div className="w-full flex items-center justify-between gap-4">
+              <DateFilter
+                period={period}
+                onPeriodChange={setPeriod}
+                currentDate={currentDate}
+                onDateChange={setCurrentDate}
+              />
+              {/* 지표 기준 설정 버튼 (당월에만 표시) */}
+              {isCurrentMonth && (
+                <Tooltip
+                  maxWidth={400}
+                  content={
+                    isProcessing
+                      ? "현재 집계가 진행중이므로 추가 설정은 불가능합니다."
+                      : ""
+                  }
+                  direction="bottom"
+                >
+                  <div className="flex items-center gap-4">
+                    {isProcessing && (
+                      <span className="text-sm text-gray-500 flex items-center gap-1.5">
+                        <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
+                        집계 진행중
+                      </span>
+                    )}
+                    <Button
+                      variant="setting"
+                      size="sm"
+                      onClick={() => setIsMetricStandardSettingModalOpen(true)}
+                      disabled={isProcessing}
+                    >
+                      <Settings className="w-4 h-4 mr-1" />
+                      지표 기준 설정
+                    </Button>
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          </Card>
+        </div>
+
+        <div className="flex gap-6 md:h-[230px] lg:h-[260px]">
+          {/* 지표 현황 */}
+          <div className="w-2/3 h-full">
+            <Card className="h-full w-full flex items-center">
+              <MetricsSummary month={month} />
+            </Card>
           </div>
-        </Card>
-      </div>
 
-      <div className="flex gap-6 md:h-[300px] lg:h-[330px]">
-        {/* 지표 현황 */}
-        <div className="w-2/3 h-full">
-          <Card className="h-full w-full flex items-center">
-            <MetricsSummary month={month} />
-          </Card>
-        </div>
-
-        {/* 목표 달성률 */}
-        <div className="w-1/3 h-full">
-          <Card className="w-full h-full">
-            <TargetValueAchievement month={month} />
-          </Card>
+          {/* 목표 달성률 */}
+          <div className="w-1/3 h-full">
+            <Card className="w-full h-full">
+              <TargetValueAchievement month={month} />
+            </Card>
+          </div>
         </div>
       </div>
 
-      {/* 지표 리스트 */}
-      <Card className="w-full">
+      {/* 지표 리스트 - 남은 공간 차지하며 스크롤 가능 */}
+      <Card className="w-full flex-1 min-h-0 overflow-auto">
         <MetricsTable month={month} />
       </Card>
 

@@ -405,10 +405,11 @@ export const MetricStandardSettingModal = ({
             </div>
 
             {/* 하단 영역 - 변경사항 미리보기 & 안내 문구 */}
-            <div className="flex-1 overflow-hidden flex">
+            <div className="flex-1 overflow-hidden flex min-h-0">
               {/* 왼쪽 - 변경사항 미리보기 테이블 */}
-              <div className="flex-1 overflow-y-auto px-6 py-5 gap-3">
-                <div className="flex items-start justify-between pb-5 border-b border-gray-200 gap-4">
+              {/* [변경: 2026-01-19 01:00, 김병현 수정] flex-col min-h-0 추가하여 테이블 끝까지 표시되도록 수정 */}
+              <div className="flex-1 px-6 py-5 gap-3 flex flex-col min-h-0">
+                <div className="flex-shrink-0 flex items-start justify-between pb-5 border-b border-gray-200 gap-4">
                   <h2 className="text-lg font-semibold text-gray-900">
                     변경사항 미리보기
                   </h2>

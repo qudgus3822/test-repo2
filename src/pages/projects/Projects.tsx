@@ -24,32 +24,36 @@ const ProjectsPage = () => {
   });
   const [activeTab, setActiveTab] = useState<ProjectTabType>("tf");
 
+  // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
-    <div className="flex flex-col gap-6">
-      {/* 헤더 - 날짜 필터 */}
-      <div>
-        <Card className="w-full">
-          <div className="w-full flex items-center justify-between gap-4">
-            <DateFilter
-              period={period}
-              onPeriodChange={setPeriod}
-              currentDate={currentDate}
-              onDateChange={setCurrentDate}
-            />
-          </div>
-        </Card>
+    <div className="flex flex-col gap-6 h-full overflow-hidden">
+      {/* 상단 고정 영역 */}
+      <div className="flex-shrink-0 flex flex-col gap-6">
+        {/* 헤더 - 날짜 필터 */}
+        <div>
+          <Card className="w-full">
+            <div className="w-full flex items-center justify-between gap-4">
+              <DateFilter
+                period={period}
+                onPeriodChange={setPeriod}
+                currentDate={currentDate}
+                onDateChange={setCurrentDate}
+              />
+            </div>
+          </Card>
+        </div>
+
+        {/* 요약 카드 */}
+        <div className="flex gap-4">
+          <SummaryCard title="TF 프로젝트" summary={null} />
+          <SummaryCard title="운영" summary={null} />
+        </div>
       </div>
 
-      {/* 요약 카드 */}
-      <div className="flex gap-4">
-        <SummaryCard title="TF 프로젝트" summary={null} />
-        <SummaryCard title="운영" summary={null} />
-      </div>
-
-      {/* 탭 + 테이블 */}
-      <Card className="p-0">
+      {/* 탭 + 테이블 - 남은 공간 차지하며 스크롤 가능 */}
+      <Card className="p-0 flex-1 min-h-0 flex flex-col overflow-hidden">
         {/* 탭 */}
-        <div className="px-4 pt-3">
+        <div className="flex-shrink-0 px-4 pt-3">
           <ProjectTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -59,7 +63,7 @@ const ProjectsPage = () => {
         </div>
 
         {/* 테이블 */}
-        <div className="p-4">
+        <div className="p-4 flex-1 min-h-0 overflow-auto">
           {activeTab === "tf" ? (
             <ProjectTable projects={[]} />
           ) : (
