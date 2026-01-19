@@ -69,6 +69,21 @@ interface FlatTreeItem {
 // 집계 타입
 export type AggregationType = "average" | "total";
 
+// 레벨별 행 배경색
+const getLevelBackgroundColor = (level: number): string => {
+  switch (level) {
+    case 1:
+      return "#FFFFFF"; // IT부문
+    case 2:
+      return "#F1F5F9"; // 실
+    case 3:
+      return "#E2E8F0"; // 팀
+    case 4:
+    default:
+      return "#CAD5E2"; // 개인
+  }
+};
+
 interface OrganizationTableProps {
   month: string;
   activeTab: TabType;
@@ -210,9 +225,13 @@ const FixedDepartmentRow = ({
 }) => {
   const dept = item.data as OrganizationDepartment;
   const paddingLeft = 16 + item.depth * 24;
+  const bgColor = getLevelBackgroundColor(dept.level);
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
+    <tr
+      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      style={{ backgroundColor: bgColor }}
+    >
       <td
         className="py-0 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]"
         style={{ paddingLeft: `${paddingLeft}px` }}
@@ -261,9 +280,13 @@ const FixedMemberRow = ({
 }) => {
   const member = item.data as OrganizationMember;
   const paddingLeft = 24 + item.depth * 24;
+  const bgColor = getLevelBackgroundColor(member.level);
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
+    <tr
+      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      style={{ backgroundColor: bgColor }}
+    >
       <td
         className="py-0 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]"
         style={{ paddingLeft: `${paddingLeft}px` }}
@@ -397,9 +420,13 @@ const ScrollableRow = ({
   aggregationType?: AggregationType;
 }) => {
   const metrics = item.data.metrics as unknown as Record<string, MetricData>;
+  const bgColor = getLevelBackgroundColor(item.data.level);
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 h-[64px]">
+    <tr
+      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      style={{ backgroundColor: bgColor }}
+    >
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리 (총합 모드에서도 데이터 표시)
         if (code === "bdpi" || code === "BDPI") {

@@ -35,6 +35,21 @@ import { HeatmapCell } from "./heatmap/HeatmapCell";
 // 집계 타입
 export type AggregationType = "average" | "total";
 
+// 레벨별 행 배경색
+const getLevelBackgroundColor = (level: number): string => {
+  switch (level) {
+    case 1:
+      return "#FFFFFF"; // IT부문
+    case 2:
+      return "#F1F5F9"; // 실
+    case 3:
+      return "#E2E8F0"; // 팀
+    case 4:
+    default:
+      return "#CAD5E2"; // 개인
+  }
+};
+
 interface OrganizationBdpiTableProps {
   month: string;
   activeTab: TabType;
@@ -158,9 +173,13 @@ const MemberRow = ({
 }) => {
   const paddingLeft = 24 + depth * 24;
   const bdpiMetrics = member.metrics as BdpiMetrics;
+  const bgColor = getLevelBackgroundColor(member.level);
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[64px]">
+    <tr
+      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      style={{ backgroundColor: bgColor }}
+    >
       <td
         className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
         style={{ paddingLeft: `${paddingLeft}px` }}
@@ -228,6 +247,7 @@ const OrganizationRow = ({
   const isExpanded = expandedOrganizations.has(org.code);
   const hasChildren = org.children && org.children.length > 0;
   const paddingLeft = 16 + depth * 24;
+  const bgColor = getLevelBackgroundColor(org.level);
 
   const childDepartments: OrganizationDepartment[] = [];
   const childMembers: OrganizationMember[] = [];
@@ -247,7 +267,10 @@ const OrganizationRow = ({
 
   return (
     <>
-      <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[64px]">
+      <tr
+        className="border-b border-gray-200 last:border-b-0 h-[64px]"
+        style={{ backgroundColor: bgColor }}
+      >
         <td
           className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
           style={{ paddingLeft: `${paddingLeft}px` }}
