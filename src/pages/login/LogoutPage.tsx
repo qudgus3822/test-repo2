@@ -1,9 +1,7 @@
 import { useLogout } from "@/api/hooks/useAuth";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 const LogoutPage = () => {
-  const navigate = useNavigate();
   const logoutMutation = useLogout();
 
   useEffect(() => {
@@ -13,7 +11,8 @@ const LogoutPage = () => {
       } catch (error) {
         console.error("로그아웃 중 오류:", error);
       } finally {
-        navigate("/login");
+        // 전체 페이지 새로고침으로 React Query 캐시 완전 초기화
+        window.location.href = "/login";
       }
     };
     performLogout();
