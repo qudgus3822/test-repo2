@@ -155,7 +155,7 @@ const MetricsPage = () => {
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
-    <div className="flex flex-col gap-6 h-full overflow-hidden">
+    <div className="flex flex-col gap-6 h-full overflow-hidden select-none">
       {/* 상단 고정 영역 */}
       <div className="flex-shrink-0 flex flex-col gap-6">
         {/* 헤더 - 날짜 필터 */}
@@ -202,7 +202,7 @@ const MetricsPage = () => {
           </Card>
         </div>
 
-        <div className="flex gap-6 md:h-[300px] lg:h-[330px]">
+        <div className="flex gap-6 md:h-[230px] lg:h-[260px]">
           {/* 지표 현황 */}
           <div className="w-2/3 h-full">
             <Card className="h-full w-full flex items-center">
