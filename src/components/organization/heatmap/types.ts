@@ -102,6 +102,7 @@ export interface MetricData {
   status?: MetricStatusType; // 달성 상태
   metricName?: string; // 지표명
   metricDisplayName?: string; // 지표 표시명 (줄바꿈 포함 문자열)
+  tooltip?: string; // 툴팁 설명
 }
 
 // 컬럼 너비 상수

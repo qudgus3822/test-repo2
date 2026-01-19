@@ -236,6 +236,7 @@ export interface MetricDefinitionResponse {
   unit: string;
   targetValue: string | null;
   description: string;
+  tooltip: string | null;
   formula: string | null;
   trend: MetricTrend | null;
 }

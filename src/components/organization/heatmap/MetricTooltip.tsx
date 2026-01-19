@@ -24,6 +24,8 @@ interface MetricTooltipProps {
   targetValue?: number | string | null;
   /** 단위 (API 응답) */
   unit?: string;
+  /** 툴팁 설명 (API 응답) */
+  description?: string;
 }
 
 /**
@@ -45,6 +47,7 @@ export const MetricTooltip = ({
   position,
   targetValue,
   unit,
+  description,
 }: MetricTooltipProps) => {
   if (!visible) return null;
 
@@ -85,6 +88,11 @@ export const MetricTooltip = ({
       {/* 헤더: 지표명 */}
       <div className="px-4 pt-3 pb-2 border-b border-gray-100">
         <div className="font-medium text-gray-800 text-base">{displayMetricName}</div>
+        {description && (
+          <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+            {description}
+          </div>
+        )}
       </div>
 
       {/* 본문: 현재값 / 목표값 */}

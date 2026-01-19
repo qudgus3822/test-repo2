@@ -14,6 +14,8 @@ interface ProgressSquareProps {
   value?: number | string | null;
   /** 값 숨기기 여부 */
   hideValue?: boolean;
+  /** 로딩 상태 */
+  isLoading?: boolean;
 }
 
 /**
@@ -40,6 +42,7 @@ export const ProgressSquare = ({
   score,
   value,
   hideValue = false,
+  isLoading = false,
 }: ProgressSquareProps) => {
   const hasData = score !== null && value !== null && value !== undefined;
 
@@ -74,17 +77,26 @@ export const ProgressSquare = ({
         />
       )}
 
+      {/* 로딩 인디케이터 */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80">
+          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+        </div>
+      )}
+
       {/* 값 텍스트 오버레이 */}
-      <span
-        className={`absolute inset-0 flex items-center justify-center text-md font-bold transition-opacity overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass} opacity-100`}
-        style={
-          hasData
-            ? { textShadow: "0 1px 4px rgba(255, 255, 255, 0.8)" }
-            : undefined
-        }
-      >
-        {displayValue}
-      </span>
+      {!isLoading && (
+        <span
+          className={`absolute inset-0 flex items-center justify-center text-md font-bold transition-opacity overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass} opacity-100`}
+          style={
+            hasData
+              ? { textShadow: "0 1px 4px rgba(255, 255, 255, 0.8)" }
+              : undefined
+          }
+        >
+          {displayValue}
+        </span>
+      )}
     </div>
   );
 };
