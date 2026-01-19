@@ -554,7 +554,6 @@ export const OrganizationFlatTable = ({
     true,
     apiOptions,
   );
-  console.log("data!!!!!!!!!!!!!!!!!!!!", data );
 
   // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();
