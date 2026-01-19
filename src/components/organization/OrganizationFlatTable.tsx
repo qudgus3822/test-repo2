@@ -290,7 +290,7 @@ const CombinedRow = ({
     <tr className={`hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
-        className={`px-2 py-4 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
+        className={`px-2  align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
         style={{ boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
       >
         {isDepartment ? (
