@@ -17,6 +17,7 @@ import type {
   ChangeInfo,
   BdpiMetrics,
   MonthlyComparison,
+  AggregationType,
 } from "@/types/organization.types";
 import { TREND_COLORS } from "@/styles/colors";
 import {
@@ -25,6 +26,7 @@ import {
   formatChangeDate,
   getMemberEmail,
   getChangeDetailWithSuffix,
+  getLevelBackgroundColor,
 } from "@/utils/organization";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
@@ -32,23 +34,6 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 
-// 집계 타입
-export type AggregationType = "average" | "total";
-
-// 레벨별 행 배경색
-const getLevelBackgroundColor = (level: number): string => {
-  switch (level) {
-    case 1:
-      return "#FFFFFF"; // IT부문
-    case 2:
-      return "#F1F5F9"; // 실
-    case 3:
-      return "#E2E8F0"; // 팀
-    case 4:
-    default:
-      return "#CAD5E2"; // 개인
-  }
-};
 
 interface OrganizationBdpiTableProps {
   month: string;
@@ -351,16 +336,13 @@ export const OrganizationBdpiTable = ({
   month,
   activeTab,
   hideValues = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: OrganizationBdpiTableProps) => {
   // BDPI 탭일 경우 API 옵션 설정
   const apiOptions =
     activeTab === "bdpi"
       ? {
-          aggregation:
-            aggregationType === "average"
-              ? ("avg" as const)
-              : ("total" as const),
+          aggregation: aggregationType,
           format: "tree" as const,
         }
       : undefined;

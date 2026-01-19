@@ -203,6 +203,14 @@ export const CHANGE_COLORS = {
   emphasis: "#E7000B", // 강조 (빨간색)
 } as const;
 
+// 조직 레벨별 행 배경색
+export const ORGANIZATION_LEVEL_COLORS = {
+  level1: "#FFFFFF", // IT부문
+  level2: "#F1F5F9", // 실
+  level3: "#E2E8F0", // 팀
+  level4: "#CAD5E2", // 개인
+} as const;
+
 // 모든 색상 통합 export
 export const COLORS = {
   brand: BRAND_COLORS,
@@ -221,4 +229,5 @@ export const COLORS = {
   achievement: ACHIEVEMENT_COLORS,
   achievementRate: ACHIEVEMENT_RATE_COLORS,
   change: CHANGE_COLORS,
+  organizationLevel: ORGANIZATION_LEVEL_COLORS,
 } as const;

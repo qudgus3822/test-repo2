@@ -31,7 +31,7 @@ import {
   organizationTreeKeys,
 } from "@/api/hooks/useOrganizationTree";
 import { useQueryClient } from "@tanstack/react-query";
-import type { OrganizationDepartment } from "@/types/organization.types";
+import type { OrganizationDepartment, AggregationType } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 
 // Level 1(부문) 조직 코드만 수집
@@ -110,8 +110,8 @@ const OrganizationPage = () => {
     useState<FlatViewFilterType>("division");
 
   // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
-  const [aggregationType, setAggregationType] = useState<"average" | "total">(
-    "average",
+  const [aggregationType, setAggregationType] = useState<AggregationType>(
+    "avg",
   );
 
   // 보기/펼치기 상태
@@ -187,8 +187,7 @@ const OrganizationPage = () => {
   const apiOptions = useMemo(() => {
     if (activeTab === "all" || activeTab === "bdpi") {
       const baseOptions = {
-        aggregation:
-          aggregationType === "average" ? ("avg" as const) : ("total" as const),
+        aggregation: aggregationType,
       };
 
       if (viewType === "hierarchy") {
@@ -395,9 +394,9 @@ const OrganizationPage = () => {
             {(activeTab === "all" || activeTab === "bdpi") && (
               <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
-                  onClick={() => setAggregationType("average")}
+                  onClick={() => setAggregationType("avg")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
-                    aggregationType === "average" || activeTab === "bdpi"
+                    aggregationType === "avg" || activeTab === "bdpi"
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}

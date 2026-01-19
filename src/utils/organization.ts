@@ -10,7 +10,7 @@ import {
   DepartmentStatusLabel,
   PolicyStatusLabel,
 } from "@/types/organization.types";
-import { CHANGE_TYPE_BADGE_COLORS } from "@/styles/colors";
+import { CHANGE_TYPE_BADGE_COLORS, ORGANIZATION_LEVEL_COLORS } from "@/styles/colors";
 
 /**
  * 조직 비교 페이지 관련 유틸리티 함수
@@ -325,4 +325,35 @@ export const getChangeDetailWithSuffix = (
   }
 
   return detail;
+};
+
+/**
+ * 조직 레벨에 따른 행 배경색을 반환합니다.
+ *
+ * @param level - 조직 레벨 (1: 부문, 2: 실, 3: 팀, 4: 개인)
+ * @returns 배경색 HEX 코드
+ *
+ * @example
+ * ```typescript
+ * import { getLevelBackgroundColor } from "@/utils/organization";
+ *
+ * const bgColor = getLevelBackgroundColor(1);
+ * // Returns: "#FFFFFF" (IT부문)
+ *
+ * const bgColor2 = getLevelBackgroundColor(3);
+ * // Returns: "#E2E8F0" (팀)
+ * ```
+ */
+export const getLevelBackgroundColor = (level: number): string => {
+  switch (level) {
+    case 1:
+      return ORGANIZATION_LEVEL_COLORS.level1;
+    case 2:
+      return ORGANIZATION_LEVEL_COLORS.level2;
+    case 3:
+      return ORGANIZATION_LEVEL_COLORS.level3;
+    case 4:
+    default:
+      return ORGANIZATION_LEVEL_COLORS.level4;
+  }
 };

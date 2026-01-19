@@ -18,6 +18,7 @@ import type {
   BdpiMetrics,
   MonthlyComparison,
   ChangeInfo,
+  AggregationType,
 } from "@/types/organization.types";
 import {
   hasChangeInfo,
@@ -35,8 +36,6 @@ import { HeatmapCell } from "./heatmap/HeatmapCell";
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
 export type FlatViewFilterType = "division" | "team" | "member";
 
-// 집계 타입
-export type AggregationType = "average" | "total";
 
 interface OrganizationBdpiFlatTableProps {
   month: string;
@@ -380,16 +379,13 @@ export const OrganizationBdpiFlatTable = ({
   hideValues = false,
   searchKeyword = "",
   onSearchResult,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: OrganizationBdpiFlatTableProps) => {
   // BDPI 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
     activeTab === "bdpi"
       ? {
-          aggregation:
-            aggregationType === "average"
-              ? ("avg" as const)
-              : ("total" as const),
+          aggregation: aggregationType,
           format: "list" as const,
           type: filterType,
           search: searchKeyword.trim() || undefined,

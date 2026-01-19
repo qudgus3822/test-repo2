@@ -32,6 +32,7 @@ import type {
   OrganizationNode,
   TabType,
   ChangeInfo,
+  AggregationType,
 } from "@/types/organization.types";
 import {
   hasChangeInfo,
@@ -39,6 +40,7 @@ import {
   getChangeDetailWithSuffix,
   getMemberRoleOrPositionLabel,
   getMemberEmail,
+  getLevelBackgroundColor,
 } from "@/utils/organization";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
@@ -66,23 +68,6 @@ interface FlatTreeItem {
   isExpanded: boolean;
 }
 
-// 집계 타입
-export type AggregationType = "average" | "total";
-
-// 레벨별 행 배경색
-const getLevelBackgroundColor = (level: number): string => {
-  switch (level) {
-    case 1:
-      return "#FFFFFF"; // IT부문
-    case 2:
-      return "#F1F5F9"; // 실
-    case 3:
-      return "#E2E8F0"; // 팀
-    case 4:
-    default:
-      return "#CAD5E2"; // 개인
-  }
-};
 
 interface OrganizationTableProps {
   month: string;
@@ -412,7 +397,7 @@ const ScrollableRow = ({
   item,
   metricOrder,
   hideValue = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: {
   item: FlatTreeItem;
   metricOrder: string[];
@@ -497,16 +482,13 @@ export const OrganizationTable = ({
   month,
   activeTab,
   hideValues = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: OrganizationTableProps) => {
   // 전체 탭일 경우 API 옵션 설정
   const apiOptions =
     activeTab === "all"
       ? {
-          aggregation:
-            aggregationType === "average"
-              ? ("avg" as const)
-              : ("total" as const),
+          aggregation: aggregationType,
           format: "tree" as const,
         }
       : undefined;
