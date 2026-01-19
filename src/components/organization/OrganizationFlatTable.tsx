@@ -483,7 +483,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -930,7 +930,7 @@ export const OrganizationFlatTable = ({
               <tr className="border-b border-gray-300 bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
+                  className={`${thBaseStyle} text-left border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
