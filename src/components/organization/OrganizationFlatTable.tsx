@@ -225,21 +225,28 @@ const getRowHeight = (filterType: FlatViewFilterType) => {
   }
 };
 
-// 고정 영역 행 컴포넌트
-const FixedRow = ({
+// [변경: 2026-01-19 03:00, 김병현 수정] 통합 행 컴포넌트 - 고정 영역 + 스크롤 영역을 하나의 행으로 합침
+const CombinedRow = ({
   item,
   summaryCounts,
   filterType,
   onMemberClick,
+  metricOrder,
+  hideValue = false,
+  aggregationType = "average",
 }: {
   item: FlatItem;
   summaryCounts: SummaryCounts;
   filterType: FlatViewFilterType;
   onMemberClick?: (member: OrganizationMember, event: React.MouseEvent) => void;
+  metricOrder: string[];
+  hideValue?: boolean;
+  aggregationType?: AggregationType;
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
   const rowHeight = getRowHeight(filterType);
+  const metrics = data.metrics as unknown as Record<string, MetricData>;
 
   const displayName = isDepartment
     ? (data as OrganizationDepartment).name
@@ -281,10 +288,12 @@ const FixedRow = ({
 
   return (
     <tr
-      className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}
+      className={`hover:bg-gray-50/50 ${rowHeight}`}
     >
+      {/* 고정 영역 - 조직/멤버 이름 */}
       <td
-        className={`px-2 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}
+        className={`px-2 py-4 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
+        style={{ boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
       >
         {isDepartment ? (
           <div className="flex flex-col justify-center h-full gap-0.5">
@@ -304,11 +313,11 @@ const FixedRow = ({
           </div>
         ) : (
           <div
-            className="flex flex-col justify-center h-full gap-0.5 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1"
+            className="flex flex-col justify-center h-full gap-0.5 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 select-none"
             onClick={(e) => onMemberClick?.(member!, e)}
           >
             <div className="flex items-center">
-              <span className="font-medium text-gray-900">{displayName}</span>
+              <span className="font-medium text-blue-600 underline underline-offset-2">{displayName}</span>
               <span className="ml-2 text-sm text-gray-500">
                 {getMemberRoleOrPositionLabel(
                   member!.title,
@@ -324,14 +333,74 @@ const FixedRow = ({
           </div>
         )}
       </td>
-      {SUMMARY_CATEGORIES.map((cat) => (
+      {/* 고정 영역 - Summary 카테고리 */}
+      {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[72px] ${rowHeight}`}
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] ${rowHeight} bg-white sticky z-10`}
+          style={{ left: `${350 + catIndex * 72}px`, boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined }}
         >
           {summaryCounts[cat.id]}
         </td>
       ))}
+      {/* 스크롤 영역 - 지표 칼럼들 */}
+      {metricOrder.map((code) => {
+        // BDPI 칼럼 특별 처리
+        if (code === "bdpi" || code === "BDPI") {
+          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
+          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
+          return (
+            <td
+              key={code}
+              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
+            >
+              {bdpiValue !== undefined && bdpiValue !== null
+                ? `${bdpiValue.toFixed(0)}%`
+                : "--"}
+            </td>
+          );
+        }
+
+        const metric = metrics?.[code];
+
+        // isUsed가 false인 경우(수집불가 지표) 회색 처리
+        if (metric?.isUsed === false) {
+          return (
+            <td
+              key={code}
+              className={`px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight} bg-gray-50`}
+            />
+          );
+        }
+
+        const hasData = metric && typeof metric.value === "number";
+        const score = hasData ? (metric?.score ?? null) : null;
+        const value = hasData
+          ? aggregationType === "total"
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null)
+          : null;
+        const targetValue = metric?.targetValue ?? null;
+        const unit = metric?.unit;
+        const metricName = metric?.metricName;
+
+        return (
+          <td
+            key={code}
+            className={`px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
+          >
+            <HeatmapCell
+              metricCode={code}
+              metricName={metricName}
+              score={score}
+              value={value}
+              hideValue={hideValue}
+              targetValue={targetValue}
+              unit={unit}
+            />
+          </td>
+        );
+      })}
     </tr>
   );
 };
@@ -406,7 +475,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -453,91 +522,6 @@ const SortableMetricHeader = ({
         </div>
       </div>
     </th>
-  );
-};
-
-// 스크롤 영역 행 컴포넌트
-const ScrollableRow = ({
-  item,
-  metricOrder,
-  hideValue = false,
-  aggregationType = "average",
-  filterType = "division",
-}: {
-  item: FlatItem;
-  metricOrder: string[];
-  hideValue?: boolean;
-  aggregationType?: AggregationType;
-  filterType?: FlatViewFilterType;
-}) => {
-  const data = item.data;
-  const metrics = data.metrics as unknown as Record<string, MetricData>;
-  const rowHeight = getRowHeight(filterType);
-
-  return (
-    <tr
-      className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}
-    >
-      {metricOrder.map((code) => {
-        // BDPI 칼럼 특별 처리 (총합 모드에서도 데이터 표시)
-        if (code === "bdpi" || code === "BDPI") {
-          // API 응답의 metrics에서 BDPI 데이터 조회 (대소문자 모두 확인)
-          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
-          return (
-            <td
-              key={code}
-              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
-            >
-              {bdpiValue !== undefined && bdpiValue !== null
-                ? `${bdpiValue.toFixed(0)}%`
-                : "--"}
-            </td>
-          );
-        }
-
-        const metric = metrics?.[code];
-
-        // isUsed가 false인 경우(수집불가 지표) 회색 처리
-        if (metric?.isUsed === false) {
-          return (
-            <td
-              key={code}
-              className={`px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight} bg-gray-50`}
-            />
-          );
-        }
-
-        const hasData = metric && typeof metric.value === "number";
-        const score = hasData ? (metric?.score ?? null) : null;
-        // 총합 모드일 경우 totalValue 사용 (없으면 "--" 표시)
-        const value = hasData
-          ? aggregationType === "total"
-            ? (metric?.totalValue ?? null)
-            : (metric?.value ?? null)
-          : null;
-        const targetValue = metric?.targetValue ?? null;
-        const unit = metric?.unit;
-        const metricName = metric?.metricName;
-
-        return (
-          <td
-            key={code}
-            className={`px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
-          >
-            <HeatmapCell
-              metricCode={code}
-              metricName={metricName}
-              score={score}
-              value={value}
-              hideValue={hideValue}
-              targetValue={targetValue}
-              unit={unit}
-            />
-          </td>
-        );
-      })}
-    </tr>
   );
 };
 
@@ -910,39 +894,52 @@ export const OrganizationFlatTable = ({
         />
       )}
 
-      {/* [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경 */}
-      <div className="flex border border-gray-200 rounded-lg overflow-auto h-full">
-        {/* 고정 영역 (좌측 5개 컬럼) */}
-        <div
-          className="flex-shrink-0 bg-white z-20 sticky left-0"
-          style={{ boxShadow: "4px 0 8px -2px rgba(0, 0, 0, 0.1)" }}
+      {/* [변경: 2026-01-19 03:00, 김병현 수정] 하나의 통합 테이블로 변경 - 고정 영역은 sticky로 처리 */}
+      {/* [변경: 2026-01-19 03:30, 김병현 수정] 스크롤바를 스크롤 영역에만 표시 (고정 영역 너비: 350 + 72*4 = 638px) */}
+      <style>{`
+        .org-flat-table-container::-webkit-scrollbar {
+          height: 8px;
+        }
+        .org-flat-table-container::-webkit-scrollbar-track {
+          background: transparent;
+          margin-left: 638px;
+        }
+        .org-flat-table-container::-webkit-scrollbar-thumb {
+          background: #c1c1c1;
+          border-radius: 4px;
+        }
+        .org-flat-table-container::-webkit-scrollbar-thumb:hover {
+          background: #a1a1a1;
+        }
+      `}</style>
+      <div className="org-flat-table-container border border-gray-300 rounded-lg overflow-auto h-full">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          <table className="border-collapse">
-            <thead className="sticky top-0 z-30">
-              <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
+          <table className="border-separate border-spacing-0 table-fixed">
+            <thead className="sticky top-0 z-20">
+              <tr className="border-b border-gray-300 bg-gray-50 h-[113px]">
+                {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
+                  className={`${thBaseStyle} text-left border-r border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
-                {SUMMARY_CATEGORIES.map((cat) => {
+                {/* 고정 영역 헤더 - Summary 카테고리 */}
+                {SUMMARY_CATEGORIES.map((cat, catIndex) => {
                   const isActive =
                     sortConfig.column === cat.id &&
                     sortConfig.direction !== null;
 
-                  // API 응답의 thresholds 값 사용 (fallback: excellent=80, danger=60)
                   const excellentThreshold = thresholds?.excellent ?? 80;
                   const dangerThreshold = thresholds?.danger ?? 60;
-
-                  // 공통 기준 툴팁 텍스트
                   const criteriaTooltip = `초과달성: 100% 초과\n우수: ${excellentThreshold}% 이상 ~ 100% 이하\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만\n위험: ${dangerThreshold}% 미만`;
 
-                  // 정렬 아이콘 렌더링
                   const renderSortIcon = () => {
                     if (!isActive) {
-                      return (
-                        <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />
-                      );
+                      return <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />;
                     }
                     if (sortConfig.direction === "asc") {
                       return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
@@ -953,10 +950,14 @@ export const OrganizationFlatTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className={`px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] h-[113px] cursor-pointer hover:brightness-95 select-none ${
+                      className={`px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[72px] min-w-[72px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30 ${
                         isActive ? "ring-2 ring-inset ring-blue-400" : ""
                       }`}
-                      style={{ backgroundColor: SUMMARY_BG_COLORS[cat.id] }}
+                      style={{
+                        backgroundColor: SUMMARY_BG_COLORS[cat.id],
+                        left: `${350 + catIndex * 72}px`,
+                        boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined
+                      }}
                       onClick={() => toggleSort(cat.id)}
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
@@ -977,6 +978,32 @@ export const OrganizationFlatTable = ({
                     </th>
                   );
                 })}
+                {/* 스크롤 영역 헤더 - 지표 칼럼들 */}
+                <SortableContext
+                  items={metricOrder}
+                  strategy={horizontalListSortingStrategy}
+                >
+                  {metricOrder.map((code) => {
+                    const metricInfo = metricInfoMap[code];
+                    const isActive =
+                      sortConfig.column === code &&
+                      sortConfig.direction !== null;
+
+                    return (
+                      <SortableMetricHeader
+                        key={code}
+                        code={code}
+                        displayName={metricInfo?.metricDisplayName}
+                        metricName={metricInfo?.metricName}
+                        isActive={isActive}
+                        sortDirection={sortConfig.direction}
+                        onSort={toggleSort}
+                        isSelected={selectedMetricCode === code}
+                        onSelect={handleMetricSelect}
+                      />
+                    );
+                  })}
+                </SortableContext>
               </tr>
             </thead>
             <tbody>
@@ -985,83 +1012,25 @@ export const OrganizationFlatTable = ({
                   itemSummaryCountsMap.get(item) ??
                   calculateSummaryCounts(undefined);
                 return (
-                  <FixedRow
+                  <CombinedRow
                     key={
                       item.type === "department"
-                        ? (item.data as OrganizationDepartment).code
-                        : `${
-                            (item.data as OrganizationMember).employeeID
-                          }-${index}`
+                        ? `row-${(item.data as OrganizationDepartment).code}`
+                        : `row-${(item.data as OrganizationMember).employeeID}-${index}`
                     }
                     item={item}
                     summaryCounts={summaryCounts}
                     filterType={filterType}
                     onMemberClick={handleMemberClick}
+                    metricOrder={metricOrder}
+                    hideValue={hideValues}
+                    aggregationType={aggregationType}
                   />
                 );
               })}
             </tbody>
           </table>
-        </div>
-
-        {/* 스크롤 영역 (30개 지표 + BDPI) */}
-        <div className="flex-1">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <table className="border-collapse table-fixed">
-              <thead className="sticky top-0 z-10">
-                <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
-                  <SortableContext
-                    items={metricOrder}
-                    strategy={horizontalListSortingStrategy}
-                  >
-                    {metricOrder.map((code) => {
-                      const metricInfo = metricInfoMap[code];
-                      const isActive =
-                        sortConfig.column === code &&
-                        sortConfig.direction !== null;
-
-                      return (
-                        <SortableMetricHeader
-                          key={code}
-                          code={code}
-                          displayName={metricInfo?.metricDisplayName}
-                          metricName={metricInfo?.metricName}
-                          isActive={isActive}
-                          sortDirection={sortConfig.direction}
-                          onSort={toggleSort}
-                          isSelected={selectedMetricCode === code}
-                          onSelect={handleMetricSelect}
-                        />
-                      );
-                    })}
-                  </SortableContext>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedItems.map((item, index) => (
-                  <ScrollableRow
-                    key={
-                      item.type === "department"
-                        ? (item.data as OrganizationDepartment).code
-                        : `${
-                            (item.data as OrganizationMember).employeeID
-                          }-${index}`
-                    }
-                    item={item}
-                    metricOrder={metricOrder}
-                    hideValue={hideValues}
-                    aggregationType={aggregationType}
-                    filterType={filterType}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </DndContext>
-        </div>
+        </DndContext>
       </div>
 
       {/* 멤버 지표 순위 모달 */}
