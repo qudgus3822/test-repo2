@@ -416,8 +416,8 @@ const OrganizationPage = () => {
                     activeTab === "bdpi"
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : aggregationType === "total"
-                      ? "bg-blue-600 text-white cursor-pointer"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
+                        ? "bg-blue-600 text-white cursor-pointer"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
                   }`}
                 >
                   총합
@@ -483,8 +483,8 @@ const OrganizationPage = () => {
                   flatViewFilter === "division"
                     ? "실 이름을 입력하세요"
                     : flatViewFilter === "team"
-                    ? "팀 이름을 입력하세요"
-                    : "이름을 입력하세요"
+                      ? "팀 이름을 입력하세요"
+                      : "이름을 입력하세요"
                 }
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}

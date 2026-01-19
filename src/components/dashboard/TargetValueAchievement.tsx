@@ -37,7 +37,7 @@ export const TargetValueAchievement = ({
         </h3>
         <div
           className="flex items-center justify-center"
-          style={{ minHeight: 240 }}
+          style={{ minHeight: 160 }}
         >
           {isLoading ? (
             <LoadingSpinner />
@@ -54,15 +54,15 @@ export const TargetValueAchievement = ({
   const percentage = hasData ? (achievedMetrics / totalMetrics) * 100 : 0;
 
   return (
-    <div className="grid grid-cols-1 gap-4">
+    <div className="grid grid-cols-1">
       <h3 className="text-lg font-semibold text-gray-900">목표 달성률</h3>
-      <div className="flex flex-col items-center py-5">
+      <div className="flex flex-col items-center py-1">
         <DonutChart
           value={percentage}
           maxValue={100}
           showPercentage
           gradient={ACHIEVEMENT_GRADIENT}
-          size={180}
+          size={140}
           strokeWidth={20}
           noDataLabel={hasData ? undefined : "-%"}
         />

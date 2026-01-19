@@ -912,7 +912,7 @@ export const OrganizationFlatTable = ({
           background: #a1a1a1;
         }
       `}</style>
-      <div className="org-flat-table-container border border-gray-300 rounded-lg overflow-auto h-full">
+      <div className="org-flat-table-container border border-gray-300 rounded-lg overflow-auto h-full select-none">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
