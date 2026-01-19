@@ -18,14 +18,16 @@ export const authKeys = {
 
 /**
  * 현재 사용자 정보 조회 (쿠키 기반 인증)
+ * @param enabled - 쿼리 활성화 여부 (로그인 중일 때 false로 설정하여 race condition 방지)
  * @returns React Query 결과 객체
  */
-export const useCurrentUser = () => {
+export const useCurrentUser = (enabled = true) => {
   return useQuery({
     queryKey: authKeys.user(),
     queryFn: checkAuthStatus,
     staleTime: 0, // 항상 서버에서 인증 상태 확인
     retry: false, // 인증 실패 시 재시도 하지 않음
+    enabled, // 로그인 중에는 비활성화하여 중복 요청 방지
   });
 };
 
@@ -100,7 +102,8 @@ export const useAuth = () => {
   const navigate = useNavigate();
   const loginMutation = useLogin();
   const logoutMutation = useLogout();
-  const { data: user, isLoading, error } = useCurrentUser();
+  // 로그인 중일 때는 useCurrentUser 쿼리를 비활성화하여 race condition 방지
+  const { data: user, isLoading, error } = useCurrentUser(!loginMutation.isPending);
 
   const login = async (credentials: LoginRequest) => {
     const result = await loginMutation.mutateAsync(credentials);
