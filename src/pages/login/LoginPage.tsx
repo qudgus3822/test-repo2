@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logoWhite from "@/assets/images/bithumb_logo_white_vertical.png";
 import { Button } from "@/components/ui/Button";
 import { useLogin } from "@/api/hooks/useAuth";
-import { getRememberedEmail } from "@/api/auth";
+import { getRememberedEmail, clearAuthCookies } from "@/api/auth";
 import { env } from "@/env";
 
 const LoginPage = () => {
@@ -28,6 +28,8 @@ const LoginPage = () => {
   }, []);
 
   const handleOktaLogin = () => {
+    // 기존 쿠키 삭제 (도메인이 다른 중복 쿠키 충돌 방지)
+    clearAuthCookies();
     // Okta 로그인 페이지로 리다이렉트
     window.location.href = `${env.apiBaseUrl}/auth/okta`;
   };
@@ -35,6 +37,8 @@ const LoginPage = () => {
   const handleAdminLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
+    // 기존 쿠키 삭제 (도메인이 다른 중복 쿠키 충돌 방지)
+    clearAuthCookies();
 
     try {
       await loginMutation.mutateAsync({ email, password, rememberEmail });

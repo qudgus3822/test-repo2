@@ -113,7 +113,29 @@ export const loginToServer = async (
 };
 
 /**
- * 로그아웃 (서버 쿠키 삭제)
+ * 클라이언트 쿠키 삭제 (모든 도메인)
+ * 서버 로그아웃과 별개로 클라이언트에서 쿠키를 명시적으로 삭제합니다.
+ * 도메인이 다른 쿠키가 남아있는 경우를 대비한 방어적 처리입니다.
+ */
+export const clearAuthCookies = (): void => {
+  const cookieNames = ["accessToken", "idToken", "refreshToken"];
+  const domains = [
+    "dev-devmetrics.aws-bithumb.com", // 관리자 로그인 도메인
+    ".aws-bithumb.com", // Okta 로그인 도메인
+  ];
+
+  cookieNames.forEach((name) => {
+    // 각 도메인별로 쿠키 삭제
+    domains.forEach((domain) => {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
+    });
+    // 도메인 없이도 삭제 시도 (현재 도메인 기준)
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  });
+};
+
+/**
+ * 로그아웃 (서버 쿠키 삭제 + 클라이언트 쿠키 삭제)
  * @returns {Promise<boolean>} 성공하면 true
  * @throws {Error} 로그아웃 실패 시 에러
  */
@@ -124,11 +146,16 @@ export const logoutFromServer = async (): Promise<boolean> => {
       skipAuthRedirect: true, // 로그아웃은 401 시 리다이렉트하지 않음
     });
 
+    // 서버 응답과 관계없이 클라이언트 쿠키 삭제 (방어적 처리)
+    clearAuthCookies();
+
     if (!response.ok) {
       throw new Error("로그아웃 실패");
     }
     return true;
   } catch (error) {
+    // 서버 로그아웃 실패해도 클라이언트 쿠키는 삭제
+    clearAuthCookies();
     console.error("로그아웃 실패:", error);
     throw error;
   }
