@@ -250,12 +250,14 @@ const FixedRow = ({
     : null;
 
   const member = !isDepartment ? (data as OrganizationMember) : null;
-
   // 상위 조직 표시 텍스트 생성
   // API 응답의 divisionName, teamName 우선 사용, 없으면 item.roomName, item.teamName 사용
   const getParentInfo = () => {
     // API 응답 필드 (format=list) - 타입 가드로 안전하게 접근
-    const dataWithApiFields = data as { divisionName?: string; teamName?: string };
+    const dataWithApiFields = data as {
+      divisionName?: string;
+      teamName?: string;
+    };
     const divisionName = dataWithApiFields.divisionName;
     const teamNameFromApi = dataWithApiFields.teamName;
 
@@ -506,14 +508,13 @@ const ScrollableRow = ({
           );
         }
 
-        const hasData =
-          metric && typeof metric.value === "number";
-        const score = hasData ? metric?.score ?? null : null;
+        const hasData = metric && typeof metric.value === "number";
+        const score = hasData ? (metric?.score ?? null) : null;
         // 총합 모드일 경우 totalValue 사용 (없으면 "--" 표시)
         const value = hasData
           ? aggregationType === "total"
-            ? metric?.totalValue ?? null
-            : metric?.value ?? null
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null)
           : null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
@@ -571,6 +572,7 @@ export const OrganizationFlatTable = ({
     true,
     apiOptions,
   );
+  console.log("data!!!!!!!!!!!!!!!!!!!!", data );
 
   // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();
@@ -587,7 +589,10 @@ export const OrganizationFlatTable = ({
     // format=list 응답
     if (data?.items && data.items.length > 0 && data.items[0].metrics) {
       const apiMetricOrder = Object.keys(data.items[0].metrics);
-      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
+      if (
+        !apiMetricOrder.includes("BDPI") &&
+        !apiMetricOrder.includes("bdpi")
+      ) {
         apiMetricOrder.push("BDPI");
       }
       return apiMetricOrder;
@@ -595,7 +600,10 @@ export const OrganizationFlatTable = ({
     // format=tree 응답
     if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
       const apiMetricOrder = Object.keys(data.tree[0].metrics);
-      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
+      if (
+        !apiMetricOrder.includes("BDPI") &&
+        !apiMetricOrder.includes("bdpi")
+      ) {
         apiMetricOrder.push("BDPI");
       }
       return apiMetricOrder;
@@ -611,10 +619,16 @@ export const OrganizationFlatTable = ({
 
   // API 응답에서 지표 정보(metricName, metricDisplayName) 추출
   const metricInfoMap = useMemo(() => {
-    const map: Record<string, { metricName?: string; metricDisplayName?: string }> = {};
+    const map: Record<
+      string,
+      { metricName?: string; metricDisplayName?: string }
+    > = {};
     // format=list 응답
     if (data?.items && data.items.length > 0) {
-      const firstMetrics = data.items[0].metrics as unknown as Record<string, MetricData>;
+      const firstMetrics = data.items[0].metrics as unknown as Record<
+        string,
+        MetricData
+      >;
       if (firstMetrics) {
         Object.entries(firstMetrics).forEach(([code, metric]) => {
           map[code] = {
@@ -626,7 +640,10 @@ export const OrganizationFlatTable = ({
     }
     // format=tree 응답
     else if (data?.tree && data.tree.length > 0) {
-      const firstMetrics = data.tree[0].metrics as unknown as Record<string, MetricData>;
+      const firstMetrics = data.tree[0].metrics as unknown as Record<
+        string,
+        MetricData
+      >;
       if (firstMetrics) {
         Object.entries(firstMetrics).forEach(([code, metric]) => {
           map[code] = {
@@ -672,7 +689,14 @@ export const OrganizationFlatTable = ({
     if (apiOrder.length > 0) {
       setGlobalMetricOrder(apiOrder);
     }
-  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching, getMetricOrderFromApi]);
+  }, [
+    data,
+    globalMetricOrder,
+    setGlobalMetricOrder,
+    isLoading,
+    isFetching,
+    getMetricOrderFromApi,
+  ]);
 
   // 정렬 상태
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -760,7 +784,12 @@ export const OrganizationFlatTable = ({
         );
       }
     },
-    [metricOrder, updateMetricOrderMutation, setGlobalMetricOrder, setIsMetricColumnDragged],
+    [
+      metricOrder,
+      updateMetricOrderMutation,
+      setGlobalMetricOrder,
+      setIsMetricColumnDragged,
+    ],
   );
 
   // 정렬 토글 (3단계: null → asc → desc → null)
@@ -849,7 +878,6 @@ export const OrganizationFlatTable = ({
       return bValue - aValue;
     });
   }, [flatItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds]);
-
   if (isLoading || isError || flatItems.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
@@ -884,14 +912,15 @@ export const OrganizationFlatTable = ({
         />
       )}
 
-      <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+      {/* [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경 */}
+      <div className="flex border border-gray-200 rounded-lg overflow-auto h-full">
         {/* 고정 영역 (좌측 5개 컬럼) */}
         <div
-          className="flex-shrink-0 bg-white z-10"
+          className="flex-shrink-0 bg-white z-20 sticky left-0"
           style={{ boxShadow: "4px 0 8px -2px rgba(0, 0, 0, 0.1)" }}
         >
           <table className="border-collapse">
-            <thead>
+            <thead className="sticky top-0 z-30">
               <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 <th
                   className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
@@ -940,10 +969,10 @@ export const OrganizationFlatTable = ({
                           {cat.id === "overAchieved"
                             ? "초과달성"
                             : cat.id === "excellent"
-                            ? "우수"
-                            : cat.id === "warning"
-                            ? "경고"
-                            : "위험"}
+                              ? "우수"
+                              : cat.id === "warning"
+                                ? "경고"
+                                : "위험"}
                         </span>
                         <span>{renderSortIcon()}</span>
                       </div>
@@ -978,14 +1007,14 @@ export const OrganizationFlatTable = ({
         </div>
 
         {/* 스크롤 영역 (30개 지표 + BDPI) */}
-        <div className="flex-1 overflow-x-auto">
+        <div className="flex-1">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
             <table className="border-collapse table-fixed">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                   <SortableContext
                     items={metricOrder}

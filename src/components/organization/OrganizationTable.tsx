@@ -660,14 +660,15 @@ export const OrganizationTable = ({
         />
       )}
 
-      <div className="flex border border-gray-200 rounded-lg overflow-hidden">
+      {/* [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경 */}
+      <div className="flex border border-gray-200 rounded-lg overflow-auto h-full">
         {/* 고정 영역 (좌측 5개 컬럼) */}
         <div
-          className="flex-shrink-0 bg-white z-10"
+          className="flex-shrink-0 bg-white z-20 sticky left-0"
           style={{ boxShadow: "4px 0 8px -2px rgba(0, 0, 0, 0.1)" }}
         >
           <table className="border-collapse">
-            <thead>
+            <thead className="sticky top-0 z-30">
               <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 <th
                   className={`${thBaseStyle} text-left border-r border-gray-200 w-[350px] h-[113px]`}
@@ -734,14 +735,14 @@ export const OrganizationTable = ({
         </div>
 
         {/* 스크롤 영역 (30개 지표 + BDPI) */}
-        <div className="flex-1 overflow-x-auto">
+        <div className="flex-1">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
             onDragEnd={handleDragEnd}
           >
             <table className="border-collapse table-fixed">
-              <thead>
+              <thead className="sticky top-0 z-10">
                 <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                   <SortableContext
                     items={metricOrder}
