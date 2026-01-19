@@ -153,11 +153,11 @@ const MetricsPage = () => {
     console.log("Changes confirmed");
   };
 
-  // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
+  // [변경: 2026-01-19 19:00, 김병현 수정] 페이지 전체 스크롤 레이아웃 적용
   return (
-    <div className="flex flex-col gap-6 h-full overflow-hidden select-none">
-      {/* 상단 고정 영역 */}
-      <div className="flex-shrink-0 flex flex-col gap-6">
+    <div className="flex flex-col gap-6 select-none">
+      {/* 상단 영역 */}
+      <div className="flex flex-col gap-6">
         {/* 헤더 - 날짜 필터 */}
         <div>
           <Card className="w-full">
@@ -219,8 +219,8 @@ const MetricsPage = () => {
         </div>
       </div>
 
-      {/* 지표 리스트 - 남은 공간 차지하며 스크롤 가능 */}
-      <Card className="w-full flex-1 min-h-0 overflow-auto">
+      {/* [변경: 2026-01-19 19:00, 김병현 수정] 지표 리스트 - overflow 제거하여 페이지 스크롤 사용 */}
+      <Card className="w-full">
         <MetricsTable month={month} />
       </Card>
 

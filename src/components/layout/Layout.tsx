@@ -8,7 +8,8 @@ export default function Layout() {
   const isFixHeight =
     location.pathname === "/" ||
     location.pathname === "/dashboard" ||
-    location.pathname === "/settings";
+    location.pathname === "/settings" ||
+    location.pathname === "/metrics";
 
   return (
     // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 고정 높이로 변경하여 화면 전체 스크롤 방지 (Dashboard 제외)

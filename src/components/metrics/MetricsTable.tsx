@@ -207,11 +207,11 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   // 로딩, 에러, 데이터 없음 상태 여부
   const isEmptyState = isLoading || error || metrics.length === 0;
 
-  // [변경: 2026-01-19 00:00, 김병현 수정] flex 레이아웃으로 변경하여 부모 높이를 채우도록 함
+  // [변경: 2026-01-19 19:00, 김병현 수정] 페이지 스크롤 레이아웃으로 변경
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       {/* Tabs와 달성률 필터 */}
-      <div className="flex-shrink-0 flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
         {/* Tabs 영역 */}
         <MetricsTabs
           allCount={achievementRateFilteredAllMetrics.length}
@@ -231,8 +231,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
       </div>
 
       {/* Table */}
-      {/* [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경 */}
-      <div className="overflow-auto flex-1 min-h-0">
+      {/* [변경: 2026-01-19 19:00, 김병현 수정] overflow 제거하여 페이지 스크롤 사용, thead는 sticky로 고정 */}
+      <div>
         {isEmptyState ? (
           <div className="flex items-center justify-center h-full">
             {isLoading ? (
@@ -243,7 +243,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
           </div>
         ) : (
           <table className="w-full">
-            <thead className="sticky top-0 bg-white z-10">
+            {/* [변경: 2026-01-19 19:00, 김병현 수정] 페이지 스크롤 시 Header(80px) 아래에 sticky 고정 */}
+            <thead className="sticky top-20 bg-white z-10">
               <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
                 <th className="px-4 py-3 w-[25%]">지표명</th>
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>

@@ -287,9 +287,7 @@ const CombinedRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr
-      className={`hover:bg-gray-50/50 ${rowHeight}`}
-    >
+    <tr className={`hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
         className={`px-2 py-4 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
@@ -317,7 +315,9 @@ const CombinedRow = ({
             onClick={(e) => onMemberClick?.(member!, e)}
           >
             <div className="flex items-center">
-              <span className="font-medium text-blue-600 underline underline-offset-2">{displayName}</span>
+              <span className="font-medium text-blue-600 underline underline-offset-2">
+                {displayName}
+              </span>
               <span className="ml-2 text-sm text-gray-500">
                 {getMemberRoleOrPositionLabel(
                   member!.title,
@@ -338,7 +338,13 @@ const CombinedRow = ({
         <td
           key={cat.id}
           className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] ${rowHeight} bg-white sticky z-10`}
-          style={{ left: `${350 + catIndex * 72}px`, boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined }}
+          style={{
+            left: `${350 + catIndex * 72}px`,
+            boxShadow:
+              catIndex === SUMMARY_CATEGORIES.length - 1
+                ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                : undefined,
+          }}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -913,7 +919,7 @@ export const OrganizationFlatTable = ({
           background: #a1a1a1;
         }
       `}</style>
-      <div className="org-flat-table-container border border-gray-300 rounded-lg overflow-auto h-full select-none">
+      <div className="org-flat-table-container border border-gray-300 rounded-lg overflow-auto h-full border-b border-gray-300">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -940,7 +946,9 @@ export const OrganizationFlatTable = ({
 
                   const renderSortIcon = () => {
                     if (!isActive) {
-                      return <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />;
+                      return (
+                        <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />
+                      );
                     }
                     if (sortConfig.direction === "asc") {
                       return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
@@ -957,7 +965,10 @@ export const OrganizationFlatTable = ({
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
                         left: `${350 + catIndex * 72}px`,
-                        boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined
+                        boxShadow:
+                          catIndex === SUMMARY_CATEGORIES.length - 1
+                            ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                            : undefined,
                       }}
                       onClick={() => toggleSort(cat.id)}
                     >

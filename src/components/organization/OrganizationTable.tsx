@@ -223,7 +223,10 @@ const CombinedDepartmentRow = ({
       {/* 고정 영역 - 조직 이름 */}
       <td
         className="py-0 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[64px] bg-white sticky left-0 z-10"
-        style={{ paddingLeft: `${paddingLeft}px`, boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
+        style={{
+          paddingLeft: `${paddingLeft}px`,
+          boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
+        }}
       >
         <div className="flex items-center h-full">
           {item.hasChildren ? (
@@ -252,7 +255,13 @@ const CombinedDepartmentRow = ({
         <td
           key={cat.id}
           className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] h-[64px] bg-white sticky z-10"
-          style={{ left: `${350 + catIndex * 72}px`, boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined }}
+          style={{
+            left: `${350 + catIndex * 72}px`,
+            boxShadow:
+              catIndex === SUMMARY_CATEGORIES.length - 1
+                ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                : undefined,
+          }}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -288,11 +297,11 @@ const CombinedDepartmentRow = ({
         }
 
         const hasData = metric && typeof metric.value === "number";
-        const score = hasData ? metric?.score ?? null : null;
+        const score = hasData ? (metric?.score ?? null) : null;
         const value = hasData
           ? aggregationType === "total"
-            ? metric?.totalValue ?? null
-            : metric?.value ?? null
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null)
           : null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
@@ -343,7 +352,10 @@ const CombinedMemberRow = ({
       {/* 고정 영역 - 멤버 이름 */}
       <td
         className="py-0 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[64px] bg-white sticky left-0 z-10"
-        style={{ paddingLeft: `${paddingLeft}px`, boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
+        style={{
+          paddingLeft: `${paddingLeft}px`,
+          boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
+        }}
       >
         <div className="flex flex-col justify-center h-full">
           <div className="flex items-center">
@@ -367,7 +379,13 @@ const CombinedMemberRow = ({
         <td
           key={cat.id}
           className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] h-[64px] bg-white sticky z-10"
-          style={{ left: `${350 + catIndex * 72}px`, boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined }}
+          style={{
+            left: `${350 + catIndex * 72}px`,
+            boxShadow:
+              catIndex === SUMMARY_CATEGORIES.length - 1
+                ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                : undefined,
+          }}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -403,11 +421,11 @@ const CombinedMemberRow = ({
         }
 
         const hasData = metric && typeof metric.value === "number";
-        const score = hasData ? metric?.score ?? null : null;
+        const score = hasData ? (metric?.score ?? null) : null;
         const value = hasData
           ? aggregationType === "total"
-            ? metric?.totalValue ?? null
-            : metric?.value ?? null
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null)
           : null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
@@ -480,7 +498,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -551,9 +569,7 @@ export const OrganizationTable = ({
   const toggleOrganization = useOrganizationStore(
     (state) => state.toggleOrganization,
   );
-  const showMembers = useOrganizationStore(
-    (state) => state.showMembers,
-  );
+  const showMembers = useOrganizationStore((state) => state.showMembers);
 
   // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();
@@ -570,7 +586,10 @@ export const OrganizationTable = ({
     if (data?.tree && data.tree.length > 0 && data.tree[0].metrics) {
       const apiMetricOrder = Object.keys(data.tree[0].metrics);
       // BDPI가 없으면 마지막에 추가 (대소문자 모두 확인)
-      if (!apiMetricOrder.includes("BDPI") && !apiMetricOrder.includes("bdpi")) {
+      if (
+        !apiMetricOrder.includes("BDPI") &&
+        !apiMetricOrder.includes("bdpi")
+      ) {
         apiMetricOrder.push("BDPI");
       }
       return apiMetricOrder;
@@ -590,7 +609,14 @@ export const OrganizationTable = ({
     if (apiOrder.length > 0) {
       setGlobalMetricOrder(apiOrder);
     }
-  }, [data, globalMetricOrder, setGlobalMetricOrder, isLoading, isFetching, getMetricOrderFromApi]);
+  }, [
+    data,
+    globalMetricOrder,
+    setGlobalMetricOrder,
+    isLoading,
+    isFetching,
+    getMetricOrderFromApi,
+  ]);
 
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
@@ -647,7 +673,12 @@ export const OrganizationTable = ({
         );
       }
     },
-    [metricOrder, updateMetricOrderMutation, setGlobalMetricOrder, setIsMetricColumnDragged],
+    [
+      metricOrder,
+      updateMetricOrderMutation,
+      setGlobalMetricOrder,
+      setIsMetricColumnDragged,
+    ],
   );
 
   // API 응답에서 thresholds 추출
@@ -655,9 +686,15 @@ export const OrganizationTable = ({
 
   // API 응답에서 지표 정보(metricName, metricDisplayName) 추출
   const metricInfoMap = useMemo(() => {
-    const map: Record<string, { metricName?: string; metricDisplayName?: string }> = {};
+    const map: Record<
+      string,
+      { metricName?: string; metricDisplayName?: string }
+    > = {};
     if (data?.tree && data.tree.length > 0) {
-      const firstMetrics = data.tree[0].metrics as unknown as Record<string, MetricData>;
+      const firstMetrics = data.tree[0].metrics as unknown as Record<
+        string,
+        MetricData
+      >;
       if (firstMetrics) {
         Object.entries(firstMetrics).forEach(([code, metric]) => {
           map[code] = {
@@ -733,18 +770,18 @@ export const OrganizationTable = ({
           background: #a1a1a1;
         }
       `}</style>
-      <div className="org-table-container border border-gray-300 rounded-lg overflow-auto h-full select-none">
+      <div className="org-table-container border border-gray-300 rounded-lg overflow-auto h-full">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
           <table className="border-separate border-spacing-0 table-fixed">
-            <thead className="sticky top-0 z-20">
-              <tr className="border-b border-gray-300 bg-gray-50 h-[113px]">
+            <thead className="sticky top-0 z-20 bg-white">
+              <tr className=" bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
+                  className={`${thBaseStyle} text-left border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
@@ -764,7 +801,10 @@ export const OrganizationTable = ({
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
                         left: `${350 + catIndex * 72}px`,
-                        boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined
+                        boxShadow:
+                          catIndex === SUMMARY_CATEGORIES.length - 1
+                            ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                            : undefined,
                       }}
                     >
                       <div className="flex flex-col items-center justify-center h-full gap-1">
@@ -775,10 +815,10 @@ export const OrganizationTable = ({
                           {cat.id === "overAchieved"
                             ? "초과달성"
                             : cat.id === "excellent"
-                            ? "우수"
-                            : cat.id === "warning"
-                            ? "경고"
-                            : "위험"}
+                              ? "우수"
+                              : cat.id === "warning"
+                                ? "경고"
+                                : "위험"}
                         </span>
                       </div>
                     </th>
