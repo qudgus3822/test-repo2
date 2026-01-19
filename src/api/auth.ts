@@ -122,6 +122,7 @@ export const clearAuthCookies = (): void => {
   const domains = [
     "dev-devmetrics.aws-bithumb.com", // 관리자 로그인 도메인
     ".aws-bithumb.com", // Okta 로그인 도메인
+    "localhost", // 로컬 개발 환경
   ];
 
   cookieNames.forEach((name) => {
