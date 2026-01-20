@@ -13,6 +13,7 @@ import {
   ArrowDownUp,
   GripHorizontal,
   Info,
+  ChevronRight,
 } from "lucide-react";
 import {
   DndContext,
@@ -214,15 +215,9 @@ const flattenTree = (
   return result;
 };
 
-// filterType에 따른 행 높이
-const getRowHeight = (filterType: FlatViewFilterType) => {
-  switch (filterType) {
-    case "team":
-    case "member":
-      return "h-[79px]";
-    default:
-      return "h-[64px]";
-  }
+// [변경: 2026-01-20 10:30, 김병현 수정] 모든 필터에서 동일한 행 높이 사용
+const getRowHeight = () => {
+  return "h-[64px]";
 };
 
 // [변경: 2026-01-19 03:00, 김병현 수정] 통합 행 컴포넌트 - 고정 영역 + 스크롤 영역을 하나의 행으로 합침
@@ -245,7 +240,7 @@ const CombinedRow = ({
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
-  const rowHeight = getRowHeight(filterType);
+  const rowHeight = getRowHeight();
   const metrics = data.metrics as unknown as Record<string, MetricData>;
 
   const displayName = isDepartment
@@ -287,16 +282,14 @@ const CombinedRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr
-      className={`hover:bg-gray-50/50 ${rowHeight}`}
-    >
+    <tr className={`hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
-        className={`px-2 py-4 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
+        className={`align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
         style={{ boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
       >
         {isDepartment ? (
-          <div className="flex flex-col justify-center h-full gap-0.5">
+          <div className="flex flex-col justify-center h-full gap-0.5 px-2">
             <div className="flex items-center">
               <span className="font-medium text-gray-900">{displayName}</span>
               {memberCount !== null && (
@@ -312,24 +305,30 @@ const CombinedRow = ({
             )}
           </div>
         ) : (
+          // [변경: 2026-01-20 10:35, 김병현 수정] 클릭 가능 표시를 hover 배경색 + 아이콘으로 변경
           <div
-            className="flex flex-col justify-center h-full gap-0.5 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 select-none"
+            className="group flex items-center justify-between h-full cursor-pointer hover:bg-blue-100 rounded-md px-4 -mx-1 select-none transition-colors"
             onClick={(e) => onMemberClick?.(member!, e)}
           >
-            <div className="flex items-center">
-              <span className="font-medium text-blue-600 underline underline-offset-2">{displayName}</span>
-              <span className="ml-2 text-sm text-gray-500">
-                {getMemberRoleOrPositionLabel(
-                  member!.title,
-                  member!.personalTitle,
-                )}
-              </span>
-              <StatusBadge change={data.changes} />
+            <div className="flex flex-col justify-center gap-0.5">
+              <div className="flex items-center">
+                <span className="font-medium text-gray-900 transition-colors">
+                  {displayName}
+                </span>
+                <span className="ml-2 text-sm text-gray-500">
+                  {getMemberRoleOrPositionLabel(
+                    member!.title,
+                    member!.personalTitle,
+                  )}
+                </span>
+                <StatusBadge change={data.changes} />
+              </div>
+              {/* 개인 필터: 실 > 팀을 개인 이름 하단에 표시 */}
+              {parentInfo && (
+                <div className="text-sm text-gray-500">{parentInfo}</div>
+              )}
             </div>
-            {/* 개인 필터: 실 > 팀을 개인 이름 하단에 표시 */}
-            {parentInfo && (
-              <div className="text-sm text-gray-500">{parentInfo}</div>
-            )}
+            <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         )}
       </td>
@@ -337,8 +336,14 @@ const CombinedRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] ${rowHeight} bg-white sticky z-10`}
-          style={{ left: `${350 + catIndex * 72}px`, boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined }}
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[72px] min-w-[72px] ${rowHeight} bg-white sticky z-10`}
+          style={{
+            left: `${350 + catIndex * 72}px`,
+            boxShadow:
+              catIndex === SUMMARY_CATEGORIES.length - 1
+                ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                : undefined,
+          }}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -352,7 +357,7 @@ const CombinedRow = ({
           return (
             <td
               key={code}
-              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
+              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
             >
               {bdpiValue !== undefined && bdpiValue !== null
                 ? `${bdpiValue.toFixed(0)}%`
@@ -368,7 +373,7 @@ const CombinedRow = ({
           return (
             <td
               key={code}
-              className={`px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight} bg-gray-50`}
+              className={`px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight} bg-gray-50`}
             />
           );
         }
@@ -388,7 +393,7 @@ const CombinedRow = ({
         return (
           <td
             key={code}
-            className={`px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
+            className={`px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
           >
             <HeatmapCell
               metricCode={code}
@@ -477,7 +482,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -897,23 +902,28 @@ export const OrganizationFlatTable = ({
 
       {/* [변경: 2026-01-19 03:00, 김병현 수정] 하나의 통합 테이블로 변경 - 고정 영역은 sticky로 처리 */}
       {/* [변경: 2026-01-19 03:30, 김병현 수정] 스크롤바를 스크롤 영역에만 표시 (고정 영역 너비: 350 + 72*4 = 638px) */}
+      {/* [변경: 2026-01-20 10:50, 김병현 수정] 스크롤바 슬림하게 변경 */}
       <style>{`
         .org-flat-table-container::-webkit-scrollbar {
-          height: 8px;
+          width: 6px;
+          height: 6px;
         }
         .org-flat-table-container::-webkit-scrollbar-track {
           background: transparent;
           margin-left: 638px;
         }
         .org-flat-table-container::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 4px;
+          background: #d1d5db;
+          border-radius: 3px;
         }
         .org-flat-table-container::-webkit-scrollbar-thumb:hover {
-          background: #a1a1a1;
+          background: #9ca3af;
+        }
+        .org-flat-table-container::-webkit-scrollbar-corner {
+          background: transparent;
         }
       `}</style>
-      <div className="org-flat-table-container border border-gray-300 rounded-lg overflow-auto h-full select-none">
+      <div className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto h-full border-b">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -921,10 +931,10 @@ export const OrganizationFlatTable = ({
         >
           <table className="border-separate border-spacing-0 table-fixed">
             <thead className="sticky top-0 z-20">
-              <tr className="border-b border-gray-300 bg-gray-50 h-[113px]">
+              <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
+                  className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
@@ -940,7 +950,9 @@ export const OrganizationFlatTable = ({
 
                   const renderSortIcon = () => {
                     if (!isActive) {
-                      return <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />;
+                      return (
+                        <ArrowDownUp className="w-4.5 h-4.5 text-gray-500" />
+                      );
                     }
                     if (sortConfig.direction === "asc") {
                       return <ArrowUp className="w-4.5 h-4.5 text-blue-600" />;
@@ -951,13 +963,16 @@ export const OrganizationFlatTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className={`px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[72px] min-w-[72px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30 ${
+                      className={`px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] min-w-[72px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30 ${
                         isActive ? "ring-2 ring-inset ring-blue-400" : ""
                       }`}
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
                         left: `${350 + catIndex * 72}px`,
-                        boxShadow: catIndex === SUMMARY_CATEGORIES.length - 1 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : undefined
+                        boxShadow:
+                          catIndex === SUMMARY_CATEGORIES.length - 1
+                            ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                            : undefined,
                       }}
                       onClick={() => toggleSort(cat.id)}
                     >

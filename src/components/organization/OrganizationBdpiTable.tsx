@@ -70,8 +70,8 @@ const ChangeRateDisplay = ({
         color: isUp
           ? TREND_COLORS.increase
           : isDown
-          ? TREND_COLORS.decrease
-          : undefined,
+            ? TREND_COLORS.decrease
+            : undefined,
       }}
     >
       {(isUp || isDown) && (
