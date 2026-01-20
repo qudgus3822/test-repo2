@@ -57,7 +57,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
         "코드 품질": item?.quality ?? 0,
         "리뷰 품질": item?.review ?? 0,
         "개발 효율": item?.efficiency ?? 0,
-        목표치: item?.target ?? 0,
+        "목표치": item?.target ?? 0,
         _hasData: hasData, // 데이터 존재 여부 플래그
       };
     });
