@@ -88,6 +88,7 @@ export const HeatmapCell = ({
     });
 
     // API 호출하여 지표 정의 데이터 가져오기
+    setMetricDefinition(null); // 이전 데이터 초기화
     setIsLoading(true);
     try {
       const data = await fetchMetricDefinition(metricCode);
@@ -116,8 +117,8 @@ export const HeatmapCell = ({
         <MetricTooltip
           metricCode={metricCode}
           metricName={metricDefinition?.title || metricName}
-          value={value}
-          score={score}
+          value={metricDefinition?.value ?? value}
+          score={metricDefinition?.score ?? score}
           visible={tooltipVisible}
           position={tooltipPosition}
           targetValue={metricDefinition?.targetValue ?? targetValue}

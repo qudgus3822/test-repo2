@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Cable } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   MetricsOverview,
   TargetValueAchievement,
@@ -12,8 +13,14 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Button } from "@/components/ui/Button";
+import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
+import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
+import { developerProductivityKeys } from "@/api/hooks/useDeveloperProductivity";
+import { goalAchievementKeys } from "@/api/hooks/useGoalAchievement";
+import { metricRankingsKeys } from "@/api/hooks/useMetricRankings";
 
 const DashboardPage = () => {
+  const queryClient = useQueryClient();
   const period = useDashboardStore((state) => state.period);
   const setPeriod = useDashboardStore((state) => state.setPeriod);
   const currentDate = useDashboardStore((state) => state.currentDate);
@@ -22,11 +29,17 @@ const DashboardPage = () => {
     (state) => state.setOrgHistoryModal,
   );
 
-  // 페이지 진입 시 초기화: 당월로 설정
+  // 페이지 진입 시 초기화: 당월로 설정, 쿼리 캐시 무효화
   useEffect(() => {
     setPeriod("monthly");
     setCurrentDate(new Date());
-  }, [setPeriod, setCurrentDate]);
+    // 대시보드 관련 쿼리 캐시 무효화하여 최신 데이터 조회
+    queryClient.invalidateQueries({ queryKey: companyQualityKeys.all });
+    queryClient.invalidateQueries({ queryKey: serviceStabilityKeys.all });
+    queryClient.invalidateQueries({ queryKey: developerProductivityKeys.all });
+    queryClient.invalidateQueries({ queryKey: goalAchievementKeys.all });
+    queryClient.invalidateQueries({ queryKey: metricRankingsKeys.all });
+  }, [setPeriod, setCurrentDate, queryClient]);
 
   // 날짜를 YYYY-MM 형식으로 변환
   const formattedMonth = `${currentDate.getFullYear()}-${String(

@@ -90,12 +90,18 @@ const OrganizationPage = () => {
 
   const queryClient = useQueryClient();
 
-  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
+  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정, 지표 순서 초기화
   useEffect(() => {
     setPeriod("monthly");
     setCurrentDate(new Date());
     setActiveTab("all");
-  }, [setPeriod, setCurrentDate, setActiveTab]);
+    // 지표 순서 초기화하여 API 응답 순서 사용
+    clearMetricOrder();
+    // 드래그 플래그 초기화
+    setIsMetricColumnDragged(false);
+    // 조직 관련 쿼리 캐시 무효화하여 최신 데이터 조회
+    queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
+  }, [setPeriod, setCurrentDate, setActiveTab, clearMetricOrder, setIsMetricColumnDragged, queryClient]);
 
   // 상세 모달 상태
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);

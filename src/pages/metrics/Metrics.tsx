@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
 import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
@@ -12,15 +13,23 @@ import { MetricStandardSettingModal } from "@/components/metrics/MetricStandardS
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
-import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { useMetricsList, metricsListKeys } from "@/api/hooks/useMetricsList";
 import { useSyncStatus } from "@/api/hooks/useSyncStatus";
 import { Button } from "@/components/ui";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Settings } from "lucide-react";
 import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
-import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
+import {
+  useAchievementCriteria,
+  achievementCriteriaKeys,
+} from "@/api/hooks/useAchievementCriteria";
+import {
+  useGoalAchievement,
+  goalAchievementKeys,
+} from "@/api/hooks/useGoalAchievement";
 
 const MetricsPage = () => {
+  const queryClient = useQueryClient();
   // [변경: 2026-01-13 16:30, 김병현 수정] 성능 최적화를 위해 개별 selector로 변경
   const period = useMetricsStore((state) => state.period);
   const setPeriod = useMetricsStore((state) => state.setPeriod);
@@ -57,18 +66,23 @@ const MetricsPage = () => {
     (state) => state.setIsMetricStandardSettingModalOpen,
   );
 
-  // 페이지 진입 시 초기화: 당월, 전체 탭, 달성률 필터 전체로 설정
+  // 페이지 진입 시 초기화: 당월, 전체 탭, 달성률 필터 전체로 설정, 쿼리 캐시 무효화
   useEffect(() => {
     setPeriod("monthly");
     setCurrentDate(new Date());
     setActiveTab("bdpi");
     setAchievementRateFilter("all");
-  }, [setPeriod, setCurrentDate, setActiveTab, setAchievementRateFilter]);
+    // 지표관리 관련 쿼리 캐시 무효화하여 최신 데이터 조회
+    queryClient.invalidateQueries({ queryKey: goalAchievementKeys.all });
+    queryClient.invalidateQueries({ queryKey: metricsListKeys.all });
+    queryClient.invalidateQueries({ queryKey: achievementCriteriaKeys.all });
+  }, [setPeriod, setCurrentDate, setActiveTab, setAchievementRateFilter, queryClient]);
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
 
   const { refetch: criteriaRefetch } = useAchievementCriteria(month);
+  const { refetch: goalAchievementRefetch } = useGoalAchievement(month);
 
   // 선택된 날짜가 현재 년/월과 일치하는지 확인
   const now = new Date();
@@ -130,6 +144,7 @@ const MetricsPage = () => {
         metricsListRefetch();
         lastUpdatedRefetch();
         criteriaRefetch();
+        goalAchievementRefetch();
       };
     }
   }, [
@@ -140,6 +155,7 @@ const MetricsPage = () => {
     metricsListRefetch,
     lastUpdatedRefetch,
     criteriaRefetch,
+    goalAchievementRefetch,
   ]);
 
   useEffect(() => {
