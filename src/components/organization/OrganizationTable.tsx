@@ -75,6 +75,8 @@ interface OrganizationTableProps {
   hideValues?: boolean;
   onDetailClick?: (item: OrganizationDepartment | OrganizationMember) => void;
   aggregationType?: AggregationType;
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 콜백 추가
+  onMetricDetailChange?: (isOpen: boolean) => void;
 }
 
 // 변경이력 툴팁 내용 생성
@@ -560,6 +562,7 @@ export const OrganizationTable = ({
   activeTab,
   hideValues = false,
   aggregationType = "avg",
+  onMetricDetailChange,
 }: OrganizationTableProps) => {
   // 전체 탭일 경우 API 옵션 설정
   const apiOptions =
@@ -635,6 +638,11 @@ export const OrganizationTable = ({
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
     null,
   );
+
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 변경 시 부모에게 알림
+  useEffect(() => {
+    onMetricDetailChange?.(selectedMetricCode !== null);
+  }, [selectedMetricCode, onMetricDetailChange]);
 
   // 지표 선택 핸들러
   const handleMetricSelect = useCallback((code: string) => {
