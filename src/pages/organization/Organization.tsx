@@ -301,9 +301,9 @@ const OrganizationPage = () => {
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full">
       {/* 탭 메뉴 */}
-      <Card className="overflow-hidden flex-1 min-h-0 flex flex-col">
+      <Card className="flex-1 min-h-0 flex flex-col overflow-auto">
         <div className="flex-shrink-0">
           <OrganizationTabs />
         </div>
@@ -522,11 +522,12 @@ const OrganizationPage = () => {
         )}
 
         {/* [변경: 2026-01-20 11:10, 김병현 수정] 탭 콘텐츠 - 자식 요소 크기에 맞게 조절 */}
+        {/* [변경: 2026-01-20 14:30, 김병현 수정] 테이블 최소 높이 설정 - 화면이 작을 때 Card 전체가 스크롤되도록 */}
         <div className="flex-1 min-h-0 flex flex-col">
           {activeTab === "all" && (
             <>
               {/* 전체 탭 콘텐츠 */}
-              <div className="p-4 border-b border-gray-200 min-h-0 max-h-full">
+              <div className="p-4 border-b border-gray-200 flex-1 min-h-[800px]">
                 {viewType === "hierarchy" ? (
                   <OrganizationTable
                     month={yearMonth}
@@ -556,7 +557,7 @@ const OrganizationPage = () => {
           {activeTab === "bdpi" && (
             <>
               {/* BDPI 탭 콘텐츠 */}
-              <div className="p-4 border-b border-gray-200 flex-1 min-h-0 max-h-full">
+              <div className="p-4 border-b border-gray-200 flex-1 min-h-[800px]">
                 {viewType === "hierarchy" ? (
                   <OrganizationBdpiTable
                     month={yearMonth}

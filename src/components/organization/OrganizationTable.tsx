@@ -755,8 +755,9 @@ export const OrganizationTable = ({
   const thBaseStyle =
     "px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
+  // [변경: 2026-01-20 14:00, 김병현 수정] MetricDetailInfo 표시 시 테이블 높이 조정을 위한 flex 컨테이너 추가
   return (
-    <>
+    <div className="flex flex-col h-full max-h-full">
       {/* 지표 상세 정보 영역 */}
       {selectedMetricCode && (
         <MetricDetailInfo
@@ -788,7 +789,7 @@ export const OrganizationTable = ({
           background: transparent;
         }
       `}</style>
-      <div className="org-table-container border border-gray-200 rounded-lg overflow-auto max-h-full">
+      <div className="org-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -896,6 +897,6 @@ export const OrganizationTable = ({
           </table>
         </DndContext>
       </div>
-    </>
+    </div>
   );
 };

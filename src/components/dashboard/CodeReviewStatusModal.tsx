@@ -309,7 +309,7 @@ export const CodeReviewStatusModal = () => {
                               100 >=
                             30
                               ? `MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`
-                              : summary.completed.breakdown.multipleContributors}
+                              : summary.completed.breakdown.multipleContributors + "개"}
                           </div>
                         )}
                       </div>
