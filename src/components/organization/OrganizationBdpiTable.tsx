@@ -17,6 +17,7 @@ import type {
   ChangeInfo,
   BdpiMetrics,
   MonthlyComparison,
+  AggregationType,
 } from "@/types/organization.types";
 import { TREND_COLORS } from "@/styles/colors";
 import {
@@ -25,6 +26,7 @@ import {
   formatChangeDate,
   getMemberEmail,
   getChangeDetailWithSuffix,
+  getLevelBackgroundColor,
 } from "@/utils/organization";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
@@ -32,8 +34,6 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
 
-// 집계 타입
-export type AggregationType = "average" | "total";
 
 interface OrganizationBdpiTableProps {
   month: string;
@@ -158,12 +158,17 @@ const MemberRow = ({
 }) => {
   const paddingLeft = 24 + depth * 24;
   const bdpiMetrics = member.metrics as BdpiMetrics;
+  const bgColor = getLevelBackgroundColor(member.level);
+  const borderColor = member.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
-    <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[64px]">
+    <tr
+      className={`border-b ${borderColor}  h-[64px]`}
+      style={{ backgroundColor: bgColor }}
+    >
       <td
-        className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
-        style={{ paddingLeft: `${paddingLeft}px` }}
+        className={`pr-4 align-middle whitespace-nowrap border-r ${borderColor}`}
+        style={{ paddingLeft: `${paddingLeft}px`, backgroundColor: bgColor }}
       >
         <div className="flex items-center">
           <div className="flex items-center whitespace-nowrap">
@@ -178,7 +183,6 @@ const MemberRow = ({
         </div>
         <div
           className="text-xs text-gray-500 mt-0.5 whitespace-nowrap"
-          style={{ marginLeft: "28px" }}
         >
           {member.email || getMemberEmail(member.employeeID)}
         </div>
@@ -189,7 +193,8 @@ const MemberRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[100px] min-w-[100px] h-[64px]`}
+            style={{ backgroundColor: bgColor }}
           >
             <HeatmapCell
               metricCode={code}
@@ -201,7 +206,10 @@ const MemberRow = ({
           </td>
         );
       })}
-      <td className="px-3 text-center align-middle">
+      <td
+        className={`px-3 text-center align-middle border-r ${borderColor}`}
+        style={{ backgroundColor: bgColor }}
+      >
         <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
       </td>
     </tr>
@@ -228,6 +236,8 @@ const OrganizationRow = ({
   const isExpanded = expandedOrganizations.has(org.code);
   const hasChildren = org.children && org.children.length > 0;
   const paddingLeft = 16 + depth * 24;
+  const bgColor = getLevelBackgroundColor(org.level);
+  const borderColor = org.level === 3 ? "border-gray-100" : "border-gray-200";
 
   const childDepartments: OrganizationDepartment[] = [];
   const childMembers: OrganizationMember[] = [];
@@ -247,10 +257,13 @@ const OrganizationRow = ({
 
   return (
     <>
-      <tr className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 h-[64px]">
+      <tr
+        className={`border-b ${borderColor}  h-[64px]`}
+        style={{ backgroundColor: bgColor }}
+      >
         <td
-          className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
-          style={{ paddingLeft: `${paddingLeft}px` }}
+          className={`pr-4 align-middle whitespace-nowrap border-r ${borderColor}`}
+          style={{ paddingLeft: `${paddingLeft}px`, backgroundColor: bgColor }}
         >
           <div className="flex items-center">
             {hasChildren ? (
@@ -282,7 +295,8 @@ const OrganizationRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+              className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[100px] min-w-[100px] h-[64px]`}
+              style={{ backgroundColor: bgColor }}
             >
               <HeatmapCell
                 metricCode={code}
@@ -294,7 +308,10 @@ const OrganizationRow = ({
             </td>
           );
         })}
-        <td className="px-3 text-center align-middle">
+        <td
+          className={`px-3 text-center align-middle border-r ${borderColor}`}
+          style={{ backgroundColor: bgColor }}
+        >
           <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
         </td>
       </tr>
@@ -328,16 +345,13 @@ export const OrganizationBdpiTable = ({
   month,
   activeTab,
   hideValues = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: OrganizationBdpiTableProps) => {
   // BDPI 탭일 경우 API 옵션 설정
   const apiOptions =
     activeTab === "bdpi"
       ? {
-          aggregation:
-            aggregationType === "average"
-              ? ("avg" as const)
-              : ("total" as const),
+          aggregation: aggregationType,
           format: "tree" as const,
         }
       : undefined;

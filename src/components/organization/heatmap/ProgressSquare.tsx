@@ -61,11 +61,12 @@ export const ProgressSquare = ({
   const heightPercent = hasData ? getHeightPercentage(score!) : 0;
   const progressColor = hasData ? getProgressColor(score!) : "";
 
-  // 텍스트 색상 결정 (모든 레벨 동일)
-  const textColorClass = hasData ? "text-gray-900" : "text-gray-400";
+  // 텍스트 색상 결정 (level5는 white, 나머지는 gray-900)
+  const isLevel5 = hasData && score! >= 100;
+  const textColorClass = !hasData ? "text-gray-400" : isLevel5 ? "text-white" : "text-gray-900";
 
   return (
-    <div className="relative w-full h-full bg-gray-100 rounded-sm overflow-hidden transition-all duration-300 hover:ring-2 hover:ring-gray-400">
+    <div className="border border-gray-200 relative w-full h-full bg-gray-100 rounded-sm overflow-hidden transition-all duration-300 hover:ring-2 hover:ring-gray-400">
       {/* 바닥부터 채워지는 프로그레스 바 */}
       {hasData && (
         <div
@@ -90,7 +91,7 @@ export const ProgressSquare = ({
           className={`absolute inset-0 flex items-center justify-center text-md font-bold transition-opacity overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass} opacity-100`}
           style={
             hasData
-              ? { textShadow: "0 1px 4px rgba(255, 255, 255, 0.8)" }
+              ? { textShadow: isLevel5 ? "0 1px 4px rgba(0, 0, 0, 0.8)" : "0 1px 4px rgba(255, 255, 255, 0.8)" }
               : undefined
           }
         >

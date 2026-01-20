@@ -38,6 +38,7 @@ import type {
   OrganizationNode,
   TabType,
   ChangeInfo,
+  AggregationType,
 } from "@/types/organization.types";
 import {
   hasChangeInfo,
@@ -68,8 +69,6 @@ import {
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
 export type FlatViewFilterType = "division" | "team" | "member";
 
-// 집계 타입
-export type AggregationType = "average" | "total";
 
 interface OrganizationFlatTableProps {
   month: string;
@@ -228,7 +227,7 @@ const CombinedRow = ({
   onMemberClick,
   metricOrder,
   hideValue = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: {
   item: FlatItem;
   summaryCounts: SummaryCounts;
@@ -282,7 +281,7 @@ const CombinedRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr className={`hover:bg-gray-50/50 ${rowHeight}`}>
+    <tr className={`border-b border-gray-200 hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
         className={`align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
@@ -532,6 +531,7 @@ const SortableMetricHeader = ({
   );
 };
 
+
 export const OrganizationFlatTable = ({
   month,
   activeTab,
@@ -539,16 +539,13 @@ export const OrganizationFlatTable = ({
   hideValues = false,
   searchKeyword = "",
   onSearchResult,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: OrganizationFlatTableProps) => {
   // 전체 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
     activeTab === "all"
       ? {
-          aggregation:
-            aggregationType === "average"
-              ? ("avg" as const)
-              : ("total" as const),
+          aggregation: aggregationType,
           format: "list" as const,
           type: filterType,
           search: searchKeyword.trim() || undefined,
