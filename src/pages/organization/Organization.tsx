@@ -31,7 +31,10 @@ import {
   organizationTreeKeys,
 } from "@/api/hooks/useOrganizationTree";
 import { useQueryClient } from "@tanstack/react-query";
-import type { OrganizationDepartment, AggregationType } from "@/types/organization.types";
+import type {
+  OrganizationDepartment,
+  AggregationType,
+} from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 
 // Level 1(부문) 조직 코드만 수집
@@ -108,6 +111,9 @@ const OrganizationPage = () => {
   const [selectedDetailItem, setSelectedDetailItem] =
     useState<OrganizationDetailItem | null>(null);
 
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 (테이블 내부 MetricDetailInfo)
+  const [isMetricDetailOpen, setIsMetricDetailOpen] = useState(false);
+
   // 서브탭 상태: 하이어라키뷰 / 플랫뷰
   const [viewType, setViewType] = useState<"hierarchy" | "flat">("hierarchy");
 
@@ -116,9 +122,8 @@ const OrganizationPage = () => {
     useState<FlatViewFilterType>("division");
 
   // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
-  const [aggregationType, setAggregationType] = useState<AggregationType>(
-    "avg",
-  );
+  const [aggregationType, setAggregationType] =
+    useState<AggregationType>("avg");
 
   // 보기/펼치기 상태
   const [isExpanded, setIsExpanded] = useState(false);
@@ -307,9 +312,12 @@ const OrganizationPage = () => {
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full">
       {/* 탭 메뉴 */}
-      <Card className="overflow-hidden flex-1 min-h-0 flex flex-col">
+      {/* [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 시 전체 스크롤 허용 */}
+      <Card
+        className={`flex-1 min-h-0 flex flex-col ${isMetricDetailOpen ? "overflow-auto" : "overflow-hidden"} `}
+      >
         <div className="flex-shrink-0">
           <OrganizationTabs />
         </div>
@@ -528,11 +536,15 @@ const OrganizationPage = () => {
         )}
 
         {/* [변경: 2026-01-20 11:10, 김병현 수정] 탭 콘텐츠 - 자식 요소 크기에 맞게 조절 */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        {/* [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 시 min-h 설정하여 전체 스크롤 허용 */}
+        {/* [변경: 2026-01-20 15:45, 김병현 수정] 테이블 max-h 지정하여 테이블 내부 스크롤 유지 */}
+        <div className={`flex-1 flex flex-col ${isMetricDetailOpen ? "" : "min-h-0"}`}>
           {activeTab === "all" && (
             <>
               {/* 전체 탭 콘텐츠 */}
-              <div className="p-4 border-b border-gray-200 min-h-0 max-h-full">
+              <div
+                className={`p-4 border-b border-gray-200 ${isMetricDetailOpen ? "min-h-[800px] max-h-[800px]" : "min-h-0"}`}
+              >
                 {viewType === "hierarchy" ? (
                   <OrganizationTable
                     month={yearMonth}
@@ -540,6 +552,7 @@ const OrganizationPage = () => {
                     hideValues={isExpanded}
                     onDetailClick={handleDetailClick}
                     aggregationType={aggregationType}
+                    onMetricDetailChange={setIsMetricDetailOpen}
                   />
                 ) : (
                   <OrganizationFlatTable
@@ -551,6 +564,7 @@ const OrganizationPage = () => {
                     searchKeyword={activeSearchKeyword}
                     onSearchResult={setSearchResultCount}
                     aggregationType={aggregationType}
+                    onMetricDetailChange={setIsMetricDetailOpen}
                   />
                 )}
               </div>
@@ -562,7 +576,9 @@ const OrganizationPage = () => {
           {activeTab === "bdpi" && (
             <>
               {/* BDPI 탭 콘텐츠 */}
-              <div className="p-4 border-b border-gray-200 flex-1 min-h-0 max-h-full">
+              <div
+                className={`p-4 border-b border-gray-200 ${isMetricDetailOpen ? "min-h-[800px] max-h-[800px]" : "min-h-0"}`}
+              >
                 {viewType === "hierarchy" ? (
                   <OrganizationBdpiTable
                     month={yearMonth}

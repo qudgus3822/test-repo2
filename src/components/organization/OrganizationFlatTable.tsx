@@ -79,6 +79,8 @@ interface OrganizationFlatTableProps {
   searchKeyword?: string;
   onSearchResult?: (resultCount: number) => void;
   aggregationType?: AggregationType;
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 콜백 추가
+  onMetricDetailChange?: (isOpen: boolean) => void;
 }
 
 // 플랫 데이터 아이템 타입
@@ -540,6 +542,7 @@ export const OrganizationFlatTable = ({
   searchKeyword = "",
   onSearchResult,
   aggregationType = "avg",
+  onMetricDetailChange,
 }: OrganizationFlatTableProps) => {
   // 전체 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
@@ -693,6 +696,11 @@ export const OrganizationFlatTable = ({
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
     null,
   );
+
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 변경 시 부모에게 알림
+  useEffect(() => {
+    onMetricDetailChange?.(selectedMetricCode !== null);
+  }, [selectedMetricCode, onMetricDetailChange]);
 
   // 지표 선택 핸들러
   const handleMetricSelect = useCallback((code: string) => {
@@ -887,8 +895,9 @@ export const OrganizationFlatTable = ({
   const thBaseStyle =
     "px-2 py-4 text-center text-sm font-medium text-gray-700 whitespace-nowrap";
 
+  // [변경: 2026-01-20 14:00, 김병현 수정] MetricDetailInfo 표시 시 테이블 높이 조정을 위한 flex 컨테이너 추가
   return (
-    <>
+    <div className="flex flex-col h-full max-h-full">
       {/* 지표 상세 정보 영역 */}
       {selectedMetricCode && (
         <MetricDetailInfo
@@ -920,7 +929,7 @@ export const OrganizationFlatTable = ({
           background: transparent;
         }
       `}</style>
-      <div className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto max-h-full">
+      <div className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -1055,6 +1064,6 @@ export const OrganizationFlatTable = ({
           onClose={handleMemberModalClose}
         />
       )}
-    </>
+    </div>
   );
 };
