@@ -256,26 +256,37 @@ export const CodeReviewStatusModal = () => {
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.completed.breakdown.singleContributor > 0 && (
                           <div
-                            className="flex items-center justify-center font-medium"
+                            className="flex items-center justify-center font-medium whitespace-nowrap"
+                            title={`MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`}
                             style={{
                               width: `${
                                 (summary.completed.breakdown.singleContributor /
                                   summary.completed.count) *
                                 100
                               }%`,
+                              minWidth: "40px",
+                              maxWidth:
+                                summary.completed.breakdown.multipleContributors > 0
+                                  ? "calc(100% - 40px)"
+                                  : "100%",
                               backgroundColor:
                                 CODE_REVIEW_COLORS.completedSingle,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            MR 기여자 1명{" "}
-                            {summary.completed.breakdown.singleContributor}개
+                            {(summary.completed.breakdown.singleContributor /
+                              summary.completed.count) *
+                              100 >=
+                            30
+                              ? `MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`
+                              : summary.completed.breakdown.singleContributor}
                           </div>
                         )}
                         {summary.completed.breakdown.multipleContributors >
                           0 && (
                           <div
-                            className="flex items-center justify-center font-medium"
+                            className="flex items-center justify-center font-medium whitespace-nowrap"
+                            title={`MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`}
                             style={{
                               width: `${
                                 (summary.completed.breakdown
@@ -283,13 +294,22 @@ export const CodeReviewStatusModal = () => {
                                   summary.completed.count) *
                                 100
                               }%`,
+                              minWidth: "40px",
+                              maxWidth:
+                                summary.completed.breakdown.singleContributor > 0
+                                  ? "calc(100% - 40px)"
+                                  : "100%",
                               backgroundColor:
                                 CODE_REVIEW_COLORS.completedMultiple,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            MR기여자 2명이상{" "}
-                            {summary.completed.breakdown.multipleContributors}개
+                            {(summary.completed.breakdown.multipleContributors /
+                              summary.completed.count) *
+                              100 >=
+                            30
+                              ? `MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`
+                              : summary.completed.breakdown.multipleContributors}
                           </div>
                         )}
                       </div>
@@ -312,7 +332,8 @@ export const CodeReviewStatusModal = () => {
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.incomplete.breakdown.singleContributor > 0 && (
                           <div
-                            className="flex items-center justify-center font-medium"
+                            className="flex items-center justify-center font-medium whitespace-nowrap"
+                            title={`MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`}
                             style={{
                               width: `${
                                 (summary.incomplete.breakdown
@@ -320,19 +341,29 @@ export const CodeReviewStatusModal = () => {
                                   summary.incomplete.count) *
                                 100
                               }%`,
+                              minWidth: "40px",
+                              maxWidth:
+                                summary.incomplete.breakdown.multipleContributors > 0
+                                  ? "calc(100% - 40px)"
+                                  : "100%",
                               backgroundColor:
                                 CODE_REVIEW_COLORS.incompleteSingle,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            MR 기여자 1명{" "}
-                            {summary.incomplete.breakdown.singleContributor}개
+                            {(summary.incomplete.breakdown.singleContributor /
+                              summary.incomplete.count) *
+                              100 >=
+                            30
+                              ? `MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`
+                              : summary.incomplete.breakdown.singleContributor}
                           </div>
                         )}
                         {summary.incomplete.breakdown.multipleContributors >
                           0 && (
                           <div
-                            className="flex items-center justify-center font-medium"
+                            className="flex items-center justify-center font-medium whitespace-nowrap"
+                            title={`MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`}
                             style={{
                               width: `${
                                 (summary.incomplete.breakdown
@@ -340,14 +371,22 @@ export const CodeReviewStatusModal = () => {
                                   summary.incomplete.count) *
                                 100
                               }%`,
+                              minWidth: "40px",
+                              maxWidth:
+                                summary.incomplete.breakdown.singleContributor > 0
+                                  ? "calc(100% - 40px)"
+                                  : "100%",
                               backgroundColor:
                                 CODE_REVIEW_COLORS.incompleteMultiple,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            MR기여자 2명이상{" "}
-                            {summary.incomplete.breakdown.multipleContributors}
-                            개
+                            {(summary.incomplete.breakdown.multipleContributors /
+                              summary.incomplete.count) *
+                              100 >=
+                            30
+                              ? `MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`
+                              : summary.incomplete.breakdown.multipleContributors}
                           </div>
                         )}
                       </div>
