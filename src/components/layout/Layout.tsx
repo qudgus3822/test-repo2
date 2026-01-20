@@ -12,8 +12,8 @@ export default function Layout() {
     <div
       className={
         isFixHeight
-          ? "min-h-screen bg-gray-50"
-          : "h-screen overflow-hidden bg-gray-50"
+          ? "h-screen overflow-hidden bg-gray-50"
+          : "min-h-screen bg-gray-50"
       }
     >
       {/* Header */}
@@ -25,14 +25,12 @@ export default function Layout() {
       {/* Main Content */}
       <main
         className={`ml-16 lg:ml-[200px] xl:ml-[260px] pt-20 transition-all duration-300 ${
-          isFixHeight ? "h-screen overflow-hidden" : "min-h-screen"
+          isFixHeight ? "h-[calc(100vh)] overflow-hidden" : "min-h-screen"
         }`}
       >
         <div
           className={`p-8 ${
-            isFixHeight
-              ? "h-[calc(100vh-5rem)] overflow-hidden flex flex-col"
-              : "min-h-[calc(100vh-5rem)]"
+            isFixHeight ? "h-full overflow-hidden flex flex-col" : ""
           }`}
         >
           <Outlet />

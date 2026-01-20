@@ -13,6 +13,7 @@ import {
   ArrowDownUp,
   GripHorizontal,
   Info,
+  ChevronRight,
 } from "lucide-react";
 import {
   DndContext,
@@ -214,15 +215,9 @@ const flattenTree = (
   return result;
 };
 
-// filterType에 따른 행 높이
-const getRowHeight = (filterType: FlatViewFilterType) => {
-  switch (filterType) {
-    case "team":
-    case "member":
-      return "h-[79px]";
-    default:
-      return "h-[64px]";
-  }
+// [변경: 2026-01-20 10:30, 김병현 수정] 모든 필터에서 동일한 행 높이 사용
+const getRowHeight = () => {
+  return "h-[64px]";
 };
 
 // [변경: 2026-01-19 03:00, 김병현 수정] 통합 행 컴포넌트 - 고정 영역 + 스크롤 영역을 하나의 행으로 합침
@@ -245,7 +240,7 @@ const CombinedRow = ({
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
-  const rowHeight = getRowHeight(filterType);
+  const rowHeight = getRowHeight();
   const metrics = data.metrics as unknown as Record<string, MetricData>;
 
   const displayName = isDepartment
@@ -290,7 +285,7 @@ const CombinedRow = ({
     <tr className={`hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
-        className={`px-2  align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
+        className={`px-2 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
         style={{ boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
       >
         {isDepartment ? (
@@ -310,26 +305,30 @@ const CombinedRow = ({
             )}
           </div>
         ) : (
+          // [변경: 2026-01-20 10:35, 김병현 수정] 클릭 가능 표시를 hover 배경색 + 아이콘으로 변경
           <div
-            className="flex flex-col justify-center h-full gap-0.5 cursor-pointer hover:bg-gray-50 rounded px-1 -mx-1 select-none"
+            className="group flex items-center justify-between h-full cursor-pointer hover:bg-gray-100 rounded-md px-2 -mx-1 select-none transition-colors"
             onClick={(e) => onMemberClick?.(member!, e)}
           >
-            <div className="flex items-center">
-              <span className="font-medium text-blue-600 underline underline-offset-2">
-                {displayName}
-              </span>
-              <span className="ml-2 text-sm text-gray-500">
-                {getMemberRoleOrPositionLabel(
-                  member!.title,
-                  member!.personalTitle,
-                )}
-              </span>
-              <StatusBadge change={data.changes} />
+            <div className="flex flex-col justify-center gap-0.5">
+              <div className="flex items-center">
+                <span className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {displayName}
+                </span>
+                <span className="ml-2 text-sm text-gray-500">
+                  {getMemberRoleOrPositionLabel(
+                    member!.title,
+                    member!.personalTitle,
+                  )}
+                </span>
+                <StatusBadge change={data.changes} />
+              </div>
+              {/* 개인 필터: 실 > 팀을 개인 이름 하단에 표시 */}
+              {parentInfo && (
+                <div className="text-sm text-gray-500">{parentInfo}</div>
+              )}
             </div>
-            {/* 개인 필터: 실 > 팀을 개인 이름 하단에 표시 */}
-            {parentInfo && (
-              <div className="text-sm text-gray-500">{parentInfo}</div>
-            )}
+            <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         )}
       </td>
