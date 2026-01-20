@@ -79,6 +79,8 @@ interface OrganizationFlatTableProps {
   searchKeyword?: string;
   onSearchResult?: (resultCount: number) => void;
   aggregationType?: AggregationType;
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 콜백 추가
+  onMetricDetailChange?: (isOpen: boolean) => void;
 }
 
 // 플랫 데이터 아이템 타입
@@ -540,6 +542,7 @@ export const OrganizationFlatTable = ({
   searchKeyword = "",
   onSearchResult,
   aggregationType = "avg",
+  onMetricDetailChange,
 }: OrganizationFlatTableProps) => {
   // 전체 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
@@ -693,6 +696,11 @@ export const OrganizationFlatTable = ({
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
     null,
   );
+
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 변경 시 부모에게 알림
+  useEffect(() => {
+    onMetricDetailChange?.(selectedMetricCode !== null);
+  }, [selectedMetricCode, onMetricDetailChange]);
 
   // 지표 선택 핸들러
   const handleMetricSelect = useCallback((code: string) => {
