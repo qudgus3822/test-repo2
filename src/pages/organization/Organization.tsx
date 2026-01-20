@@ -521,12 +521,12 @@ const OrganizationPage = () => {
           </div>
         )}
 
-        {/* 탭 콘텐츠 - 테이블 내부에서 스크롤 */}
+        {/* [변경: 2026-01-20 11:10, 김병현 수정] 탭 콘텐츠 - 자식 요소 크기에 맞게 조절 */}
         <div className="flex-1 min-h-0 flex flex-col">
           {activeTab === "all" && (
             <>
               {/* 전체 탭 콘텐츠 */}
-              <div className="p-4 border-b border-gray-200 flex-1 min-h-0">
+              <div className="p-4 border-b border-gray-200 min-h-0 max-h-full">
                 {viewType === "hierarchy" ? (
                   <OrganizationTable
                     month={yearMonth}
@@ -556,7 +556,7 @@ const OrganizationPage = () => {
           {activeTab === "bdpi" && (
             <>
               {/* BDPI 탭 콘텐츠 */}
-              <div className="p-4 border-b border-gray-200 flex-1 min-h-0">
+              <div className="p-4 border-b border-gray-200 flex-1 min-h-0 max-h-full">
                 {viewType === "hierarchy" ? (
                   <OrganizationBdpiTable
                     month={yearMonth}

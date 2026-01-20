@@ -98,7 +98,10 @@ export const MetricsPreviewTable = ({
         </div>
       ) : (
         <table className="w-full">
-          <thead className="sticky top-0 bg-white z-10">
+          <thead
+            className="sticky top-0 bg-white z-10"
+            style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
+          >
             <tr className="h-[45px] border-b border-gray-200 text-left text-sm font-medium text-gray-700">
               <th className="px-4 w-[25%]">지표명</th>
               <th className="px-4 w-[15%] text-center">범주</th>

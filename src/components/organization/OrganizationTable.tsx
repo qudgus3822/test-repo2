@@ -788,7 +788,7 @@ export const OrganizationTable = ({
           background: transparent;
         }
       `}</style>
-      <div className="org-table-container border border-gray-200 rounded-lg overflow-auto h-full">
+      <div className="org-table-container border border-gray-200 rounded-lg overflow-auto max-h-full">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
