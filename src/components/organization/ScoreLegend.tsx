@@ -6,14 +6,14 @@ interface ScoreLegendProps {
 
 const LEGEND_STYLES = {
   medium: {
-    container: "gap-6 py-8",
+    container: "gap-6 py-2",
     text: "text-sm",
     colorBox: "w-4 h-4",
     itemGap: "gap-2",
     legendsGap: "gap-6",
   },
   small: {
-    container: "gap-1.5 py-2 px-3",
+    container: "gap-1.5 py-1 px-3",
     text: "text-xs",
     colorBox: "w-2 h-3",
     itemGap: "gap-1",

@@ -9,8 +9,8 @@
 // 멤버 상태 타입
 export type MemberStatus =
   | "ACTIVE" // 재직
-  | "TRANSFERRED_IN" // 이동 전
-  | "TRANSFERRED_OUT" // 이동 후
+  | "TRANSFERRED_IN" // 이동 후
+  | "TRANSFERRED_OUT" // 이동 전
   | "JOINED" // 입사
   | "RESIGNED" // 퇴사
   | "ON_LEAVE" // 휴직
@@ -20,8 +20,8 @@ export type MemberStatus =
 
 export const MemberStatusLabel = {
   ACTIVE: "재직",
-  TRANSFERRED_IN: "이동 전",
-  TRANSFERRED_OUT: "이동 후",
+  TRANSFERRED_IN: "이동 후",
+  TRANSFERRED_OUT: "이동 전",
   JOINED: "입사",
   RESIGNED: "퇴사",
   ON_LEAVE: "휴직",

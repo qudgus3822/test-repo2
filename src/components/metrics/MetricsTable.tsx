@@ -150,36 +150,6 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
       };
     }, [achievementRateFilteredAllMetrics]);
 
-  // 활성 탭에 따른 테이블 높이 계산 (헤더 50px + 행당 53px, 최소 200px)
-  const getTableHeight = () => {
-    // 데이터가 없는 경우 최소 높이 반환
-    if (isLoading || error || metrics.length === 0) {
-      return 225;
-    }
-
-    let count = 0;
-    switch (activeTab) {
-      case "bdpi":
-        count = achievementRateFilteredAllMetrics.length;
-        break;
-      case "codeQuality":
-        count = codeQualityCount;
-        break;
-      case "reviewQuality":
-        count = reviewQualityCount;
-        break;
-      case "developmentEfficiency":
-        count = developmentEfficiencyCount;
-        break;
-      default:
-        count = achievementRateFilteredAllMetrics.length;
-    }
-    // 지표가 없을 때도 메시지가 보이도록 최소 높이 보장
-    return Math.max(200, 50 + count * 53);
-  };
-
-  const tableHeight = getTableHeight();
-
   // 활성 탭에 따라 지표 필터링 (이미 달성률 필터가 적용된 metrics 사용)
   // [변경: 2026-01-14 12:05, 김병현 수정] useMemo로 감싸서 불필요한 재계산 방지
   const filteredMetrics = useMemo(() => {
@@ -237,10 +207,11 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   // 로딩, 에러, 데이터 없음 상태 여부
   const isEmptyState = isLoading || error || metrics.length === 0;
 
+  // [변경: 2026-01-19 19:00, 김병현 수정] 페이지 스크롤 레이아웃으로 변경
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col">
       {/* Tabs와 달성률 필터 */}
-      <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+      <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
         {/* Tabs 영역 */}
         <MetricsTabs
           allCount={achievementRateFilteredAllMetrics.length}
@@ -260,7 +231,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto" style={{ height: `${tableHeight}px` }}>
+      {/* [변경: 2026-01-19 19:00, 김병현 수정] overflow 제거하여 페이지 스크롤 사용, thead는 sticky로 고정 */}
+      <div>
         {isEmptyState ? (
           <div className="flex items-center justify-center h-full">
             {isLoading ? (
@@ -271,7 +243,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
           </div>
         ) : (
           <table className="w-full">
-            <thead>
+            {/* [변경: 2026-01-19 19:00, 김병현 수정] 페이지 스크롤 시 Header(80px) 아래에 sticky 고정 */}
+            <thead className="sticky top-20 bg-white z-10">
               <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
                 <th className="px-4 py-3 w-[25%]">지표명</th>
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>

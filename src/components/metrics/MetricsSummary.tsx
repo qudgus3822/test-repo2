@@ -1,4 +1,5 @@
-import { AlertTriangle, BarChart3 } from "lucide-react";
+import { Info, BarChart3 } from "lucide-react";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { CHANGE_COLORS, PALETTE_COLORS } from "@/styles/colors";
 import { useMetricsOverview } from "@/api/hooks/useMetricsOverview";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -56,18 +57,18 @@ export const MetricsSummary = ({ month }: MetricsSummaryProps) => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="flex flex-col gap-1">
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">지표 현황</h3>
-        <div className="flex items-start gap-1.5">
-          <AlertTriangle
-            className="w-4 h-4 flex-shrink-0 mt-0.5"
+      <div className="flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-gray-900">지표 현황</h3>
+        <Tooltip
+          content="지표 기준 설정에서 변경된 목표값•달성기준•비율 설정은 즉시 전체 화면에 반영되며 해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다."
+          maxWidth={300}
+          direction="bottom"
+        >
+          <Info
+            className="w-4 h-4 cursor-pointer"
             style={{ color: CHANGE_COLORS.emphasis }}
           />
-          <p className="text-sm" style={{ color: CHANGE_COLORS.emphasis }}>
-            지표 기준 설정에서 변경된 목표값•달성기준•비율 설정은 즉시 전체 화면에
-            반영되며 해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다.
-          </p>
-        </div>
+        </Tooltip>
       </div>
       <div className="flex-1 flex items-center">
         <div className="w-full grid grid-cols-4 gap-4">

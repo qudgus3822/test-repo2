@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logoWhite from "@/assets/images/bithumb_logo_white_vertical.png";
 import { Button } from "@/components/ui/Button";
-import { useLogin, useLogout } from "@/api/hooks/useAuth";
-import { getRememberedEmail } from "@/api/auth";
+import { useLogin } from "@/api/hooks/useAuth";
+import { getRememberedEmail, clearAuthCookies } from "@/api/auth";
 import { env } from "@/env";
 
 const LoginPage = () => {
@@ -12,30 +12,24 @@ const LoginPage = () => {
 
   // useAuth() 대신 개별 훅 사용 (useCurrentUser API 호출 방지)
   const loginMutation = useLogin();
-  const logoutMutation = useLogout();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const hasLoggedOut = useRef(false);
 
-  // [변경: 2026-01-12 15:40, 김병현 수정] 컴포넌트 마운트 시 저장된 이메일 불러오기 및 강제 로그아웃
+  // 컴포넌트 마운트 시 저장된 이메일 불러오기
   useEffect(() => {
-    // 최초 마운트 시에만 로그아웃 실행 (Zustand 스토어에 유저 정보가 있는 경우에만)
-    if (!hasLoggedOut.current) {
-      hasLoggedOut.current = true;
-      logoutMutation.mutate();
-
-      const rememberedEmail = getRememberedEmail();
-      if (rememberedEmail) {
-        setEmail(rememberedEmail);
-        setRememberEmail(true);
-      }
+    const rememberedEmail = getRememberedEmail();
+    if (rememberedEmail) {
+      setEmail(rememberedEmail);
+      setRememberEmail(true);
     }
-  }, [logoutMutation]);
+  }, []);
 
   const handleOktaLogin = () => {
+    // 기존 쿠키 삭제 (도메인이 다른 중복 쿠키 충돌 방지)
+    clearAuthCookies();
     // Okta 로그인 페이지로 리다이렉트
     window.location.href = `${env.apiBaseUrl}/auth/okta`;
   };
@@ -43,6 +37,8 @@ const LoginPage = () => {
   const handleAdminLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
+    // 기존 쿠키 삭제 (도메인이 다른 중복 쿠키 충돌 방지)
+    clearAuthCookies();
 
     try {
       await loginMutation.mutateAsync({ email, password, rememberEmail });
