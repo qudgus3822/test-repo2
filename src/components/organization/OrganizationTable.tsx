@@ -205,7 +205,7 @@ const CombinedDepartmentRow = ({
   onToggle,
   metricOrder,
   hideValue = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: {
   item: FlatTreeItem;
   summaryCounts: SummaryCounts;
@@ -222,14 +222,15 @@ const CombinedDepartmentRow = ({
 
   return (
     <tr
-      className={`border-b ${borderColor} hover:bg-gray-50/50 last:border-b-0 h-[64px]`}
+      className={`border-b ${borderColor} hover:bg-gray-50/50  h-[64px]`}
       style={{ backgroundColor: bgColor }}
     >
       <td
-        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] bg-white sticky left-0 z-10`}
+        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] sticky left-0 z-10`}
         style={{
           paddingLeft: `${paddingLeft}px`,
           boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
+          backgroundColor: bgColor,
         }}
       >
         <div className="flex items-center h-full">
@@ -258,13 +259,14 @@ const CombinedDepartmentRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b w-[72px] ${borderColor} h-[64px] bg-white sticky z-10`}
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b w-[72px] ${borderColor} h-[64px] sticky z-10`}
           style={{
             left: `${350 + catIndex * 72}px`,
             boxShadow:
               catIndex === SUMMARY_CATEGORIES.length - 1
                 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
                 : undefined,
+            backgroundColor: bgColor,
           }}
         >
           {summaryCounts[cat.id]}
@@ -279,7 +281,8 @@ const CombinedDepartmentRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+              style={{ backgroundColor: bgColor }}
             >
               {bdpiValue !== undefined && bdpiValue !== null
                 ? `${bdpiValue.toFixed(0)}%`
@@ -290,12 +293,13 @@ const CombinedDepartmentRow = ({
 
         const metric = metrics?.[code];
 
-        // isUsed가 false인 경우(수집불가 지표) 회색 처리
+        // isUsed가 false인 경우(수집불가 지표) - 하이어라키뷰에서는 조직별 배경색 적용
         if (metric?.isUsed === false) {
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
+              className={`px-2 py-1 text-center align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+              style={{ backgroundColor: bgColor }}
             />
           );
         }
@@ -314,7 +318,8 @@ const CombinedDepartmentRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+            style={{ backgroundColor: bgColor }}
           >
             <HeatmapCell
               metricCode={code}
@@ -339,7 +344,7 @@ const CombinedMemberRow = ({
   summaryCounts,
   metricOrder,
   hideValue = false,
-  aggregationType = "average",
+  aggregationType = "avg",
 }: {
   item: FlatTreeItem;
   summaryCounts: SummaryCounts;
@@ -354,13 +359,14 @@ const CombinedMemberRow = ({
   const borderColor = member.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
-    <tr className={`border-b ${borderColor} hover:bg-gray-50/50 last:border-b-0 h-[64px]`} style={{ backgroundColor: bgColor }}>
+    <tr className={`border-b ${borderColor}  h-[64px]`} style={{ backgroundColor: bgColor }}>
       {/* 고정 영역 - 멤버 이름 */}
       <td
-        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] bg-white sticky left-0 z-10`}
+        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] sticky left-0 z-10`}
         style={{
           paddingLeft: `${paddingLeft}px`,
           boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
+          backgroundColor: bgColor,
         }}
       >
         <div className="flex flex-col justify-center h-full">
@@ -384,13 +390,14 @@ const CombinedMemberRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[72px] h-[64px] bg-white sticky z-10`}
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[72px] h-[64px] sticky z-10`}
           style={{
             left: `${350 + catIndex * 72}px`,
             boxShadow:
               catIndex === SUMMARY_CATEGORIES.length - 1
                 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
                 : undefined,
+            backgroundColor: bgColor,
           }}
         >
           {summaryCounts[cat.id]}
@@ -405,7 +412,8 @@ const CombinedMemberRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+              style={{ backgroundColor: bgColor }}
             >
               {bdpiValue !== undefined && bdpiValue !== null
                 ? `${bdpiValue.toFixed(0)}%`
@@ -416,12 +424,13 @@ const CombinedMemberRow = ({
 
         const metric = metrics?.[code];
 
-        // isUsed가 false인 경우(수집불가 지표) 회색 처리
+        // isUsed가 false인 경우(수집불가 지표) - 하이어라키뷰에서는 조직별 배경색 적용
         if (metric?.isUsed === false) {
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
+              className={`px-2 py-1 text-center align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+              style={{ backgroundColor: bgColor }}
             />
           );
         }
@@ -440,7 +449,8 @@ const CombinedMemberRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+            style={{ backgroundColor: bgColor }}
           >
             <HeatmapCell
               metricCode={code}

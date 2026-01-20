@@ -281,7 +281,7 @@ const CombinedRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr className={`hover:bg-gray-50/50 ${rowHeight}`}>
+    <tr className={`border-b border-gray-200 hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
         className={`align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}

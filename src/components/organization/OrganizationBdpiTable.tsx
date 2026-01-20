@@ -163,12 +163,12 @@ const MemberRow = ({
 
   return (
     <tr
-      className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
+      className={`border-b ${borderColor}  h-[64px]`}
       style={{ backgroundColor: bgColor }}
     >
       <td
         className={`pr-4 align-middle whitespace-nowrap border-r ${borderColor}`}
-        style={{ paddingLeft: `${paddingLeft}px` }}
+        style={{ paddingLeft: `${paddingLeft}px`, backgroundColor: bgColor }}
       >
         <div className="flex items-center">
           <div className="flex items-center whitespace-nowrap">
@@ -183,7 +183,6 @@ const MemberRow = ({
         </div>
         <div
           className="text-xs text-gray-500 mt-0.5 whitespace-nowrap"
-          style={{ marginLeft: "28px" }}
         >
           {member.email || getMemberEmail(member.employeeID)}
         </div>
@@ -195,6 +194,7 @@ const MemberRow = ({
           <td
             key={code}
             className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[100px] min-w-[100px] h-[64px]`}
+            style={{ backgroundColor: bgColor }}
           >
             <HeatmapCell
               metricCode={code}
@@ -206,7 +206,10 @@ const MemberRow = ({
           </td>
         );
       })}
-      <td className="px-3 text-center align-middle">
+      <td
+        className={`px-3 text-center align-middle border-r ${borderColor}`}
+        style={{ backgroundColor: bgColor }}
+      >
         <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
       </td>
     </tr>
@@ -255,12 +258,12 @@ const OrganizationRow = ({
   return (
     <>
       <tr
-        className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
+        className={`border-b ${borderColor}  h-[64px]`}
         style={{ backgroundColor: bgColor }}
       >
         <td
           className={`pr-4 align-middle whitespace-nowrap border-r ${borderColor}`}
-          style={{ paddingLeft: `${paddingLeft}px` }}
+          style={{ paddingLeft: `${paddingLeft}px`, backgroundColor: bgColor }}
         >
           <div className="flex items-center">
             {hasChildren ? (
@@ -293,6 +296,7 @@ const OrganizationRow = ({
             <td
               key={code}
               className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[100px] min-w-[100px] h-[64px]`}
+              style={{ backgroundColor: bgColor }}
             >
               <HeatmapCell
                 metricCode={code}
@@ -304,7 +308,10 @@ const OrganizationRow = ({
             </td>
           );
         })}
-        <td className="px-3 text-center align-middle">
+        <td
+          className={`px-3 text-center align-middle border-r ${borderColor}`}
+          style={{ backgroundColor: bgColor }}
+        >
           <ChangeRateDisplay comparison={bdpiMetrics?.monthlyComparison} />
         </td>
       </tr>

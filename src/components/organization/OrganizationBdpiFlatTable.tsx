@@ -307,7 +307,7 @@ const FlatRow = ({
 
   return (
     <tr
-      className={`border-b border-gray-200 last:border-b-0 hover:bg-gray-50/50 ${rowHeight}`}
+      className={`border-b border-gray-200 hover:bg-gray-50/50 ${rowHeight}`}
     >
       <td
         className={`px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}
