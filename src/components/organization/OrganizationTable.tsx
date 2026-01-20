@@ -211,14 +211,15 @@ const FixedDepartmentRow = ({
   const dept = item.data as OrganizationDepartment;
   const paddingLeft = 16 + item.depth * 24;
   const bgColor = getLevelBackgroundColor(dept.level);
+  const borderColor = dept.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
     <tr
-      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
       style={{ backgroundColor: bgColor }}
     >
       <td
-        className="py-0 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]"
+        className={`py-0 align-middle whitespace-nowrap border-r ${borderColor} w-[350px] h-[64px]`}
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         <div className="flex items-center h-full">
@@ -246,7 +247,7 @@ const FixedDepartmentRow = ({
       {SUMMARY_CATEGORIES.map((cat) => (
         <td
           key={cat.id}
-          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[72px] h-[64px]"
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r ${borderColor} w-[72px] h-[64px]`}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -266,14 +267,15 @@ const FixedMemberRow = ({
   const member = item.data as OrganizationMember;
   const paddingLeft = 24 + item.depth * 24;
   const bgColor = getLevelBackgroundColor(member.level);
+  const borderColor = member.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
     <tr
-      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
       style={{ backgroundColor: bgColor }}
     >
       <td
-        className="py-0 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] h-[64px]"
+        className={`py-0 align-middle whitespace-nowrap border-r ${borderColor} w-[350px] h-[64px]`}
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         <div className="flex flex-col justify-center h-full">
@@ -296,7 +298,7 @@ const FixedMemberRow = ({
       {SUMMARY_CATEGORIES.map((cat) => (
         <td
           key={cat.id}
-          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[72px] h-[64px]"
+          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r ${borderColor} w-[72px] h-[64px]`}
         >
           {summaryCounts[cat.id]}
         </td>
@@ -406,10 +408,11 @@ const ScrollableRow = ({
 }) => {
   const metrics = item.data.metrics as unknown as Record<string, MetricData>;
   const bgColor = getLevelBackgroundColor(item.data.level);
+  const borderColor = item.data.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
     <tr
-      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
       style={{ backgroundColor: bgColor }}
     >
       {metricOrder.map((code) => {
@@ -421,7 +424,7 @@ const ScrollableRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
             >
               {bdpiValue !== undefined && bdpiValue !== null
                 ? `${bdpiValue.toFixed(0)}%`
@@ -432,12 +435,12 @@ const ScrollableRow = ({
 
         const metric = metrics?.[code];
 
-        // isUsed가 false인 경우(수집불가 지표) 회색 처리
+        // isUsed가 false인 경우(수집불가 지표) - 하이어라키뷰는 조직별 배경색 유지
         if (metric?.isUsed === false) {
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
+              className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
             />
           );
         }
@@ -459,7 +462,7 @@ const ScrollableRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
           >
             <HeatmapCell
               metricCode={code}

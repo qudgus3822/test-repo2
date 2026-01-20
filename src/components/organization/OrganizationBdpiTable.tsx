@@ -159,14 +159,15 @@ const MemberRow = ({
   const paddingLeft = 24 + depth * 24;
   const bdpiMetrics = member.metrics as BdpiMetrics;
   const bgColor = getLevelBackgroundColor(member.level);
+  const borderColor = member.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
     <tr
-      className="border-b border-gray-200 last:border-b-0 h-[64px]"
+      className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
       style={{ backgroundColor: bgColor }}
     >
       <td
-        className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
+        className={`pr-4 align-middle whitespace-nowrap border-r ${borderColor}`}
         style={{ paddingLeft: `${paddingLeft}px` }}
       >
         <div className="flex items-center">
@@ -193,7 +194,7 @@ const MemberRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+            className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[100px] min-w-[100px] h-[64px]`}
           >
             <HeatmapCell
               metricCode={code}
@@ -233,6 +234,7 @@ const OrganizationRow = ({
   const hasChildren = org.children && org.children.length > 0;
   const paddingLeft = 16 + depth * 24;
   const bgColor = getLevelBackgroundColor(org.level);
+  const borderColor = org.level === 3 ? "border-gray-100" : "border-gray-200";
 
   const childDepartments: OrganizationDepartment[] = [];
   const childMembers: OrganizationMember[] = [];
@@ -253,11 +255,11 @@ const OrganizationRow = ({
   return (
     <>
       <tr
-        className="border-b border-gray-200 last:border-b-0 h-[64px]"
+        className={`border-b ${borderColor} last:border-b-0 h-[64px]`}
         style={{ backgroundColor: bgColor }}
       >
         <td
-          className="pr-4 align-middle whitespace-nowrap border-r border-gray-200"
+          className={`pr-4 align-middle whitespace-nowrap border-r ${borderColor}`}
           style={{ paddingLeft: `${paddingLeft}px` }}
         >
           <div className="flex items-center">
@@ -290,7 +292,7 @@ const OrganizationRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-gray-200 w-[100px] min-w-[100px] h-[64px]"
+              className={`px-2 py-1 text-center align-middle border-r ${borderColor} w-[100px] min-w-[100px] h-[64px]`}
             >
               <HeatmapCell
                 metricCode={code}

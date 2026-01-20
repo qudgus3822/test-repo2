@@ -205,10 +205,10 @@ export const CHANGE_COLORS = {
 
 // 조직 레벨별 행 배경색
 export const ORGANIZATION_LEVEL_COLORS = {
-  level1: "#FFFFFF", // IT부문
-  level2: "#F1F5F9", // 실
-  level3: "#E2E8F0", // 팀
-  level4: "#CAD5E2", // 개인
+  level1: "#FFFFFF", //  IT부문 (white)
+  level2: "#F1F5F9", // 실 (slate-100)
+  level3: "#DCE4ED", // 팀 (slate-230 정도)
+  level4: "#CAD5E2", // 개인 (slate-300에 가장 가까움)
 } as const;
 
 // 모든 색상 통합 export
