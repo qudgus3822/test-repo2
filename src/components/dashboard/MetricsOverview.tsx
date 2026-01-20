@@ -16,14 +16,14 @@ interface MetricsOverviewProps {
   month: string; // YYYY-MM 형식
 }
 
-// TODO: API 연동 후 제거 - 임시 목업 데이터
-const MOCK_COMPANY_QUALITY_DATA = {
+// API 에러 시 빈 차트 표시용 기본 데이터
+const DEFAULT_EMPTY_DATA = {
   month: "",
   bdpiAverage: 0.0,
   monthlyComparison: { changePercent: 0, direction: "new" as const },
-  quality: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
-  review: { score: 0, achievedMetrics: 0, totalMetrics: 12 },
-  efficiency: { score: 0, achievedMetrics: 0, totalMetrics: 9 },
+  quality: { score: 0, achievedMetrics: null, totalMetrics: 9 },
+  review: { score: 0, achievedMetrics: null, totalMetrics: 12 },
+  efficiency: { score: 0, achievedMetrics: null, totalMetrics: 9 },
 };
 
 /**
@@ -43,8 +43,8 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
     (state) => state.setCodeReviewModal,
   );
 
-  // API 에러 시 목업 데이터 사용
-  const data = error ? MOCK_COMPANY_QUALITY_DATA : companyQualityData;
+  // API 에러 시 빈 차트 표시용 기본 데이터 사용
+  const data = error ? DEFAULT_EMPTY_DATA : companyQualityData;
 
   // 전사 BDPI 평균 계산
   const bdpiAverage = useMemo(
@@ -76,7 +76,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               value: data.quality.score,
               label: "코드 품질",
               sublabel: `${
-                data.quality.achievedMetrics === 0
+                data.quality.achievedMetrics === null
                   ? "-"
                   : data.quality.achievedMetrics
               }/${data.quality.totalMetrics}개 달성`,
@@ -87,7 +87,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               value: data.review.score,
               label: "리뷰 품질",
               sublabel: `${
-                data.review.achievedMetrics === 0
+                data.review.achievedMetrics === null
                   ? "-"
                   : data.review.achievedMetrics
               }/${data.review.totalMetrics}개 달성`,
@@ -98,7 +98,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
               value: data.efficiency.score,
               label: "개발 효율",
               sublabel: `${
-                data.efficiency.achievedMetrics === 0
+                data.efficiency.achievedMetrics === null
                   ? "-"
                   : data.efficiency.achievedMetrics
               }/${data.efficiency.totalMetrics}개 달성`,

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { CircleSlash } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { TREND_COLORS } from "@/styles/colors";
 import downIcon from "@/assets/icons/down_icon_red.svg";
@@ -72,17 +73,24 @@ const formatMetric = (
 const MetricCard = ({ metric }: { metric: DisplayMetric }) => {
   const Icon = getStatusIcon(metric.status);
   const iconColor = getStatusColor(metric.status);
+  const hasStatus = metric.status !== null;
 
   return (
     <div className="flex flex-col items-center gap-2.5">
-      {/* 상태 아이콘 */}
+      {/* 상태 아이콘 (데이터 없으면 CircleSlash 아이콘 표시) */}
       <div className="w-10 h-10 rounded-full flex items-center justify-center">
-        <Icon className="w-7 h-7" style={{ color: iconColor }} />
+        {hasStatus ? (
+          <Icon className="w-7 h-7" style={{ color: iconColor }} />
+        ) : (
+          <CircleSlash className="w-7 h-7 text-gray-400" />
+        )}
       </div>
 
-      {/* 메트릭 값 */}
-      <div className="lg:text-2xl text-xl font-bold text-gray-900">
-        {metric.value}
+      {/* 메트릭 값 (데이터 없으면 -- 표시) */}
+      <div
+        className={`lg:text-2xl text-xl font-bold ${hasStatus ? "text-gray-900" : "text-gray-400"}`}
+      >
+        {hasStatus ? metric.value : "--"}
       </div>
 
       {/* 목표치 */}
