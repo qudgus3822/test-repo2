@@ -239,6 +239,8 @@ export interface MetricDefinitionResponse {
   tooltip: string | null;
   formula: string | null;
   trend: MetricTrend | null;
+  score: number | null;
+  value: number | null;
 }
 
 /**
