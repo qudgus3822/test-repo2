@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logoWhite from "@/assets/images/bithumb_logo_white_vertical.png";
 import { Button } from "@/components/ui/Button";
-import { useLogin } from "@/api/hooks/useAuth";
+import { useAuth, useLogin } from "@/api/hooks/useAuth";
 import { getRememberedEmail, clearAuthCookies } from "@/api/auth";
 import { env } from "@/env";
 
@@ -12,6 +12,7 @@ const LoginPage = () => {
 
   // useAuth() 대신 개별 훅 사용 (useCurrentUser API 호출 방지)
   const loginMutation = useLogin();
+  const { user } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,12 +21,16 @@ const LoginPage = () => {
 
   // 컴포넌트 마운트 시 저장된 이메일 불러오기
   useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+      return;
+    }
     const rememberedEmail = getRememberedEmail();
     if (rememberedEmail) {
       setEmail(rememberedEmail);
       setRememberEmail(true);
     }
-  }, []);
+  }, [user, navigate]);
 
   const handleOktaLogin = () => {
     // 기존 쿠키 삭제 (도메인이 다른 중복 쿠키 충돌 방지)
