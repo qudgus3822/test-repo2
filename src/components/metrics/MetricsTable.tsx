@@ -244,8 +244,12 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
         ) : (
           <table className="w-full">
             {/* [변경: 2026-01-19 19:00, 김병현 수정] 페이지 스크롤 시 Header(80px) 아래에 sticky 고정 */}
-            <thead className="sticky top-20 bg-white z-10">
-              <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
+            {/* [변경: 2026-01-20 11:20, 김병현 수정] sticky 시 border 사라지는 문제 해결 - box-shadow 사용 */}
+            <thead
+              className="sticky top-20 bg-white z-10"
+              style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
+            >
+              <tr className="text-left text-sm font-medium text-gray-700">
                 <th className="px-4 py-3 w-[25%]">지표명</th>
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>
                 <th className="px-4 py-3 w-[12%] text-center">현재값</th>
