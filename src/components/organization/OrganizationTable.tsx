@@ -222,7 +222,7 @@ const CombinedDepartmentRow = ({
     <tr className="hover:bg-gray-50/50 h-[64px]">
       {/* 고정 영역 - 조직 이름 */}
       <td
-        className="py-0 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[64px] bg-white sticky left-0 z-10"
+        className="py-0 align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[64px] bg-white sticky left-0 z-10"
         style={{
           paddingLeft: `${paddingLeft}px`,
           boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
@@ -254,7 +254,7 @@ const CombinedDepartmentRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] h-[64px] bg-white sticky z-10"
+          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[72px] min-w-[72px] h-[64px] bg-white sticky z-10"
           style={{
             left: `${350 + catIndex * 72}px`,
             boxShadow:
@@ -275,7 +275,7 @@ const CombinedDepartmentRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
             >
               {bdpiValue !== undefined && bdpiValue !== null
                 ? `${bdpiValue.toFixed(0)}%`
@@ -291,7 +291,7 @@ const CombinedDepartmentRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
+              className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
             />
           );
         }
@@ -310,7 +310,7 @@ const CombinedDepartmentRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+            className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
           >
             <HeatmapCell
               metricCode={code}
@@ -351,7 +351,7 @@ const CombinedMemberRow = ({
     <tr className="hover:bg-gray-50/50 h-[64px]">
       {/* 고정 영역 - 멤버 이름 */}
       <td
-        className="py-0 align-middle whitespace-nowrap border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[64px] bg-white sticky left-0 z-10"
+        className="py-0 align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[64px] bg-white sticky left-0 z-10"
         style={{
           paddingLeft: `${paddingLeft}px`,
           boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
@@ -378,7 +378,7 @@ const CombinedMemberRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[72px] min-w-[72px] h-[64px] bg-white sticky z-10"
+          className="px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[72px] min-w-[72px] h-[64px] bg-white sticky z-10"
           style={{
             left: `${350 + catIndex * 72}px`,
             boxShadow:
@@ -399,7 +399,7 @@ const CombinedMemberRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+              className="px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
             >
               {bdpiValue !== undefined && bdpiValue !== null
                 ? `${bdpiValue.toFixed(0)}%`
@@ -415,7 +415,7 @@ const CombinedMemberRow = ({
           return (
             <td
               key={code}
-              className="px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
+              className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px] bg-gray-50"
             />
           );
         }
@@ -434,7 +434,7 @@ const CombinedMemberRow = ({
         return (
           <td
             key={code}
-            className="px-2 py-1 text-center align-middle border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
+            className="px-2 py-1 text-center align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[64px]"
           >
             <HeatmapCell
               metricCode={code}
@@ -498,7 +498,7 @@ const SortableMetricHeader = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-b border-gray-300 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
+      className={`px-2 py-3 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] h-[113px] select-none ${
         isDragging ? "bg-blue-100" : isSelected ? "bg-blue-50" : ""
       }`}
     >
@@ -754,23 +754,28 @@ export const OrganizationTable = ({
 
       {/* [변경: 2026-01-19 03:00, 김병현 수정] 하나의 통합 테이블로 변경 - 고정 영역은 sticky로 처리 */}
       {/* [변경: 2026-01-19 03:30, 김병현 수정] 스크롤바를 스크롤 영역에만 표시 (고정 영역 너비: 350 + 72*4 = 638px) */}
+      {/* [변경: 2026-01-20 10:55, 김병현 수정] 클래스명 일치하도록 수정 */}
       <style>{`
         .org-table-container::-webkit-scrollbar {
-          height: 8px;
+          width: 6px;
+          height: 6px;
         }
         .org-table-container::-webkit-scrollbar-track {
           background: transparent;
           margin-left: 638px;
         }
         .org-table-container::-webkit-scrollbar-thumb {
-          background: #c1c1c1;
-          border-radius: 4px;
+          background: #d1d5db;
+          border-radius: 3px;
         }
         .org-table-container::-webkit-scrollbar-thumb:hover {
-          background: #a1a1a1;
+          background: #9ca3af;
+        }
+        .org-table-container::-webkit-scrollbar-corner {
+          background: transparent;
         }
       `}</style>
-      <div className="org-table-container border border-gray-300 rounded-lg overflow-auto h-full">
+      <div className="org-table-container border border-gray-200 rounded-lg overflow-auto h-full">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -781,7 +786,7 @@ export const OrganizationTable = ({
               <tr className=" bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-b border-gray-300 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
+                  className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
@@ -797,7 +802,7 @@ export const OrganizationTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className="px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-300 w-[72px] min-w-[72px] h-[113px] sticky z-30"
+                      className="px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] min-w-[72px] h-[113px] sticky z-30"
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
                         left: `${350 + catIndex * 72}px`,
