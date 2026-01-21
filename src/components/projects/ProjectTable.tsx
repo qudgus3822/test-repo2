@@ -32,63 +32,117 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
   return (
     <div className="overflow-auto h-full">
       <table className="w-full">
-        <thead className="sticky top-0 bg-white z-10">
+        <thead
+          className="sticky top-0 bg-white z-10"
+          style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}
+        >
           <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">프로젝트명</th>
+            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">
+              프로젝트명
+            </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 에픽 내 하위 티켓 중 활성 티켓 개수" direction="top">
+                <Tooltip
+                  content="해당 월 에픽 내 하위 티켓 중 활성 티켓 개수"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>활성<br />티켓수</span>
+                <span>
+                  활성
+                  <br />
+                  티켓수
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 프로젝트 발생한 버그 총 개수 (월 누적)" direction="top">
+                <Tooltip
+                  content="해당 월 프로젝트 발생한 버그 총 개수 (월 누적)"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>버그<br />해결수</span>
+                <span>
+                  버그
+                  <br />
+                  해결수
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 프로젝트 발생한 장애 총 개수 (월 누적)" direction="top">
+                <Tooltip
+                  content="해당 월 프로젝트 발생한 장애 총 개수 (월 누적)"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>장애<br />해결수</span> 
+                <span>
+                  장애
+                  <br />
+                  해결수
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 프로젝트 발생한 장애의 평균 해결시간 (일 평균)" direction="top">
+                <Tooltip
+                  content="해당 월 프로젝트 발생한 장애의 평균 해결시간 (일 평균)"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>평균장애<br />해결시간</span>
+                <span>
+                  평균장애
+                  <br />
+                  해결시간
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 프로젝트 발생한 장애의 평균 탐지시간 (일 평균)" direction="top">
+                <Tooltip
+                  content="해당 월 프로젝트 발생한 장애의 평균 탐지시간 (일 평균)"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>평균장애<br />탐지시간</span>
+                <span>
+                  평균장애
+                  <br />
+                  탐지시간
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 프로젝트 발생한 장애의 평균 진단시간 (일 평균)" direction="top">
+                <Tooltip
+                  content="해당 월 프로젝트 발생한 장애의 평균 진단시간 (일 평균)"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>평균장애<br />진단시간</span>
+                <span>
+                  평균장애
+                  <br />
+                  진단시간
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월 프로젝트 발생한 장애의 평균 복구시간 (일 평균)" direction="top">
+                <Tooltip
+                  content="해당 월 프로젝트 발생한 장애의 평균 복구시간 (일 평균)"
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>평균장애<br />복구시간</span>
+                <span>
+                  평균장애
+                  <br />
+                  복구시간
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
@@ -122,7 +176,8 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
                 </a>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {project.activeTicketCount}{UNIT_COUNT}
+                {project.activeTicketCount}
+                {UNIT_COUNT}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
                 {project.bugCount}건
