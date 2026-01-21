@@ -317,6 +317,7 @@ const CombinedDepartmentRow = ({
         const unit = metric?.unit;
         const metricName = metric?.metricName;
         const description = metric?.tooltip;
+        const status = metric?.status;
         return (
           <td
             key={code}
@@ -332,6 +333,7 @@ const CombinedDepartmentRow = ({
               targetValue={targetValue}
               unit={unit}
               description={description}
+              status={status}
             />
           </td>
         );
@@ -447,6 +449,7 @@ const CombinedMemberRow = ({
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
+        const status = metric?.status;
 
         return (
           <td
@@ -462,6 +465,7 @@ const CombinedMemberRow = ({
               hideValue={hideValue}
               targetValue={targetValue}
               unit={unit}
+              status={status}
             />
           </td>
         );

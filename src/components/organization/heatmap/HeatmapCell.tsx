@@ -29,6 +29,8 @@ interface HeatmapCellProps {
   showTooltip?: boolean;
   /** 툴팁 설명 (API 응답) */
   description?: string;
+  /** 달성 상태 (API 응답) */
+  status?: string | null;
 }
 
 export const HeatmapCell = ({
@@ -40,6 +42,7 @@ export const HeatmapCell = ({
   targetValue,
   unit,
   showTooltip = true,
+  status,
 }: HeatmapCellProps) => {
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -129,6 +132,7 @@ export const HeatmapCell = ({
           targetValue={metricDefinition?.targetValue ?? targetValue}
           unit={metricDefinition?.unit || unit}
           description={metricDefinition?.tooltip ?? undefined}
+          status={metricDefinition?.status ?? status}
         />
       )}
     </div>

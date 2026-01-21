@@ -113,7 +113,12 @@ export interface CategoryScoreValue {
 }
 
 // 전월대비 타입
-export type MonthlyComparisonDirection = "up" | "down" | "same" | "new" | "no_data";
+export type MonthlyComparisonDirection =
+  | "up"
+  | "down"
+  | "same"
+  | "new"
+  | "no_data";
 
 export interface MonthlyComparison {
   changePercent: number;
@@ -325,7 +330,27 @@ export interface CompareGroup {
 }
 
 // 점수 등급 타입
-export type ScoreLevel = "excellent" | "good" | "danger";
+// [변경: 2026-01-21 11:00, 김병현 수정] SUMMARY_CATEGORIES id(camelCase)와 API status(snake_case) 모두 지원
+export type ScoreLevel =
+  | "excellent"
+  | "good"
+  | "danger"
+  | "over"
+  | "warning"
+  | "no_data"
+  | "over_achieved"
+  | "overAchieved";
+
+export const ScoreLevelLabel: Record<ScoreLevel, string> = {
+  excellent: "우수",
+  good: "양호",
+  danger: "위험",
+  over: "초과",
+  warning: "경고",
+  no_data: "데이터 없음",
+  over_achieved: "초과달성",
+  overAchieved: "초과달성",
+};
 
 // 조직 비교 필터 타입
 export type OrganizationFilterType = "all" | "excellent" | "good" | "danger";
