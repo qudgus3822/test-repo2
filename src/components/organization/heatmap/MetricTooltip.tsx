@@ -6,6 +6,7 @@
 
 import { createPortal } from "react-dom";
 import { SUMMARY_CATEGORIES } from "./types";
+import { ScoreLevelLabel } from "@/types/organization.types";
 
 interface MetricTooltipProps {
   /** 지표 코드 */
@@ -26,6 +27,7 @@ interface MetricTooltipProps {
   unit?: string;
   /** 툴팁 설명 (API 응답) */
   description?: string;
+  status?: string | null;
 }
 
 /**
@@ -48,6 +50,7 @@ export const MetricTooltip = ({
   targetValue,
   unit,
   description,
+  status,
 }: MetricTooltipProps) => {
   if (!visible) return null;
 
@@ -87,7 +90,9 @@ export const MetricTooltip = ({
     >
       {/* 헤더: 지표명 */}
       <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-        <div className="font-medium text-gray-800 text-base">{displayMetricName}</div>
+        <div className="font-medium text-gray-800 text-base">
+          {displayMetricName}
+        </div>
         {description && (
           <div className="text-xs text-gray-500 mt-1 leading-relaxed">
             {description}
@@ -152,7 +157,8 @@ export const MetricTooltip = ({
                 }}
               />
               <span className="text-md font-medium text-gray-900">
-                {achievementCategory?.koreanName ?? "데이터 없음"}
+                {ScoreLevelLabel[status as keyof typeof ScoreLevelLabel] ||
+                  "데이터 없음"}
               </span>
             </div>
           </div>

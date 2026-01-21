@@ -287,7 +287,7 @@ const CombinedRow = ({
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
         className={`align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
-        style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
+        style={{ boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
       >
         {isDepartment ? (
           <div className="flex flex-col justify-center h-full gap-0.5 px-2">
@@ -936,8 +936,7 @@ export const OrganizationFlatTable = ({
           onDragEnd={handleDragEnd}
         >
           <table className="border-separate border-spacing-0 table-fixed">
-            {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
-            <thead className="sticky top-0 z-20" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
+            <thead className="sticky top-0 z-20">
               <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
@@ -978,7 +977,7 @@ export const OrganizationFlatTable = ({
                         left: `${350 + catIndex * 72}px`,
                         boxShadow:
                           catIndex === SUMMARY_CATEGORIES.length - 1
-                            ? "inset 0 -1px 0 #e5e7eb, 4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                            ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
                             : undefined,
                       }}
                       onClick={() => toggleSort(cat.id)}

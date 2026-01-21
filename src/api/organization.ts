@@ -241,6 +241,7 @@ export interface MetricDefinitionResponse {
   trend: MetricTrend | null;
   score: number | null;
   value: number | null;
+  status: string | null;
 }
 
 /**
