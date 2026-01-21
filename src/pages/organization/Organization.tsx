@@ -104,7 +104,14 @@ const OrganizationPage = () => {
     setIsMetricColumnDragged(false);
     // 조직 관련 쿼리 캐시 무효화하여 최신 데이터 조회
     queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
-  }, [setPeriod, setCurrentDate, setActiveTab, clearMetricOrder, setIsMetricColumnDragged, queryClient]);
+  }, [
+    setPeriod,
+    setCurrentDate,
+    setActiveTab,
+    clearMetricOrder,
+    setIsMetricColumnDragged,
+    queryClient,
+  ]);
 
   // 상세 모달 상태
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -539,7 +546,9 @@ const OrganizationPage = () => {
         {/* [변경: 2026-01-20 11:10, 김병현 수정] 탭 콘텐츠 - 자식 요소 크기에 맞게 조절 */}
         {/* [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 시 min-h 설정하여 전체 스크롤 허용 */}
         {/* [변경: 2026-01-20 15:45, 김병현 수정] 테이블 max-h 지정하여 테이블 내부 스크롤 유지 */}
-        <div className={`flex-1 flex flex-col ${isMetricDetailOpen ? "" : "min-h-0"}`}>
+        <div
+          className={`flex-1 flex flex-col ${isMetricDetailOpen ? "" : "min-h-0"}`}
+        >
           {activeTab === "all" && (
             <>
               {/* 전체 탭 콘텐츠 */}
