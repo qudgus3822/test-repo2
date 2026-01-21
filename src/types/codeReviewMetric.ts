@@ -26,6 +26,7 @@ export interface MrAuthorInfo {
 export interface ReviewItem {
   collectedAt: string; // 수집일자 (ISO 8601)
   mrId: number; // MR ID
+  mrUrl: string; // MR URL (GitLab 링크)
   mrAuthor: MrAuthorInfo; // MR 작성자
   registeredReviewerCount: number; // 등록된 리뷰어 수
   registeredReviewers: ReviewerInfo[]; // 등록된 리뷰어 목록

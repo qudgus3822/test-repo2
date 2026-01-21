@@ -23,6 +23,88 @@ const InfoBanner = ({ message }: { message: string }) => (
   </div>
 );
 
+// TODO: 임시 테스트 데이터 (API 연동 후 삭제)
+const MOCK_TF_PROJECTS: ProjectItem[] = [
+  {
+    id: "1",
+    name: "[TF] 신규 거래소 플랫폼 개발",
+    epicId: "TF-101",
+    epicUrl: "https://bithumbcorp.atlassian.net/browse/TF-101",
+    activeTicketCount: 15,
+    bugCount: 3,
+    incidentCount: 1,
+    avgResolutionTime: 7200,
+    avgDetectionTime: 1800,
+    avgDiagnosisTime: 3600,
+    avgRecoveryTime: 1800,
+    createdAt: "2025-12-01",
+  },
+  {
+    id: "2",
+    name: "[TF] 모바일 앱 리뉴얼",
+    epicId: "TF-102",
+    epicUrl: "https://bithumbcorp.atlassian.net/browse/TF-102",
+    activeTicketCount: 8,
+    bugCount: 2,
+    incidentCount: 0,
+    avgResolutionTime: 5400,
+    avgDetectionTime: 1200,
+    avgDiagnosisTime: 2400,
+    avgRecoveryTime: 1800,
+    createdAt: "2025-12-15",
+  },
+  {
+    id: "3",
+    name: "[TF] 결제 시스템 고도화",
+    epicId: "TF-103",
+    epicUrl: "https://bithumbcorp.atlassian.net/browse/TF-103",
+    activeTicketCount: 12,
+    bugCount: 5,
+    incidentCount: 2,
+    avgResolutionTime: 9000,
+    avgDetectionTime: 2400,
+    avgDiagnosisTime: 4200,
+    avgRecoveryTime: 2400,
+    createdAt: "2026-01-05",
+  },
+];
+
+const MOCK_OPERATION_ITEMS: OperationItem[] = [
+  {
+    id: "1",
+    name: "[운영] 고객센터 시스템 유지보수",
+    epicId: "OPR2-201",
+    epicUrl: "https://bithumbcorp.atlassian.net/browse/OPR2-201",
+    activeTicketCount: 5,
+    updatedCount: 10,
+    completedCount: 8,
+    createdCount: 3,
+    createdAt: "2025-11-20",
+  },
+  {
+    id: "2",
+    name: "[운영] 관리자 대시보드 운영",
+    epicId: "OPR2-202",
+    epicUrl: "https://bithumbcorp.atlassian.net/browse/OPR2-202",
+    activeTicketCount: 3,
+    updatedCount: 5,
+    completedCount: 12,
+    createdCount: 2,
+    createdAt: "2025-12-01",
+  },
+  {
+    id: "3",
+    name: "[운영] API Gateway 모니터링",
+    epicId: "OPR2-203",
+    epicUrl: "https://bithumbcorp.atlassian.net/browse/OPR2-203",
+    activeTicketCount: 7,
+    updatedCount: 15,
+    completedCount: 20,
+    createdCount: 5,
+    createdAt: "2026-01-10",
+  },
+];
+
 const ProjectsPage = () => {
   const [period, setPeriod] = useState<PeriodType>("monthly");
   const [currentDate, setCurrentDate] = useState(() => new Date());
@@ -68,13 +150,14 @@ const ProjectsPage = () => {
   }, [summaryData]);
 
   // API 응답을 ProjectTable의 ProjectItem 형태로 변환
+  // TODO: API 연동 후 MOCK_TF_PROJECTS fallback 제거
   const tfProjects: ProjectItem[] = useMemo(() => {
-    if (!tfData?.projects) return [];
+    if (!tfData?.projects || tfData.projects.length === 0) return MOCK_TF_PROJECTS;
     return tfData.projects.map((project) => ({
       id: project.projectId,
       name: project.epicSummary,
       epicId: project.epicKey,
-      epicUrl: `https://hunetcorp.atlassian.net/browse/${project.epicKey}`,
+      epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
       activeTicketCount: project.activeTicketCount,
       bugCount: project.bugCount ?? 0,
       incidentCount: project.incidentCount ?? 0,
@@ -87,13 +170,14 @@ const ProjectsPage = () => {
   }, [tfData]);
 
   // API 응답을 OperationTable의 OperationItem 형태로 변환
+  // TODO: API 연동 후 MOCK_OPERATION_ITEMS fallback 제거
   const operationItems: OperationItem[] = useMemo(() => {
-    if (!operationData?.projects) return [];
+    if (!operationData?.projects || operationData.projects.length === 0) return MOCK_OPERATION_ITEMS;
     return operationData.projects.map((project) => ({
       id: project.projectId,
       name: project.epicSummary,
       epicId: project.epicKey,
-      epicUrl: `https://hunetcorp.atlassian.net/browse/${project.epicKey}`,
+      epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
       activeTicketCount: project.activeTicketCount,
       updatedCount: 0,
       completedCount: 0,
