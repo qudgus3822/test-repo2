@@ -392,7 +392,8 @@ export const OrganizationBdpiTable = ({
           <col style={{ width: "100px" }} />
           <col style={{ width: "100px" }} />
         </colgroup>
-        <thead className="sticky top-0 z-10">
+        {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
+        <thead className="sticky top-0 z-10" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
           <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
             <th
               className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}
