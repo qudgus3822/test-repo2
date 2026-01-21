@@ -101,11 +101,16 @@ export const HeatmapCell = ({
     }
   };
 
+  // [변경: 2026-01-21 10:00, 김병현 수정] hideValue가 true일 때 마우스 오버 시 달성률 표시
+  const scoreTooltip =
+    hideValue && score !== null ? `달성률: ${score.toFixed(1)}%` : undefined;
+
   return (
     <div
       ref={cellRef}
       className="flex items-center justify-center w-full h-full cursor-pointer"
       onClick={handleClick}
+      title={scoreTooltip}
     >
       <ProgressSquare
         score={score}

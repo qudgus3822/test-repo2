@@ -804,8 +804,9 @@ export const OrganizationTable = ({
           onDragEnd={handleDragEnd}
         >
           <table className="border-separate border-spacing-0 table-fixed">
-            <thead className="sticky top-0 z-20 bg-white">
-              <tr className=" bg-gray-50 h-[113px]">
+            {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
+            <thead className="sticky top-0 z-20 bg-white" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
+              <tr className="bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
                   className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
@@ -830,7 +831,7 @@ export const OrganizationTable = ({
                         left: `${350 + catIndex * 72}px`,
                         boxShadow:
                           catIndex === SUMMARY_CATEGORIES.length - 1
-                            ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                            ? "inset 0 -1px 0 #e5e7eb, 4px 0 8px -2px rgba(0, 0, 0, 0.1)"
                             : undefined,
                       }}
                     >
