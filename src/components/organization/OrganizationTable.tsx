@@ -68,7 +68,6 @@ interface FlatTreeItem {
   isExpanded: boolean;
 }
 
-
 interface OrganizationTableProps {
   month: string;
   activeTab: TabType;
@@ -183,12 +182,12 @@ const flattenTreeWithExpand = (
         }
 
         // 하위 부서 표시
-        const childDepts = dept.children
-          .filter(
-            (child): child is OrganizationDepartment =>
-              child.type === "department" && child.isEvaluationTarget,
-          )
-          .sort((a, b) => a.sortOrder - b.sortOrder);
+        const childDepts = dept.children.filter(
+          (child): child is OrganizationDepartment =>
+            child.type === "department" && child.isEvaluationTarget,
+        );
+        // sort order 는 현재 사용하지 않음
+        // .sort((a, b) => a.sortOrder - b.sortOrder);
 
         childDepts.forEach((child) => traverse(child, depth + 1));
       }
@@ -360,10 +359,14 @@ const CombinedMemberRow = ({
   const paddingLeft = 24 + item.depth * 24;
   const metrics = item.data.metrics as unknown as Record<string, MetricData>;
   const bgColor = getLevelBackgroundColor(member.level);
-  const borderColor = member.level === 3 ? "border-gray-100" : "border-gray-200";
+  const borderColor =
+    member.level === 3 ? "border-gray-100" : "border-gray-200";
 
   return (
-    <tr className={`border-b ${borderColor}  h-[64px]`} style={{ backgroundColor: bgColor }}>
+    <tr
+      className={`border-b ${borderColor}  h-[64px]`}
+      style={{ backgroundColor: bgColor }}
+    >
       {/* 고정 영역 - 멤버 이름 */}
       <td
         className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] sticky left-0 z-10`}
@@ -809,7 +812,10 @@ export const OrganizationTable = ({
         >
           <table className="border-separate border-spacing-0 table-fixed">
             {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
-            <thead className="sticky top-0 z-20 bg-white" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
+            <thead
+              className="sticky top-0 z-20 bg-white"
+              style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}
+            >
               <tr className="bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
