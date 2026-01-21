@@ -5,10 +5,18 @@ import { formatDateString } from "@/utils/date";
 
 // 단위 상수
 const UNIT_COUNT = "개";
+const UNIT_CASE = "건";
+const NULL_DISPLAY = "--";
+
+// 숫자 포맷 헬퍼 (null → "--", 0 이상 → 숫자 + 단위)
+const formatCount = (value: number | null | undefined, unit: string): string => {
+  if (value === null || value === undefined) return NULL_DISPLAY;
+  return `${value}${unit}`;
+};
 
 // 시간 포맷 헬퍼
-const formatTime = (value: number | null): string => {
-  if (value === null) return "-";
+const formatTime = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return NULL_DISPLAY;
   return `${value}초`;
 };
 
@@ -176,20 +184,19 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
                 </a>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {project.activeTicketCount}
-                {UNIT_COUNT}
+                {formatCount(project.activeTicketCount, UNIT_COUNT)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {project.bugCount}건
+                {formatCount(project.bugCount, UNIT_CASE)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {project.incidentCount}건
+                {formatCount(project.incidentCount, UNIT_CASE)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {formatTime(project.avgResolutionTime)}초
+                {formatTime(project.avgResolutionTime)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {formatTime(project.avgDetectionTime)}초
+                {formatTime(project.avgDetectionTime)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
                 {formatTime(project.avgDiagnosisTime)}
@@ -198,7 +205,7 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
                 {formatTime(project.avgRecoveryTime)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {formatDateString(project.createdAt)}
+                {project.createdAt ? formatDateString(project.createdAt) : NULL_DISPLAY}
               </td>
             </tr>
           ))}

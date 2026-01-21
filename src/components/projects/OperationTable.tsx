@@ -5,6 +5,13 @@ import { formatDateString } from "@/utils/date";
 
 // 단위 상수
 const UNIT_COUNT = "개";
+const NULL_DISPLAY = "--";
+
+// 숫자 포맷 헬퍼 (null → "--", 0 이상 → 숫자 + 단위)
+const formatCount = (value: number | null | undefined, unit: string): string => {
+  if (value === null || value === undefined) return NULL_DISPLAY;
+  return `${value}${unit}`;
+};
 
 interface OperationTableProps {
   items: OperationItem[];
@@ -92,19 +99,19 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 </a>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.activeTicketCount}{UNIT_COUNT}
+                {formatCount(item.activeTicketCount, UNIT_COUNT)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.updatedCount}{UNIT_COUNT}
+                {formatCount(item.updatedCount, UNIT_COUNT)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.completedCount}{UNIT_COUNT}
+                {formatCount(item.completedCount, UNIT_COUNT)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.createdCount}{UNIT_COUNT}
+                {formatCount(item.createdCount, UNIT_COUNT)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {formatDateString(item.createdAt)}
+                {item.createdAt ? formatDateString(item.createdAt) : NULL_DISPLAY}
               </td>
             </tr>
           ))}

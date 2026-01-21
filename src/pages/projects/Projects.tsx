@@ -51,9 +51,9 @@ const ProjectsPage = () => {
     if (!summaryData?.tfProjectCount) return null;
     return {
       count: summaryData.tfProjectCount.value,
-      completed: 0,
-      updated: 0,
-      created: 0,
+      completed: summaryData.tfProjectCount.completedCount,
+      updated: summaryData.tfProjectCount.updatedCount,
+      created: summaryData.tfProjectCount.createdCount,
     };
   }, [summaryData]);
 
@@ -61,9 +61,9 @@ const ProjectsPage = () => {
     if (!summaryData?.operationProjectCount) return null;
     return {
       count: summaryData.operationProjectCount.value,
-      completed: 0,
-      updated: 0,
-      created: 0,
+      completed: summaryData.operationProjectCount.completedCount,
+      updated: summaryData.operationProjectCount.updatedCount,
+      created: summaryData.operationProjectCount.createdCount,
     };
   }, [summaryData]);
 
@@ -76,8 +76,8 @@ const ProjectsPage = () => {
       epicId: project.epicKey,
       epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
       activeTicketCount: project.activeTicketCount,
-      bugCount: project.bugCount ?? 0,
-      incidentCount: project.incidentCount ?? 0,
+      bugCount: project.bugCount,
+      incidentCount: project.incidentCount,
       avgResolutionTime: project.mttr,
       avgDetectionTime: project.mttd,
       avgDiagnosisTime: project.timeToCauseIdentification,
@@ -95,9 +95,9 @@ const ProjectsPage = () => {
       epicId: project.epicKey,
       epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
       activeTicketCount: project.activeTicketCount,
-      updatedCount: 0,
-      completedCount: 0,
-      createdCount: 0,
+      updatedCount: project.updatedCount,
+      completedCount: project.completedCount,
+      createdCount: project.createdCount,
       createdAt: project.createdAt ?? "",
     }));
   }, [operationData]);
