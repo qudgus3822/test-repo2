@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import JsonView from "@uiw/react-json-view";
 import { githubLightTheme } from "@uiw/react-json-view/githubLight";
+import { apiGet } from "@/libs/fetch";
 
 const RawDataViewer = () => {
   const { mrId } = useParams<{ mrId: string }>();
@@ -18,11 +19,7 @@ const RawDataViewer = () => {
       }
 
       try {
-        const response = await fetch(`/api/v1/reviews/raw/${mrId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const jsonData = await response.json();
+        const jsonData = await apiGet<object>(`/reviews/raw/${mrId}`);
         setData(jsonData);
       } catch (err) {
         setError(

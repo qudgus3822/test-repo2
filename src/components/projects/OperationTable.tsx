@@ -1,6 +1,7 @@
 import { ExternalLink, Info } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { OperationItem } from "@/types/project.types";
+import { formatDateString } from "@/utils/date";
 
 // 테이블 헤더 정보 아이콘 컴포넌트
 const HeaderWithInfo = ({
@@ -40,8 +41,8 @@ export const OperationTable = ({ items }: OperationTableProps) => {
       <table className="w-full">
         <thead className="sticky top-0 bg-white z-10">
           <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 min-w-[200px]">운영 에픽명</th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">운영 에픽명</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               <HeaderWithInfo
                 label={
                   <>
@@ -53,7 +54,7 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 tooltip="현재 진행 중인 티켓 수"
               />
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               <HeaderWithInfo
                 label={
                   <>
@@ -64,7 +65,7 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 tooltip="해당 기간 동안 업데이트된 티켓 수"
               />
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               <HeaderWithInfo
                 label={
                   <>
@@ -76,7 +77,7 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 tooltip="해당 기간 동안 완료된 티켓 수"
               />
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               <HeaderWithInfo
                 label={
                   <>
@@ -88,7 +89,7 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 tooltip="해당 기간 동안 생성된 티켓 수"
               />
             </th>
-            <th className="px-4 py-3 text-center">생성일자</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">생성일자</th>
           </tr>
         </thead>
         <tbody>
@@ -124,7 +125,7 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 {item.createdCount}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.createdAt}
+                {formatDateString(item.createdAt)}
               </td>
             </tr>
           ))}

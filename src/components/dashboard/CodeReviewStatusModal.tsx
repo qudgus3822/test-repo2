@@ -140,8 +140,8 @@ export const CodeReviewStatusModal = () => {
   };
 
   // MR 링크 클릭 핸들러
-  const handleMrClick = (mrId: number) => {
-    window.open(`https://gitlab.example.com/merge_requests/${mrId}`, "_blank");
+  const handleMrClick = (mrUrl: string) => {
+    window.open(mrUrl, "_blank");
   };
 
   // 리뷰어 목록을 툴팁 문자열로 변환
@@ -510,7 +510,7 @@ export const CodeReviewStatusModal = () => {
                             </td>
                             <td
                               className="px-2.5 py-1 text-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                              onClick={() => handleMrClick(item.mrId)}
+                              onClick={() => handleMrClick(item.mrUrl)}
                             >
                               {item.mrId}
                             </td>

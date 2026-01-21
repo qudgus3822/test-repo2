@@ -1,5 +1,6 @@
 import { ExternalLink } from "lucide-react";
 import type { ProjectItem } from "@/types/project.types";
+import { formatDateString } from "@/utils/date";
 
 // 시간 포맷 헬퍼
 const formatTime = (value: number | null): string => {
@@ -29,43 +30,43 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
       <table className="w-full">
         <thead className="sticky top-0 bg-white z-10">
           <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 min-w-[200px]">프로젝트명</th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">프로젝트명</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               활성
               <br />
               티켓수
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               버그
               <br />
               발생수
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               장애
               <br />
               발생수
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               평균장애
               <br />
               해결시간
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               평균장애
               <br />
               탐지시간
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               평균장애
               <br />
               진단시간
             </th>
-            <th className="px-4 py-3 text-center">
+            <th className="px-4 py-3 text-center whitespace-nowrap">
               평균장애
               <br />
               복구시간
             </th>
-            <th className="px-4 py-3 text-center">생성일자</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">생성일자</th>
           </tr>
         </thead>
         <tbody>
@@ -110,7 +111,7 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
                 {formatTime(project.avgRecoveryTime)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {project.createdAt}
+                {formatDateString(project.createdAt)}
               </td>
             </tr>
           ))}
