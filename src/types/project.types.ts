@@ -26,6 +26,16 @@ export interface SummaryCardItem {
   change?: MonthlyChange | null;
 }
 
+/** 프로젝트 수 요약 카드 항목 (API 응답) - 완료/업데이트/생성 카운트 포함 */
+export interface ProjectCountSummaryItem extends SummaryCardItem {
+  /** 완료된 티켓 수 */
+  completedCount?: number | null;
+  /** 업데이트된 티켓 수 */
+  updatedCount?: number | null;
+  /** 생성된 티켓 수 */
+  createdCount?: number | null;
+}
+
 /** 프로젝트 대시보드 요약 API 응답 */
 export interface ProjectDashboardSummary {
   /** 조회 기간 (YYYY-MM) */
@@ -33,9 +43,9 @@ export interface ProjectDashboardSummary {
   /** 전체 BDPI 평균 */
   avgBdpi: SummaryCardItem;
   /** TF 프로젝트 수 */
-  tfProjectCount: SummaryCardItem;
+  tfProjectCount: ProjectCountSummaryItem;
   /** 운영(OPR2_NON_TF) 프로젝트 수 */
-  operationProjectCount: SummaryCardItem;
+  operationProjectCount: ProjectCountSummaryItem;
   /** 장애/버그 발생 평균 (건/월) */
   avgIncidentBugCount: SummaryCardItem;
 }
@@ -45,11 +55,11 @@ export interface ProjectSummary {
   /** 프로젝트 수 */
   count: number;
   /** 완료된 티켓 수 */
-  completed: number;
+  completed?: number | null;
   /** 업데이트된 티켓 수 */
-  updated: number;
+  updated?: number | null;
   /** 생성된 티켓 수 */
-  created: number;
+  created?: number | null;
 }
 
 /** 프로젝트 항목 */
@@ -63,18 +73,18 @@ export interface ProjectItem {
   /** EPIC URL */
   epicUrl: string;
   /** 활성 티켓수 */
-  activeTicketCount: number;
+  activeTicketCount: number | null;
   /** 버그 발생수 */
-  bugCount: number;
+  bugCount: number | null;
   /** 장애 발생수 */
-  incidentCount: number;
-  /** 평균장애 해결시간 (초) */
+  incidentCount: number | null;
+  /** 평균장애 해결시간 (시) */
   avgResolutionTime: number | null;
-  /** 평균장애 탐지시간 (초) */
+  /** 평균장애 탐지시간 (시) */
   avgDetectionTime: number | null;
-  /** 평균장애 진단시간 (초) */
+  /** 평균장애 진단시간 (시) */
   avgDiagnosisTime: number | null;
-  /** 평균장애 복구시간 (초) */
+  /** 평균장애 복구시간 (시) */
   avgRecoveryTime: number | null;
   /** 생성일자 */
   createdAt: string;
@@ -91,13 +101,13 @@ export interface OperationItem {
   /** EPIC URL */
   epicUrl: string;
   /** 활성 티켓 수 */
-  activeTicketCount: number;
+  activeTicketCount: number | null;
   /** 업데이트 수 */
-  updatedCount: number;
+  updatedCount: number | null;
   /** 완료 티켓수 */
-  completedCount: number;
+  completedCount: number | null;
   /** 생성 티켓수 */
-  createdCount: number;
+  createdCount: number | null;
   /** 생성일자 */
   createdAt: string;
 }
@@ -128,18 +138,24 @@ export interface ProjectDashboardItem {
   /** Epic 분류 (TF / OPR2_NON_TF / GENERAL) */
   epicClassification: EpicClassification | null;
   /** 활성 티켓수 */
-  activeTicketCount: number;
+  activeTicketCount: number | null;
+  /** 업데이트 수 */
+  updatedCount: number | null;
+  /** 완료 티켓수 */
+  completedCount: number | null;
+  /** 생성 티켓수 */
+  createdCount: number | null;
   /** 버그 발생 건수 */
   bugCount: number | null;
   /** 장애 발생 건수 */
   incidentCount: number | null;
-  /** 평균 장애 해결시간 (초) */
+  /** 평균 장애 해결시간 (시) */
   mttr: number | null;
-  /** 평균 장애 탐지시간 (초) */
+  /** 평균 장애 탐지시간 (시) */
   mttd: number | null;
-  /** 평균 장애 진단시간 (초) */
+  /** 평균 장애 진단시간 (시) */
   timeToCauseIdentification: number | null;
-  /** 평균 장애 복구시간 (초) */
+  /** 평균 장애 복구시간 (시) */
   timeToRepair: number | null;
   /** Epic 생성일 (YYYY-MM-DD) */
   createdAt: string | null;
