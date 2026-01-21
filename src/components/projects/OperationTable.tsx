@@ -3,22 +3,6 @@ import { Tooltip } from "@/components/ui/Tooltip";
 import type { OperationItem } from "@/types/project.types";
 import { formatDateString } from "@/utils/date";
 
-// 테이블 헤더 정보 아이콘 컴포넌트
-const HeaderWithInfo = ({
-  label,
-  tooltip,
-}: {
-  label: React.ReactNode;
-  tooltip: string;
-}) => (
-  <div className="flex items-center justify-center gap-1.5">
-    <span>{label}</span>
-    <Tooltip content={tooltip} direction="bottom">
-      <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
-    </Tooltip>
-  </div>
-);
-
 interface OperationTableProps {
   items: OperationItem[];
 }
@@ -43,51 +27,36 @@ export const OperationTable = ({ items }: OperationTableProps) => {
           <tr className="border-b border-gray-200 text-left text-sm font-medium text-gray-700">
             <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">운영 에픽명</th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
-              <HeaderWithInfo
-                label={
-                  <>
-                    활성
-                    <br />
-                    티켓 수
-                  </>
-                }
-                tooltip="현재 진행 중인 티켓 수"
-              />
+              <div className="flex items-center justify-center gap-1.5">
+                <span>활성<br />티켓 수</span>
+                <Tooltip content="해당 월에 활성화 된 티켓 개수" direction="bottom">
+                  <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                </Tooltip>
+              </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
-              <HeaderWithInfo
-                label={
-                  <>
-                    업데이트
-                    <br />수
-                  </>
-                }
-                tooltip="해당 기간 동안 업데이트된 티켓 수"
-              />
+              <div className="flex items-center justify-center gap-1.5">
+                <span>업데이트<br />수</span>
+                <Tooltip content="해당 월에 업데이트 된 개수이며, 생성과 완료는 집계 제외" direction="bottom">
+                  <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                </Tooltip>
+              </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
-              <HeaderWithInfo
-                label={
-                  <>
-                    완료
-                    <br />
-                    티켓수
-                  </>
-                }
-                tooltip="해당 기간 동안 완료된 티켓 수"
-              />
+              <div className="flex items-center justify-center gap-1.5">
+                <span>완료<br />티켓수</span>
+                <Tooltip content="해당 월에 완료된 티켓 개수" direction="bottom">
+                  <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                </Tooltip>
+              </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
-              <HeaderWithInfo
-                label={
-                  <>
-                    생성
-                    <br />
-                    티켓수
-                  </>
-                }
-                tooltip="해당 기간 동안 생성된 티켓 수"
-              />
+              <div className="flex items-center justify-center gap-1.5">
+                <span>생성<br />티켓수</span>
+                <Tooltip content="해당 월에 신규로 생성된 티켓 개수" direction="bottom">
+                  <Info className="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                </Tooltip>
+              </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">생성일자</th>
           </tr>
@@ -113,16 +82,16 @@ export const OperationTable = ({ items }: OperationTableProps) => {
                 </a>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.activeTicketCount}
+                <span className="inline-block pr-5">{item.activeTicketCount}</span>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.updatedCount}
+                <span className="inline-block pr-5">{item.updatedCount}</span>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.completedCount}
+                <span className="inline-block pr-5">{item.completedCount}</span>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {item.createdCount}
+                <span className="inline-block pr-5">{item.createdCount}</span>
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
                 {formatDateString(item.createdAt)}
