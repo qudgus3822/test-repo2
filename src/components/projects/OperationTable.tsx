@@ -33,7 +33,7 @@ export const OperationTable = ({ items }: OperationTableProps) => {
   return (
     <div className="overflow-auto h-full">
       <table className="w-full">
-        <thead className="sticky top-0 bg-white z-10">
+        <thead className="sticky top-0 bg-white z-10" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
           <tr className="border-t border-b border-gray-200 text-left text-sm font-medium text-gray-700">
             <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">운영 에픽명</th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
