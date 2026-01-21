@@ -179,7 +179,7 @@ export const ACHIEVEMENT_RATE_COLORS = {
   level2: "#C8E6C9", // 25-50% 미만
   level3: "#A5D6A7", // 50-75% 미만
   level4: "#81C784", // 75-100% 미만
-  level5: "#2E7D32", // 100% 이상
+  level5: "#2E7D32", // 100 - 200% 이하
   noData: "#F9FAFB", // 데이터 없음
 } as const;
 

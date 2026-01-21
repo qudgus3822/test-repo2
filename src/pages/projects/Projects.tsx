@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
-import { SummaryCard } from "./components/SummaryCard";
-import { ProjectTabs, type ProjectTabType } from "./components/ProjectTabs";
-import { ProjectTable } from "./components/ProjectTable";
-import { OperationTable } from "./components/OperationTable";
+import { SummaryCard } from "@/components/projects/SummaryCard";
+import { ProjectTabs, type ProjectTabType } from "@/components/projects/ProjectTabs";
+import { ProjectTable } from "@/components/projects/ProjectTable";
+import { OperationTable } from "@/components/projects/OperationTable";
+import { useProjectDashboardSummary } from "@/api/hooks/useProjectDashboardSummary";
+import { useProjectDashboard } from "@/api/hooks/useProjectDashboard";
+import { formatYearMonth } from "@/utils/date";
+import type {
+  ProjectSummary,
+  ProjectItem,
+  OperationItem,
+} from "@/types/project.types";
 
 // 안내 메시지 컴포넌트
 const InfoBanner = ({ message }: { message: string }) => (
@@ -17,12 +25,82 @@ const InfoBanner = ({ message }: { message: string }) => (
 
 const ProjectsPage = () => {
   const [period, setPeriod] = useState<PeriodType>("monthly");
-  const [currentDate, setCurrentDate] = useState(() => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - 1); // 전월 기본 선택
-    return date;
-  });
+  const [currentDate, setCurrentDate] = useState(() => new Date());
   const [activeTab, setActiveTab] = useState<ProjectTabType>("tf");
+
+  // API 호출을 위한 월 포맷 (YYYY-MM)
+  const month = formatYearMonth(currentDate);
+
+  // 프로젝트 대시보드 요약 데이터 조회
+  const { data: summaryData } = useProjectDashboardSummary(month);
+
+  // TF 프로젝트 목록 데이터 조회 (TF 탭이 활성화된 경우에만 호출)
+  const { data: tfData } = useProjectDashboard(
+    { month, classification: "TF" },
+    activeTab === "tf",
+  );
+
+  // 운영 프로젝트 목록 데이터 조회 (운영 탭이 활성화된 경우에만 호출)
+  const { data: operationData } = useProjectDashboard(
+    { month, classification: "OPR2_NON_TF" },
+    activeTab === "operation",
+  );
+
+  // API 응답을 SummaryCard의 ProjectSummary 형태로 변환
+  const tfSummary: ProjectSummary | null = useMemo(() => {
+    if (!summaryData?.tfProjectCount) return null;
+    return {
+      count: summaryData.tfProjectCount.value,
+      completed: 0,
+      updated: 0,
+      created: 0,
+    };
+  }, [summaryData]);
+
+  const operationSummary: ProjectSummary | null = useMemo(() => {
+    if (!summaryData?.operationProjectCount) return null;
+    return {
+      count: summaryData.operationProjectCount.value,
+      completed: 0,
+      updated: 0,
+      created: 0,
+    };
+  }, [summaryData]);
+
+  // API 응답을 ProjectTable의 ProjectItem 형태로 변환
+  const tfProjects: ProjectItem[] = useMemo(() => {
+    if (!tfData?.projects) return [];
+    return tfData.projects.map((project) => ({
+      id: project.projectId,
+      name: project.epicSummary,
+      epicId: project.epicKey,
+      epicUrl: `https://hunetcorp.atlassian.net/browse/${project.epicKey}`,
+      activeTicketCount: project.activeTicketCount,
+      bugCount: project.bugCount ?? 0,
+      incidentCount: project.incidentCount ?? 0,
+      avgResolutionTime: project.mttr,
+      avgDetectionTime: project.mttd,
+      avgDiagnosisTime: project.timeToCauseIdentification,
+      avgRecoveryTime: project.timeToRepair,
+      createdAt: project.createdAt ?? "",
+    }));
+  }, [tfData]);
+
+  // API 응답을 OperationTable의 OperationItem 형태로 변환
+  const operationItems: OperationItem[] = useMemo(() => {
+    if (!operationData?.projects) return [];
+    return operationData.projects.map((project) => ({
+      id: project.projectId,
+      name: project.epicSummary,
+      epicId: project.epicKey,
+      epicUrl: `https://hunetcorp.atlassian.net/browse/${project.epicKey}`,
+      activeTicketCount: project.activeTicketCount,
+      updatedCount: 0,
+      completedCount: 0,
+      createdCount: 0,
+      createdAt: project.createdAt ?? "",
+    }));
+  }, [operationData]);
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
@@ -45,8 +123,8 @@ const ProjectsPage = () => {
 
         {/* 요약 카드 */}
         <div className="flex gap-4">
-          <SummaryCard title="TF 프로젝트" summary={null} />
-          <SummaryCard title="운영" summary={null} />
+          <SummaryCard title="TF 프로젝트" summary={tfSummary} />
+          <SummaryCard title="운영" summary={operationSummary} />
         </div>
       </div>
 
@@ -57,19 +135,19 @@ const ProjectsPage = () => {
           <ProjectTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            tfCount={0}
-            operationCount={0}
+            tfCount={summaryData?.tfProjectCount?.value ?? 0}
+            operationCount={summaryData?.operationProjectCount?.value ?? 0}
           />
         </div>
 
         {/* 테이블 */}
         <div className="p-4 flex-1 min-h-0 overflow-auto">
           {activeTab === "tf" ? (
-            <ProjectTable projects={[]} />
+            <ProjectTable projects={tfProjects} />
           ) : (
             <>
               <InfoBanner message="운영은 에픽의 유형(버그/장애/에프터잡 등)이 분류되지 않아 상세 지표가 제공되지 않습니다." />
-              <OperationTable items={[]} />
+              <OperationTable items={operationItems} />
             </>
           )}
         </div>
