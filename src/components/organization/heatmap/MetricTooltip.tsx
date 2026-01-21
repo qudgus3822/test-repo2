@@ -6,7 +6,7 @@
 
 import { createPortal } from "react-dom";
 import { SUMMARY_CATEGORIES } from "./types";
-import { ScoreLevelLabel } from "@/types/organization.types";
+import { ScoreLevelColor, ScoreLevelLabel } from "@/types/organization.types";
 
 interface MetricTooltipProps {
   /** 지표 코드 */
@@ -153,7 +153,9 @@ export const MetricTooltip = ({
               <div
                 className="w-2.5 h-2.5 rounded-full"
                 style={{
-                  backgroundColor: achievementCategory?.bgColor ?? "#9CA3AF",
+                  backgroundColor:
+                    ScoreLevelColor[status as keyof typeof ScoreLevelColor] ??
+                    "#9CA3AF",
                 }}
               />
               <span className="text-md font-medium text-gray-900">

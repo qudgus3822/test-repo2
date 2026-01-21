@@ -352,6 +352,17 @@ export const ScoreLevelLabel: Record<ScoreLevel, string> = {
   overAchieved: "초과달성",
 };
 
+export const ScoreLevelColor: Record<ScoreLevel, string> = {
+  excellent: "#b3d9f2",
+  good: "#b3d9f2",
+  danger: "#ffb5a7",
+  over: "#5ed3c5",
+  warning: "#ffe5a3",
+  no_data: "#9ca3af",
+  over_achieved: "#5ed3c5",
+  overAchieved: "#5ed3c5",
+};
+
 // 조직 비교 필터 타입
 export type OrganizationFilterType = "all" | "excellent" | "good" | "danger";
 
