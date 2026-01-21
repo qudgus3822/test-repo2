@@ -5,6 +5,41 @@
 /** 프로젝트 유형 */
 export type ProjectType = "tf" | "operation";
 
+/** 전월대비 변화 방향 */
+export type ChangeDirection = "up" | "down" | "same" | "new" | "no_data";
+
+/** 전월대비 변화 정보 */
+export interface MonthlyChange {
+  /** 변화값 (절대값 또는 퍼센트) */
+  value: number;
+  /** 변화 방향 */
+  direction: ChangeDirection;
+}
+
+/** 요약 카드 항목 (API 응답) */
+export interface SummaryCardItem {
+  /** 현재 값 */
+  value: number;
+  /** 단위 (개, 건/월 등) */
+  unit?: string | null;
+  /** 전월대비 변화 정보 */
+  change?: MonthlyChange | null;
+}
+
+/** 프로젝트 대시보드 요약 API 응답 */
+export interface ProjectDashboardSummary {
+  /** 조회 기간 (YYYY-MM) */
+  period: string;
+  /** 전체 BDPI 평균 */
+  avgBdpi: SummaryCardItem;
+  /** TF 프로젝트 수 */
+  tfProjectCount: SummaryCardItem;
+  /** 운영(OPR2_NON_TF) 프로젝트 수 */
+  operationProjectCount: SummaryCardItem;
+  /** 장애/버그 발생 평균 (건/월) */
+  avgIncidentBugCount: SummaryCardItem;
+}
+
 /** 프로젝트 요약 통계 */
 export interface ProjectSummary {
   /** 프로젝트 수 */
@@ -77,4 +112,55 @@ export interface ProjectPageData {
   tfProjects: ProjectItem[];
   /** 운영 에픽 목록 */
   operationItems: OperationItem[];
+}
+
+/** Epic 분류 타입 */
+export type EpicClassification = "TF" | "OPR2_NON_TF" | "GENERAL";
+
+/** 프로젝트 대시보드 항목 (API 응답) */
+export interface ProjectDashboardItem {
+  /** 프로젝트 ID (MongoDB ObjectId) */
+  projectId: string;
+  /** Epic 키 (예: "OPR2-123") */
+  epicKey: string;
+  /** Epic 요약 (프로젝트명) */
+  epicSummary: string;
+  /** Epic 분류 (TF / OPR2_NON_TF / GENERAL) */
+  epicClassification: EpicClassification | null;
+  /** 활성 티켓수 */
+  activeTicketCount: number;
+  /** 버그 발생 건수 */
+  bugCount: number | null;
+  /** 장애 발생 건수 */
+  incidentCount: number | null;
+  /** 평균 장애 해결시간 (초) */
+  mttr: number | null;
+  /** 평균 장애 탐지시간 (초) */
+  mttd: number | null;
+  /** 평균 장애 진단시간 (초) */
+  timeToCauseIdentification: number | null;
+  /** 평균 장애 복구시간 (초) */
+  timeToRepair: number | null;
+  /** Epic 생성일 (YYYY-MM-DD) */
+  createdAt: string | null;
+}
+
+/** 프로젝트 대시보드 목록 API 응답 */
+export interface ProjectDashboardResponse {
+  /** 조회 기간 (YYYY-MM) */
+  period: string;
+  /** 전체 프로젝트 수 */
+  totalCount: number;
+  /** 프로젝트 목록 (활성 티켓수 오름차순) */
+  projects: ProjectDashboardItem[];
+}
+
+/** 프로젝트 대시보드 조회 파라미터 */
+export interface ProjectDashboardParams {
+  /** 조회 기간 (YYYY-MM) */
+  month: string;
+  /** Epic 분류 필터 (TF / OPR2_NON_TF) */
+  classification?: "TF" | "OPR2_NON_TF";
+  /** 검색어 (프로젝트명 또는 에픽키) */
+  search?: string;
 }
