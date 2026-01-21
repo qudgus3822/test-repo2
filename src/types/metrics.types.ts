@@ -140,6 +140,8 @@ export interface PendingSummaryResponse {
   targetValue: PendingSummaryCategoryCount; // 목표값 변경 개수
   achievementCriteria: number; // 달성률 기준 변경 개수
   achievementCriteriaExcellent: number; // 달성률 기준 우수 변경 개수
+  // [변경: 2026-01-21 12:00, 김병현 수정] 위험 기준 필드 추가
+  achievementCriteriaDanger: number; // 달성률 기준 위험 변경 개수
   weight: PendingSummaryCategoryCount; // 비율설정 변경 개수
 }
 

@@ -103,7 +103,16 @@ export const MetricStandardSettingModal = ({
     }
     return criteriaData?.thresholds.excellent ?? 80;
   }, [criteriaData, pendingSummary]);
-  const dangerThreshold = criteriaData?.thresholds.danger ?? 70;
+  const dangerThreshold = useMemo(() => {
+    console.log("Calculating danger threshold",pendingSummary);
+    if (pendingSummary) {
+      if (pendingSummary.achievementCriteriaDanger) {
+        console.log("Using pending summary danger threshold:", pendingSummary.achievementCriteriaDanger);
+        return pendingSummary.achievementCriteriaDanger;
+      }
+    }
+    return criteriaData?.thresholds.danger ?? 70;
+  }, [criteriaData, pendingSummary]);
 
   // API 응답에서 변경 사항 데이터 추출
   const targetValueCount = {

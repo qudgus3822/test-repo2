@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { MetricStatus } from "@/types/metrics.types";
 import { getStatusIconConfig } from "@/utils/metrics";
 import { Button } from "@/components/ui/Button";
@@ -8,6 +8,7 @@ import {
   // DEFAULT_DANGER_THRESHOLD,
 } from "@/store/useMetricsStore";
 import { updateAchievementCriteria } from "@/api/metrics";
+import { usePendingSummary } from "@/api/hooks/usePendingSummary";
 
 // 절대 최소/최대 기준 상수
 const MIN_DANGER_THRESHOLD = 1;
@@ -133,6 +134,10 @@ export const AchievementRateSetting = ({
 
     setIsApplying(true);
     try {
+      console.log("Updating achievement criteria:", {
+        excellent: excellentThreshold,
+        danger: dangerThreshold,
+      });
       await updateAchievementCriteria({
         thresholds: {
           excellent: excellentThreshold,

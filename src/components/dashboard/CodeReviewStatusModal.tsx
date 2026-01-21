@@ -79,7 +79,6 @@ const SortableHeader = ({
 };
 
 export const CodeReviewStatusModal = () => {
-
   const isCodeReviewModalOpen = useDashboardStore(
     (state) => state.isCodeReviewModalOpen,
   );
@@ -266,7 +265,8 @@ export const CodeReviewStatusModal = () => {
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.completed.breakdown.multipleContributors > 0
+                                summary.completed.breakdown
+                                  .multipleContributors > 0
                                   ? "calc(100% - 40px)"
                                   : "100%",
                               backgroundColor:
@@ -296,7 +296,8 @@ export const CodeReviewStatusModal = () => {
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.completed.breakdown.singleContributor > 0
+                                summary.completed.breakdown.singleContributor >
+                                0
                                   ? "calc(100% - 40px)"
                                   : "100%",
                               backgroundColor:
@@ -309,7 +310,8 @@ export const CodeReviewStatusModal = () => {
                               100 >=
                             30
                               ? `MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`
-                              : summary.completed.breakdown.multipleContributors + "개"}
+                              : summary.completed.breakdown
+                                  .multipleContributors + "개"}
                           </div>
                         )}
                       </div>
@@ -343,7 +345,8 @@ export const CodeReviewStatusModal = () => {
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.incomplete.breakdown.multipleContributors > 0
+                                summary.incomplete.breakdown
+                                  .multipleContributors > 0
                                   ? "calc(100% - 40px)"
                                   : "100%",
                               backgroundColor:
@@ -373,7 +376,8 @@ export const CodeReviewStatusModal = () => {
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.incomplete.breakdown.singleContributor > 0
+                                summary.incomplete.breakdown.singleContributor >
+                                0
                                   ? "calc(100% - 40px)"
                                   : "100%",
                               backgroundColor:
@@ -381,12 +385,14 @@ export const CodeReviewStatusModal = () => {
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            {(summary.incomplete.breakdown.multipleContributors /
+                            {(summary.incomplete.breakdown
+                              .multipleContributors /
                               summary.incomplete.count) *
                               100 >=
                             30
                               ? `MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`
-                              : summary.incomplete.breakdown.multipleContributors}
+                              : summary.incomplete.breakdown
+                                  .multipleContributors + "개"}
                           </div>
                         )}
                       </div>
