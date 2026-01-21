@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 
-type TooltipDirection = "right" | "bottom";
+type TooltipDirection = "right" | "bottom" | "top";
 
 interface TooltipProps {
   children: ReactNode;
@@ -57,6 +57,12 @@ export const Tooltip = ({
           left: rect.left + rect.width / 2,
         });
         setArrowTop(null);
+      } else if (direction === "top") {
+        setPosition({
+          top: rect.top - 8,
+          left: rect.left + rect.width / 2,
+        });
+        setArrowTop(null);
       } else {
         // 트리거 요소의 세로 중앙 위치
         const triggerCenterY = rect.top + rect.height / 2;
@@ -104,10 +110,16 @@ export const Tooltip = ({
                     left: `${position.left}px`,
                     transform: "translateX(-50%)",
                   }
-                : {
-                    top: `${position.top - 8}px`,
-                    left: `${position.left}px`,
-                  }),
+                : direction === "top"
+                  ? {
+                      top: `${position.top}px`,
+                      left: `${position.left}px`,
+                      transform: "translate(-50%, -100%)",
+                    }
+                  : {
+                      top: `${position.top - 8}px`,
+                      left: `${position.left}px`,
+                    }),
               ...(maxWidth !== undefined && { maxWidth: `${maxWidth}px` }),
             }}
           >
@@ -116,6 +128,11 @@ export const Tooltip = ({
             {direction === "bottom" ? (
               <div
                 className="absolute w-2 h-2 transform rotate-45 left-1/2 -top-1 -translate-x-1/2"
+                style={{ backgroundColor: color }}
+              />
+            ) : direction === "top" ? (
+              <div
+                className="absolute w-2 h-2 transform rotate-45 left-1/2 -bottom-1 -translate-x-1/2"
                 style={{ backgroundColor: color }}
               />
             ) : (
