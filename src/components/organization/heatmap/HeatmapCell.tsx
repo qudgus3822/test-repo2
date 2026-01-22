@@ -9,6 +9,7 @@ import { ProgressSquare } from "./ProgressSquare";
 import { MetricTooltip } from "./MetricTooltip";
 import { fetchMetricDefinition } from "@/api/organization";
 import type { MetricDefinitionResponse } from "@/api/organization";
+import { useOrganizationStore } from "@/store/useOrganizationStore";
 
 interface HeatmapCellProps {
   /** 지표 코드 */
@@ -44,6 +45,9 @@ export const HeatmapCell = ({
   showTooltip = true,
   status,
 }: HeatmapCellProps) => {
+  // [변경: 2026-01-22 14:35, 김병현 수정] 표시 모드에 따라 실제값 또는 달성률(score) 표시
+  const displayMode = useOrganizationStore((state) => state.displayMode);
+  const displayValue = displayMode === "rate" ? score : value;
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [metricDefinition, setMetricDefinition] =
@@ -117,7 +121,7 @@ export const HeatmapCell = ({
     >
       <ProgressSquare
         score={score}
-        value={value}
+        value={displayValue}
         hideValue={hideValue}
         isLoading={isLoading}
       />

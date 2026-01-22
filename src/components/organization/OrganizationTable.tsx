@@ -254,6 +254,7 @@ const CombinedDepartmentRow = ({
         const metricName = metric?.metricName;
         const description = metric?.tooltip;
         const status = metric?.status;
+
         return (
           <td
             key={code}

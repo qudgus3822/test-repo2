@@ -4,14 +4,13 @@ import {
   Cable,
   Network,
   List,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
+import { Switch } from "@/components/ui/Switch";
 import {
   OrganizationTabs,
   OrganizationTable,
@@ -86,6 +85,9 @@ const OrganizationPage = () => {
   const setIsMetricColumnDragged = useOrganizationStore(
     (state) => state.setIsMetricColumnDragged,
   );
+  // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
+  const displayMode = useOrganizationStore((state) => state.displayMode);
+  const setDisplayMode = useOrganizationStore((state) => state.setDisplayMode);
 
   const setOrgHistoryModal = useDashboardStore(
     (state) => state.setOrgHistoryModal,
@@ -131,9 +133,6 @@ const OrganizationPage = () => {
   // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
   const [aggregationType, setAggregationType] =
     useState<AggregationType>("avg");
-
-  // 보기/펼치기 상태
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // 검색 영역 표시 상태
   const [isSearchAreaOpen, setIsSearchAreaOpen] = useState(false);
@@ -282,6 +281,8 @@ const OrganizationPage = () => {
     true,
     apiOptions,
   );
+
+  console.log("OrganizationPage render:", data);
 
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
@@ -474,7 +475,7 @@ const OrganizationPage = () => {
               </Button>
             )}
             {/* 보기/숨기기 버튼 */}
-            <Button
+            {/* <Button
               variant="normal"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
@@ -490,7 +491,18 @@ const OrganizationPage = () => {
                   숨기기
                 </span>
               )}
-            </Button>
+            </Button> */}
+            {/* [변경: 2026-01-22 15:00, 김병현 수정] 달성률/실제값 전환 스위치 (달성률이 기본) */}
+            {activeTab === "all" && (
+              <Switch
+                checked={displayMode === "value"}
+                onChange={(checked) =>
+                  setDisplayMode(checked ? "value" : "rate")
+                }
+                leftLabel="달성률"
+                rightLabel="실제값"
+              />
+            )}
           </div>
         </div>
 
@@ -559,7 +571,6 @@ const OrganizationPage = () => {
                   <OrganizationTable
                     month={yearMonth}
                     activeTab={activeTab}
-                    hideValues={isExpanded}
                     onDetailClick={handleDetailClick}
                     aggregationType={aggregationType}
                     onMetricDetailChange={setIsMetricDetailOpen}
@@ -569,7 +580,6 @@ const OrganizationPage = () => {
                     month={yearMonth}
                     activeTab={activeTab}
                     filterType={flatViewFilter}
-                    hideValues={isExpanded}
                     onDetailClick={handleDetailClick}
                     searchKeyword={activeSearchKeyword}
                     onSearchResult={setSearchResultCount}
@@ -593,14 +603,12 @@ const OrganizationPage = () => {
                   <OrganizationBdpiTable
                     month={yearMonth}
                     activeTab={activeTab}
-                    hideValues={isExpanded}
                   />
                 ) : (
                   <OrganizationBdpiFlatTable
                     month={yearMonth}
                     activeTab={activeTab}
                     filterType={flatViewFilter}
-                    hideValues={isExpanded}
                     searchKeyword={activeSearchKeyword}
                     onSearchResult={setSearchResultCount}
                   />

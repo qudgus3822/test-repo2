@@ -5,8 +5,7 @@
  */
 
 import { createPortal } from "react-dom";
-import { SUMMARY_CATEGORIES } from "./types";
-import { ScoreLevelLabel } from "@/types/organization.types";
+import { ScoreLevelColor, ScoreLevelLabel } from "@/types/organization.types";
 
 interface MetricTooltipProps {
   /** 지표 코드 */
@@ -33,12 +32,6 @@ interface MetricTooltipProps {
 /**
  * 달성률에 따른 달성단계 카테고리 반환
  */
-const getAchievementCategory = (score: number | null) => {
-  if (score === null) return null;
-  return SUMMARY_CATEGORIES.find(
-    (cat) => score >= cat.minPercentage && score < cat.maxPercentage,
-  );
-};
 
 export const MetricTooltip = ({
   metricCode,
@@ -57,7 +50,6 @@ export const MetricTooltip = ({
   const displayMetricName = metricName || metricCode;
   // API 응답값 사용
   const displayUnit = unit ?? "";
-  const achievementCategory = getAchievementCategory(score);
 
   // 목표값 포맷팅
   const formattedTargetValue =
@@ -153,7 +145,9 @@ export const MetricTooltip = ({
               <div
                 className="w-2.5 h-2.5 rounded-full"
                 style={{
-                  backgroundColor: achievementCategory?.bgColor ?? "#9CA3AF",
+                  backgroundColor:
+                    ScoreLevelColor[status as keyof typeof ScoreLevelColor] ??
+                    "#9CA3AF",
                 }}
               />
               <span className="text-md font-medium text-gray-900">
