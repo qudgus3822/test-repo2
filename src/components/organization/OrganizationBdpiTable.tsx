@@ -14,7 +14,6 @@ import type {
   OrganizationMember,
   OrganizationNode,
   TabType,
-  ChangeInfo,
   BdpiMetrics,
   MonthlyComparison,
   AggregationType,
@@ -22,17 +21,13 @@ import type {
 import { TREND_COLORS } from "@/styles/colors";
 import {
   getMemberRoleOrPositionLabel,
-  hasChangeInfo,
-  formatChangeDate,
   getMemberEmail,
-  getChangeDetailWithSuffix,
   getLevelBackgroundColor,
 } from "@/utils/organization";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
+import { StatusBadge } from "./StatusBadge";
 
 
 interface OrganizationBdpiTableProps {
@@ -83,66 +78,6 @@ const ChangeRateDisplay = ({
       )}
       <span>{changePercent.toFixed(1)}%</span>
     </div>
-  );
-};
-
-// 변경이력 툴팁 내용 생성
-const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
-  const { changeDate, changeEndDate, changeDetail, changeType, category } =
-    change;
-
-  const formattedDate = changeEndDate
-    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
-    : formatChangeDate(changeDate);
-
-  const separator = " ";
-  const detailWithSuffix = changeDetail
-    ? getChangeDetailWithSuffix(changeDetail, category, changeType)
-    : "";
-
-  return detailWithSuffix
-    ? `${formattedDate}${separator}${detailWithSuffix}`
-    : formattedDate;
-};
-
-const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
-  return changes
-    .map((change) => getSingleChangeTooltipContent(change))
-    .join("\n");
-};
-
-// 상태 뱃지 컴포넌트
-const MAX_BADGE_COUNT = 4;
-
-const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
-  if (!hasChangeInfo(change)) return null;
-
-  const sortedChanges = [...change!].sort((a, b) => {
-    const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
-    const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
-    return dateB - dateA;
-  });
-  const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
-
-  const tooltipContent = getCombinedTooltipContent(displayChanges);
-
-  const badges = (
-    <div className="inline-flex items-center">
-      {displayChanges.map((item, index) => (
-        <ChangeTypeBadge
-          key={`${item.changeType}-${index}`}
-          type={item.changeType}
-          category={item.category}
-          className="ml-2 cursor-default"
-        />
-      ))}
-    </div>
-  );
-
-  return (
-    <Tooltip content={tooltipContent} color="#6B7280">
-      {badges}
-    </Tooltip>
   );
 };
 

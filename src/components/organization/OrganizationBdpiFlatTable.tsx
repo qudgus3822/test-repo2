@@ -17,25 +17,17 @@ import type {
   TabType,
   BdpiMetrics,
   MonthlyComparison,
-  ChangeInfo,
   AggregationType,
 } from "@/types/organization.types";
-import {
-  hasChangeInfo,
-  formatChangeDate,
-  getChangeDetailWithSuffix,
-  getMemberRoleOrPositionLabel,
-} from "@/utils/organization";
+import { getMemberRoleOrPositionLabel } from "@/utils/organization";
 import { TREND_COLORS } from "@/styles/colors";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { HeatmapCell } from "./heatmap/HeatmapCell";
+import { StatusBadge } from "./StatusBadge";
 
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
 export type FlatViewFilterType = "division" | "team" | "member";
-
 
 interface OrganizationBdpiFlatTableProps {
   month: string;
@@ -101,8 +93,8 @@ const ChangeRateDisplay = ({
         color: isUp
           ? TREND_COLORS.increase
           : isDown
-          ? TREND_COLORS.decrease
-          : undefined,
+            ? TREND_COLORS.decrease
+            : undefined,
       }}
     >
       {(isUp || isDown) && (
@@ -114,66 +106,6 @@ const ChangeRateDisplay = ({
       )}
       <span>{changePercent.toFixed(1)}%</span>
     </div>
-  );
-};
-
-// 변경이력 툴팁 내용 생성
-const getSingleChangeTooltipContent = (change: ChangeInfo): string => {
-  const { changeDate, changeEndDate, changeDetail, changeType, category } =
-    change;
-
-  const formattedDate = changeEndDate
-    ? `${formatChangeDate(changeDate)} ~ ${formatChangeDate(changeEndDate)}`
-    : formatChangeDate(changeDate);
-
-  const separator = " ";
-  const detailWithSuffix = changeDetail
-    ? getChangeDetailWithSuffix(changeDetail, category, changeType)
-    : "";
-
-  return detailWithSuffix
-    ? `${formattedDate}${separator}${detailWithSuffix}`
-    : formattedDate;
-};
-
-const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
-  return changes
-    .map((change) => getSingleChangeTooltipContent(change))
-    .join("\n");
-};
-
-// 상태 뱃지 컴포넌트
-const MAX_BADGE_COUNT = 4;
-
-const StatusBadge = ({ change }: { change?: ChangeInfo[] }) => {
-  if (!hasChangeInfo(change)) return null;
-
-  const sortedChanges = [...change!].sort((a, b) => {
-    const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
-    const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
-    return dateB - dateA;
-  });
-  const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
-
-  const tooltipContent = getCombinedTooltipContent(displayChanges);
-
-  const badges = (
-    <div className="inline-flex items-center">
-      {displayChanges.map((item, index) => (
-        <ChangeTypeBadge
-          key={`${item.changeType}-${index}`}
-          type={item.changeType}
-          category={item.category}
-          className="ml-2 cursor-default"
-        />
-      ))}
-    </div>
-  );
-
-  return (
-    <Tooltip content={tooltipContent} color="#6B7280">
-      {badges}
-    </Tooltip>
   );
 };
 
@@ -306,9 +238,7 @@ const FlatRow = ({
   const parentInfo = getParentInfo();
 
   return (
-    <tr
-      className={`border-b border-gray-200 hover:bg-gray-50/50 ${rowHeight}`}
-    >
+    <tr className={`border-b border-gray-200 hover:bg-gray-50/50 ${rowHeight}`}>
       <td
         className={`px-5 py-4 align-middle whitespace-nowrap border-r border-gray-200 w-[350px] ${rowHeight}`}
       >
@@ -527,7 +457,10 @@ export const OrganizationBdpiFlatTable = ({
           <col style={{ width: "100px" }} />
         </colgroup>
         {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
-        <thead className="sticky top-0 z-10" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
+        <thead
+          className="sticky top-0 z-10"
+          style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}
+        >
           <tr className="border-b border-gray-200 bg-gray-50 h-[67px]">
             <th
               className={`${thStyle} text-left whitespace-nowrap border-r border-gray-200`}
