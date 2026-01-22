@@ -30,6 +30,7 @@ import { useOrganizationTreeBasic } from "@/api/hooks/useOrganizationTree";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { LastSyncInfo } from "@/components/ui/LastSyncInfo";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { StatusBadge } from "../organization/StatusBadge";
 
 // 실장/팀장 찾기 헬퍼 함수
 const findLeader = (children?: OrganizationNode[]): string => {
@@ -45,34 +46,6 @@ const findLeader = (children?: OrganizationNode[]): string => {
     return `${leader.name} ${position}`;
   }
   return "";
-};
-
-// 변경 유형 배지 컴포넌트 (GROUP, POLICY 카테고리만 표시)
-const ChangesBadgeGroup = ({
-  changes,
-}: {
-  changes?: { changeType: string; category: string }[];
-}) => {
-  if (!changes || changes.length === 0) return null;
-
-  // GROUP, POLICY 카테고리만 필터링
-  const filteredChanges = changes.filter(
-    (c) => c.category === "GROUP" || c.category === "POLICY",
-  );
-
-  if (filteredChanges.length === 0) return null;
-
-  return (
-    <span className="flex items-center gap-1">
-      {filteredChanges.map((change, index) => (
-        <ChangeTypeBadge
-          key={`${change.category}-${change.changeType}-${index}`}
-          type={change.changeType}
-          fixedWidth
-        />
-      ))}
-    </span>
-  );
 };
 
 // 실 목록 컴포넌트
@@ -121,7 +94,7 @@ const DepartmentList = ({
                       <span className="font-medium text-gray-900 text-sm">
                         {dept.name}
                       </span>
-                      <ChangesBadgeGroup changes={dept.changes} />
+                      <StatusBadge change={dept.changes}></StatusBadge>
                     </div>
                     <p className="text-xs text-gray-500">{leader}</p>
                   </div>
@@ -232,7 +205,7 @@ const TeamList = ({
                     <span className="font-medium text-gray-900 text-sm">
                       {team.name}
                     </span>
-                    <ChangesBadgeGroup changes={team.changes} />
+                    <StatusBadge change={team.changes}></StatusBadge>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">
