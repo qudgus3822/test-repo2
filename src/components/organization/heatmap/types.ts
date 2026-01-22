@@ -113,7 +113,7 @@ export const COLUMN_WIDTHS = {
   bdpi: 80,
 } as const;
 
-// 점수 등급별 카운트 계산 (API statusCount가 없을 경우 대비)
+// [변경: 2026-01-22 17:00, 김병현 수정] status 값 기반으로 카운트 계산
 export const calculateSummaryCounts = (
   metrics: Record<string, MetricData> | undefined
 ): SummaryCounts => {
@@ -122,18 +122,19 @@ export const calculateSummaryCounts = (
   if (!metrics) return counts;
 
   Object.values(metrics).forEach((metric) => {
-    if (!metric || typeof metric.score !== "number" || metric.isUsed === false) return;
+    // BDPI 제외, isUsed가 false인 지표 제외
+    if (!metric || metric.isUsed === false) return;
 
-    const score = metric.score;
+    const status = metric.status;
 
-    // API 기준으로 카테고리 분류
-    if (score >= 100) {
+    // status 값 기반으로 카테고리 분류
+    if (status === "over_achieved") {
       counts.overAchieved++;
-    } else if (score >= 80) {
+    } else if (status === "excellent") {
       counts.excellent++;
-    } else if (score >= 60) {
+    } else if (status === "warning") {
       counts.warning++;
-    } else {
+    } else if (status === "danger") {
       counts.danger++;
     }
   });

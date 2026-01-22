@@ -26,7 +26,7 @@ const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
         item.category,
         item.changeType,
       );
-      return `[${formattedDate}] ${detailWithSuffix}`;
+      return `${formattedDate} ${detailWithSuffix}`;
     })
     .join("\n");
 };
@@ -40,7 +40,7 @@ export const StatusBadge = ({ change }: StatusBadgeProps) => {
   const sortedChanges = [...change!].sort((a, b) => {
     const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
     const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
-    return dateB - dateA;
+    return dateA - dateB;
   });
   const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
   const tooltipContent = getCombinedTooltipContent(displayChanges);
