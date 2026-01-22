@@ -36,47 +36,41 @@ export const Switch = ({
   className,
 }: SwitchProps) => {
   return (
-    <div className={clsx("flex items-center gap-2", className)}>
-      {leftLabel && (
-        <span
-          className={clsx(
-            "text-sm font-medium transition-colors",
-            !checked ? "text-blue-600" : "text-gray-500"
-          )}
-        >
-          {leftLabel}
-        </span>
+    // [변경: 2026-01-22 14:30, 김병현 수정] 버튼 토글 스타일로 디자인 변경
+    <div
+      className={clsx(
+        "flex items-center border border-slate-200 rounded-lg overflow-hidden",
+        className
       )}
+    >
       <button
         type="button"
-        role="switch"
-        aria-checked={checked}
+        onClick={() => !disabled && onChange(false)}
         disabled={disabled}
-        onClick={() => !disabled && onChange(!checked)}
         className={clsx(
-          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-          checked ? "bg-blue-600" : "bg-gray-300",
+          "px-4 py-1.5 text-sm font-medium transition-colors",
+          !checked
+            ? "bg-blue-600 text-white cursor-pointer"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer",
           disabled && "cursor-not-allowed opacity-50"
         )}
       >
-        <span
-          className={clsx(
-            "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
-            checked ? "translate-x-6" : "translate-x-1"
-          )}
-        />
+        {leftLabel}
       </button>
-      {rightLabel && (
-        <span
-          className={clsx(
-            "text-sm font-medium transition-colors",
-            checked ? "text-blue-600" : "text-gray-500"
-          )}
-        >
-          {rightLabel}
-        </span>
-      )}
+      <button
+        type="button"
+        onClick={() => !disabled && onChange(true)}
+        disabled={disabled}
+        className={clsx(
+          "px-4 py-1.5 border-l border-slate-200 text-sm font-medium transition-colors",
+          checked
+            ? "bg-blue-600 text-white cursor-pointer"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer",
+          disabled && "cursor-not-allowed opacity-50"
+        )}
+      >
+        {rightLabel}
+      </button>
     </div>
   );
 };

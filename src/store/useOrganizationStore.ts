@@ -152,7 +152,7 @@ const initState: OrganizationStore = {
   isTeamsExpanded: false, // 초기: 팀 접힌 상태
   metricOrder: null, // 초기: API 응답 순서 사용
   isMetricColumnDragged: false, // 초기: 드래그 발생 안 함
-  displayMode: "value", // [변경: 2026-01-22 10:00, 김병현 수정] 초기: 실제값 표시
+  displayMode: "rate", // [변경: 2026-01-22 15:00, 김병현 수정] 초기: 달성률 표시
 };
 
 export const useOrganizationStore = create<

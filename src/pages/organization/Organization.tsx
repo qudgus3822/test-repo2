@@ -480,7 +480,7 @@ const OrganizationPage = () => {
               </Button>
             )}
             {/* 보기/숨기기 버튼 */}
-            <Button
+            {/* <Button
               variant="normal"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
@@ -496,14 +496,18 @@ const OrganizationPage = () => {
                   숨기기
                 </span>
               )}
-            </Button>
-            {/* [변경: 2026-01-22 10:00, 김병현 수정] 실제값/달성률 전환 스위치 */}
-            <Switch
-              checked={displayMode === "rate"}
-              onChange={(checked) => setDisplayMode(checked ? "rate" : "value")}
-              leftLabel="실제값"
-              rightLabel="달성률"
-            />
+            </Button> */}
+            {/* [변경: 2026-01-22 15:00, 김병현 수정] 달성률/실제값 전환 스위치 (달성률이 기본) */}
+            {activeTab === "all" && (
+              <Switch
+                checked={displayMode === "value"}
+                onChange={(checked) =>
+                  setDisplayMode(checked ? "value" : "rate")
+                }
+                leftLabel="달성률"
+                rightLabel="실제값"
+              />
+            )}
           </div>
         </div>
 

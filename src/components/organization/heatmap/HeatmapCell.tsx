@@ -32,8 +32,6 @@ interface HeatmapCellProps {
   description?: string;
   /** 달성 상태 (API 응답) */
   status?: string | null;
-  /** [변경: 2026-01-22 10:00, 김병현 수정] 달성률 (avgRate) */
-  avgRate?: number | null;
 }
 
 export const HeatmapCell = ({
@@ -46,11 +44,10 @@ export const HeatmapCell = ({
   unit,
   showTooltip = true,
   status,
-  avgRate,
 }: HeatmapCellProps) => {
-  // [변경: 2026-01-22 10:00, 김병현 수정] 표시 모드에 따라 실제값 또는 달성률 표시
+  // [변경: 2026-01-22 14:35, 김병현 수정] 표시 모드에 따라 실제값 또는 달성률(score) 표시
   const displayMode = useOrganizationStore((state) => state.displayMode);
-  const displayValue = displayMode === "rate" ? (avgRate ?? score) : value;
+  const displayValue = displayMode === "rate" ? score : value;
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [metricDefinition, setMetricDefinition] =

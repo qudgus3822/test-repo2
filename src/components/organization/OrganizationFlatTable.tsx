@@ -69,7 +69,6 @@ import {
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
 export type FlatViewFilterType = "division" | "team" | "member";
 
-
 interface OrganizationFlatTableProps {
   month: string;
   activeTab: TabType;
@@ -390,8 +389,8 @@ const CombinedRow = ({
         const unit = metric?.unit;
         const metricName = metric?.metricName;
         const description = metric?.tooltip;
-        // [변경: 2026-01-22 10:00, 김병현 수정] 달성률 추가
-        const avgRate = hasData ? (metric?.avgRate ?? null) : null;
+        // [변경: 2026-01-22 14:30, 김병현 수정] status 추가
+        const status = metric?.status;
 
         return (
           <td
@@ -407,7 +406,7 @@ const CombinedRow = ({
               targetValue={targetValue}
               unit={unit}
               description={description}
-              avgRate={avgRate}
+              status={status}
             />
           </td>
         );
@@ -536,7 +535,6 @@ const SortableMetricHeader = ({
   );
 };
 
-
 export const OrganizationFlatTable = ({
   month,
   activeTab,
@@ -569,11 +567,14 @@ export const OrganizationFlatTable = ({
   const updateMetricOrderMutation = useUpdateMetricOrder();
 
   // 전역 스토어에서 지표 순서 상태 가져오기 (뷰 전환 시에도 유지됨)
-  const {
-    metricOrder: globalMetricOrder,
-    setMetricOrder: setGlobalMetricOrder,
-    setIsMetricColumnDragged,
-  } = useOrganizationStore();
+  const globalMetricOrder = useOrganizationStore((state) => state.metricOrder);
+  const setGlobalMetricOrder = useOrganizationStore(
+    (state) => state.setMetricOrder,
+  );
+  const setIsMetricColumnDragged = useOrganizationStore(
+    (state) => state.setIsMetricColumnDragged,
+  );
+  const displayMode = useOrganizationStore((state) => state.displayMode);
 
   // API 응답에서 지표 순서 추출
   const getMetricOrderFromApi = useCallback(() => {
@@ -855,7 +856,7 @@ export const OrganizationFlatTable = ({
         aValue = aCounts[sortConfig.column as keyof SummaryCounts] ?? 0;
         bValue = bCounts[sortConfig.column as keyof SummaryCounts] ?? 0;
       } else {
-        // 지표 정렬
+        // [변경: 2026-01-22 00:00, 김병현 수정] displayMode에 따라 score 또는 value로 정렬
         const aMetrics = a.data.metrics as unknown as Record<
           string,
           MetricData
@@ -864,16 +865,25 @@ export const OrganizationFlatTable = ({
           string,
           MetricData
         >;
-        aValue = aMetrics?.[sortConfig.column!]?.score ?? -1;
-        bValue = bMetrics?.[sortConfig.column!]?.score ?? -1;
+        const sortField = displayMode === "rate" ? "score" : "value";
+        aValue = aMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
+        bValue = bMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
       }
+
+      // [변경: 2026-01-22 00:00, 김병현 수정] 값이 없는 항목(-1)은 정렬 방향과 관계없이 항상 맨 아래로
+      const aNoValue = aValue === -1;
+      const bNoValue = bValue === -1;
+
+      if (aNoValue && bNoValue) return 0;
+      if (aNoValue) return 1;
+      if (bNoValue) return -1;
 
       if (sortConfig.direction === "asc") {
         return aValue - bValue;
       }
       return bValue - aValue;
     });
-  }, [flatItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds]);
+  }, [flatItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds, displayMode]);
   if (isLoading || isError || flatItems.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">
