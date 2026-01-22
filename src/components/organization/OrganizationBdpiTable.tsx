@@ -186,7 +186,7 @@ const OrganizationRow = ({
     }
   });
 
-  childDepartments.sort((a, b) => a.sortOrder - b.sortOrder);
+  // childDepartments.sort((a, b) => a.sortOrder - b.sortOrder);
 
   const bdpiMetrics = org.metrics as BdpiMetrics;
 
@@ -299,7 +299,7 @@ export const OrganizationBdpiTable = ({
   );
   const organizations = (data?.tree ?? [])
     .filter((org) => org.isEvaluationTarget)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+    // .sort((a, b) => a.sortOrder - b.sortOrder);
 
   if (isLoading || isError || organizations.length === 0) {
     return (
