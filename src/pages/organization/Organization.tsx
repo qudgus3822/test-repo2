@@ -27,6 +27,7 @@ import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import {
   useOrganizationTree,
+  useMetricOrder,
   organizationTreeKeys,
 } from "@/api/hooks/useOrganizationTree";
 import { useQueryClient } from "@tanstack/react-query";
@@ -79,12 +80,13 @@ const OrganizationPage = () => {
   const isMetricColumnDragged = useOrganizationStore(
     (state) => state.isMetricColumnDragged,
   );
-  const clearMetricOrder = useOrganizationStore(
-    (state) => state.clearMetricOrder,
-  );
+  const setMetricOrder = useOrganizationStore((state) => state.setMetricOrder);
   const setIsMetricColumnDragged = useOrganizationStore(
     (state) => state.setIsMetricColumnDragged,
   );
+
+  // [변경: 2026-01-22, 김병현 수정] 서버에서 저장된 지표 순서 조회
+  const { data: metricOrderData } = useMetricOrder();
   // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
   const displayMode = useOrganizationStore((state) => state.displayMode);
   const setDisplayMode = useOrganizationStore((state) => state.setDisplayMode);
@@ -95,13 +97,11 @@ const OrganizationPage = () => {
 
   const queryClient = useQueryClient();
 
-  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정, 지표 순서 초기화
+  // 페이지 진입 시 초기화: 당월, 전체 탭으로 설정
   useEffect(() => {
     setPeriod("monthly");
     setCurrentDate(new Date());
     setActiveTab("all");
-    // 지표 순서 초기화하여 API 응답 순서 사용
-    clearMetricOrder();
     // 드래그 플래그 초기화
     setIsMetricColumnDragged(false);
     // 조직 관련 쿼리 캐시 무효화하여 최신 데이터 조회
@@ -110,10 +110,16 @@ const OrganizationPage = () => {
     setPeriod,
     setCurrentDate,
     setActiveTab,
-    clearMetricOrder,
     setIsMetricColumnDragged,
     queryClient,
   ]);
+
+  // [변경: 2026-01-22, 김병현 수정] 서버에서 저장된 지표 순서를 스토어에 동기화
+  useEffect(() => {
+    if (metricOrderData?.order && metricOrderData.order.length > 0) {
+      setMetricOrder(metricOrderData.order);
+    }
+  }, [metricOrderData, setMetricOrder]);
 
   // 상세 모달 상태
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -236,6 +242,7 @@ const OrganizationPage = () => {
   const prevFiltersRef = useRef({ viewType, flatViewFilter, aggregationType });
 
   // 필터 변경 시 드래그 플래그가 true이면 API 재호출하여 칼럼 순서 동기화
+  // [변경: 2026-01-22, 김병현 수정] 필터 변경 시에도 드래그된 순서 유지 (서버에 저장되어 있으므로)
   useEffect(() => {
     const prevFilters = prevFiltersRef.current;
     const filtersChanged =
@@ -246,19 +253,9 @@ const OrganizationPage = () => {
     // 이전 필터 값 업데이트
     prevFiltersRef.current = { viewType, flatViewFilter, aggregationType };
 
-    // 필터가 실제로 변경되었고, 드래그 플래그가 true일 때만 API 재호출
+    // 필터가 실제로 변경되었고, 드래그 플래그가 true일 때만 플래그 초기화
     if (filtersChanged && isMetricColumnDragged) {
-      // 지표 순서 초기화 (API 응답 순서 사용하도록)
-      clearMetricOrder();
-      // 현재 뷰에 해당하는 쿼리 캐시 완전 제거 (stale 데이터 사용 방지)
-      queryClient.removeQueries({
-        queryKey: organizationTreeKeys.byMonthAndTab(
-          yearMonth,
-          activeTab,
-          apiOptions,
-        ),
-      });
-      // 플래그 초기화
+      // 플래그 초기화 (서버에 이미 저장되었으므로 순서는 유지)
       setIsMetricColumnDragged(false);
     }
   }, [
@@ -266,12 +263,7 @@ const OrganizationPage = () => {
     flatViewFilter,
     aggregationType,
     isMetricColumnDragged,
-    clearMetricOrder,
     setIsMetricColumnDragged,
-    queryClient,
-    yearMonth,
-    activeTab,
-    apiOptions,
   ]);
 
   // 전체 팀 열기/접기를 위해 조직 데이터 조회 (캐시된 데이터 사용)
@@ -281,8 +273,6 @@ const OrganizationPage = () => {
     true,
     apiOptions,
   );
-
-  console.log("OrganizationPage render:", data);
 
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 

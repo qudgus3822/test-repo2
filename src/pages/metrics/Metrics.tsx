@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card } from "@/components/ui/Card";
 import { DateFilter } from "@/components/ui/DateFilter";
@@ -76,7 +76,13 @@ const MetricsPage = () => {
     queryClient.invalidateQueries({ queryKey: goalAchievementKeys.all });
     queryClient.invalidateQueries({ queryKey: metricsListKeys.all });
     queryClient.invalidateQueries({ queryKey: achievementCriteriaKeys.all });
-  }, [setPeriod, setCurrentDate, setActiveTab, setAchievementRateFilter, queryClient]);
+  }, [
+    setPeriod,
+    setCurrentDate,
+    setActiveTab,
+    setAchievementRateFilter,
+    queryClient,
+  ]);
 
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
@@ -92,6 +98,7 @@ const MetricsPage = () => {
 
   // 지표 설정 동기화 상태 조회 (10초 폴링)
   const { isProcessing } = useSyncStatus();
+  const prevIsProcessingRef = useRef(isProcessing);
 
   // 지표 리스트 API 호출 (모달에서 사용)
   const { data: metricsListData, refetch: metricsListRefetch } =
@@ -141,10 +148,6 @@ const MetricsPage = () => {
         document.body.classList.remove("overflow-hidden");
         document.body.style.overflow = originalOverflow;
         document.body.style.paddingRight = originalPaddingRight;
-        metricsListRefetch();
-        lastUpdatedRefetch();
-        criteriaRefetch();
-        goalAchievementRefetch();
       };
     }
   }, [
@@ -152,16 +155,29 @@ const MetricsPage = () => {
     isMetricRateSettingModalOpen,
     isSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
-    metricsListRefetch,
-    lastUpdatedRefetch,
-    criteriaRefetch,
-    goalAchievementRefetch,
   ]);
 
   useEffect(() => {
     setActiveTab("bdpi");
     setAchievementRateFilter("all");
   }, [currentDate, setAchievementRateFilter, setActiveTab]);
+
+  // [변경: 2026-01-22 14:30, 김병현 수정] 집계 완료 시 (isProcessing: true → false) 데이터 refetch
+  useEffect(() => {
+    if (prevIsProcessingRef.current && !isProcessing) {
+      metricsListRefetch();
+      lastUpdatedRefetch();
+      criteriaRefetch();
+      goalAchievementRefetch();
+    }
+    prevIsProcessingRef.current = isProcessing;
+  }, [
+    isProcessing,
+    metricsListRefetch,
+    lastUpdatedRefetch,
+    criteriaRefetch,
+    goalAchievementRefetch,
+  ]);
 
   // 변경사항 확정
   const handleConfirmChanges = () => {
@@ -270,7 +286,14 @@ const MetricsPage = () => {
       {/* 지표 기준 설정 모달 */}
       <MetricStandardSettingModal
         isOpen={isMetricStandardSettingModalOpen}
-        onClose={() => setIsMetricStandardSettingModalOpen(false)}
+        onClose={() => {
+          setIsMetricStandardSettingModalOpen(false);
+          console.log("모달 닫힘 - refetch 시작");
+          metricsListRefetch();
+          lastUpdatedRefetch();
+          criteriaRefetch();
+          goalAchievementRefetch();
+        }}
         month={month}
       />
     </div>

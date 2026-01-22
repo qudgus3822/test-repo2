@@ -13,7 +13,7 @@ export function useLastAggregatedAt() {
     queryKey: ["lastAggregatedAt"],
     queryFn: fetchLastAggregatedAt,
     staleTime: 1000 * 60 * 5, // 5분
-    retry: 1,
+    retry: 3,
   });
 
   // API 성공 시 응답값 포맷, 실패 시 현재 시간 반환

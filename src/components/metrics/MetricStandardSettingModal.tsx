@@ -104,10 +104,8 @@ export const MetricStandardSettingModal = ({
     return criteriaData?.thresholds.excellent ?? 80;
   }, [criteriaData, pendingSummary]);
   const dangerThreshold = useMemo(() => {
-    console.log("Calculating danger threshold",pendingSummary);
     if (pendingSummary) {
       if (pendingSummary.achievementCriteriaDanger) {
-        console.log("Using pending summary danger threshold:", pendingSummary.achievementCriteriaDanger);
         return pendingSummary.achievementCriteriaDanger;
       }
     }
