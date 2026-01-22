@@ -17,7 +17,7 @@ export const ProjectTabs = ({
 }: ProjectTabsProps) => {
   const tabs: { id: ProjectTabType; label: string; count: number }[] = [
     { id: "tf", label: "프로젝트(TF)", count: tfCount },
-    { id: "operation", label: "운영", count: operationCount },
+    { id: "operation", label: "긴급 운영(OPR2)", count: operationCount },
   ];
 
   return (
