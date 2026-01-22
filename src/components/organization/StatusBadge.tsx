@@ -26,7 +26,7 @@ const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
         item.category,
         item.changeType,
       );
-      return `[${formattedDate}] ${detailWithSuffix}`;
+      return `${formattedDate} ${detailWithSuffix}`;
     })
     .join("\n");
 };
