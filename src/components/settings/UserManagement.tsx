@@ -6,7 +6,7 @@ import { UserTable } from "./UserTable";
  * 사용자 관리 탭 컴포넌트
  */
 export const UserManagement = () => {
-  const { data, isLoading, error } = useUserManagement({ page: 1, limit: 10 });
+  const { data, isLoading, error } = useUserManagement({ page: 1 });
 
   const users = data?.data ?? [];
 

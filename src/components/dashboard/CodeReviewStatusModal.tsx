@@ -146,7 +146,11 @@ export const CodeReviewStatusModal = () => {
   // 리뷰어 목록을 툴팁 문자열로 변환
   const formatReviewerListTooltip = (list: ReviewerInfo[]): string => {
     if (list.length === 0) return "";
-    return list.map((r) => `• ${r.name}(${r.team})`).join("\n");
+    return list
+      .map((r) =>
+        r.name && r.team ? `• ${r.name}(${r.team})` : `• ${r.username}`,
+      )
+      .join("\n");
   };
 
   // Raw Data 보기 클릭 핸들러

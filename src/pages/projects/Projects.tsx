@@ -34,7 +34,7 @@ const ProjectsPage = () => {
   // 프로젝트 대시보드 요약 데이터 조회
   const { data: summaryData } = useProjectDashboardSummary(month);
 
-  // TF 프로젝트 목록 데이터 조회 (TF 탭이 활성화된 경우에만 호출)
+  // 프로젝트(TF) 목록 데이터 조회 (TF 탭이 활성화된 경우에만 호출)
   const { data: tfData } = useProjectDashboard(
     { month, classification: "TF" },
     activeTab === "tf",
@@ -76,6 +76,9 @@ const ProjectsPage = () => {
       epicId: project.epicKey,
       epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
       activeTicketCount: project.activeTicketCount,
+      updatedCount: project.updatedCount,
+      completedCount: project.completedCount,
+      createdCount: project.createdCount,
       bugCount: project.bugCount,
       incidentCount: project.incidentCount,
       avgResolutionTime: project.mttr,
@@ -123,8 +126,8 @@ const ProjectsPage = () => {
 
         {/* 요약 카드 */}
         <div className="flex gap-4">
-          <SummaryCard title="TF 프로젝트" summary={tfSummary} />
-          <SummaryCard title="운영" summary={operationSummary} />
+          <SummaryCard title="프로젝트(TF)" summary={tfSummary} />
+          <SummaryCard title="긴급 운영(OPR2)" summary={operationSummary} />
         </div>
       </div>
 
@@ -143,10 +146,13 @@ const ProjectsPage = () => {
         {/* 테이블 */}
         <div className="p-4 flex-1 min-h-0 overflow-auto">
           {activeTab === "tf" ? (
-            <ProjectTable projects={tfProjects} />
+            <>
+              <InfoBanner message="지라 전체 에픽 중 분류유형이 ‘TF’ 표기된 프로젝트성 에픽에 대해 해당 지표들을 한눈에 확인할 수 있습니다." />
+              <ProjectTable projects={tfProjects} />
+            </>
           ) : (
             <>
-              <InfoBanner message="운영은 에픽의 유형(버그/장애/에프터잡 등)이 분류되지 않아 상세 지표가 제공되지 않습니다." />
+              <InfoBanner message="지라 OPR2 긴급 운영의 에픽은 유형(버그/장애/애프터잡 등)이 분류되지 않아 버그 및 장애 관련 상세 지표가 제공되지 않습니다." />
               <OperationTable items={operationItems} />
             </>
           )}

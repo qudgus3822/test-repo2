@@ -74,6 +74,12 @@ export interface ProjectItem {
   epicUrl: string;
   /** 활성 티켓수 */
   activeTicketCount: number | null;
+  /** 업데이트 수 */
+  updatedCount: number | null;
+  /** 완료 티켓수 */
+  completedCount: number | null;
+  /** 생성 티켓수 */
+  createdCount: number | null;
   /** 버그 발생수 */
   bugCount: number | null;
   /** 장애 발생수 */

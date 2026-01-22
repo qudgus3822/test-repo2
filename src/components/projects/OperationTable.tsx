@@ -2,10 +2,12 @@ import { ExternalLink, Info } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { OperationItem } from "@/types/project.types";
 import { formatDateString } from "@/utils/date";
+import { UNIT_COUNT, NULL_DISPLAY, COMMON_HEADERS } from "./constants";
 
-// 단위 상수
-const UNIT_COUNT = "개";
-const NULL_DISPLAY = "--";
+// 테이블 헤더 설정 (공통 헤더 사용)
+const TABLE_HEADERS = {
+  ...COMMON_HEADERS,
+};
 
 // 숫자 포맷 헬퍼 (null → "--", 0 이상 → 숫자 + 단위)
 const formatCount = (value: number | null | undefined, unit: string): string => {
@@ -35,45 +37,63 @@ export const OperationTable = ({ items }: OperationTableProps) => {
       <table className="w-full">
         <thead className="sticky top-0 bg-white z-10" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
           <tr className="border-t border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">운영 에픽명</th>
+            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">
+              {TABLE_HEADERS.epicName.label}
+            </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월에 활성화 된 티켓 개수" direction="top">
+                <Tooltip content={TABLE_HEADERS.activeTicketCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>활성<br />티켓 수</span>
+                <span>
+                  {TABLE_HEADERS.activeTicketCount.label[0]}
+                  <br />
+                  {TABLE_HEADERS.activeTicketCount.label[1]}
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월에 업데이트 된 개수이며, 생성과 완료는 집계 제외" direction="top">
+                <Tooltip content={TABLE_HEADERS.updatedCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>업데이트<br />수</span>
+                <span>
+                  {TABLE_HEADERS.updatedCount.label[0]}
+                  <br />
+                  {TABLE_HEADERS.updatedCount.label[1]}
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월에 완료된 티켓 개수" direction="top">
+                <Tooltip content={TABLE_HEADERS.completedCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>완료<br />티켓수</span>
+                <span>
+                  {TABLE_HEADERS.completedCount.label[0]}
+                  <br />
+                  {TABLE_HEADERS.completedCount.label[1]}
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 월에 신규로 생성된 티켓 개수" direction="top">
+                <Tooltip content={TABLE_HEADERS.createdCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>생성<br />티켓수</span>
+                <span>
+                  {TABLE_HEADERS.createdCount.label[0]}
+                  <br />
+                  {TABLE_HEADERS.createdCount.label[1]}
+                </span>
               </div>
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content="해당 에픽 생성일" direction="top">
+                <Tooltip content={TABLE_HEADERS.createdAt.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span className="leading-[2.5]">생성일자</span>
+                <span className="leading-[2.5]">{TABLE_HEADERS.createdAt.label}</span>
               </div>
             </th>
           </tr>
@@ -84,8 +104,11 @@ export const OperationTable = ({ items }: OperationTableProps) => {
               key={item.id}
               className="border-b border-gray-100 hover:bg-gray-50"
             >
-              <td className="px-4 py-4">
-                <div className="text-sm font-medium text-gray-900">
+              <td className="px-4 py-4 max-w-[200px]">
+                <div
+                  className="text-sm font-medium text-gray-900 truncate"
+                  title={item.name}
+                >
                   {item.name}
                 </div>
                 <a

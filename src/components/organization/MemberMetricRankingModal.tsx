@@ -14,29 +14,6 @@ import { getAchievementRateColor } from "@/styles/colors";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ScoreLegend } from "./ScoreLegend";
 
-// // 목업 데이터 (19개 지표)
-// const MOCK_MEMBER_METRICS = [
-//   { code: "TECH_DEBT", score: 125.5 },
-//   { code: "CODE_COMPLEXITY", score: 112.3 },
-//   { code: "CODE_DUPLICATION", score: 98.7 },
-//   { code: "CODE_SMELL", score: 95.2 },
-//   { code: "SECURITY_VULNERABILITIES", score: 88.4 },
-//   { code: "REVIEW_SPEED", score: 82.1 },
-//   { code: "REVIEW_RESPONSE_RATE", score: 78.9 },
-//   { code: "REVIEW_PARTICIPATION_RATE", score: 75.6 },
-//   { code: "REVIEW_ACCEPTANCE_RATE", score: 72.3 },
-//   { code: "REVIEW_FEEDBACK_CONCRETENESS", score: 68.5 },
-//   { code: "REVIEW_REQUEST_COUNT", score: 65.2 },
-//   { code: "REVIEW_PARTICIPATION_COUNT", score: 58.7 },
-//   { code: "REVIEW_PASS_RATE", score: 52.4 },
-//   { code: "REVIEW_PARTICIPATION_NUMBER", score: 45.8 },
-//   { code: "REVIEW_FEEDBACK_TIME", score: 38.6 },
-//   { code: "REVIEW_COMPLETION_TIME", score: 32.1 },
-//   { code: "PR_SIZE", score: 25.5 },
-//   { code: "COMMIT_FREQUENCY", score: 18.9 },
-//   { code: "LOC_PER_COMMIT", score: 12.3 },
-// ];
-
 interface MemberMetricRankingModalProps {
   member: OrganizationMember;
   month: string;
@@ -100,7 +77,7 @@ export const MemberMetricRankingModal = ({
   // 모달 위치 계산 (클릭된 div 하단에 표시, 화면 밖으로 나가지 않도록)
   // 19개 지표 기준 높이: 헤더(65px) + 지표목록(422px) + 범례(40px) = 527px
   const calculatePosition = () => {
-    const modalWidth = 510;
+    const modalWidth = 550;
     const modalHeight = 527;
     const padding = 10;
     const gap = 4; // div와 모달 사이 간격
@@ -134,7 +111,7 @@ export const MemberMetricRankingModal = ({
       style={{
         left: x,
         top: y,
-        width: 510,
+        width: 550,
         height: 527,
       }}
     >
