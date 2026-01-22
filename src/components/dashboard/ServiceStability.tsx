@@ -44,7 +44,7 @@ const METRIC_CONFIGS: MetricConfig[] = [
   { id: "success", key: "deploymentSuccessRate" },
   { id: "mttr", key: "meanTimeToRecovery", targetSuffix: " 이하" },
   { id: "mttd", key: "timeToDetection", targetSuffix: " 이하" },
-  { id: "incidents", key: "incidentResolvedCount", targetSuffix: " 이하" },
+  { id: "incidents", key: "incidentResolvedCount", targetSuffix: " 이상" },
 ];
 
 /** API 메트릭 데이터를 화면 표시용으로 변환 */

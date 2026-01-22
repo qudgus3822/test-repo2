@@ -37,5 +37,5 @@ export interface ServiceStabilityMetrics {
   deploymentSuccessRate: ServiceStabilityMetric; // 배포 성공률
   meanTimeToRecovery: ServiceStabilityMetric; // 평균 장애 해결 시간
   timeToDetection: ServiceStabilityMetric; // 장애 탐지 시간
-  incidentResolvedCount: ServiceStabilityMetric; // 장애 해결 건수
+  incidentResolvedCount: ServiceStabilityMetric; // 장애 해결수
 }
