@@ -104,6 +104,8 @@ const OrganizationPage = () => {
     setActiveTab("all");
     // 드래그 플래그 초기화
     setIsMetricColumnDragged(false);
+    // [변경: 2026-01-22 16:00, 김병현 수정] 페이지 진입 시 실제값 모드로 설정
+    setDisplayMode("value");
     // 조직 관련 쿼리 캐시 무효화하여 최신 데이터 조회
     queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
   }, [
@@ -111,6 +113,7 @@ const OrganizationPage = () => {
     setCurrentDate,
     setActiveTab,
     setIsMetricColumnDragged,
+    setDisplayMode,
     queryClient,
   ]);
 
@@ -482,15 +485,15 @@ const OrganizationPage = () => {
                 </span>
               )}
             </Button> */}
-            {/* [변경: 2026-01-22 15:00, 김병현 수정] 달성률/실제값 전환 스위치 (달성률이 기본) */}
+            {/* [변경: 2026-01-22 16:00, 김병현 수정] 실제값/달성률 전환 스위치 (실제값이 기본) */}
             {activeTab === "all" && (
               <Switch
-                checked={displayMode === "value"}
+                checked={displayMode === "rate"}
                 onChange={(checked) =>
-                  setDisplayMode(checked ? "value" : "rate")
+                  setDisplayMode(checked ? "rate" : "value")
                 }
-                leftLabel="달성률"
-                rightLabel="실제값"
+                leftLabel="실제값"
+                rightLabel="달성률"
               />
             )}
           </div>

@@ -521,6 +521,7 @@ export const OrganizationFlatTable = ({
       ) {
         apiMetricOrder.push("BDPI");
       }
+
       return apiMetricOrder;
     }
     // format=tree 응답
@@ -799,7 +800,14 @@ export const OrganizationFlatTable = ({
           string,
           MetricData
         >;
-        const sortField = displayMode === "rate" ? "score" : "value";
+        // [변경: 2026-01-22 15:30, 김병현 수정] BDPI의 경우 avgRate로 정렬
+        const isBdpi =
+          sortConfig.column === "bdpi" || sortConfig.column === "BDPI";
+        const sortField = isBdpi
+          ? "avgRate"
+          : displayMode === "rate"
+            ? "score"
+            : "value";
         aValue = aMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
         bValue = bMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
       }
