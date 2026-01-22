@@ -14,7 +14,7 @@ import {
 import { Tooltip } from "@/components/ui/Tooltip";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 
-const MAX_BADGE_COUNT = 4;
+const MAX_BADGE_COUNT = 100;
 
 // 변경 정보 툴팁 내용 생성
 const getCombinedTooltipContent = (changes: ChangeInfo[]): string => {
