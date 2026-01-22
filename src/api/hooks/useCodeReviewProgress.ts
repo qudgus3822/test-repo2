@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchCodeReviewProgress } from "@/api/dashboard";
 import type {
   CodeReviewProgressResponse,
@@ -27,5 +27,6 @@ export const useCodeReviewProgress = (
     queryFn: () => fetchCodeReviewProgress(params),
     enabled,
     staleTime: 2 * 60 * 1000, // 2분
+    placeholderData: keepPreviousData, // [변경: 2026-01-22 14:30, 김병현 수정] 페이지 전환 시 이전 데이터 유지
   });
 };
