@@ -4,8 +4,6 @@ import {
   Cable,
   Network,
   List,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -135,9 +133,6 @@ const OrganizationPage = () => {
   // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
   const [aggregationType, setAggregationType] =
     useState<AggregationType>("avg");
-
-  // 보기/펼치기 상태
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // 검색 영역 표시 상태
   const [isSearchAreaOpen, setIsSearchAreaOpen] = useState(false);
@@ -576,7 +571,6 @@ const OrganizationPage = () => {
                   <OrganizationTable
                     month={yearMonth}
                     activeTab={activeTab}
-                    hideValues={isExpanded}
                     onDetailClick={handleDetailClick}
                     aggregationType={aggregationType}
                     onMetricDetailChange={setIsMetricDetailOpen}
@@ -586,7 +580,6 @@ const OrganizationPage = () => {
                     month={yearMonth}
                     activeTab={activeTab}
                     filterType={flatViewFilter}
-                    hideValues={isExpanded}
                     onDetailClick={handleDetailClick}
                     searchKeyword={activeSearchKeyword}
                     onSearchResult={setSearchResultCount}
@@ -610,14 +603,12 @@ const OrganizationPage = () => {
                   <OrganizationBdpiTable
                     month={yearMonth}
                     activeTab={activeTab}
-                    hideValues={isExpanded}
                   />
                 ) : (
                   <OrganizationBdpiFlatTable
                     month={yearMonth}
                     activeTab={activeTab}
                     filterType={flatViewFilter}
-                    hideValues={isExpanded}
                     searchKeyword={activeSearchKeyword}
                     onSearchResult={setSearchResultCount}
                   />

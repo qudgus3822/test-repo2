@@ -12,11 +12,13 @@ export const OrganizationTabs = () => {
   const setActiveTab = useOrganizationStore((state) => state.setActiveTab);
   const setDisplayMode = useOrganizationStore((state) => state.setDisplayMode);
 
-  // [변경: 2026-01-22 00:00, 김병현 수정] BDPI 탭 선택 시 displayMode를 value로 변경
+  // [변경: 2026-01-22 00:00, 김병현 수정] 탭 선택 시 displayMode 변경 (전체: 달성률, BDPI: 실제값)
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     if (tab === "bdpi") {
       setDisplayMode("value");
+    } else if (tab === "all") {
+      setDisplayMode("rate");
     }
   };
 
