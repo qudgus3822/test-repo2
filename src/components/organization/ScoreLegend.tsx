@@ -13,7 +13,7 @@ const LEGEND_STYLES = {
     legendsGap: "gap-6",
   },
   small: {
-    container: "gap-1.5 py-1 px-3",
+    container: "gap-1.5 py-1 px-3.5",
     text: "text-xs",
     colorBox: "w-2 h-3",
     itemGap: "gap-1",
@@ -23,7 +23,7 @@ const LEGEND_STYLES = {
 
 /**
  * 점수 범례 컴포넌트
- * 달성률 5단계: 0-25%, 25-50%, 50-75%, 75-100%, 100-200%
+ * 달성률 5단계: 0-25%, 25-50%, 50-75%, 75-100%, 100% 이상
  */
 export const ScoreLegend = ({ legendSize = "medium" }: ScoreLegendProps) => {
   const styles = LEGEND_STYLES[legendSize];
@@ -33,7 +33,7 @@ export const ScoreLegend = ({ legendSize = "medium" }: ScoreLegendProps) => {
     { color: ACHIEVEMENT_RATE_COLORS.level2, label: "25-50% 미만" },
     { color: ACHIEVEMENT_RATE_COLORS.level3, label: "50-75% 미만" },
     { color: ACHIEVEMENT_RATE_COLORS.level4, label: "75-100% 미만" },
-    { color: ACHIEVEMENT_RATE_COLORS.level5, label: "100 - 200% 이하" },
+    { color: ACHIEVEMENT_RATE_COLORS.level5, label: "100-200% 이하" },
   ];
 
   return (
