@@ -274,8 +274,6 @@ const OrganizationPage = () => {
     apiOptions,
   );
 
-  console.log("OrganizationPage render:", data);
-
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
   // 데이터가 있는지 확인 (tree 또는 items에 isEvaluationTarget: true인 조직이 있는지)

@@ -817,7 +817,13 @@ export const OrganizationFlatTable = ({
       }
       return bValue - aValue;
     });
-  }, [flatItems, sortConfig, itemSummaryCountsMap, summaryCategoryIds, displayMode]);
+  }, [
+    flatItems,
+    sortConfig,
+    itemSummaryCountsMap,
+    summaryCategoryIds,
+    displayMode,
+  ]);
   if (isLoading || isError || flatItems.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[510px]">

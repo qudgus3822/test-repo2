@@ -37,14 +37,12 @@ interface StatusBadgeProps {
 
 export const StatusBadge = ({ change }: StatusBadgeProps) => {
   if (!hasChangeInfo(change)) return null;
-
   const sortedChanges = [...change!].sort((a, b) => {
     const dateA = a.changeDate ? new Date(a.changeDate).getTime() : 0;
     const dateB = b.changeDate ? new Date(b.changeDate).getTime() : 0;
     return dateB - dateA;
   });
   const displayChanges = sortedChanges.slice(0, MAX_BADGE_COUNT);
-
   const tooltipContent = getCombinedTooltipContent(displayChanges);
 
   // [변경: 2026-01-22 12:00, 김병현 수정] 첫 번째 배지만 표시하도록 수정

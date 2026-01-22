@@ -133,10 +133,6 @@ export const AchievementRateSetting = ({
 
     setIsApplying(true);
     try {
-      console.log("Updating achievement criteria:", {
-        excellent: excellentThreshold,
-        danger: dangerThreshold,
-      });
       await updateAchievementCriteria({
         thresholds: {
           excellent: excellentThreshold,
