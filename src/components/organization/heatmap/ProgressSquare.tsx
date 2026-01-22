@@ -6,6 +6,7 @@
  */
 
 import { ACHIEVEMENT_RATE_COLORS } from "@/styles/colors";
+import { useOrganizationStore } from "@/store/useOrganizationStore";
 
 interface ProgressSquareProps {
   /** 점수/달성률 (0-150) */
@@ -44,18 +45,23 @@ export const ProgressSquare = ({
   hideValue = false,
   isLoading = false,
 }: ProgressSquareProps) => {
+  // [변경: 2026-01-22 10:30, 김병현 수정] 표시 모드에 따라 달성률일 때 '%' 추가
+  const displayMode = useOrganizationStore((state) => state.displayMode);
   const hasData = score !== null && value !== null && value !== undefined;
 
   // 값 포맷팅
-  const displayValue = hideValue
-    ? ""
-    : hasData
-    ? typeof value === "number"
-      ? Number.isInteger(value)
-        ? `${value}`
-        : `${value.toFixed(1)}`
-      : `${value}`
-    : "--";
+  const formatValue = () => {
+    if (hideValue) return "";
+    if (!hasData) return "--";
+
+    if (typeof value === "number") {
+      const formattedNum = Number.isInteger(value) ? `${value}` : `${value.toFixed(1)}`;
+      return displayMode === "rate" ? `${formattedNum}%` : formattedNum;
+    }
+    return `${value}`;
+  };
+
+  const displayValue = formatValue();
 
   // 높이 및 색상 계산
   const heightPercent = hasData ? getHeightPercentage(score!) : 0;

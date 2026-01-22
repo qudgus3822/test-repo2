@@ -390,6 +390,8 @@ const CombinedRow = ({
         const unit = metric?.unit;
         const metricName = metric?.metricName;
         const description = metric?.tooltip;
+        // [변경: 2026-01-22 10:00, 김병현 수정] 달성률 추가
+        const avgRate = hasData ? (metric?.avgRate ?? null) : null;
 
         return (
           <td
@@ -405,6 +407,7 @@ const CombinedRow = ({
               targetValue={targetValue}
               unit={unit}
               description={description}
+              avgRate={avgRate}
             />
           </td>
         );

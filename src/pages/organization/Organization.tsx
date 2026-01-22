@@ -12,6 +12,7 @@ import {
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
+import { Switch } from "@/components/ui/Switch";
 import {
   OrganizationTabs,
   OrganizationTable,
@@ -86,6 +87,9 @@ const OrganizationPage = () => {
   const setIsMetricColumnDragged = useOrganizationStore(
     (state) => state.setIsMetricColumnDragged,
   );
+  // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
+  const displayMode = useOrganizationStore((state) => state.displayMode);
+  const setDisplayMode = useOrganizationStore((state) => state.setDisplayMode);
 
   const setOrgHistoryModal = useDashboardStore(
     (state) => state.setOrgHistoryModal,
@@ -282,6 +286,8 @@ const OrganizationPage = () => {
     true,
     apiOptions,
   );
+
+  console.log("OrganizationPage render:", data);
 
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
@@ -491,6 +497,13 @@ const OrganizationPage = () => {
                 </span>
               )}
             </Button>
+            {/* [변경: 2026-01-22 10:00, 김병현 수정] 실제값/달성률 전환 스위치 */}
+            <Switch
+              checked={displayMode === "rate"}
+              onChange={(checked) => setDisplayMode(checked ? "rate" : "value")}
+              leftLabel="실제값"
+              rightLabel="달성률"
+            />
           </div>
         </div>
 

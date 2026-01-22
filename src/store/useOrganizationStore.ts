@@ -55,6 +55,10 @@ interface OrganizationStore {
    * 지표 칼럼 드래그앤드롭 발생 여부 (필터 변경 시 API 재호출 트리거용)
    */
   isMetricColumnDragged: boolean;
+  /**
+   * [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 (value: 실제값, rate: 달성률)
+   */
+  displayMode: "value" | "rate";
 }
 
 interface OrganizationAction {
@@ -122,6 +126,10 @@ interface OrganizationAction {
    * 지표 칼럼 드래그앤드롭 발생 여부 설정
    */
   setIsMetricColumnDragged: (isDragged: boolean) => void;
+  /**
+   * [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 설정 (value: 실제값, rate: 달성률)
+   */
+  setDisplayMode: (mode: "value" | "rate") => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -144,6 +152,7 @@ const initState: OrganizationStore = {
   isTeamsExpanded: false, // 초기: 팀 접힌 상태
   metricOrder: null, // 초기: API 응답 순서 사용
   isMetricColumnDragged: false, // 초기: 드래그 발생 안 함
+  displayMode: "value", // [변경: 2026-01-22 10:00, 김병현 수정] 초기: 실제값 표시
 };
 
 export const useOrganizationStore = create<
@@ -200,4 +209,6 @@ export const useOrganizationStore = create<
   clearMetricOrder: () => set({ metricOrder: null }),
   setIsMetricColumnDragged: (isDragged: boolean) =>
     set({ isMetricColumnDragged: isDragged }),
+  // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 설정
+  setDisplayMode: (mode: "value" | "rate") => set({ displayMode: mode }),
 }));
