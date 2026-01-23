@@ -2,6 +2,7 @@ import { ChevronRight, ChevronDown, X } from "lucide-react";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import type { OrgTypeSettingsChange } from "@/types/organization.types";
+import { StatusBadge } from "../organization/StatusBadge";
 
 export interface OrgItemState {
   id: string;
@@ -113,7 +114,7 @@ export const OrgItemRow = ({
             {item.name}
           </span>
 
-          <ChangesCategoryBadge changes={item.changes} />
+          <StatusBadge change={item.changes} />
         </div>
 
         {showCheckbox &&
