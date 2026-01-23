@@ -12,7 +12,7 @@ import {
   getChangeDetailWithSuffix,
 } from "@/utils/organization";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
+import ChangeTypeBadge from "../ui/ChangeTypeBadge";
 
 const MAX_BADGE_COUNT = 100;
 
