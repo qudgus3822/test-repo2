@@ -528,12 +528,15 @@ export const OrganizationManagement = () => {
                   개발
                 </span>
                 <span>개발조직</span>
+                {organizationData.includeMemberCount + "명"}
               </div>
+              <span className="text-gray-300">|</span>
               <div className="flex items-center gap-1">
                 <span className="px-2 py-0.5 text-xs rounded bg-gray-100">
                   비개발
                 </span>
                 <span>비개발조직</span>
+                {organizationData.excludeMemberCount + "명"}
               </div>
             </div>
           </div>
