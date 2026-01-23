@@ -19,6 +19,9 @@ import {
   type ReviewStatus,
 } from "@/types/codeReviewMetric";
 
+// 기본 이메일 도메인 (mrAuthor.email이 없을 경우 username에 붙여서 표시)
+const DEFAULT_EMAIL_DOMAIN = "@bithumbcorp.com";
+
 // 정렬 방향 타입
 type SortDirection = "asc" | "desc";
 
@@ -526,7 +529,7 @@ export const CodeReviewStatusModal = () => {
                             </td>
                             <td className="px-2.5 py-1 text-gray-900 text-center">
                               <Tooltip
-                                content={item.mrAuthor.email}
+                                content={item.mrAuthor.email || `${item.mrAuthor.username}${DEFAULT_EMAIL_DOMAIN}`}
                                 direction="bottom"
                               >
                                 <span className="cursor-default">

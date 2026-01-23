@@ -18,6 +18,7 @@ export interface ReviewerInfo {
 
 // MR 작성자 정보
 export interface MrAuthorInfo {
+  username: string; // 사용자명
   name: string; // 이름
   email: string; // 이메일
 }
