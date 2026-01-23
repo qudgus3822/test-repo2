@@ -1,6 +1,5 @@
 import { ChevronRight, ChevronDown, X } from "lucide-react";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
-import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import type { OrgTypeSettingsChange } from "@/types/organization.types";
 import { StatusBadge } from "../organization/StatusBadge";
 
@@ -16,32 +15,32 @@ export interface OrgItemState {
 }
 
 // 변경 유형 배지 컴포넌트 (GROUP, POLICY 카테고리만 표시)
-const ChangesCategoryBadge = ({
-  changes,
-}: {
-  changes?: OrgTypeSettingsChange[];
-}) => {
-  if (!changes || changes.length === 0) return null;
+// const ChangesCategoryBadge = ({
+//   changes,
+// }: {
+//   changes?: OrgTypeSettingsChange[];
+// }) => {
+//   if (!changes || changes.length === 0) return null;
 
-  // GROUP, POLICY 카테고리만 필터링
-  const filteredChanges = changes.filter(
-    (c) => c.category === "GROUP" || c.category === "POLICY",
-  );
+//   // GROUP, POLICY 카테고리만 필터링
+//   const filteredChanges = changes.filter(
+//     (c) => c.category === "GROUP" || c.category === "POLICY",
+//   );
 
-  if (filteredChanges.length === 0) return null;
+//   if (filteredChanges.length === 0) return null;
 
-  return (
-    <span className="flex items-center gap-1">
-      {filteredChanges.map((change, index) => (
-        <ChangeTypeBadge
-          key={`${change.category}-${change.changeType}-${index}`}
-          type={change.changeType}
-          fixedWidth
-        />
-      ))}
-    </span>
-  );
-};
+//   return (
+//     <span className="flex items-center gap-1">
+//       {filteredChanges.map((change, index) => (
+//         <ChangeTypeBadge
+//           key={`${change.category}-${change.changeType}-${index}`}
+//           type={change.changeType}
+//           fixedWidth
+//         />
+//       ))}
+//     </span>
+//   );
+// };
 
 interface OrgItemRowProps {
   item: OrgItemState;

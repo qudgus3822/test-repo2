@@ -2,7 +2,6 @@ import { useState, useMemo, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
-import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
 import { ChangeHistoryList } from "@/components/ui/ChangeHistoryList";
 import {
   ChevronRight,
@@ -175,7 +174,7 @@ const TeamList = ({
                         <span className="text-gray-500 text-sm">
                           {roleLabel}
                         </span>
-                        <HRChangesBadgeGroup changes={member.changes} />
+                        <StatusBadge change={member.changes} />
                       </div>
                       <p className="text-xs text-gray-500">
                         {member.email || getMemberEmail(member.employeeID)}
@@ -224,30 +223,30 @@ const TeamList = ({
 };
 
 // HR 변경 유형 배지 컴포넌트 (멤버용 - HR 카테고리만 표시)
-const HRChangesBadgeGroup = ({
-  changes,
-}: {
-  changes?: { changeType: string; category: string }[];
-}) => {
-  if (!changes || changes.length === 0) return null;
+// const HRChangesBadgeGroup = ({
+//   changes,
+// }: {
+//   changes?: { changeType: string; category: string }[];
+// }) => {
+//   if (!changes || changes.length === 0) return null;
 
-  // HR 카테고리만 필터링
-  const hrChanges = changes.filter((c) => c.category === "HR");
+//   // HR 카테고리만 필터링
+//   const hrChanges = changes.filter((c) => c.category === "HR");
 
-  if (hrChanges.length === 0) return null;
+//   if (hrChanges.length === 0) return null;
 
-  return (
-    <span className="flex items-center gap-1">
-      {hrChanges.map((change, index) => (
-        <ChangeTypeBadge
-          key={`${change.category}-${change.changeType}-${index}`}
-          type={change.changeType}
-          fixedWidth
-        />
-      ))}
-    </span>
-  );
-};
+//   return (
+//     <span className="flex items-center gap-1">
+//       {hrChanges.map((change, index) => (
+//         <ChangeTypeBadge
+//           key={`${change.category}-${change.changeType}-${index}`}
+//           type={change.changeType}
+//           fixedWidth
+//         />
+//       ))}
+//     </span>
+//   );
+// };
 
 // 멤버 목록 컴포넌트
 const MemberList = ({
@@ -296,7 +295,7 @@ const MemberList = ({
                         {member.name}
                       </span>
                       <span className="text-gray-500 text-sm">{roleLabel}</span>
-                      <HRChangesBadgeGroup changes={member.changes} />
+                      <StatusBadge change={member.changes} />
                     </div>
                     <p className="text-xs text-gray-500">
                       {member.email || getMemberEmail(member.employeeID)}
