@@ -48,9 +48,10 @@ export const DonutChart = ({
 }: DonutChartProps) => {
   const uniqueId = useId();
   const percentage = (value / maxValue) * 100;
+  const clampedValue = Math.min(value, maxValue);
   const data = [
-    { name: "value", value: value },
-    { name: "remaining", value: maxValue - value },
+    { name: "value", value: clampedValue },
+    { name: "remaining", value: maxValue - clampedValue },
   ];
 
   // 그라데이션 ID 생성 (React useId 사용으로 SSR 호환 및 고유성 보장)

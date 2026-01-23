@@ -30,6 +30,7 @@ import {
   useMetricOrder,
   organizationTreeKeys,
 } from "@/api/hooks/useOrganizationTree";
+import { useMetricsList } from "@/api/hooks/useMetricsList";
 import { useQueryClient } from "@tanstack/react-query";
 import type {
   OrganizationDepartment,
@@ -85,6 +86,10 @@ const OrganizationPage = () => {
     (state) => state.setIsMetricColumnDragged,
   );
 
+  const setMetricSources = useOrganizationStore(
+    (state) => state.setMetricSources,
+  );
+
   // [변경: 2026-01-22, 김병현 수정] 서버에서 저장된 지표 순서 조회
   const { data: metricOrderData } = useMetricOrder();
   // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
@@ -131,6 +136,9 @@ const OrganizationPage = () => {
 
   // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 (테이블 내부 MetricDetailInfo)
   const [isMetricDetailOpen, setIsMetricDetailOpen] = useState(false);
+
+  // 테이블 전체보기 (zoom 축소) 모드
+  const [isTableZoomed, setIsTableZoomed] = useState(false);
 
   // 서브탭 상태: 하이어라키뷰 / 플랫뷰
   const [viewType, setViewType] = useState<"hierarchy" | "flat">("hierarchy");
@@ -193,6 +201,11 @@ const OrganizationPage = () => {
     setIsSearchAreaOpen(false);
   }, [viewType]);
 
+  // 탭 변경 시 전체보기 모드 초기화
+  useEffect(() => {
+    setIsTableZoomed(false);
+  }, [activeTab]);
+
   // 상세 버튼 클릭 핸들러
   const handleDetailClick = (item: OrganizationDetailItem) => {
     setSelectedDetailItem(item);
@@ -207,6 +220,22 @@ const OrganizationPage = () => {
 
   // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
   const yearMonth = formatYearMonth(currentDate);
+
+  // 지표 목록 조회 (metricCode, sources 정보 store 동기화용)
+  const { data: metricsListData } = useMetricsList(yearMonth);
+
+  // 지표별 데이터 출처(sources)를 store에 동기화
+  useEffect(() => {
+    if (metricsListData?.metrics) {
+      const sourcesMap: Record<string, string[]> = {};
+      metricsListData.metrics.forEach((metric) => {
+        if (metric.metricCode && metric.sources) {
+          sourcesMap[metric.metricCode] = metric.sources;
+        }
+      });
+      setMetricSources(sourcesMap);
+    }
+  }, [metricsListData, setMetricSources]);
 
   // 탭별 API 옵션 설정 (하위 테이블 컴포넌트와 동일한 queryKey 사용을 위함)
   // 주의: Query Key 일치를 위해 테이블 컴포넌트의 apiOptions 구조와 정확히 동일해야 함
@@ -325,7 +354,7 @@ const OrganizationPage = () => {
         </div>
 
         {/* 첫 번째 줄: 기간 선택 */}
-        <div className="flex-shrink-0 h-[84px] relative flex items-center p-4 border-b border-gray-200">
+        <div className="flex-shrink-0 h-[84px] relative flex items-center py-4 border-b border-gray-200">
           <div className="flex items-center gap-5">
             <DateFilter
               period={period}
@@ -345,7 +374,7 @@ const OrganizationPage = () => {
         </div>
 
         {/* 서브탭: 하이어라키뷰 / 플랫뷰 */}
-        <div className="flex-shrink-0 flex items-center justify-between px-4 py-3 border-b border-gray-200">
+        <div className="flex-shrink-0 flex items-center justify-between py-3 border-b border-gray-200">
           {/* 좌측: 뷰타입 탭 + 플랫뷰 필터 */}
           <div className="flex items-center">
             <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
@@ -353,7 +382,7 @@ const OrganizationPage = () => {
                 onClick={() => setViewType("hierarchy")}
                 className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors ${
                   viewType === "hierarchy"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-[#005FCC] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -364,7 +393,7 @@ const OrganizationPage = () => {
                 onClick={() => setViewType("flat")}
                 className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                   viewType === "flat"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-[#005FCC] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -380,7 +409,7 @@ const OrganizationPage = () => {
                   onClick={() => setFlatViewFilter("division")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
                     flatViewFilter === "division"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -390,7 +419,7 @@ const OrganizationPage = () => {
                   onClick={() => setFlatViewFilter("team")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                     flatViewFilter === "team"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -400,7 +429,7 @@ const OrganizationPage = () => {
                   onClick={() => setFlatViewFilter("member")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                     flatViewFilter === "member"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -416,7 +445,7 @@ const OrganizationPage = () => {
                   onClick={() => setAggregationType("avg")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
                     aggregationType === "avg" || activeTab === "bdpi"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -431,7 +460,7 @@ const OrganizationPage = () => {
                     activeTab === "bdpi"
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : aggregationType === "total"
-                        ? "bg-blue-600 text-white cursor-pointer"
+                        ? "bg-[#005FCC] text-white cursor-pointer"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
                   }`}
                 >
@@ -485,6 +514,17 @@ const OrganizationPage = () => {
                 </span>
               )}
             </Button> */}
+            {/* 전체 탭: 테이블 전체보기 버튼 */}
+            {activeTab === "all" && (
+              <Button
+                variant={isTableZoomed ? "primary" : "normal"}
+                size="sm"
+                className="min-w-[100px]"
+                onClick={() => setIsTableZoomed(!isTableZoomed)}
+              >
+                {isTableZoomed ? "기본 (100%)" : "지표맞춤"}
+              </Button>
+            )}
             {/* [변경: 2026-01-22 16:00, 김병현 수정] 실제값/달성률 전환 스위치 (실제값이 기본) */}
             {activeTab === "all" && (
               <Switch
@@ -558,7 +598,7 @@ const OrganizationPage = () => {
             <>
               {/* 전체 탭 콘텐츠 */}
               <div
-                className={`p-4 border-b border-gray-200 ${isMetricDetailOpen ? "min-h-[800px] max-h-[800px]" : "min-h-0"}`}
+                className={`py-4 border-b border-gray-200 ${isMetricDetailOpen ? "min-h-[800px] max-h-[800px]" : "min-h-0"}`}
               >
                 {viewType === "hierarchy" ? (
                   <OrganizationTable
@@ -567,6 +607,7 @@ const OrganizationPage = () => {
                     onDetailClick={handleDetailClick}
                     aggregationType={aggregationType}
                     onMetricDetailChange={setIsMetricDetailOpen}
+                    isZoomed={isTableZoomed}
                   />
                 ) : (
                   <OrganizationFlatTable
@@ -578,6 +619,7 @@ const OrganizationPage = () => {
                     onSearchResult={setSearchResultCount}
                     aggregationType={aggregationType}
                     onMetricDetailChange={setIsMetricDetailOpen}
+                    isZoomed={isTableZoomed}
                   />
                 )}
               </div>
@@ -590,7 +632,7 @@ const OrganizationPage = () => {
             <>
               {/* BDPI 탭 콘텐츠 */}
               <div
-                className={`p-4 border-b border-gray-200 ${isMetricDetailOpen ? "min-h-[800px] max-h-[800px]" : "min-h-0"}`}
+                className={`py-4 border-b border-gray-200 ${isMetricDetailOpen ? "min-h-[800px] max-h-[800px]" : "min-h-0"}`}
               >
                 {viewType === "hierarchy" ? (
                   <OrganizationBdpiTable

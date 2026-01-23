@@ -51,7 +51,7 @@ type ValidationError = "empty" | "invalid" | null;
 const validateTargetValue = (value: string): ValidationError => {
   // 빈값, 공백, 0 체크
   const trimmedValue = value.trim();
-  if (trimmedValue === "" || trimmedValue === "0") {
+  if (trimmedValue === "") {
     return "empty";
   }
 

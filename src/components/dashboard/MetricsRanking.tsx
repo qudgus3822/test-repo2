@@ -79,13 +79,13 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
               topGainers.map((item) => (
                 <div
                   key={item.rank}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between gap-1"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-500 w-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-sm font-medium text-gray-500 w-4 shrink-0">
                       {item.rank}
                     </span>
-                    <span className="text-sm text-gray-900">{item.name}</span>
+                    <span className="text-sm text-gray-900 truncate" title={item.name}>{item.name}</span>
                   </div>
                   <span
                     className="text-sm font-semibold"
@@ -119,11 +119,11 @@ export const MetricsRanking = ({ month }: MetricsRankingProps) => {
                   key={item.rank}
                   className="flex items-center justify-between"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-500 w-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-sm font-medium text-gray-500 w-4 shrink-0">
                       {item.rank}
                     </span>
-                    <span className="text-sm text-gray-900">{item.name}</span>
+                    <span className="text-sm text-gray-900 truncate" title={item.name}>{item.name}</span>
                   </div>
                   <span
                     className="text-sm font-semibold"

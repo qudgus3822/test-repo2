@@ -59,6 +59,10 @@ interface OrganizationStore {
    * [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 (value: 실제값, rate: 달성률)
    */
   displayMode: "value" | "rate";
+  /**
+   * 지표별 데이터 출처 (metricCode → sources 매핑)
+   */
+  metricSources: Record<string, string[]>;
 }
 
 interface OrganizationAction {
@@ -130,6 +134,10 @@ interface OrganizationAction {
    * [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 설정 (value: 실제값, rate: 달성률)
    */
   setDisplayMode: (mode: "value" | "rate") => void;
+  /**
+   * 지표별 데이터 출처 설정
+   */
+  setMetricSources: (sources: Record<string, string[]>) => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -153,6 +161,7 @@ const initState: OrganizationStore = {
   metricOrder: null, // 초기: API 응답 순서 사용
   isMetricColumnDragged: false, // 초기: 드래그 발생 안 함
   displayMode: "value", // [변경: 2026-01-22 15:00, 김병현 수정] 초기: 실제값 표시
+  metricSources: {}, // 초기: 빈 객체
 };
 
 export const useOrganizationStore = create<
@@ -211,4 +220,6 @@ export const useOrganizationStore = create<
     set({ isMetricColumnDragged: isDragged }),
   // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 설정
   setDisplayMode: (mode: "value" | "rate") => set({ displayMode: mode }),
+  setMetricSources: (sources: Record<string, string[]>) =>
+    set({ metricSources: sources }),
 }));

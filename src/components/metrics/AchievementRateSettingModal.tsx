@@ -353,7 +353,7 @@ export const AchievementRateSettingModal = ({
                     style={{ color: warningConfig.color }}
                   />
                   <span className="text-sm text-gray-700">
-                    {dangerThreshold}% ~ {excellentThreshold}% 미만
+                    {dangerThreshold}% 이상 ~ {excellentThreshold}% 미만
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

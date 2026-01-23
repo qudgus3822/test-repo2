@@ -88,13 +88,13 @@ const MetricCard = ({ metric }: { metric: DisplayMetric }) => {
 
       {/* 메트릭 값 (데이터 없으면 -- 표시) */}
       <div
-        className={`lg:text-2xl text-xl font-bold ${hasStatus ? "text-gray-900" : "text-gray-400"}`}
+        className={`lg:text-2xl text-xl font-bold whitespace-nowrap ${hasStatus ? "text-gray-900" : "text-gray-400"}`}
       >
         {hasStatus ? metric.value : "--"}
       </div>
 
       {/* 목표치 */}
-      <div className="flex justify-center items-center py-1 px-4 bg-[#DFDFDF] rounded-[45px]">
+      <div className="flex justify-center items-center py-1 px-4 bg-[#DFDFDF] rounded-[45px] whitespace-nowrap">
         <span className="text-sm text-center tracking-[-1.17px] text-[#62748E]">
           {metric.target}
         </span>
@@ -124,7 +124,7 @@ const MetricCard = ({ metric }: { metric: DisplayMetric }) => {
       </div>
 
       {/* 메트릭 라벨 */}
-      <div className="text-md text-gray-500 font-bold">{metric.label}</div>
+      <div className="text-md text-gray-500 font-bold line-clamp-2 text-center" title={metric.label}>{metric.label}</div>
     </div>
   );
 };
