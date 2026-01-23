@@ -84,8 +84,6 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
     refetch,
   } = useWeightSettings(month, true, true);
 
-  console.log("Weight settings data:", weightSettingsData);
-
   // API 데이터가 로드되면 해당 카테고리의 가중치 적용
   useEffect(() => {
     if (weightSettingsData) {
