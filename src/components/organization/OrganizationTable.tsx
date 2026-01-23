@@ -6,7 +6,7 @@
  * - 지표 칼럼 드래그 앤 드롭 정렬 기능
  */
 
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { ChevronRight, ChevronDown, GripHorizontal, Info } from "lucide-react";
 import {
   DndContext,
@@ -38,6 +38,7 @@ import {
   getMemberEmail,
   getLevelBackgroundColor,
 } from "@/utils/organization";
+import { getSourceLogo } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
@@ -72,6 +73,8 @@ interface OrganizationTableProps {
   aggregationType?: AggregationType;
   // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 콜백 추가
   onMetricDetailChange?: (isOpen: boolean) => void;
+  /** 테이블 전체보기 (zoom 축소) 모드 */
+  isZoomed?: boolean;
 }
 
 
@@ -164,7 +167,7 @@ const CombinedDepartmentRow = ({
       style={{ backgroundColor: bgColor }}
     >
       <td
-        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] sticky left-0 z-10`}
+        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[340px] h-[64px] sticky left-0 z-10`}
         style={{
           paddingLeft: `${paddingLeft}px`,
           boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
@@ -197,9 +200,9 @@ const CombinedDepartmentRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b w-[72px] ${borderColor} h-[64px] sticky z-10`}
+          className={`px-0 py-4 text-center text-sm font-semibold align-middle border-r border-b w-[56px] ${borderColor} h-[64px] sticky z-10`}
           style={{
-            left: `${350 + catIndex * 72}px`,
+            left: `${340 + catIndex * 56}px`,
             boxShadow:
               catIndex === SUMMARY_CATEGORIES.length - 1
                 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
@@ -307,7 +310,7 @@ const CombinedMemberRow = ({
     >
       {/* 고정 영역 - 멤버 이름 */}
       <td
-        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[350px] h-[64px] sticky left-0 z-10`}
+        className={`py-0 align-middle whitespace-nowrap border-r border-b ${borderColor} w-[340px] h-[64px] sticky left-0 z-10`}
         style={{
           paddingLeft: `${paddingLeft}px`,
           boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)",
@@ -335,9 +338,9 @@ const CombinedMemberRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[72px] h-[64px] sticky z-10`}
+          className={`px-0 py-4 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[56px] h-[64px] sticky z-10`}
           style={{
-            left: `${350 + catIndex * 72}px`,
+            left: `${340 + catIndex * 56}px`,
             boxShadow:
               catIndex === SUMMARY_CATEGORIES.length - 1
                 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
@@ -420,6 +423,7 @@ interface SortableMetricHeaderProps {
   code: string;
   displayName: string | undefined; // API 응답값 (줄바꿈 포함 문자열)
   metricName: string | undefined; // fallback용 지표명
+  sources?: string[]; // 지표 데이터 출처
   isSelected?: boolean;
   onSelect?: (code: string) => void;
 }
@@ -428,6 +432,7 @@ const SortableMetricHeader = ({
   code,
   displayName,
   metricName,
+  sources,
   isSelected = false,
   onSelect,
 }: SortableMetricHeaderProps) => {
@@ -474,6 +479,23 @@ const SortableMetricHeader = ({
         >
           <GripHorizontal className="w-4 h-4 text-gray-400" />
         </div>
+        {/* 지표 출처 아이콘 */}
+        {sources && sources.length > 0 && (
+          <div className="flex items-center justify-center gap-1">
+            {sources.map((source) => {
+              const logo = getSourceLogo(source);
+              return logo ? (
+                <img
+                  key={source}
+                  src={logo}
+                  alt={source}
+                  title={source}
+                  className="w-5.5 h-5.5"
+                />
+              ) : null;
+            })}
+          </div>
+        )}
         {/* displayName 영역 - 클릭 가능 */}
         <div
           onClick={handleClick}
@@ -508,6 +530,7 @@ export const OrganizationTable = ({
   hideValues = false,
   aggregationType = "avg",
   onMetricDetailChange,
+  isZoomed = false,
 }: OrganizationTableProps) => {
   // 전체 탭일 경우 API 옵션 설정
   const apiOptions =
@@ -531,6 +554,7 @@ export const OrganizationTable = ({
     (state) => state.toggleOrganization,
   );
   const showMembers = useOrganizationStore((state) => state.showMembers);
+  const metricSources = useOrganizationStore((state) => state.metricSources);
 
   // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();
@@ -578,6 +602,29 @@ export const OrganizationTable = ({
     isFetching,
     getMetricOrderFromApi,
   ]);
+
+  // 테이블 전체보기 (zoom) 관련
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  useEffect(() => {
+    if (!isZoomed || !tableContainerRef.current) {
+      setZoomLevel(1);
+      return;
+    }
+    const calculateZoom = () => {
+      const containerWidth = tableContainerRef.current?.clientWidth ?? 0;
+      if (containerWidth === 0) return;
+      const fixedWidth = 340 + 4 * 56; // 564px
+      const metricColumnsWidth = metricOrder.length * 74;
+      const totalTableWidth = fixedWidth + metricColumnsWidth;
+      setZoomLevel(Math.min(1, containerWidth / totalTableWidth));
+    };
+    calculateZoom();
+    const observer = new ResizeObserver(calculateZoom);
+    observer.observe(tableContainerRef.current);
+    return () => observer.disconnect();
+  }, [isZoomed, metricOrder.length]);
 
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
@@ -729,7 +776,7 @@ export const OrganizationTable = ({
         }
         .org-table-container::-webkit-scrollbar-track {
           background: transparent;
-          margin-left: 638px;
+          margin-left: 564px;
         }
         .org-table-container::-webkit-scrollbar-thumb {
           background: #d1d5db;
@@ -741,14 +788,20 @@ export const OrganizationTable = ({
         .org-table-container::-webkit-scrollbar-corner {
           background: transparent;
         }
+        .table-zoomed td,
+        .table-zoomed th {
+          position: static !important;
+          left: auto !important;
+          box-shadow: none !important;
+        }
       `}</style>
-      <div className="org-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
+      <div ref={tableContainerRef} className="org-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <table className="border-separate border-spacing-0 table-fixed">
+          <table className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "table-zoomed" : ""}`} style={isZoomed ? { zoom: zoomLevel } : undefined}>
             {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
             <thead
               className="sticky top-0 z-20 bg-white"
@@ -757,7 +810,7 @@ export const OrganizationTable = ({
               <tr className="bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
+                  className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[340px] min-w-[340px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
@@ -773,10 +826,10 @@ export const OrganizationTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className="px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] min-w-[72px] h-[113px] sticky z-30"
+                      className="px-0 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[56px] min-w-[56px] h-[113px] sticky z-30"
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
-                        left: `${350 + catIndex * 72}px`,
+                        left: `${340 + catIndex * 56}px`,
                         boxShadow:
                           catIndex === SUMMARY_CATEGORIES.length - 1
                             ? "inset 0 -1px 0 #e5e7eb, 4px 0 8px -2px rgba(0, 0, 0, 0.1)"
@@ -814,6 +867,7 @@ export const OrganizationTable = ({
                         code={code}
                         displayName={metricInfo?.metricDisplayName}
                         metricName={metricInfo?.metricName}
+                        sources={metricSources[code]}
                         isSelected={selectedMetricCode === code}
                         onSelect={handleMetricSelect}
                       />

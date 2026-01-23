@@ -6,7 +6,7 @@
  * - 지표별 정렬 기능 포함
  */
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import {
   ArrowUp,
   ArrowDown,
@@ -40,6 +40,7 @@ import type {
   AggregationType,
 } from "@/types/organization.types";
 import { getMemberRoleOrPositionLabel } from "@/utils/organization";
+import { getSourceLogo } from "@/utils/metrics";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
@@ -74,6 +75,8 @@ interface OrganizationFlatTableProps {
   aggregationType?: AggregationType;
   // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 콜백 추가
   onMetricDetailChange?: (isOpen: boolean) => void;
+  /** 테이블 전체보기 (zoom 축소) 모드 */
+  isZoomed?: boolean;
 }
 
 // 플랫 데이터 아이템 타입
@@ -219,7 +222,7 @@ const CombinedRow = ({
     <tr className={`border-b border-gray-200 hover:bg-gray-50/50 ${rowHeight}`}>
       {/* 고정 영역 - 조직/멤버 이름 */}
       <td
-        className={`align-middle whitespace-nowrap border-r border-b border-gray-200 w-[350px] min-w-[350px] ${rowHeight} bg-white sticky left-0 z-10`}
+        className={`align-middle whitespace-nowrap border-r border-b border-gray-200 w-[340px] min-w-[340px] ${rowHeight} bg-white sticky left-0 z-10`}
         style={{ boxShadow: "2px 0 4px -2px rgba(0, 0, 0, 0.1)" }}
       >
         {isDepartment ? (
@@ -270,9 +273,9 @@ const CombinedRow = ({
       {SUMMARY_CATEGORIES.map((cat, catIndex) => (
         <td
           key={cat.id}
-          className={`px-2 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[72px] min-w-[72px] ${rowHeight} bg-white sticky z-10`}
+          className={`px-0 py-4 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[56px] min-w-[56px] ${rowHeight} bg-white sticky z-10`}
           style={{
-            left: `${350 + catIndex * 72}px`,
+            left: `${340 + catIndex * 56}px`,
             boxShadow:
               catIndex === SUMMARY_CATEGORIES.length - 1
                 ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
@@ -354,6 +357,7 @@ interface SortableMetricHeaderProps {
   code: string;
   displayName: string | undefined; // API 응답값 (줄바꿈 포함 문자열)
   metricName: string | undefined; // fallback용 지표명
+  sources?: string[]; // 지표 데이터 출처
   isActive: boolean;
   sortDirection: "asc" | "desc" | null;
   onSort: (code: string) => void;
@@ -365,6 +369,7 @@ const SortableMetricHeader = ({
   code,
   displayName,
   metricName,
+  sources,
   isActive,
   sortDirection,
   onSort,
@@ -432,6 +437,23 @@ const SortableMetricHeader = ({
         >
           <GripHorizontal className="w-4 h-4 text-gray-400" />
         </div>
+        {/* 지표 출처 아이콘 */}
+        {sources && sources.length > 0 && (
+          <div className="flex items-center justify-center gap-1">
+            {sources.map((source) => {
+              const logo = getSourceLogo(source);
+              return logo ? (
+                <img
+                  key={source}
+                  src={logo}
+                  alt={source}
+                  title={source}
+                  className="w-5.5 h-5.5"
+                />
+              ) : null;
+            })}
+          </div>
+        )}
         {/* displayName 영역 - 클릭 가능 */}
         <div
           onClick={handleSelectClick}
@@ -478,6 +500,7 @@ export const OrganizationFlatTable = ({
   onSearchResult,
   aggregationType = "avg",
   onMetricDetailChange,
+  isZoomed = false,
 }: OrganizationFlatTableProps) => {
   // 전체 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
@@ -509,6 +532,7 @@ export const OrganizationFlatTable = ({
     (state) => state.setIsMetricColumnDragged,
   );
   const displayMode = useOrganizationStore((state) => state.displayMode);
+  const metricSources = useOrganizationStore((state) => state.metricSources);
 
   // API 응답에서 지표 순서 추출
   const getMetricOrderFromApi = useCallback(() => {
@@ -540,6 +564,29 @@ export const OrganizationFlatTable = ({
 
   // 실제 사용할 지표 순서 (전역 스토어 > API 응답 순서)
   const metricOrder = globalMetricOrder ?? getMetricOrderFromApi();
+
+  // 테이블 전체보기 (zoom) 관련
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [zoomLevel, setZoomLevel] = useState(1);
+
+  useEffect(() => {
+    if (!isZoomed || !tableContainerRef.current) {
+      setZoomLevel(1);
+      return;
+    }
+    const calculateZoom = () => {
+      const containerWidth = tableContainerRef.current?.clientWidth ?? 0;
+      if (containerWidth === 0) return;
+      const fixedWidth = 340 + 4 * 56; // 564px
+      const metricColumnsWidth = metricOrder.length * 74;
+      const totalTableWidth = fixedWidth + metricColumnsWidth;
+      setZoomLevel(Math.min(1, containerWidth / totalTableWidth));
+    };
+    calculateZoom();
+    const observer = new ResizeObserver(calculateZoom);
+    observer.observe(tableContainerRef.current);
+    return () => observer.disconnect();
+  }, [isZoomed, metricOrder.length]);
 
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;
@@ -877,7 +924,7 @@ export const OrganizationFlatTable = ({
         }
         .org-flat-table-container::-webkit-scrollbar-track {
           background: transparent;
-          margin-left: 638px;
+          margin-left: 564px;
         }
         .org-flat-table-container::-webkit-scrollbar-thumb {
           background: #d1d5db;
@@ -889,19 +936,25 @@ export const OrganizationFlatTable = ({
         .org-flat-table-container::-webkit-scrollbar-corner {
           background: transparent;
         }
+        .flat-table-zoomed td,
+        .flat-table-zoomed th {
+          position: static !important;
+          left: auto !important;
+          box-shadow: none !important;
+        }
       `}</style>
-      <div className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
+      <div ref={tableContainerRef} className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <table className="border-separate border-spacing-0 table-fixed">
+          <table className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "flat-table-zoomed" : ""}`} style={isZoomed ? { zoom: zoomLevel } : undefined}>
             <thead className="sticky top-0 z-20">
               <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
                 <th
-                  className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[350px] min-w-[350px] h-[113px] bg-gray-50 sticky left-0 z-30`}
+                  className={`${thBaseStyle} text-left border-r border-b border-gray-200 w-[340px] min-w-[340px] h-[113px] bg-gray-50 sticky left-0 z-30`}
                 >
                   조직 이름
                 </th>
@@ -930,12 +983,12 @@ export const OrganizationFlatTable = ({
                   return (
                     <th
                       key={cat.id}
-                      className={`px-2 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[72px] min-w-[72px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30 ${
+                      className={`px-0 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[56px] min-w-[56px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30 ${
                         isActive ? "ring-2 ring-inset ring-blue-400" : ""
                       }`}
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
-                        left: `${350 + catIndex * 72}px`,
+                        left: `${340 + catIndex * 56}px`,
                         boxShadow:
                           catIndex === SUMMARY_CATEGORIES.length - 1
                             ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
@@ -978,6 +1031,7 @@ export const OrganizationFlatTable = ({
                         code={code}
                         displayName={metricInfo?.metricDisplayName}
                         metricName={metricInfo?.metricName}
+                        sources={metricSources[code]}
                         isActive={isActive}
                         sortDirection={sortConfig.direction}
                         onSort={toggleSort}

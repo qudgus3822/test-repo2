@@ -8,6 +8,10 @@ import type { StatusType as ServiceStabilityStatus } from "@/types/serviceStabil
 import { CheckCircle2, AlertCircle, CircleX } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { STATUS_COLORS, TEXT_COLORS, PALETTE_COLORS } from "@/styles/colors";
+import jiraLogo from "@/assets/images/logo/jira_icon.svg";
+import gitlabLogo from "@/assets/images/logo/gitlab_icon.svg";
+import sonarqubeLogo from "@/assets/images/logo/sonarqube_icon.svg";
+import wethumbLogo from "@/assets/images/logo/wethumb_icon.png";
 
 /**
  * MetricCategory enum을 한글 라벨로 변환합니다.
@@ -322,3 +326,15 @@ export function convertToMetricsListData(
 
   return metrics;
 }
+
+/** 데이터 출처(source)에 해당하는 로고 이미지를 반환 */
+const SOURCE_LOGO_MAP: Record<string, string> = {
+  jira: jiraLogo,
+  gitlab: gitlabLogo,
+  sonarqube: sonarqubeLogo,
+  wethumb: wethumbLogo,
+};
+
+export const getSourceLogo = (source: string): string | undefined => {
+  return SOURCE_LOGO_MAP[source];
+};
