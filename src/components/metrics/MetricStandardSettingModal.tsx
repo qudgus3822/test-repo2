@@ -376,7 +376,7 @@ export const MetricStandardSettingModal = ({
                               className="w-3.5 h-3.5"
                               style={{ color: warningConfig.color }}
                             />
-                            {dangerThreshold}% ~ {excellentThreshold}% 미만
+                            {dangerThreshold}% 이상 ~ {excellentThreshold}% 미만
                           </span>
                           <span
                             className="flex items-center gap-1"

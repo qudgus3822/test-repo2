@@ -382,7 +382,7 @@ const OrganizationPage = () => {
                 onClick={() => setViewType("hierarchy")}
                 className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors ${
                   viewType === "hierarchy"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-[#005FCC] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -393,7 +393,7 @@ const OrganizationPage = () => {
                 onClick={() => setViewType("flat")}
                 className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                   viewType === "flat"
-                    ? "bg-blue-600 text-white"
+                    ? "bg-[#005FCC] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -409,7 +409,7 @@ const OrganizationPage = () => {
                   onClick={() => setFlatViewFilter("division")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
                     flatViewFilter === "division"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -419,7 +419,7 @@ const OrganizationPage = () => {
                   onClick={() => setFlatViewFilter("team")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                     flatViewFilter === "team"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -429,7 +429,7 @@ const OrganizationPage = () => {
                   onClick={() => setFlatViewFilter("member")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
                     flatViewFilter === "member"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -445,7 +445,7 @@ const OrganizationPage = () => {
                   onClick={() => setAggregationType("avg")}
                   className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
                     aggregationType === "avg" || activeTab === "bdpi"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -460,7 +460,7 @@ const OrganizationPage = () => {
                     activeTab === "bdpi"
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : aggregationType === "total"
-                        ? "bg-blue-600 text-white cursor-pointer"
+                        ? "bg-[#005FCC] text-white cursor-pointer"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
                   }`}
                 >
@@ -519,9 +519,10 @@ const OrganizationPage = () => {
               <Button
                 variant={isTableZoomed ? "primary" : "normal"}
                 size="sm"
+                className="min-w-[100px]"
                 onClick={() => setIsTableZoomed(!isTableZoomed)}
               >
-                {isTableZoomed ? "원래 크기" : "전체 보기"}
+                {isTableZoomed ? "기본 (100%)" : "지표맞춤"}
               </Button>
             )}
             {/* [변경: 2026-01-22 16:00, 김병현 수정] 실제값/달성률 전환 스위치 (실제값이 기본) */}
