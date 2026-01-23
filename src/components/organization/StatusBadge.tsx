@@ -46,7 +46,8 @@ export const StatusBadge = ({ change }: StatusBadgeProps) => {
   const tooltipContent = getCombinedTooltipContent(displayChanges);
 
   // [변경: 2026-01-22 12:00, 김병현 수정] 첫 번째 배지만 표시하도록 수정
-  const item = displayChanges.find(() => true);
+  // [변경: 2026-01-23 10:30, 김병현 수정] 시간상 가장 나중 데이터를 찾도록 수정
+  const item = displayChanges[displayChanges.length - 1];
   const badges = (
     <div className="inline-flex items-center">
       <ChangeTypeBadge
