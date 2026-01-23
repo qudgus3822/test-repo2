@@ -40,7 +40,7 @@ type ValidationError = "empty" | "invalid" | null;
 // 목표값 유효성 검사 함수
 const validateTargetValue = (value: string): ValidationError => {
   const trimmedValue = value.trim();
-  if (trimmedValue === "" || trimmedValue === "0") {
+  if (trimmedValue === "") {
     return "empty";
   }
 
@@ -48,10 +48,6 @@ const validateTargetValue = (value: string): ValidationError => {
   const validNumberRegex = /^[0-9]+(\.[0-9])?$/;
   if (!validNumberRegex.test(trimmedValue)) {
     return "invalid";
-  }
-
-  if(Number(trimmedValue) <= 0) {
-    return "empty";
   }
 
   return null;
