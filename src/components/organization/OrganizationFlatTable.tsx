@@ -99,7 +99,8 @@ const flattenTree = (
     roomName?: string,
     teamName?: string,
   ) => {
-    if (!node.isEvaluationTarget) return;
+    // [변경: 2026-01-23 10:00, 김병현 수정] isEvaluationTarget 필터링 제거
+    // if (!node.isEvaluationTarget) return;
 
     if (node.type === "department") {
       const dept = node as OrganizationDepartment;
@@ -588,8 +589,9 @@ export const OrganizationFlatTable = ({
   const flatItems = useMemo(() => {
     // format=list 응답 (items 배열이 있는 경우)
     if (data?.items && data.items.length > 0) {
+      // [변경: 2026-01-23 10:00, 김병현 수정] isEvaluationTarget 필터링 제거
       return data.items
-        .filter((node) => node.isEvaluationTarget)
+        // .filter((node) => node.isEvaluationTarget)
         .map((node) => ({
           type: node.type,
           data: node as OrganizationDepartment | OrganizationMember,

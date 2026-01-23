@@ -74,7 +74,6 @@ interface OrganizationTableProps {
   onMetricDetailChange?: (isOpen: boolean) => void;
 }
 
-
 // 트리를 플랫 배열로 변환 (expand 상태 고려)
 const flattenTreeWithExpand = (
   organizations: OrganizationDepartment[],
@@ -84,7 +83,7 @@ const flattenTreeWithExpand = (
   const result: FlatTreeItem[] = [];
 
   const traverse = (node: OrganizationNode, depth: number) => {
-    if (!node.isEvaluationTarget) return;
+    // if (!node.isEvaluationTarget) return;
 
     if (node.type === "department") {
       const dept = node as OrganizationDepartment;
@@ -104,8 +103,8 @@ const flattenTreeWithExpand = (
         if (showMembers) {
           dept.children
             .filter(
-              (child): child is OrganizationMember =>
-                child.type === "member" && child.isEvaluationTarget,
+              (child): child is OrganizationMember => child.type === "member",
+              // child.type === "member" && child.isEvaluationTarget,
             )
             .forEach((member) => {
               result.push({
@@ -121,7 +120,8 @@ const flattenTreeWithExpand = (
         // 하위 부서 표시
         const childDepts = dept.children.filter(
           (child): child is OrganizationDepartment =>
-            child.type === "department" && child.isEvaluationTarget,
+            child.type === "department",
+          // child.type === "department" && child.isEvaluationTarget,
         );
         // sort order 는 현재 사용하지 않음
         // .sort((a, b) => a.sortOrder - b.sortOrder);
@@ -674,7 +674,7 @@ export const OrganizationTable = ({
   }, [data?.tree]);
 
   const organizations = (data?.tree ?? [])
-    .filter((org) => org.isEvaluationTarget)
+    // .filter((org) => org.isEvaluationTarget)
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
   // 트리를 플랫 배열로 변환
