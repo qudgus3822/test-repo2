@@ -178,7 +178,8 @@ const OrganizationRow = ({
   const childMembers: OrganizationMember[] = [];
 
   org.children?.forEach((child: OrganizationNode) => {
-    if (!child.isEvaluationTarget) return;
+    // [변경: 2026-01-23 10:00, 김병현 수정] isEvaluationTarget 필터링 제거
+    // if (!child.isEvaluationTarget) return;
     if (child.type === "department") {
       childDepartments.push(child);
     } else if (child.type === "member") {
@@ -297,8 +298,9 @@ export const OrganizationBdpiTable = ({
     true,
     apiOptions,
   );
-  const organizations = (data?.tree ?? [])
-    .filter((org) => org.isEvaluationTarget)
+  // [변경: 2026-01-23 10:00, 김병현 수정] isEvaluationTarget 필터링 제거
+  const organizations = (data?.tree ?? []);
+    // .filter((org) => org.isEvaluationTarget)
     // .sort((a, b) => a.sortOrder - b.sortOrder);
 
   if (isLoading || isError || organizations.length === 0) {
