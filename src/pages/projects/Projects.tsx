@@ -3,7 +3,10 @@ import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
 import { SummaryCard } from "@/components/projects/SummaryCard";
-import { ProjectTabs, type ProjectTabType } from "@/components/projects/ProjectTabs";
+import {
+  ProjectTabs,
+  type ProjectTabType,
+} from "@/components/projects/ProjectTabs";
 import { ProjectTable } from "@/components/projects/ProjectTable";
 import { OperationTable } from "@/components/projects/OperationTable";
 import { useProjectDashboardSummary } from "@/api/hooks/useProjectDashboardSummary";
