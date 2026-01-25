@@ -198,7 +198,10 @@ export const OperationTable = ({
       {/* 무한 스크롤 sentinel + 로딩 인디케이터 */}
       <div ref={sentinelRef} className="py-4 flex justify-center">
         {isFetchingNextPage && (
-          <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+          <div className="flex items-center gap-2 text-gray-500">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="text-sm">데이터 불러오는 중입니다.</span>
+          </div>
         )}
       </div>
     </div>
