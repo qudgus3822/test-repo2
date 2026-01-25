@@ -7,7 +7,10 @@ import { ProjectTabs, type ProjectTabType } from "@/components/projects/ProjectT
 import { ProjectTable } from "@/components/projects/ProjectTable";
 import { OperationTable } from "@/components/projects/OperationTable";
 import { useProjectDashboardSummary } from "@/api/hooks/useProjectDashboardSummary";
-import { useProjectDashboard } from "@/api/hooks/useProjectDashboard";
+import {
+  useProjectDashboardInfinite,
+  flattenProjectPages,
+} from "@/api/hooks/useProjectDashboard";
 import { formatYearMonth } from "@/utils/date";
 import type {
   ProjectSummary,
@@ -34,15 +37,27 @@ const ProjectsPage = () => {
   // 프로젝트 대시보드 요약 데이터 조회
   const { data: summaryData } = useProjectDashboardSummary(month);
 
-  // 프로젝트(TF) 목록 데이터 조회 (TF 탭이 활성화된 경우에만 호출)
-  const { data: tfData } = useProjectDashboard(
-    { month, classification: "TF" },
+  // 프로젝트(TF) 목록 데이터 조회 - 무한 스크롤
+  const {
+    data: tfData,
+    fetchNextPage: fetchNextTfPage,
+    hasNextPage: hasNextTfPage,
+    isFetchingNextPage: isFetchingNextTfPage,
+    isLoading: isTfLoading,
+  } = useProjectDashboardInfinite(
+    { month, classification: "TF", limit: 10 },
     activeTab === "tf",
   );
 
-  // 운영 프로젝트 목록 데이터 조회 (운영 탭이 활성화된 경우에만 호출)
-  const { data: operationData } = useProjectDashboard(
-    { month, classification: "OPR2_NON_TF" },
+  // 운영 프로젝트 목록 데이터 조회 - 무한 스크롤
+  const {
+    data: operationData,
+    fetchNextPage: fetchNextOperationPage,
+    hasNextPage: hasNextOperationPage,
+    isFetchingNextPage: isFetchingNextOperationPage,
+    isLoading: isOperationLoading,
+  } = useProjectDashboardInfinite(
+    { month, classification: "OPR2_NON_TF", limit: 10 },
     activeTab === "operation",
   );
 
@@ -69,8 +84,8 @@ const ProjectsPage = () => {
 
   // API 응답을 ProjectTable의 ProjectItem 형태로 변환
   const tfProjects: ProjectItem[] = useMemo(() => {
-    if (!tfData?.projects) return [];
-    return tfData.projects.map((project) => ({
+    const flatData = flattenProjectPages(tfData?.pages);
+    return flatData.map((project) => ({
       id: project.projectId,
       name: project.epicSummary,
       epicId: project.epicKey,
@@ -87,12 +102,12 @@ const ProjectsPage = () => {
       avgRecoveryTime: project.timeToRepair,
       createdAt: project.createdAt ?? "",
     }));
-  }, [tfData]);
+  }, [tfData?.pages]);
 
   // API 응답을 OperationTable의 OperationItem 형태로 변환
   const operationItems: OperationItem[] = useMemo(() => {
-    if (!operationData?.projects) return [];
-    return operationData.projects.map((project) => ({
+    const flatData = flattenProjectPages(operationData?.pages);
+    return flatData.map((project) => ({
       id: project.projectId,
       name: project.epicSummary,
       epicId: project.epicKey,
@@ -103,7 +118,7 @@ const ProjectsPage = () => {
       createdCount: project.createdCount,
       createdAt: project.createdAt ?? "",
     }));
-  }, [operationData]);
+  }, [operationData?.pages]);
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
   return (
@@ -147,13 +162,25 @@ const ProjectsPage = () => {
         <div className="p-4 flex-1 min-h-0 overflow-auto">
           {activeTab === "tf" ? (
             <>
-              <InfoBanner message="지라 전체 에픽 중 분류유형이 ‘TF’ 표기된 프로젝트성 에픽에 대해 해당 지표들을 한눈에 확인할 수 있습니다." />
-              <ProjectTable projects={tfProjects} />
+              <InfoBanner message="지라 전체 에픽 중 분류유형이 'TF' 표기된 프로젝트성 에픽에 대해 해당 지표들을 한눈에 확인할 수 있습니다." />
+              <ProjectTable
+                projects={tfProjects}
+                isLoading={isTfLoading}
+                hasNextPage={hasNextTfPage}
+                isFetchingNextPage={isFetchingNextTfPage}
+                onLoadMore={fetchNextTfPage}
+              />
             </>
           ) : (
             <>
               <InfoBanner message="지라 OPR2 긴급 운영의 에픽은 유형(버그/장애/애프터잡 등)이 분류되지 않아 버그 및 장애 관련 상세 지표가 제공되지 않습니다." />
-              <OperationTable items={operationItems} />
+              <OperationTable
+                items={operationItems}
+                isLoading={isOperationLoading}
+                hasNextPage={hasNextOperationPage}
+                isFetchingNextPage={isFetchingNextOperationPage}
+                onLoadMore={fetchNextOperationPage}
+              />
             </>
           )}
         </div>

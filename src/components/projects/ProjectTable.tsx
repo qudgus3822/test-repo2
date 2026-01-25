@@ -1,4 +1,5 @@
-import { ExternalLink, Info } from "lucide-react";
+import { useRef, useEffect, useCallback } from "react";
+import { ExternalLink, Info, Loader2 } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { ProjectItem } from "@/types/project.types";
 import { formatDateString } from "@/utils/date";
@@ -47,12 +48,65 @@ const formatTime = (value: number | null | undefined): string => {
 
 interface ProjectTableProps {
   projects: ProjectItem[];
+  /** 초기 로딩 중 여부 */
+  isLoading?: boolean;
+  /** 다음 페이지 존재 여부 */
+  hasNextPage?: boolean;
+  /** 다음 페이지 로딩 중 여부 */
+  isFetchingNextPage?: boolean;
+  /** 다음 페이지 로드 함수 */
+  onLoadMore?: () => void;
 }
 
 /**
  * 프로젝트(TF) 테이블 컴포넌트
  */
-export const ProjectTable = ({ projects }: ProjectTableProps) => {
+export const ProjectTable = ({
+  projects,
+  isLoading = false,
+  hasNextPage = false,
+  isFetchingNextPage = false,
+  onLoadMore,
+}: ProjectTableProps) => {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // IntersectionObserver를 사용한 무한 스크롤
+  const handleObserver = useCallback(
+    (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage && onLoadMore) {
+        onLoadMore();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, onLoadMore],
+  );
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null,
+      rootMargin: "100px",
+      threshold: 0,
+    });
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [handleObserver]);
+
+  // 초기 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+      </div>
+    );
+  }
+
   if (projects.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -263,6 +317,13 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
           ))}
         </tbody>
       </table>
+
+      {/* 무한 스크롤 sentinel + 로딩 인디케이터 */}
+      <div ref={sentinelRef} className="py-4 flex justify-center">
+        {isFetchingNextPage && (
+          <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+        )}
+      </div>
     </div>
   );
 };
