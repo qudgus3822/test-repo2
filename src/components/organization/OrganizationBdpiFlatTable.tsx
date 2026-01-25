@@ -412,14 +412,15 @@ export const OrganizationBdpiFlatTable = ({
           break;
       }
 
-      // null 값은 -1로 처리
-      const aNum = aValue ?? -1;
-      const bNum = bValue ?? -1;
+      // [변경: 2026-01-25 17:00, 김병현 수정] null 값은 정렬 방향과 관계없이 항상 맨 아래로 이동
+      if (aValue === null && bValue === null) return 0;
+      if (aValue === null) return 1;
+      if (bValue === null) return -1;
 
       if (sortConfig.direction === "asc") {
-        return aNum - bNum;
+        return aValue - bValue;
       }
-      return bNum - aNum;
+      return bValue - aValue;
     });
   }, [flatItems, sortConfig]);
 
