@@ -304,6 +304,8 @@ export interface OrganizationCompareResponse {
   total?: number; // format=list 일 경우 전체 건수
   page?: number; // format=list 일 경우 현재 페이지
   totalPages?: number; // format=list 일 경우 전체 페이지 수
+  includeMemberCount?: number; // format=list 일 경우 포함된 멤버 수
+  excludeMemberCount?: number; // format=list 일 경우 제외된 멤버 수
 }
 
 // ================================
