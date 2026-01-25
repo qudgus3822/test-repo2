@@ -167,14 +167,26 @@ export interface ProjectDashboardItem {
   createdAt: string | null;
 }
 
+/** 페이징 정보 */
+export interface PaginationInfo {
+  /** 현재 페이지 번호 */
+  page: number;
+  /** 페이지당 항목 수 */
+  limit: number;
+  /** 전체 항목 수 */
+  total: number;
+  /** 전체 페이지 수 */
+  totalPages: number;
+}
+
 /** 프로젝트 대시보드 목록 API 응답 */
 export interface ProjectDashboardResponse {
   /** 조회 기간 (YYYY-MM) */
   period: string;
-  /** 전체 프로젝트 수 */
-  totalCount: number;
-  /** 프로젝트 목록 (활성 티켓수 오름차순) */
-  projects: ProjectDashboardItem[];
+  /** 프로젝트 목록 */
+  data: ProjectDashboardItem[];
+  /** 페이징 정보 */
+  pagination: PaginationInfo;
 }
 
 /** 프로젝트 대시보드 조회 파라미터 */
@@ -185,4 +197,8 @@ export interface ProjectDashboardParams {
   classification?: "TF" | "OPR2_NON_TF";
   /** 검색어 (프로젝트명 또는 에픽키) */
   search?: string;
+  /** 페이지 번호 (기본값: 1) */
+  page?: number;
+  /** 페이지당 항목 수 (기본값: 10) */
+  limit?: number;
 }
