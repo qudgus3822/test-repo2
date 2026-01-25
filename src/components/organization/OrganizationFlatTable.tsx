@@ -59,7 +59,6 @@ import {
   SUMMARY_BG_COLORS,
   type MetricData,
   type SummaryCounts,
-  type SortConfig,
 } from "./heatmap/types";
 
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
@@ -533,6 +532,8 @@ export const OrganizationFlatTable = ({
     setIsMetricColumnDragged,
     displayMode,
     metricSources,
+    sortConfig,
+    setSortConfig,
   } = useOrganizationStore(
     useShallow((state) => ({
       metricOrder: state.metricOrder,
@@ -540,6 +541,8 @@ export const OrganizationFlatTable = ({
       setIsMetricColumnDragged: state.setIsMetricColumnDragged,
       displayMode: state.displayMode,
       metricSources: state.metricSources,
+      sortConfig: state.sortConfig,
+      setSortConfig: state.setSortConfig,
     })),
   );
 
@@ -684,12 +687,6 @@ export const OrganizationFlatTable = ({
     getMetricOrderFromApi,
   ]);
 
-  // 정렬 상태
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
-    column: null,
-    direction: null,
-  });
-
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
     null,
@@ -784,22 +781,26 @@ export const OrganizationFlatTable = ({
   );
 
   // 정렬 토글 (3단계: null → asc → desc → null)
-  const toggleSort = useCallback((column: string) => {
-    setSortConfig((prev) => {
+  const toggleSort = useCallback(
+    (column: string) => {
       // 다른 컬럼 클릭 시 해당 컬럼 오름차순으로 시작
-      if (prev.column !== column) {
-        return { column, direction: "asc" };
+      if (sortConfig.column !== column) {
+        setSortConfig({ column, direction: "asc" });
+        return;
       }
       // 같은 컬럼 클릭 시 순환: asc → desc → null
-      if (prev.direction === "asc") {
-        return { column, direction: "desc" };
+      if (sortConfig.direction === "asc") {
+        setSortConfig({ column, direction: "desc" });
+        return;
       }
-      if (prev.direction === "desc") {
-        return { column: null, direction: null };
+      if (sortConfig.direction === "desc") {
+        setSortConfig({ column: null, direction: null });
+        return;
       }
-      return { column, direction: "asc" };
-    });
-  }, []);
+      setSortConfig({ column, direction: "asc" });
+    },
+    [sortConfig, setSortConfig],
+  );
 
   // 각 아이템의 summary counts 미리 계산
   const itemSummaryCountsMap = useMemo(() => {

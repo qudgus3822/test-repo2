@@ -5,6 +5,7 @@ import type {
   CompareGroup,
   OrganizationFilterType,
 } from "@/types/organization.types";
+import type { SortConfig } from "@/components/organization/heatmap/types";
 
 // 점수 기준값 상수
 export const SCORE_EXCELLENT_THRESHOLD = 80;
@@ -63,6 +64,10 @@ interface OrganizationStore {
    * 지표별 데이터 출처 (metricCode → sources 매핑)
    */
   metricSources: Record<string, string[]>;
+  /**
+   * [변경: 2026-01-25 15:00, 김병현 수정] 테이블 정렬 설정
+   */
+  sortConfig: SortConfig;
 }
 
 interface OrganizationAction {
@@ -138,6 +143,10 @@ interface OrganizationAction {
    * 지표별 데이터 출처 설정
    */
   setMetricSources: (sources: Record<string, string[]>) => void;
+  /**
+   * [변경: 2026-01-25 15:00, 김병현 수정] 정렬 설정
+   */
+  setSortConfig: (config: SortConfig) => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -162,6 +171,7 @@ const initState: OrganizationStore = {
   isMetricColumnDragged: false, // 초기: 드래그 발생 안 함
   displayMode: "value", // [변경: 2026-01-22 15:00, 김병현 수정] 초기: 실제값 표시
   metricSources: {}, // 초기: 빈 객체
+  sortConfig: { column: null, direction: null }, // [변경: 2026-01-25 15:00, 김병현 수정] 초기: 정렬 없음
 };
 
 export const useOrganizationStore = create<
@@ -218,8 +228,11 @@ export const useOrganizationStore = create<
   clearMetricOrder: () => set({ metricOrder: null }),
   setIsMetricColumnDragged: (isDragged: boolean) =>
     set({ isMetricColumnDragged: isDragged }),
-  // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 설정
-  setDisplayMode: (mode: "value" | "rate") => set({ displayMode: mode }),
+  // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 설정 (sortConfig도 함께 초기화)
+  setDisplayMode: (mode: "value" | "rate") =>
+    set({ displayMode: mode, sortConfig: { column: null, direction: null } }),
   setMetricSources: (sources: Record<string, string[]>) =>
     set({ metricSources: sources }),
+  // [변경: 2026-01-25 15:00, 김병현 수정] 정렬 설정
+  setSortConfig: (config: SortConfig) => set({ sortConfig: config }),
 }));
