@@ -75,6 +75,7 @@ export const SUMMARY_COLORS = {
 export const TEXT_COLORS = {
   primary: "#111827", // 주요 텍스트
   secondary: "#6B7280", // 보조 텍스트
+  tertiary: "#505258", // 헤더 등 보조 텍스트
   disabled: "#9CA3AF", // 비활성화 텍스트
 } as const;
 
