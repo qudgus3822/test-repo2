@@ -7,6 +7,7 @@
  */
 
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { ChevronRight, ChevronDown, GripHorizontal, Info } from "lucide-react";
 import {
   DndContext,
@@ -547,24 +548,29 @@ export const OrganizationTable = ({
     true,
     apiOptions,
   );
-  const expandedOrganizations = useOrganizationStore(
-    (state) => state.expandedOrganizations,
-  );
-  const toggleOrganization = useOrganizationStore(
-    (state) => state.toggleOrganization,
-  );
-  const showMembers = useOrganizationStore((state) => state.showMembers);
-  const metricSources = useOrganizationStore((state) => state.metricSources);
-
-  // 지표 순서 변경 hook
-  const updateMetricOrderMutation = useUpdateMetricOrder();
-
-  // 전역 스토어에서 지표 순서 상태 가져오기 (뷰 전환 시에도 유지됨)
+  // [변경: 2026-01-25 12:05, 김병현 수정] useShallow로 개별 selector 통합
   const {
+    expandedOrganizations,
+    toggleOrganization,
+    showMembers,
+    metricSources,
     metricOrder: globalMetricOrder,
     setMetricOrder: setGlobalMetricOrder,
     setIsMetricColumnDragged,
-  } = useOrganizationStore();
+  } = useOrganizationStore(
+    useShallow((state) => ({
+      expandedOrganizations: state.expandedOrganizations,
+      toggleOrganization: state.toggleOrganization,
+      showMembers: state.showMembers,
+      metricSources: state.metricSources,
+      metricOrder: state.metricOrder,
+      setMetricOrder: state.setMetricOrder,
+      setIsMetricColumnDragged: state.setIsMetricColumnDragged,
+    })),
+  );
+
+  // 지표 순서 변경 hook
+  const updateMetricOrderMutation = useUpdateMetricOrder();
 
   // API 응답에서 지표 순서 추출
   const getMetricOrderFromApi = useCallback(() => {
@@ -795,13 +801,19 @@ export const OrganizationTable = ({
           box-shadow: none !important;
         }
       `}</style>
-      <div ref={tableContainerRef} className="org-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
+      <div
+        ref={tableContainerRef}
+        className="org-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0"
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <table className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "table-zoomed" : ""}`} style={isZoomed ? { zoom: zoomLevel } : undefined}>
+          <table
+            className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "table-zoomed" : ""}`}
+            style={isZoomed ? { zoom: zoomLevel } : undefined}
+          >
             {/* [변경: 2026-01-21 10:30, 김병현 수정] sticky 헤더에 shadow 추가하여 border 효과 적용 */}
             <thead
               className="sticky top-0 z-20 bg-white"
