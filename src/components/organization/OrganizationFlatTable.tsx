@@ -291,18 +291,19 @@ const CombinedRow = ({
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리
         if (code === "bdpi" || code === "BDPI") {
-          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
-          return (
-            <td
-              key={code}
-              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
-            >
-              {bdpiValue !== undefined && bdpiValue !== null
-                ? `${bdpiValue.toFixed(0)}%`
-                : "--"}
-            </td>
-          );
+          return;
+          // const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
+          // const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
+          // return (
+          //   <td
+          //     key={code}
+          //     className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
+          //   >
+          //     {bdpiValue !== undefined && bdpiValue !== null
+          //       ? `${bdpiValue.toFixed(0)}%`
+          //       : "--"}
+          //   </td>
+          // );
         }
 
         const metric = metrics?.[code];
@@ -644,13 +645,15 @@ export const OrganizationFlatTable = ({
     // format=list 응답 (items 배열이 있는 경우)
     if (data?.items && data.items.length > 0) {
       // [변경: 2026-01-23 10:00, 김병현 수정] isEvaluationTarget 필터링 제거
-      return data.items
-        // .filter((node) => node.isEvaluationTarget)
-        .map((node) => ({
-          type: node.type,
-          data: node as OrganizationDepartment | OrganizationMember,
-          level: node.level,
-        })) as FlatItem[];
+      return (
+        data.items
+          // .filter((node) => node.isEvaluationTarget)
+          .map((node) => ({
+            type: node.type,
+            data: node as OrganizationDepartment | OrganizationMember,
+            level: node.level,
+          })) as FlatItem[]
+      );
     }
     // format=tree 응답 (기존 로직)
     return flattenTree(data?.tree ?? [], filterType);
@@ -952,13 +955,19 @@ export const OrganizationFlatTable = ({
           box-shadow: none !important;
         }
       `}</style>
-      <div ref={tableContainerRef} className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
+      <div
+        ref={tableContainerRef}
+        className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0"
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <table className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "flat-table-zoomed" : ""}`} style={isZoomed ? { zoom: zoomLevel } : undefined}>
+          <table
+            className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "flat-table-zoomed" : ""}`}
+            style={isZoomed ? { zoom: zoomLevel } : undefined}
+          >
             <thead className="sticky top-0 z-20">
               <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
@@ -1029,6 +1038,9 @@ export const OrganizationFlatTable = ({
                   strategy={horizontalListSortingStrategy}
                 >
                   {metricOrder.map((code) => {
+                    if (code === "bdpi" || code === "BDPI") {
+                      return;
+                    }
                     const metricInfo = metricInfoMap[code];
                     const isActive =
                       sortConfig.column === code &&
