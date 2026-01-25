@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell } from "recharts";
 import { TREND_COLORS, CHART_COLORS } from "@/styles/colors";
 
 // 그라데이션 설정 타입
@@ -61,8 +61,7 @@ export const DonutChart = ({
   return (
     <div className="relative flex flex-col items-center">
       <div className="relative" style={{ width: size, height: size }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart width={size} height={size}>
             {/* 그라데이션 정의 */}
             {gradient && (
               <defs>
@@ -87,7 +86,6 @@ export const DonutChart = ({
               <Cell fill={backgroundColor} />
             </Pie>
           </PieChart>
-        </ResponsiveContainer>
 
         {/* 중앙 값 표시 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
