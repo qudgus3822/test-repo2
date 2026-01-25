@@ -10,6 +10,9 @@ interface TooltipProps {
   color?: string;
   maxWidth?: number; // 툴팁 최대 너비 (기본값: 175px)
   direction?: TooltipDirection; // 툴팁 방향 (기본값: "right")
+  hideArrow?: boolean; // 화살표 숨김 여부 (기본값: false)
+  fontSize?: string; // 글씨 크기 (기본값: "text-sm")
+  noWrap?: boolean; // 줄바꿈 방지 여부 (기본값: false)
 }
 
 /**
@@ -41,28 +44,51 @@ export const Tooltip = ({
   color = "#374151",
   maxWidth,
   direction = "right",
+  hideArrow = false,
+  fontSize = "text-sm",
+  noWrap = false,
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [arrowTop, setArrowTop] = useState<number | null>(null);
+  const [adjustedTransform, setAdjustedTransform] = useState<string | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isVisible && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const padding = 8; // 화면 가장자리 여백
+
       if (direction === "bottom") {
         setPosition({
           top: rect.bottom + 8,
           left: rect.left + rect.width / 2,
         });
         setArrowTop(null);
+
+        // 렌더링 후 화면 오버플로우 체크
+        requestAnimationFrame(() => {
+          if (tooltipRef.current) {
+            const tooltipRect = tooltipRef.current.getBoundingClientRect();
+            const rightOverflow = tooltipRect.right - viewportWidth + padding;
+
+            if (rightOverflow > 0) {
+              // 우측 오버플로우 시 왼쪽으로 이동
+              setAdjustedTransform(`translateX(calc(-50% - ${rightOverflow}px))`);
+            } else {
+              setAdjustedTransform(null);
+            }
+          }
+        });
       } else if (direction === "top") {
         setPosition({
           top: rect.top - 8,
           left: rect.left + rect.width / 2,
         });
         setArrowTop(null);
+        setAdjustedTransform(null);
       } else {
         // 트리거 요소의 세로 중앙 위치
         const triggerCenterY = rect.top + rect.height / 2;
@@ -70,6 +96,7 @@ export const Tooltip = ({
           top: rect.top,
           left: rect.right + 8,
         });
+        setAdjustedTransform(null);
         // 툴팁 렌더링 후 화살표 위치 계산
         requestAnimationFrame(() => {
           if (tooltipRef.current) {
@@ -101,14 +128,14 @@ export const Tooltip = ({
         createPortal(
           <div
             ref={tooltipRef}
-            className="fixed z-[9999] px-3 py-2 text-sm text-white rounded-lg shadow-lg pointer-events-none whitespace-pre-line break-words"
+            className={`fixed z-[9999] px-3 py-2 ${fontSize} text-white rounded-lg shadow-lg pointer-events-none ${noWrap ? "whitespace-nowrap" : "whitespace-pre-line break-words"}`}
             style={{
               backgroundColor: color,
               ...(direction === "bottom"
                 ? {
                     top: `${position.top}px`,
                     left: `${position.left}px`,
-                    transform: "translateX(-50%)",
+                    transform: adjustedTransform || "translateX(-50%)",
                   }
                 : direction === "top"
                   ? {
@@ -125,24 +152,26 @@ export const Tooltip = ({
           >
             {content}
             {/* 화살표 */}
-            {direction === "bottom" ? (
-              <div
-                className="absolute w-2 h-2 transform rotate-45 left-1/2 -top-1 -translate-x-1/2"
-                style={{ backgroundColor: color }}
-              />
-            ) : direction === "top" ? (
-              <div
-                className="absolute w-2 h-2 transform rotate-45 left-1/2 -bottom-1 -translate-x-1/2"
-                style={{ backgroundColor: color }}
-              />
-            ) : (
-              <div
-                className="absolute w-2 h-2 transform rotate-45 -left-1 -translate-y-1/2"
-                style={{
-                  backgroundColor: color,
-                  top: arrowTop !== null ? `${arrowTop}px` : "50%",
-                }}
-              />
+            {!hideArrow && (
+              direction === "bottom" ? (
+                <div
+                  className="absolute w-2 h-2 transform rotate-45 left-1/2 -top-1 -translate-x-1/2"
+                  style={{ backgroundColor: color }}
+                />
+              ) : direction === "top" ? (
+                <div
+                  className="absolute w-2 h-2 transform rotate-45 left-1/2 -bottom-1 -translate-x-1/2"
+                  style={{ backgroundColor: color }}
+                />
+              ) : (
+                <div
+                  className="absolute w-2 h-2 transform rotate-45 -left-1 -translate-y-1/2"
+                  style={{
+                    backgroundColor: color,
+                    top: arrowTop !== null ? `${arrowTop}px` : "50%",
+                  }}
+                />
+              )
             )}
           </div>,
           document.body,

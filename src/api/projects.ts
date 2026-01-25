@@ -36,6 +36,12 @@ export const fetchProjectDashboard = async (
   if (params.search) {
     queryParams.set("search", params.search);
   }
+  if (params.page !== undefined) {
+    queryParams.set("page", String(params.page));
+  }
+  if (params.limit !== undefined) {
+    queryParams.set("limit", String(params.limit));
+  }
 
   return apiGet<ProjectDashboardResponse>(
     `/projects/dashboard?${queryParams.toString()}`,
