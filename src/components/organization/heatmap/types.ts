@@ -121,9 +121,9 @@ export const calculateSummaryCounts = (
 
   if (!metrics) return counts;
 
-  Object.values(metrics).forEach((metric) => {
+  Object.entries(metrics).forEach(([key, metric]) => {
     // BDPI 제외, isUsed가 false인 지표 제외
-    if (!metric || metric.isUsed === false) return;
+    if (!metric || metric.isUsed === false || key === "BDPI") return;
 
     const status = metric.status;
 
