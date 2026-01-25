@@ -17,7 +17,7 @@ export const useOperationTableData = (month: string, enabled: boolean) => {
     isFetchingNextPage,
     isLoading,
   } = useProjectDashboardInfinite(
-    { month, classification: "OPR2_NON_TF", limit: 10 },
+    { month, classification: "OPR2_NON_TF", limit: 15 },
     enabled,
   );
 

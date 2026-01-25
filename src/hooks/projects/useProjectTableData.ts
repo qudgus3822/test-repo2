@@ -17,7 +17,7 @@ export const useProjectTableData = (month: string, enabled: boolean) => {
     isFetchingNextPage,
     isLoading,
   } = useProjectDashboardInfinite(
-    { month, classification: "TF", limit: 10 },
+    { month, classification: "TF", limit: 15 },
     enabled,
   );
 
