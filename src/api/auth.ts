@@ -46,11 +46,18 @@ export const checkAuthStatus = async (): Promise<User | null> => {
 
     const data = await response.json();
 
-    // Date 필드 변환
+    // API 응답 필드를 User 타입에 맞게 매핑
     return {
-      ...data,
+      id: data._id || data.id,
+      email: data.email,
+      name: data.username || data.name,
+      role: data.role || "DEVELOPER",
+      department: data.department,
+      teamId: data.teamId,
+      permissions: data.permissions || [],
+      accessibleProjects: data.accessibleProjects || [],
       lastLoginAt: data.lastLoginAt ? new Date(data.lastLoginAt) : undefined,
-      createdAt: new Date(data.createdAt),
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
     };
   } catch (error) {
     console.error("인증 상태 확인 실패:", error);
