@@ -41,6 +41,7 @@ import type {
 } from "@/types/organization.types";
 import { getMemberRoleOrPositionLabel } from "@/utils/organization";
 import { getSourceLogo } from "@/utils/metrics";
+import { useShallow } from "zustand/react/shallow";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
@@ -524,16 +525,22 @@ export const OrganizationFlatTable = ({
   // 지표 순서 변경 hook
   const updateMetricOrderMutation = useUpdateMetricOrder();
 
-  // 전역 스토어에서 지표 순서 상태 가져오기 (뷰 전환 시에도 유지됨)
-  const globalMetricOrder = useOrganizationStore((state) => state.metricOrder);
-  const setGlobalMetricOrder = useOrganizationStore(
-    (state) => state.setMetricOrder,
+  // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
+  const {
+    metricOrder: globalMetricOrder,
+    setMetricOrder: setGlobalMetricOrder,
+    setIsMetricColumnDragged,
+    displayMode,
+    metricSources,
+  } = useOrganizationStore(
+    useShallow((state) => ({
+      metricOrder: state.metricOrder,
+      setMetricOrder: state.setMetricOrder,
+      setIsMetricColumnDragged: state.setIsMetricColumnDragged,
+      displayMode: state.displayMode,
+      metricSources: state.metricSources,
+    })),
   );
-  const setIsMetricColumnDragged = useOrganizationStore(
-    (state) => state.setIsMetricColumnDragged,
-  );
-  const displayMode = useOrganizationStore((state) => state.displayMode);
-  const metricSources = useOrganizationStore((state) => state.metricSources);
 
   // API 응답에서 지표 순서 추출
   const getMetricOrderFromApi = useCallback(() => {

@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
@@ -58,33 +59,41 @@ const getDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
 };
 
 const OrganizationPage = () => {
-  const activeTab = useOrganizationStore((state) => state.activeTab);
-  const period = useOrganizationStore((state) => state.period);
-  const setPeriod = useOrganizationStore((state) => state.setPeriod);
-  const currentDate = useOrganizationStore((state) => state.currentDate);
-  const setCurrentDate = useOrganizationStore((state) => state.setCurrentDate);
-  const expandAllTeams = useOrganizationStore((state) => state.expandAllTeams);
-  const expandAll = useOrganizationStore((state) => state.expandAll);
-  const collapseToDefault = useOrganizationStore(
-    (state) => state.collapseToDefault,
+  // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
+  const {
+    activeTab,
+    period,
+    setPeriod,
+    currentDate,
+    setCurrentDate,
+    expandAllTeams,
+    expandAll,
+    collapseToDefault,
+    isTeamsExpanded,
+    isMetricColumnDragged,
+    setIsMetricColumnDragged,
+    setMetricSources,
+    displayMode,
+    setDisplayMode,
+  } = useOrganizationStore(
+    useShallow((state) => ({
+      activeTab: state.activeTab,
+      period: state.period,
+      setPeriod: state.setPeriod,
+      currentDate: state.currentDate,
+      setCurrentDate: state.setCurrentDate,
+      expandAllTeams: state.expandAllTeams,
+      expandAll: state.expandAll,
+      collapseToDefault: state.collapseToDefault,
+      isTeamsExpanded: state.isTeamsExpanded,
+      isMetricColumnDragged: state.isMetricColumnDragged,
+      setIsMetricColumnDragged: state.setIsMetricColumnDragged,
+      setMetricSources: state.setMetricSources,
+      // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
+      displayMode: state.displayMode,
+      setDisplayMode: state.setDisplayMode,
+    })),
   );
-  const isTeamsExpanded = useOrganizationStore(
-    (state) => state.isTeamsExpanded,
-  );
-  const isMetricColumnDragged = useOrganizationStore(
-    (state) => state.isMetricColumnDragged,
-  );
-  const setIsMetricColumnDragged = useOrganizationStore(
-    (state) => state.setIsMetricColumnDragged,
-  );
-
-  const setMetricSources = useOrganizationStore(
-    (state) => state.setMetricSources,
-  );
-
-  // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
-  const displayMode = useOrganizationStore((state) => state.displayMode);
-  const setDisplayMode = useOrganizationStore((state) => state.setDisplayMode);
 
   const setOrgHistoryModal = useDashboardStore(
     (state) => state.setOrgHistoryModal,

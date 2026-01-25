@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import {
   useMetricOrder,
@@ -15,14 +16,24 @@ import {
  * - 서버에서 저장된 지표 순서 동기화
  */
 export const usePageInitialization = () => {
-  const setPeriod = useOrganizationStore((state) => state.setPeriod);
-  const setCurrentDate = useOrganizationStore((state) => state.setCurrentDate);
-  const setActiveTab = useOrganizationStore((state) => state.setActiveTab);
-  const setIsMetricColumnDragged = useOrganizationStore(
-    (state) => state.setIsMetricColumnDragged,
+  // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
+  const {
+    setPeriod,
+    setCurrentDate,
+    setActiveTab,
+    setIsMetricColumnDragged,
+    setDisplayMode,
+    setMetricOrder,
+  } = useOrganizationStore(
+    useShallow((state) => ({
+      setPeriod: state.setPeriod,
+      setCurrentDate: state.setCurrentDate,
+      setActiveTab: state.setActiveTab,
+      setIsMetricColumnDragged: state.setIsMetricColumnDragged,
+      setDisplayMode: state.setDisplayMode,
+      setMetricOrder: state.setMetricOrder,
+    })),
   );
-  const setDisplayMode = useOrganizationStore((state) => state.setDisplayMode);
-  const setMetricOrder = useOrganizationStore((state) => state.setMetricOrder);
 
   const queryClient = useQueryClient();
 
