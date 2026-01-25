@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Cable } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
 import {
   MetricsOverview,
   TargetValueAchievement,
@@ -21,12 +22,21 @@ import { metricRankingsKeys } from "@/api/hooks/useMetricRankings";
 
 const DashboardPage = () => {
   const queryClient = useQueryClient();
-  const period = useDashboardStore((state) => state.period);
-  const setPeriod = useDashboardStore((state) => state.setPeriod);
-  const currentDate = useDashboardStore((state) => state.currentDate);
-  const setCurrentDate = useDashboardStore((state) => state.setCurrentDate);
-  const setOrgHistoryModal = useDashboardStore(
-    (state) => state.setOrgHistoryModal,
+  // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
+  const {
+    period,
+    setPeriod,
+    currentDate,
+    setCurrentDate,
+    setOrgHistoryModal,
+  } = useDashboardStore(
+    useShallow((state) => ({
+      period: state.period,
+      setPeriod: state.setPeriod,
+      currentDate: state.currentDate,
+      setCurrentDate: state.setCurrentDate,
+      setOrgHistoryModal: state.setOrgHistoryModal,
+    })),
   );
 
   // 페이지 진입 시 초기화: 당월로 설정, 쿼리 캐시 무효화

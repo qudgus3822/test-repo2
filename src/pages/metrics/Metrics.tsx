@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/components/ui/Card";
 import { DateFilter } from "@/components/ui/DateFilter";
 import { MetricsSummary } from "@/components/metrics/MetricsSummary";
@@ -30,40 +31,44 @@ import {
 
 const MetricsPage = () => {
   const queryClient = useQueryClient();
-  // [변경: 2026-01-13 16:30, 김병현 수정] 성능 최적화를 위해 개별 selector로 변경
-  const period = useMetricsStore((state) => state.period);
-  const setPeriod = useMetricsStore((state) => state.setPeriod);
-  const currentDate = useMetricsStore((state) => state.currentDate);
-  const setCurrentDate = useMetricsStore((state) => state.setCurrentDate);
-  const setActiveTab = useMetricsStore((state) => state.setActiveTab);
-  const setAchievementRateFilter = useMetricsStore(
-    (state) => state.setAchievementRateFilter,
-  );
-  const isMetricsDetailModalOpen = useMetricsStore(
-    (state) => state.isMetricsDetailModalOpen,
-  );
-  const setIsMetricsDetailModalOpen = useMetricsStore(
-    (state) => state.setIsMetricsDetailModalOpen,
-  );
-  const selectedMetric = useMetricsStore((state) => state.selectedMetric);
-  const isMetricRateSettingModalOpen = useMetricsStore(
-    (state) => state.isMetricRateSettingModalOpen,
-  );
-  const setIsMetricRateSettingModalOpen = useMetricsStore(
-    (state) => state.setIsMetricRateSettingModalOpen,
-  );
-  const activeTab = useMetricsStore((state) => state.activeTab);
-  const isSettingsChangeConfirmModalOpen = useMetricsStore(
-    (state) => state.isSettingsChangeConfirmModalOpen,
-  );
-  const setIsSettingsChangeConfirmModalOpen = useMetricsStore(
-    (state) => state.setIsSettingsChangeConfirmModalOpen,
-  );
-  const isMetricStandardSettingModalOpen = useMetricsStore(
-    (state) => state.isMetricStandardSettingModalOpen,
-  );
-  const setIsMetricStandardSettingModalOpen = useMetricsStore(
-    (state) => state.setIsMetricStandardSettingModalOpen,
+  const {
+    period,
+    setPeriod,
+    currentDate,
+    setCurrentDate,
+    setActiveTab,
+    setAchievementRateFilter,
+    isMetricsDetailModalOpen,
+    setIsMetricsDetailModalOpen,
+    selectedMetric,
+    isMetricRateSettingModalOpen,
+    setIsMetricRateSettingModalOpen,
+    activeTab,
+    isSettingsChangeConfirmModalOpen,
+    setIsSettingsChangeConfirmModalOpen,
+    isMetricStandardSettingModalOpen,
+    setIsMetricStandardSettingModalOpen,
+  } = useMetricsStore(
+    useShallow((state) => ({
+      period: state.period,
+      setPeriod: state.setPeriod,
+      currentDate: state.currentDate,
+      setCurrentDate: state.setCurrentDate,
+      setActiveTab: state.setActiveTab,
+      setAchievementRateFilter: state.setAchievementRateFilter,
+      isMetricsDetailModalOpen: state.isMetricsDetailModalOpen,
+      setIsMetricsDetailModalOpen: state.setIsMetricsDetailModalOpen,
+      selectedMetric: state.selectedMetric,
+      isMetricRateSettingModalOpen: state.isMetricRateSettingModalOpen,
+      setIsMetricRateSettingModalOpen: state.setIsMetricRateSettingModalOpen,
+      activeTab: state.activeTab,
+      isSettingsChangeConfirmModalOpen: state.isSettingsChangeConfirmModalOpen,
+      setIsSettingsChangeConfirmModalOpen:
+        state.setIsSettingsChangeConfirmModalOpen,
+      isMetricStandardSettingModalOpen: state.isMetricStandardSettingModalOpen,
+      setIsMetricStandardSettingModalOpen:
+        state.setIsMetricStandardSettingModalOpen,
+    })),
   );
 
   // 페이지 진입 시 초기화: 당월, 전체 탭, 달성률 필터 전체로 설정, 쿼리 캐시 무효화
