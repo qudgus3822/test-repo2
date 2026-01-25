@@ -28,10 +28,10 @@ import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
 import type { OrganizationDepartment } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
-import { useDetailModal } from "./hooks/useDetailModal";
-import { usePageInitialization } from "./hooks/usePageInitialization";
-import { useViewMode } from "./hooks/useViewMode";
-import { useSearchArea } from "./hooks/useSearchArea";
+import { useDetailModal } from "@/hooks/organization/useDetailModal";
+import { usePageInitialization } from "@/hooks/organization/usePageInitialization";
+import { useViewMode } from "@/hooks/organization/useViewMode";
+import { useSearchArea } from "@/hooks/organization/useSearchArea";
 
 // Level 1(부문) 조직 코드만 수집
 // 초기 화면 진입 시 사용 → 실 단위까지 보임
