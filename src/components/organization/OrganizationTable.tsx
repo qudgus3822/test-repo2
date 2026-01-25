@@ -218,19 +218,20 @@ const CombinedDepartmentRow = ({
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리
         if (code === "bdpi" || code === "BDPI") {
-          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
-          return (
-            <td
-              key={code}
-              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
-              style={{ backgroundColor: bgColor }}
-            >
-              {bdpiValue !== undefined && bdpiValue !== null
-                ? `${bdpiValue.toFixed(0)}%`
-                : "--"}
-            </td>
-          );
+          return; // TODO : 제거 예정
+          // const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
+          // const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
+          // return (
+          //   <td
+          //     key={code}
+          //     className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+          //     style={{ backgroundColor: bgColor }}
+          //   >
+          //     {bdpiValue !== undefined && bdpiValue !== null
+          //       ? `${bdpiValue.toFixed(0)}%`
+          //       : "--"}
+          //   </td>
+          // );
         }
 
         const metric = metrics?.[code];
@@ -871,6 +872,9 @@ export const OrganizationTable = ({
                   strategy={horizontalListSortingStrategy}
                 >
                   {metricOrder.map((code) => {
+                    if (code === "bdpi" || code === "BDPI") {
+                      return;
+                    }
                     const metricInfo = metricInfoMap[code];
 
                     return (

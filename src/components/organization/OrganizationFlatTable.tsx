@@ -59,7 +59,6 @@ import {
   SUMMARY_BG_COLORS,
   type MetricData,
   type SummaryCounts,
-  type SortConfig,
 } from "./heatmap/types";
 
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
@@ -291,18 +290,19 @@ const CombinedRow = ({
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리
         if (code === "bdpi" || code === "BDPI") {
-          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
-          return (
-            <td
-              key={code}
-              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
-            >
-              {bdpiValue !== undefined && bdpiValue !== null
-                ? `${bdpiValue.toFixed(0)}%`
-                : "--"}
-            </td>
-          );
+          return;
+          // const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
+          // const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
+          // return (
+          //   <td
+          //     key={code}
+          //     className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
+          //   >
+          //     {bdpiValue !== undefined && bdpiValue !== null
+          //       ? `${bdpiValue.toFixed(0)}%`
+          //       : "--"}
+          //   </td>
+          // );
         }
 
         const metric = metrics?.[code];
@@ -532,6 +532,8 @@ export const OrganizationFlatTable = ({
     setIsMetricColumnDragged,
     displayMode,
     metricSources,
+    sortConfig,
+    setSortConfig,
   } = useOrganizationStore(
     useShallow((state) => ({
       metricOrder: state.metricOrder,
@@ -539,6 +541,8 @@ export const OrganizationFlatTable = ({
       setIsMetricColumnDragged: state.setIsMetricColumnDragged,
       displayMode: state.displayMode,
       metricSources: state.metricSources,
+      sortConfig: state.sortConfig,
+      setSortConfig: state.setSortConfig,
     })),
   );
 
@@ -644,13 +648,15 @@ export const OrganizationFlatTable = ({
     // format=list 응답 (items 배열이 있는 경우)
     if (data?.items && data.items.length > 0) {
       // [변경: 2026-01-23 10:00, 김병현 수정] isEvaluationTarget 필터링 제거
-      return data.items
-        // .filter((node) => node.isEvaluationTarget)
-        .map((node) => ({
-          type: node.type,
-          data: node as OrganizationDepartment | OrganizationMember,
-          level: node.level,
-        })) as FlatItem[];
+      return (
+        data.items
+          // .filter((node) => node.isEvaluationTarget)
+          .map((node) => ({
+            type: node.type,
+            data: node as OrganizationDepartment | OrganizationMember,
+            level: node.level,
+          })) as FlatItem[]
+      );
     }
     // format=tree 응답 (기존 로직)
     return flattenTree(data?.tree ?? [], filterType);
@@ -680,12 +686,6 @@ export const OrganizationFlatTable = ({
     isFetching,
     getMetricOrderFromApi,
   ]);
-
-  // 정렬 상태
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
-    column: null,
-    direction: null,
-  });
 
   // 선택된 지표 코드 (상세 정보 표시용)
   const [selectedMetricCode, setSelectedMetricCode] = useState<string | null>(
@@ -781,22 +781,26 @@ export const OrganizationFlatTable = ({
   );
 
   // 정렬 토글 (3단계: null → asc → desc → null)
-  const toggleSort = useCallback((column: string) => {
-    setSortConfig((prev) => {
+  const toggleSort = useCallback(
+    (column: string) => {
       // 다른 컬럼 클릭 시 해당 컬럼 오름차순으로 시작
-      if (prev.column !== column) {
-        return { column, direction: "asc" };
+      if (sortConfig.column !== column) {
+        setSortConfig({ column, direction: "asc" });
+        return;
       }
       // 같은 컬럼 클릭 시 순환: asc → desc → null
-      if (prev.direction === "asc") {
-        return { column, direction: "desc" };
+      if (sortConfig.direction === "asc") {
+        setSortConfig({ column, direction: "desc" });
+        return;
       }
-      if (prev.direction === "desc") {
-        return { column: null, direction: null };
+      if (sortConfig.direction === "desc") {
+        setSortConfig({ column: null, direction: null });
+        return;
       }
-      return { column, direction: "asc" };
-    });
-  }, []);
+      setSortConfig({ column, direction: "asc" });
+    },
+    [sortConfig, setSortConfig],
+  );
 
   // 각 아이템의 summary counts 미리 계산
   const itemSummaryCountsMap = useMemo(() => {
@@ -952,13 +956,19 @@ export const OrganizationFlatTable = ({
           box-shadow: none !important;
         }
       `}</style>
-      <div ref={tableContainerRef} className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0">
+      <div
+        ref={tableContainerRef}
+        className="org-flat-table-container border border-gray-200 rounded-lg overflow-auto flex-1 min-h-0"
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <table className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "flat-table-zoomed" : ""}`} style={isZoomed ? { zoom: zoomLevel } : undefined}>
+          <table
+            className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "flat-table-zoomed" : ""}`}
+            style={isZoomed ? { zoom: zoomLevel } : undefined}
+          >
             <thead className="sticky top-0 z-20">
               <tr className="border-b border-gray-200 bg-gray-50 h-[113px]">
                 {/* 고정 영역 헤더 - 조직 이름 */}
@@ -1029,6 +1039,9 @@ export const OrganizationFlatTable = ({
                   strategy={horizontalListSortingStrategy}
                 >
                   {metricOrder.map((code) => {
+                    if (code === "bdpi" || code === "BDPI") {
+                      return;
+                    }
                     const metricInfo = metricInfoMap[code];
                     const isActive =
                       sortConfig.column === code &&
