@@ -2,7 +2,12 @@ import { ExternalLink, Info } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { ProjectItem } from "@/types/project.types";
 import { formatDateString } from "@/utils/date";
-import { UNIT_COUNT, UNIT_CASE, NULL_DISPLAY, COMMON_HEADERS } from "./constants";
+import {
+  UNIT_COUNT,
+  UNIT_CASE,
+  NULL_DISPLAY,
+  COMMON_HEADERS,
+} from "./constants";
 
 // 테이블 헤더 설정 (공통 헤더 + TF 전용 헤더)
 const TABLE_HEADERS = {
@@ -34,7 +39,10 @@ const TABLE_HEADERS = {
 };
 
 // 숫자 포맷 헬퍼 (null → "--", 0 이상 → 숫자 + 단위)
-const formatCount = (value: number | null | undefined, unit: string): string => {
+const formatCount = (
+  value: number | null | undefined,
+  unit: string,
+): string => {
   if (value === null || value === undefined) return NULL_DISPLAY;
   return `${value}${unit}`;
 };
@@ -62,8 +70,9 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
   }
 
   // [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경
+  // [변경: 2026-01-25 00:00, 김병현 수정] overflow-auto 제거 - 부모 컨테이너에서 스크롤 처리하도록 변경
   return (
-    <div className="overflow-auto h-full">
+    <div>
       <table className="w-full">
         <thead
           className="sticky top-0 bg-white z-10"
@@ -75,7 +84,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.activeTicketCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.activeTicketCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -87,7 +99,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.updatedCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.updatedCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -99,7 +114,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.completedCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.completedCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -111,7 +129,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.createdCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.createdCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -123,7 +144,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.bugCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.bugCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -135,7 +159,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.incidentCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.incidentCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -147,7 +174,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.avgResolutionTime.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.avgResolutionTime.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -159,7 +189,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.avgDetectionTime.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.avgDetectionTime.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -171,7 +204,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.avgDiagnosisTime.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.avgDiagnosisTime.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -183,7 +219,10 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.avgRecoveryTime.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.avgRecoveryTime.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
                 <span>
@@ -195,10 +234,15 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
             </th>
             <th className="px-4 py-3 text-center whitespace-nowrap">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.createdAt.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.createdAt.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span className="leading-[2.5]">{TABLE_HEADERS.createdAt.label}</span>
+                <span className="leading-[2.5]">
+                  {TABLE_HEADERS.createdAt.label}
+                </span>
               </div>
             </th>
           </tr>
@@ -257,7 +301,9 @@ export const ProjectTable = ({ projects }: ProjectTableProps) => {
                 {formatTime(project.avgRecoveryTime)}
               </td>
               <td className="px-4 py-4 text-center text-sm text-gray-900">
-                {project.createdAt ? formatDateString(project.createdAt) : NULL_DISPLAY}
+                {project.createdAt
+                  ? formatDateString(project.createdAt)
+                  : NULL_DISPLAY}
               </td>
             </tr>
           ))}

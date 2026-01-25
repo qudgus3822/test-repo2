@@ -3,7 +3,10 @@ import { Info } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { DateFilter, type PeriodType } from "@/components/ui/DateFilter";
 import { SummaryCard } from "@/components/projects/SummaryCard";
-import { ProjectTabs, type ProjectTabType } from "@/components/projects/ProjectTabs";
+import {
+  ProjectTabs,
+  type ProjectTabType,
+} from "@/components/projects/ProjectTabs";
 import { ProjectTable } from "@/components/projects/ProjectTable";
 import { OperationTable } from "@/components/projects/OperationTable";
 import { useProjectDashboardSummary } from "@/api/hooks/useProjectDashboardSummary";
@@ -70,39 +73,53 @@ const ProjectsPage = () => {
   // API 응답을 ProjectTable의 ProjectItem 형태로 변환
   const tfProjects: ProjectItem[] = useMemo(() => {
     if (!tfData?.projects) return [];
-    return tfData.projects.map((project) => ({
-      id: project.projectId,
-      name: project.epicSummary,
-      epicId: project.epicKey,
-      epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
-      activeTicketCount: project.activeTicketCount,
-      updatedCount: project.updatedCount,
-      completedCount: project.completedCount,
-      createdCount: project.createdCount,
-      bugCount: project.bugCount,
-      incidentCount: project.incidentCount,
-      avgResolutionTime: project.mttr,
-      avgDetectionTime: project.mttd,
-      avgDiagnosisTime: project.timeToCauseIdentification,
-      avgRecoveryTime: project.timeToRepair,
-      createdAt: project.createdAt ?? "",
-    }));
+    return tfData.projects
+      .map((project) => ({
+        id: project.projectId,
+        name: project.epicSummary,
+        epicId: project.epicKey,
+        epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
+        activeTicketCount: project.activeTicketCount,
+        updatedCount: project.updatedCount,
+        completedCount: project.completedCount,
+        createdCount: project.createdCount,
+        bugCount: project.bugCount,
+        incidentCount: project.incidentCount,
+        avgResolutionTime: project.mttr,
+        avgDetectionTime: project.mttd,
+        avgDiagnosisTime: project.timeToCauseIdentification,
+        avgRecoveryTime: project.timeToRepair,
+        createdAt: project.createdAt ?? "",
+      }))
+      .sort((a, b) => {
+        return (a.activeTicketCount || 0) - (b.activeTicketCount || 0);
+      })
+      .sort((a, b) => {
+        return (a.updatedCount || 0) - (b.updatedCount || 0);
+      });
   }, [tfData]);
 
   // API 응답을 OperationTable의 OperationItem 형태로 변환
   const operationItems: OperationItem[] = useMemo(() => {
     if (!operationData?.projects) return [];
-    return operationData.projects.map((project) => ({
-      id: project.projectId,
-      name: project.epicSummary,
-      epicId: project.epicKey,
-      epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
-      activeTicketCount: project.activeTicketCount,
-      updatedCount: project.updatedCount,
-      completedCount: project.completedCount,
-      createdCount: project.createdCount,
-      createdAt: project.createdAt ?? "",
-    }));
+    return operationData.projects
+      .map((project) => ({
+        id: project.projectId,
+        name: project.epicSummary,
+        epicId: project.epicKey,
+        epicUrl: `https://bithumbcorp.atlassian.net/browse/${project.epicKey}`,
+        activeTicketCount: project.activeTicketCount,
+        updatedCount: project.updatedCount,
+        completedCount: project.completedCount,
+        createdCount: project.createdCount,
+        createdAt: project.createdAt ?? "",
+      }))
+      .sort((a, b) => {
+        return (a.activeTicketCount || 0) - (b.activeTicketCount || 0);
+      })
+      .sort((a, b) => {
+        return (a.updatedCount || 0) - (b.updatedCount || 0);
+      });
   }, [operationData]);
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
