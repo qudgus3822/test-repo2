@@ -3,6 +3,7 @@ import { AchievementRateFilter } from "@/components/ui/AchievementRateFilter";
 import { MetricsTabs } from "./MetricsTabs";
 import { Search, ArrowDownUp, Info, ArrowUp, ArrowDown } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import type { MetricItem } from "@/types/metrics.types";
 import { MetricCategory } from "@/types/metrics.types";
 import { useMetricsStore, type TabType } from "@/store/useMetricsStore";
@@ -58,29 +59,30 @@ const TAB_CATEGORY_MAP: Record<TabType, MetricCategory | null> = {
 };
 
 export const MetricsTable = ({ month }: MetricsTableProps) => {
-  const activeTab = useMetricsStore((state) => state.activeTab);
-  const achievementRateFilter = useMetricsStore(
-    (state) => state.achievementRateFilter,
+  // [변경: 2026-01-25 12:00, 김병현 수정] useShallow로 개별 selector 통합
+  const {
+    activeTab,
+    achievementRateFilter,
+    setAchievementRateFilter,
+    achievementRateExcellentThreshold,
+    achievementRateDangerThreshold,
+    setAchievementRateExcellentThreshold,
+    setAchievementRateDangerThreshold,
+    setIsMetricsDetailModalOpen,
+    setSelectedMetric,
+  } = useMetricsStore(
+    useShallow((state) => ({
+      activeTab: state.activeTab,
+      achievementRateFilter: state.achievementRateFilter,
+      setAchievementRateFilter: state.setAchievementRateFilter,
+      achievementRateExcellentThreshold: state.achievementRateExcellentThreshold,
+      achievementRateDangerThreshold: state.achievementRateDangerThreshold,
+      setAchievementRateExcellentThreshold: state.setAchievementRateExcellentThreshold,
+      setAchievementRateDangerThreshold: state.setAchievementRateDangerThreshold,
+      setIsMetricsDetailModalOpen: state.setIsMetricsDetailModalOpen,
+      setSelectedMetric: state.setSelectedMetric,
+    })),
   );
-  const setAchievementRateFilter = useMetricsStore(
-    (state) => state.setAchievementRateFilter,
-  );
-  const achievementRateExcellentThreshold = useMetricsStore(
-    (state) => state.achievementRateExcellentThreshold,
-  );
-  const achievementRateDangerThreshold = useMetricsStore(
-    (state) => state.achievementRateDangerThreshold,
-  );
-  const setAchievementRateExcellentThreshold = useMetricsStore(
-    (state) => state.setAchievementRateExcellentThreshold,
-  );
-  const setAchievementRateDangerThreshold = useMetricsStore(
-    (state) => state.setAchievementRateDangerThreshold,
-  );
-  const setIsMetricsDetailModalOpen = useMetricsStore(
-    (state) => state.setIsMetricsDetailModalOpen,
-  );
-  const setSelectedMetric = useMetricsStore((state) => state.setSelectedMetric);
 
   // API 호출
   const { data, isLoading, error } = useMetricsList(month);

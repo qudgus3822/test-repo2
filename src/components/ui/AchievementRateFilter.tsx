@@ -54,7 +54,7 @@ export const AchievementRateFilter = ({
     },
     {
       value: "excellent" as const,
-      label: `${excellentThreshold}% 이상 ~ 100% 이하`,
+      label: `${excellentThreshold}% 이상`,
       icon: ExcellentIcon,
       color: excellentConfig.color,
     },
