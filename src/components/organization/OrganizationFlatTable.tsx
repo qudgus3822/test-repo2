@@ -317,13 +317,11 @@ const CombinedRow = ({
           );
         }
 
-        const hasData = metric && typeof metric.value === "number";
-        const score = hasData ? (metric?.score ?? null) : null;
-        const value = hasData
-          ? aggregationType === "total"
-            ? (metric?.totalValue ?? null)
-            : (metric?.value ?? null)
-          : null;
+        // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용, hasData 조건에서 score 체크 제거
+        const avgRate = metric?.avgRate ?? null;
+        const value = aggregationType === "total"
+          ? (metric?.totalValue ?? null)
+          : (metric?.value ?? null);
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -339,7 +337,7 @@ const CombinedRow = ({
             <HeatmapCell
               metricCode={code}
               metricName={metricName}
-              score={score}
+              avgRate={avgRate}
               value={value}
               hideValue={hideValue}
               targetValue={targetValue}
@@ -860,13 +858,13 @@ export const OrganizationFlatTable = ({
           string,
           MetricData
         >;
-        // [변경: 2026-01-22 15:30, 김병현 수정] BDPI의 경우 avgRate로 정렬
+        // [변경: 2026-01-26 15:55, 임도휘 수정] score 대신 avgRate 사용
         const isBdpi =
           sortConfig.column === "bdpi" || sortConfig.column === "BDPI";
         const sortField = isBdpi
           ? "avgRate"
           : displayMode === "rate"
-            ? "score"
+            ? "avgRate"
             : "value";
         aValue = aMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
         bValue = bMetrics?.[sortConfig.column!]?.[sortField] ?? -1;

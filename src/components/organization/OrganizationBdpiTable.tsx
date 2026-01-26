@@ -122,9 +122,10 @@ const MemberRow = ({
           {member.email || getMemberEmail(member.employeeID)}
         </div>
       </td>
+      {/* [변경: 2026-01-26 16:10, 임도휘 수정] BDPI 탭은 avgRate 필드 사용 */}
       {BDPI_METRIC_CODES.map((code) => {
         const metric = bdpiMetrics?.[code];
-        const score = metric?.score ?? null;
+        const avgRate = metric?.avgRate ?? null;
         return (
           <td
             key={code}
@@ -133,8 +134,8 @@ const MemberRow = ({
           >
             <HeatmapCell
               metricCode={code}
-              score={score}
-              value={score}
+              avgRate={avgRate}
+              value={avgRate}
               hideValue={hideValues}
               showTooltip={false}
             />
@@ -225,9 +226,10 @@ const OrganizationRow = ({
             <StatusBadge change={org.changes} />
           </div>
         </td>
+        {/* [변경: 2026-01-26 16:10, 임도휘 수정] BDPI 탭은 avgRate 필드 사용 */}
         {BDPI_METRIC_CODES.map((code) => {
           const metric = bdpiMetrics?.[code];
-          const score = metric?.score ?? null;
+          const avgRate = metric?.avgRate ?? null;
           return (
             <td
               key={code}
@@ -236,8 +238,8 @@ const OrganizationRow = ({
             >
               <HeatmapCell
                 metricCode={code}
-                score={score}
-                value={score}
+                avgRate={avgRate}
+                value={avgRate}
                 hideValue={hideValues}
                 showTooltip={false}
               />

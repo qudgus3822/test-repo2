@@ -18,8 +18,9 @@ interface HeatmapCellProps {
   metricName?: string;
   /** 실제 값 */
   value: number | null;
+  // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용
   /** 달성률 (0-150) */
-  score: number | null;
+  avgRate: number | null;
   /** 값 숨기기 여부 */
   hideValue?: boolean;
   /** 목표값 (API 응답) */
@@ -38,16 +39,16 @@ export const HeatmapCell = ({
   metricCode,
   metricName,
   value,
-  score,
+  avgRate,
   hideValue = false,
   targetValue,
   unit,
   showTooltip = true,
   status,
 }: HeatmapCellProps) => {
-  // [변경: 2026-01-22 14:35, 김병현 수정] 표시 모드에 따라 실제값 또는 달성률(score) 표시
+  // [변경: 2026-01-26 15:50, 임도휘 수정] 표시 모드에 따라 실제값(value) 또는 달성률(avgRate) 표시
   const displayMode = useOrganizationStore((state) => state.displayMode);
-  const displayValue = displayMode === "rate" ? score : value;
+  const displayValue = displayMode === "rate" ? avgRate : value;
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [metricDefinition, setMetricDefinition] =
@@ -108,19 +109,19 @@ export const HeatmapCell = ({
     }
   };
 
-  // [변경: 2026-01-21 10:00, 김병현 수정] hideValue가 true일 때 마우스 오버 시 달성률 표시
-  const scoreTooltip =
-    hideValue && score !== null ? `달성률: ${score.toFixed(1)}%` : undefined;
+  // [변경: 2026-01-26 15:50, 임도휘 수정] hideValue가 true일 때 마우스 오버 시 달성률 표시 (avgRate 사용)
+  const avgRateTooltip =
+    hideValue && avgRate !== null ? `달성률: ${avgRate.toFixed(1)}%` : undefined;
 
   return (
     <div
       ref={cellRef}
       className="flex items-center justify-center w-full h-full cursor-pointer"
       onClick={handleClick}
-      title={scoreTooltip}
+      title={avgRateTooltip}
     >
       <ProgressSquare
-        score={score}
+        avgRate={avgRate}
         value={displayValue}
         hideValue={hideValue}
         isLoading={isLoading}
@@ -130,7 +131,7 @@ export const HeatmapCell = ({
           metricCode={metricCode}
           metricName={metricDefinition?.title || metricName}
           value={metricDefinition?.value ?? value}
-          score={metricDefinition?.score ?? score}
+          avgRate={metricDefinition?.avgRate ?? avgRate}
           visible={tooltipVisible}
           position={tooltipPosition}
           targetValue={metricDefinition?.targetValue ?? targetValue}

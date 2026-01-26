@@ -239,8 +239,10 @@ export interface MetricDefinitionResponse {
   tooltip: string | null;
   formula: string | null;
   trend: MetricTrend | null;
-  score: number | null;
+  // [변경: 2026-01-26 16:00, 임도휘 수정] score 필드는 현재 사용하지 않음 (optional)
+  score?: number | null;
   value: number | null;
+  avgRate?: number | null;
   status: string | null;
 }
 
