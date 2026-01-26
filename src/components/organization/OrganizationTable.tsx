@@ -355,20 +355,21 @@ const CombinedMemberRow = ({
       {metricOrder.map((code) => {
         // BDPI 칼럼 특별 처리
         if (code === "bdpi" || code === "BDPI") {
-          const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          // [변경: 2026-01-26 15:55, 임도휘 수정] score 제거, avgRate만 사용
-          const bdpiValue = bdpiData?.avgRate;
-          return (
-            <td
-              key={code}
-              className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
-              style={{ backgroundColor: bgColor }}
-            >
-              {bdpiValue !== undefined && bdpiValue !== null
-                ? `${bdpiValue.toFixed(0)}%`
-                : "--"}
-            </td>
-          );
+          return; // TODO: 반드시 제거 ~ 
+          // const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
+          // // [변경: 2026-01-26 15:55, 임도휘 수정] score 제거, avgRate만 사용
+          // const bdpiValue = bdpiData?.avgRate;
+          // return (
+          //   <td
+          //     key={code}
+          //     className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b ${borderColor} w-[74px] min-w-[74px] max-w-[74px] h-[64px]`}
+          //     style={{ backgroundColor: bgColor }}
+          //   >
+          //     {bdpiValue !== undefined && bdpiValue !== null
+          //       ? `${bdpiValue.toFixed(0)}%`
+          //       : "--"}
+          //   </td>
+          // );
         }
 
         const metric = metrics?.[code];
