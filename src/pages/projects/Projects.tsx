@@ -114,7 +114,7 @@ const ProjectsPage = () => {
             </>
           ) : (
             <>
-              <InfoBanner message="지라 OPR2 긴급 운영의 에픽은 유형(버그/장애/애프터잡 등)이 분류되지 않아 버그 및 장애 관련 상세 지표가 제공되지 않습니다." />
+              <InfoBanner message="지라 OPR2 긴급운영의 에픽은 운영 특성상 유형(버그/장애/애프터잡)이 하나로 분류되기 어려운 구조로 버그 및 장애 관련 지표가 제공되지 않습니다." />
               <OperationTable
                 items={operationTable.items}
                 isLoading={operationTable.isLoading}
