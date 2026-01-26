@@ -61,11 +61,11 @@ const ProjectsPage = () => {
     };
   }, [summaryData]);
 
-  // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
+  // [변경: 2026-01-26 00:00, 임도휘 수정] 페이지 스크롤 레이아웃으로 변경 - 테이블 헤더 sticky 고정
   return (
-    <div className="flex flex-col gap-6 h-full overflow-hidden">
-      {/* 상단 고정 영역 */}
-      <div className="flex-shrink-0 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
+      {/* 상단 영역 */}
+      <div className="flex flex-col gap-6">
         {/* 헤더 - 날짜 필터 */}
         <div>
           <Card className="w-full">
@@ -87,10 +87,10 @@ const ProjectsPage = () => {
         </div>
       </div>
 
-      {/* 탭 + 테이블 - 남은 공간 차지하며 스크롤 가능 */}
-      <Card className="p-0 flex-1 min-h-0 flex flex-col overflow-hidden">
+      {/* 탭 + 테이블 */}
+      <Card className="p-0">
         {/* 탭 */}
-        <div className="flex-shrink-0 px-4 pt-3">
+        <div className="px-4 pt-3">
           <ProjectTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -100,7 +100,7 @@ const ProjectsPage = () => {
         </div>
 
         {/* 테이블 */}
-        <div className="p-4 flex-1 min-h-0 overflow-auto">
+        <div className="p-4">
           {activeTab === "tf" ? (
             <>
               <InfoBanner message="지라 전체 에픽 중 분류유형이 'TF' 표기된 프로젝트성 에픽에 대해 해당 지표들을 한눈에 확인할 수 있습니다." />

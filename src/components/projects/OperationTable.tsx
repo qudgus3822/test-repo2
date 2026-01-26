@@ -85,16 +85,16 @@ export const OperationTable = ({
     );
   }
 
-  // [변경: 2026-01-19 00:00, 김병현 수정] thead 고정, tbody만 스크롤되도록 변경
+  // [변경: 2026-01-26 00:00, 임도휘 수정] 페이지 스크롤 시 Header(80px) 아래에 sticky 고정 (MetricsTable 방식)
   return (
-    <div className="overflow-auto h-full">
+    <div>
       <table className="w-full">
-        <thead className="sticky top-0 bg-white z-10" style={{ boxShadow: "0 1px 0 0 #e5e7eb" }}>
-          <tr className="border-t border-b border-gray-200 text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 min-w-[200px] whitespace-nowrap">
+        <thead className="sticky top-20 bg-white z-10" style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}>
+          <tr className="text-left text-sm font-medium text-gray-700">
+            <th className="px-4 py-3 w-[30%]">
               {TABLE_HEADERS.epicName.label}
             </th>
-            <th className="px-4 py-3 text-center whitespace-nowrap">
+            <th className="px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.activeTicketCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -106,7 +106,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 text-center whitespace-nowrap">
+            <th className="px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.updatedCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -118,7 +118,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 text-center whitespace-nowrap">
+            <th className="px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.completedCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -130,7 +130,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 text-center whitespace-nowrap">
+            <th className="px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.createdCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -142,7 +142,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 text-center whitespace-nowrap">
+            <th className="px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.createdAt.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
