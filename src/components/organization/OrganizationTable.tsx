@@ -247,13 +247,11 @@ const CombinedDepartmentRow = ({
           );
         }
 
-        const hasData = metric && typeof metric.value === "number";
-        const score = hasData ? (metric?.score ?? null) : null;
-        const value = hasData
-          ? aggregationType === "total"
-            ? (metric?.totalValue ?? null)
-            : (metric?.value ?? null)
-          : null;
+        // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용, hasData 조건에서 score 체크 제거
+        const avgRate = metric?.avgRate ?? null;
+        const value = aggregationType === "total"
+          ? (metric?.totalValue ?? null)
+          : (metric?.value ?? null);
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -269,7 +267,7 @@ const CombinedDepartmentRow = ({
             <HeatmapCell
               metricCode={code}
               metricName={metricName}
-              score={score}
+              avgRate={avgRate}
               value={value}
               hideValue={hideValue}
               targetValue={targetValue}
@@ -358,7 +356,8 @@ const CombinedMemberRow = ({
         // BDPI 칼럼 특별 처리
         if (code === "bdpi" || code === "BDPI") {
           const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
+          // [변경: 2026-01-26 15:55, 임도휘 수정] score 제거, avgRate만 사용
+          const bdpiValue = bdpiData?.avgRate;
           return (
             <td
               key={code}
@@ -385,13 +384,11 @@ const CombinedMemberRow = ({
           );
         }
 
-        const hasData = metric && typeof metric.value === "number";
-        const score = hasData ? (metric?.score ?? null) : null;
-        const value = hasData
-          ? aggregationType === "total"
-            ? (metric?.totalValue ?? null)
-            : (metric?.value ?? null)
-          : null;
+        // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용, hasData 조건에서 score 체크 제거
+        const avgRate = metric?.avgRate ?? null;
+        const value = aggregationType === "total"
+          ? (metric?.totalValue ?? null)
+          : (metric?.value ?? null);
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -406,7 +403,7 @@ const CombinedMemberRow = ({
             <HeatmapCell
               metricCode={code}
               metricName={metricName}
-              score={score}
+              avgRate={avgRate}
               value={value}
               hideValue={hideValue}
               targetValue={targetValue}

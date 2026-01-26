@@ -14,8 +14,9 @@ interface MetricTooltipProps {
   metricName?: string;
   /** 실제 값 */
   value: number | null;
+  // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용
   /** 달성률 (0-150) */
-  score: number | null;
+  avgRate: number | null;
   /** 툴팁 표시 여부 */
   visible: boolean;
   /** 툴팁 위치 */
@@ -37,7 +38,7 @@ export const MetricTooltip = ({
   metricCode,
   metricName,
   value,
-  score,
+  avgRate,
   visible,
   position,
   targetValue,
@@ -61,7 +62,7 @@ export const MetricTooltip = ({
         : `${targetValue}`
       : "--";
 
-  // 현재값 포맷팅
+  // [변경: 2026-01-26 15:50, 임도휘 수정] 현재값 포맷팅 (value 필드 사용)
   const formattedValue =
     value !== null
       ? typeof value === "number"
@@ -131,11 +132,11 @@ export const MetricTooltip = ({
       {/* 하단: 달성률 / 달성단계 */}
       <div className="px-4 py-3 border-t border-gray-100">
         <div className="flex gap-6">
-          {/* 달성률 */}
+          {/* [변경: 2026-01-26 15:50, 임도휘 수정] 달성률 (avgRate 필드 사용) */}
           <div className="flex-1">
             <div className="text-xs text-gray-400 mb-1">달성률</div>
             <div className="text-md font-medium text-gray-900">
-              {score !== null ? `${score.toFixed(1)} %` : "--"}
+              {avgRate !== null ? `${avgRate.toFixed(1)} %` : "--"}
             </div>
           </div>
           {/* 달성단계 */}

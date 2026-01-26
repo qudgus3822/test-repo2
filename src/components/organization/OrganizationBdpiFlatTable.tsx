@@ -278,9 +278,10 @@ const FlatRow = ({
           </div>
         )}
       </td>
+      {/* [변경: 2026-01-26 16:10, 임도휘 수정] BDPI 탭은 avgRate 필드 사용 */}
       {BDPI_METRIC_CODES.map((code) => {
         const metric = bdpiMetrics?.[code];
-        const score = metric?.score ?? null;
+        const avgRate = metric?.avgRate ?? null;
         return (
           <td
             key={code}
@@ -288,8 +289,8 @@ const FlatRow = ({
           >
             <HeatmapCell
               metricCode={code}
-              score={score}
-              value={score}
+              avgRate={avgRate}
+              value={avgRate}
               hideValue={hideValues}
               showTooltip={false}
             />
@@ -393,22 +394,23 @@ export const OrganizationBdpiFlatTable = ({
       let aValue: number | null = null;
       let bValue: number | null = null;
 
+      // [변경: 2026-01-26 16:10, 임도휘 수정] BDPI 탭 정렬은 avgRate 필드 사용
       switch (sortConfig.column) {
         case "quality":
-          aValue = aMetrics?.quality?.score ?? null;
-          bValue = bMetrics?.quality?.score ?? null;
+          aValue = aMetrics?.quality?.avgRate ?? null;
+          bValue = bMetrics?.quality?.avgRate ?? null;
           break;
         case "review":
-          aValue = aMetrics?.review?.score ?? null;
-          bValue = bMetrics?.review?.score ?? null;
+          aValue = aMetrics?.review?.avgRate ?? null;
+          bValue = bMetrics?.review?.avgRate ?? null;
           break;
         case "efficiency":
-          aValue = aMetrics?.efficiency?.score ?? null;
-          bValue = bMetrics?.efficiency?.score ?? null;
+          aValue = aMetrics?.efficiency?.avgRate ?? null;
+          bValue = bMetrics?.efficiency?.avgRate ?? null;
           break;
         case "bdpi":
-          aValue = aMetrics?.bdpi?.score ?? null;
-          bValue = bMetrics?.bdpi?.score ?? null;
+          aValue = aMetrics?.bdpi?.avgRate ?? null;
+          bValue = bMetrics?.bdpi?.avgRate ?? null;
           break;
       }
 
