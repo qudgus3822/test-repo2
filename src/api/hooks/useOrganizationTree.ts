@@ -204,6 +204,7 @@ export const useOrganizationTree = (
         "모두플랫폼개발실",
       ];
 
+      // [변경: 2026-01-26 00:00, 김병현 수정] tree와 items 모두 정렬 적용
       if (data.tree) {
         data.tree.forEach((dept) => {
           if (dept.children) {
@@ -217,6 +218,19 @@ export const useOrganizationTree = (
               return aIndex - bIndex;
             });
           }
+        });
+      }
+
+      // format=list 응답 (items)에도 정렬 적용
+      if (data.items) {
+        data.items.sort((a, b) => {
+          const aIndex = TEAM_ORDER.indexOf(a.name);
+          const bIndex = TEAM_ORDER.indexOf(b.name);
+          // 목록에 없는 항목은 맨 뒤로
+          if (aIndex === -1 && bIndex === -1) return 0;
+          if (aIndex === -1) return 1;
+          if (bIndex === -1) return -1;
+          return aIndex - bIndex;
         });
       }
 
