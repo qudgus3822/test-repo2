@@ -1,6 +1,8 @@
 import { useId } from "react";
 import { PieChart, Pie, Cell } from "recharts";
+import { Info } from "lucide-react";
 import { TREND_COLORS, CHART_COLORS } from "@/styles/colors";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 // 그라데이션 설정 타입
 interface GradientConfig {
@@ -26,6 +28,8 @@ interface DonutChartProps {
   };
   /** 데이터가 없을 때 표시할 라벨 (예: "-%") */
   noDataLabel?: string;
+  /** [변경: 2026-01-27 15:00, 임도휘 수정] 라벨 옆 인포메이션 툴팁 내용 */
+  labelTooltip?: string;
 }
 
 /**
@@ -45,6 +49,7 @@ export const DonutChart = ({
   showPercentage = false,
   trend,
   noDataLabel,
+  labelTooltip,
 }: DonutChartProps) => {
   const uniqueId = useId();
   const percentage = (value / maxValue) * 100;
@@ -115,8 +120,23 @@ export const DonutChart = ({
       {/* 라벨 */}
       {label && (
         <div className="mt-3 text-center">
-          <div className="text-sm font-medium text-gray-900">{label}</div>
-          {sublabel && <div className="text-xs text-gray-500">{sublabel}</div>}
+          {/* [변경: 2026-01-27 15:00, 임도휘 수정] 라벨 옆 인포메이션 툴팁 추가 */}
+          {/* [변경: 2026-01-27 15:20, 임도휘 수정] 도넛차트와 라벨 중앙 정렬 (툴팁 아이콘 제외) */}
+          <div className="relative inline-flex items-center">
+            <span className="text-sm font-medium text-gray-900">{label}</span>
+            {labelTooltip && (
+              <span className="absolute left-full ml-1 flex items-center">
+                <Tooltip content={labelTooltip} color="#6B7280" maxWidth={340} direction="bottom">
+                  <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
+                </Tooltip>
+              </span>
+            )}
+          </div>
+          {sublabel && (
+            <div className="flex justify-center">
+              <span className="text-xs text-gray-500">{sublabel}</span>
+            </div>
+          )}
         </div>
       )}
     </div>
