@@ -125,6 +125,7 @@ export const HeatmapCell = ({
         value={displayValue}
         hideValue={hideValue}
         isLoading={isLoading}
+        unit={unit}
       />
       {showTooltip && (
         <MetricTooltip
