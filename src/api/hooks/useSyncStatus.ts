@@ -8,11 +8,11 @@ export const syncStatusKeys = {
   all: ["syncStatus"] as const,
 };
 
-// Polling 간격 (0.5초) - 집계가 보통 3초 내 완료되므로 빠른 감지 필요
-const POLLING_INTERVAL = 0.5 * 1000;
+// Polling 간격 (1초) - 집계가 보통 3초 내 완료되므로 빠른 감지 필요
+const POLLING_INTERVAL = 1 * 1000;
 
 /**
- * 지표 설정 동기화 상태 조회 Hook (0.5초 폴링)
+ * 지표 설정 동기화 상태 조회 Hook (1초 폴링)
  * @param enabled - 쿼리 활성화 여부 (기본값: true)
  * @returns React Query 결과 객체 (data, isLoading 등)
  */
