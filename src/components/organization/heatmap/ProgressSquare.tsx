@@ -7,6 +7,7 @@
 
 import { ACHIEVEMENT_RATE_COLORS } from "@/styles/colors";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
+import { Tooltip } from "@/components/ui/Tooltip";
 
 interface ProgressSquareProps {
   // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용
@@ -53,19 +54,36 @@ export const ProgressSquare = ({
     ? (avgRate !== null && avgRate !== undefined)  // 달성률 모드: avgRate 확인
     : (value !== null && value !== undefined);  // 실제값 모드: value 확인
 
-  // 값 포맷팅
-  const formatValue = () => {
-    if (hideValue) return "";
-    if (!hasData) return "--";
+  // [변경: 2026-01-27 10:30, 임도휘 수정] 값 포맷팅 (최대 4글자, 초과 시 '..' 처리 + Tooltip으로 전체 값 표시)
+  const MAX_DISPLAY_LENGTH = 4;
 
+  const formatValue = (): { display: string; full: string } => {
+    if (hideValue) return { display: "", full: "" };
+    if (!hasData) return { display: "--", full: "--" };
+
+    let formattedNum: string;
     if (typeof value === "number") {
-      const formattedNum = Number.isInteger(value) ? `${value}` : `${value.toFixed(1)}`;
-      return displayMode === "rate" ? `${formattedNum}%` : formattedNum;
+      formattedNum = Number.isInteger(value) ? `${value}` : `${value.toFixed(1)}`;
+      if (displayMode === "rate") {
+        formattedNum = `${formattedNum}%`;
+      }
+    } else {
+      formattedNum = `${value}`;
     }
-    return `${value}`;
+
+    // 4글자 초과 시 잘라서 .. 표시
+    if (formattedNum.length > MAX_DISPLAY_LENGTH) {
+      return {
+        display: `${formattedNum.slice(0, MAX_DISPLAY_LENGTH)}..`,
+        full: formattedNum,
+      };
+    }
+    return { display: formattedNum, full: formattedNum };
   };
 
-  const displayValue = formatValue();
+  const { display: displayValue, full: fullValue } = formatValue();
+  // [변경: 2026-01-27 10:30, 임도휘 수정] 말줄임 시 Tooltip 표시 여부
+  const needsTooltip = displayValue !== fullValue;
 
   // [변경: 2026-01-26 15:50, 임도휘 수정] avgRate가 있을 때만 프로그레스 바 표시
   const hasAvgRate = avgRate !== null && avgRate !== undefined;
@@ -75,6 +93,20 @@ export const ProgressSquare = ({
   // 텍스트 색상 결정 (level5는 white, 나머지는 gray-900)
   const isLevel5 = hasAvgRate && avgRate >= 100;
   const textColorClass = !hasData ? "text-gray-400" : isLevel5 ? "text-white" : "text-gray-900";
+
+  // [변경: 2026-01-27 10:30, 임도휘 수정] 텍스트 엘리먼트 분리 (Tooltip 래핑용)
+  const textElement = (
+    <span
+      className={`text-md font-bold overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass}`}
+      style={
+        hasData
+          ? { textShadow: isLevel5 ? "0 1px 4px rgba(0, 0, 0, 0.8)" : "0 1px 4px rgba(255, 255, 255, 0.8)" }
+          : undefined
+      }
+    >
+      {displayValue}
+    </span>
+  );
 
   return (
     <div className="border border-gray-200 relative w-full h-full bg-gray-100 rounded-sm overflow-hidden transition-all duration-300 hover:ring-2 hover:ring-gray-400">
@@ -97,17 +129,17 @@ export const ProgressSquare = ({
       )}
 
       {/* 값 텍스트 오버레이 */}
+      {/* [변경: 2026-01-27 10:30, 임도휘 수정] 말줄임 시 Tooltip으로 전체 값 표시 (방향: 아래, 화살표 없음) */}
       {!isLoading && (
-        <span
-          className={`absolute inset-0 flex items-center justify-center text-md font-bold transition-opacity overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass} opacity-100`}
-          style={
-            hasData
-              ? { textShadow: isLevel5 ? "0 1px 4px rgba(0, 0, 0, 0.8)" : "0 1px 4px rgba(255, 255, 255, 0.8)" }
-              : undefined
-          }
-        >
-          {displayValue}
-        </span>
+        <div className="absolute inset-0 flex items-center justify-center">
+          {needsTooltip ? (
+            <Tooltip content={fullValue} direction="bottom" fontSize="text-xs" noWrap hideArrow>
+              {textElement}
+            </Tooltip>
+          ) : (
+            textElement
+          )}
+        </div>
       )}
     </div>
   );
