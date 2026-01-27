@@ -64,7 +64,7 @@ export const TargetValueAchievement = memo(function TargetValueAchievement({
           maxValue={100}
           showPercentage
           gradient={ACHIEVEMENT_GRADIENT}
-          size={140}
+          //size={140}
           strokeWidth={20}
           noDataLabel={hasData ? undefined : "-%"}
         />
