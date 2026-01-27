@@ -7,8 +7,8 @@ export const syncStatusKeys = {
   all: ["syncStatus"] as const,
 };
 
-// Polling 간격 (10초)
-const POLLING_INTERVAL = 10 * 1000;
+// Polling 간격 (1초)
+const POLLING_INTERVAL = 0.5 * 1000;
 
 /**
  * 지표 설정 동기화 상태 조회 Hook (10초 폴링)
