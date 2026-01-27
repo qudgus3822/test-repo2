@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { DonutChart } from "@/libs/chart";
 import { useGoalAchievement } from "@/api/hooks/useGoalAchievement";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -19,9 +20,10 @@ interface TargetValueAchievementProps {
  * @example
  * <TargetValueAchievement month="2025-01" />
  */
-export const TargetValueAchievement = ({
+// [변경: 2026-01-27 15:30, 김병현 수정] React.memo 적용하여 불필요한 리렌더링 방지
+export const TargetValueAchievement = memo(function TargetValueAchievement({
   month,
-}: TargetValueAchievementProps) => {
+}: TargetValueAchievementProps) {
   const {
     data: goalAchievementData,
     isLoading,
@@ -72,4 +74,4 @@ export const TargetValueAchievement = ({
       </div>
     </div>
   );
-};
+});

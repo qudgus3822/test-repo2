@@ -16,11 +16,14 @@ import {
 import { useMetricsPreview } from "@/api/hooks/useMetricsPreview";
 import { useAchievementCriteria } from "@/api/hooks/useAchievementCriteria";
 import { usePendingSummary } from "@/api/hooks/usePendingSummary";
+import { useSyncStatus } from "@/api/hooks/useSyncStatus";
 import { TargetValueSetting } from "@/components/metrics/TargetValueSetting";
 import { AchievementRateSetting } from "@/components/metrics/AchievementRateSetting";
 import { RatioSetting } from "@/components/metrics/RatioSetting";
 import { useMetricsStore } from "@/store/useMetricsStore";
 import { ConfirmPopup } from "@/components/ui/ConfirmPopup";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { AggregatingIndicator } from "@/components/ui/AggregatingIndicator";
 
 interface MetricStandardSettingModalProps {
   isOpen: boolean;
@@ -50,6 +53,9 @@ export const MetricStandardSettingModal = ({
   const isSettingsChangeConfirmModalOpen = useMetricsStore(
     (state) => state.isSettingsChangeConfirmModalOpen,
   );
+
+  // 집계 진행 중 여부 및 강제 상태 설정 함수
+  const { isProcessing, setProcessing } = useSyncStatus();
 
   // 상태별 아이콘 설정
   const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);
@@ -211,10 +217,11 @@ export const MetricStandardSettingModal = ({
     try {
       // 변경내역 적용 API 호출
       await applySettingsChanges();
+      // [변경: 2026-01-27 16:30, 김병현 수정] 강제로 processing 상태로 설정하여 집계 완료 감지 보장
+      setProcessing();
       // 팝업창 닫기 + 설정 화면 모두 닫기
       setIsSettingsChangeConfirmModalOpen(false);
       onClose();
-      // 집계 상태는 useSyncStatus 폴링으로 자동 감지됨
     } catch {
       window.confirm("변경사항 반영 중 오류가 발생했습니다.");
     } finally {
@@ -396,17 +403,28 @@ export const MetricStandardSettingModal = ({
 
                 {/* 버튼 영역 */}
                 <div className="flex items-end gap-3 self-end">
+                  <AggregatingIndicator />
                   <Button variant="cancel" size="sm" onClick={handleResetClick}>
                     변경 초기화
                   </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleApplyClick}
-                    disabled={!hasChanges}
+                  <Tooltip
+                    maxWidth={400}
+                    content={
+                      isProcessing
+                        ? "현재 집계가 진행중이므로 최종 반영이 불가능합니다."
+                        : ""
+                    }
+                    direction="bottom"
                   >
-                    최종 반영
-                  </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleApplyClick}
+                      disabled={!hasChanges || isProcessing}
+                    >
+                      최종 반영
+                    </Button>
+                  </Tooltip>
                 </div>
               </div>
             </div>

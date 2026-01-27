@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/components/ui/Card";
@@ -16,10 +16,9 @@ import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
 import { useMetricsList, metricsListKeys } from "@/api/hooks/useMetricsList";
 import { useSyncStatus } from "@/api/hooks/useSyncStatus";
-import { Button } from "@/components/ui";
+import { Button, AggregatingIndicator } from "@/components/ui";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Settings } from "lucide-react";
-import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
 import {
   useAchievementCriteria,
   achievementCriteriaKeys,
@@ -92,8 +91,9 @@ const MetricsPage = () => {
   // 현재 선택된 월
   const month = formatYearMonth(currentDate);
 
-  const { refetch: criteriaRefetch } = useAchievementCriteria(month);
-  const { refetch: goalAchievementRefetch } = useGoalAchievement(month);
+  // [변경: 2026-01-27 16:05, 김병현 수정] refetch 제거 - Layout에서 집계 완료 시 전역 invalidate 처리
+  useAchievementCriteria(month);
+  useGoalAchievement(month);
 
   // 선택된 날짜가 현재 년/월과 일치하는지 확인
   const now = new Date();
@@ -103,13 +103,11 @@ const MetricsPage = () => {
 
   // 지표 설정 동기화 상태 조회 (10초 폴링)
   const { isProcessing } = useSyncStatus();
-  const prevIsProcessingRef = useRef(isProcessing);
+  // const prevIsProcessingRef = useRef(isProcessing);
 
   // 지표 리스트 API 호출 (모달에서 사용)
-  const { data: metricsListData, refetch: metricsListRefetch } =
-    useMetricsList(month);
+  const { data: metricsListData } = useMetricsList(month);
   const metrics = metricsListData?.metrics ?? [];
-  const { refetch: lastUpdatedRefetch } = useLastAggregatedAt();
 
   // activeTab을 MetricCategory로 변환
   const getSelectedCategory = (): MetricCategory => {
@@ -167,23 +165,6 @@ const MetricsPage = () => {
     setAchievementRateFilter("all");
   }, [currentDate, setAchievementRateFilter, setActiveTab]);
 
-  // [변경: 2026-01-22 14:30, 김병현 수정] 집계 완료 시 (isProcessing: true → false) 데이터 refetch
-  useEffect(() => {
-    if (prevIsProcessingRef.current && !isProcessing) {
-      metricsListRefetch();
-      lastUpdatedRefetch();
-      criteriaRefetch();
-      goalAchievementRefetch();
-    }
-    prevIsProcessingRef.current = isProcessing;
-  }, [
-    isProcessing,
-    metricsListRefetch,
-    lastUpdatedRefetch,
-    criteriaRefetch,
-    goalAchievementRefetch,
-  ]);
-
   // 변경사항 확정
   const handleConfirmChanges = () => {
     // TODO: API 연동 시 실제 저장 로직 구현
@@ -207,23 +188,19 @@ const MetricsPage = () => {
               />
               {/* 지표 기준 설정 버튼 (당월에만 표시) */}
               {isCurrentMonth && (
-                <Tooltip
-                  maxWidth={400}
-                  content={
-                    isProcessing
-                      ? "현재 집계가 진행중이므로 추가 설정은 불가능합니다."
-                      : ""
-                  }
-                  direction="bottom"
-                >
-                  <div className="flex items-center gap-4">
-                    {isProcessing && (
-                      <span className="text-sm text-gray-500 flex items-center gap-1.5">
-                        <span className="w-3 h-3 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin" />
-                        집계 진행중
-                      </span>
-                    )}
+                <div className="flex items-center gap-4">
+                  <AggregatingIndicator />
+                  <Tooltip
+                    maxWidth={400}
+                    content={
+                      isProcessing
+                        ? "현재 집계가 진행중이므로 추가 설정은 불가능합니다."
+                        : ""
+                    }
+                    direction="bottom"
+                  >
                     <Button
+                      className=""
                       variant="setting"
                       size="sm"
                       onClick={() => setIsMetricStandardSettingModalOpen(true)}
@@ -232,8 +209,8 @@ const MetricsPage = () => {
                       <Settings className="w-4 h-4 mr-1" />
                       지표 기준 설정
                     </Button>
-                  </div>
-                </Tooltip>
+                  </Tooltip>
+                </div>
               )}
             </div>
           </Card>
@@ -289,15 +266,10 @@ const MetricsPage = () => {
       />
 
       {/* 지표 기준 설정 모달 */}
+      {/* [변경: 2026-01-27 16:05, 김병현 수정] onClose에서 refetch 제거 - Layout에서 집계 완료 시 전역 invalidate 처리 */}
       <MetricStandardSettingModal
         isOpen={isMetricStandardSettingModalOpen}
-        onClose={() => {
-          setIsMetricStandardSettingModalOpen(false);
-          metricsListRefetch();
-          lastUpdatedRefetch();
-          criteriaRefetch();
-          goalAchievementRefetch();
-        }}
+        onClose={() => setIsMetricStandardSettingModalOpen(false)}
         month={month}
       />
     </div>
