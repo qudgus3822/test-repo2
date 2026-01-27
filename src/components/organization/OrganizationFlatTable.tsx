@@ -288,21 +288,9 @@ const CombinedRow = ({
       ))}
       {/* 스크롤 영역 - 지표 칼럼들 */}
       {metricOrder.map((code) => {
-        // BDPI 칼럼 특별 처리
+        // BDPI 칼럼은 전체 탭에서 표시하지 않음
         if (code === "bdpi" || code === "BDPI") {
           return;
-          // const bdpiData = metrics?.["BDPI"] ?? metrics?.["bdpi"];
-          // const bdpiValue = bdpiData?.avgRate ?? bdpiData?.score;
-          // return (
-          //   <td
-          //     key={code}
-          //     className={`px-2 py-1 text-center text-sm font-semibold align-middle border-r border-b border-gray-200 w-[74px] min-w-[74px] max-w-[74px] ${rowHeight}`}
-          //   >
-          //     {bdpiValue !== undefined && bdpiValue !== null
-          //       ? `${bdpiValue.toFixed(0)}%`
-          //       : "--"}
-          //   </td>
-          // );
         }
 
         const metric = metrics?.[code];

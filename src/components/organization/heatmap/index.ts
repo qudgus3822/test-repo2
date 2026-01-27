@@ -3,5 +3,4 @@ export { HeatmapCell } from "./HeatmapCell";
 export { MetricTooltip } from "./MetricTooltip";
 export { SummaryCell } from "./SummaryCell";
 export { SummaryHeader } from "./SummaryHeader";
-export { useOrganizationSorting } from "./useOrganizationSorting";
 export * from "./types";

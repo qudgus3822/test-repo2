@@ -92,7 +92,6 @@ export interface SortConfig {
 
 // 지표 데이터 타입 (API 응답)
 export interface MetricData {
-  score: number | null;
   isUsed: boolean;
   value?: number | null;
   unit?: string;
