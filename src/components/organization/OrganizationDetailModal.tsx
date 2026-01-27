@@ -122,10 +122,11 @@ export const OrganizationDetailModal = ({
     },
     {
       month: "2024.11",
-      코드품질: bdpiMetrics?.quality?.score ?? 0,
-      리뷰품질: bdpiMetrics?.review?.score ?? 0,
-      개발효율: bdpiMetrics?.efficiency?.score ?? 0,
-      BDPI: bdpiMetrics?.bdpi?.score ?? 0,
+      // [변경: 2026-01-26 17:00, 임도휘 수정] score → value 필드 사용
+      코드품질: bdpiMetrics?.quality?.value ?? 0,
+      리뷰품질: bdpiMetrics?.review?.value ?? 0,
+      개발효율: bdpiMetrics?.efficiency?.value ?? 0,
+      BDPI: bdpiMetrics?.bdpi?.value ?? 0,
     },
   ];
 
@@ -236,17 +237,18 @@ export const OrganizationDetailModal = ({
                     <td className="px-4 py-3 text-sm text-gray-600 text-center">
                       {dept.memberCount}명
                     </td>
+                    {/* [변경: 2026-01-26 17:00, 임도휘 수정] score → value 필드 사용 */}
                     <td className="px-4 py-3 text-center">
                       <span
                         className="px-2 py-1 text-sm font-medium rounded"
                         style={{
                           backgroundColor: getScoreBgColor(
-                            deptMetrics.bdpi.score,
+                            deptMetrics.bdpi.value ?? null,
                           ),
-                          color: getScoreTextColor(deptMetrics.bdpi.score),
+                          color: getScoreTextColor(deptMetrics.bdpi.value ?? null),
                         }}
                       >
-                        {deptMetrics.bdpi.score.toFixed(1)}
+                        {(deptMetrics.bdpi.value ?? 0).toFixed(1)}
                       </span>
                     </td>
                   </tr>
@@ -308,17 +310,18 @@ export const OrganizationDetailModal = ({
                         member.personalTitle,
                       )}
                     </td>
+                    {/* [변경: 2026-01-26 17:00, 임도휘 수정] score → value 필드 사용 */}
                     <td className="px-4 py-3 text-center">
                       <span
                         className="px-2 py-1 text-sm font-medium rounded"
                         style={{
                           backgroundColor: getScoreBgColor(
-                            memberMetrics.bdpi.score,
+                            memberMetrics.bdpi.value ?? null,
                           ),
-                          color: getScoreTextColor(memberMetrics.bdpi.score),
+                          color: getScoreTextColor(memberMetrics.bdpi.value ?? null),
                         }}
                       >
-                        {memberMetrics.bdpi.score.toFixed(1)}
+                        {(memberMetrics.bdpi.value ?? 0).toFixed(1)}
                       </span>
                     </td>
                   </tr>
@@ -389,12 +392,13 @@ export const OrganizationDetailModal = ({
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">
                     지표 점수
                   </h3>
-                  <div className="grid grid-cols-4 gap-4">
+                  {/* [변경: 2026-01-26 17:00, 임도휘 수정] score → value 필드 사용 */}
+                <div className="grid grid-cols-4 gap-4">
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics?.quality?.score ?? 0,
+                          bdpiMetrics?.quality?.value ?? null,
                         ),
                       }}
                     >
@@ -403,18 +407,18 @@ export const OrganizationDetailModal = ({
                         className="text-lg font-semibold"
                         style={{
                           color: getScoreTextColor(
-                            bdpiMetrics?.quality?.score ?? 0,
+                            bdpiMetrics?.quality?.value ?? null,
                           ),
                         }}
                       >
-                        {(bdpiMetrics?.quality?.score ?? 0).toFixed(1)}
+                        {(bdpiMetrics?.quality?.value ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics?.review?.score ?? 0,
+                          bdpiMetrics?.review?.value ?? null,
                         ),
                       }}
                     >
@@ -423,18 +427,18 @@ export const OrganizationDetailModal = ({
                         className="text-lg font-semibold"
                         style={{
                           color: getScoreTextColor(
-                            bdpiMetrics?.review?.score ?? 0,
+                            bdpiMetrics?.review?.value ?? null,
                           ),
                         }}
                       >
-                        {(bdpiMetrics?.review?.score ?? 0).toFixed(1)}
+                        {(bdpiMetrics?.review?.value ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics?.efficiency?.score ?? 0,
+                          bdpiMetrics?.efficiency?.value ?? null,
                         ),
                       }}
                     >
@@ -443,18 +447,18 @@ export const OrganizationDetailModal = ({
                         className="text-lg font-semibold"
                         style={{
                           color: getScoreTextColor(
-                            bdpiMetrics.efficiency.score,
+                            bdpiMetrics?.efficiency?.value ?? null,
                           ),
                         }}
                       >
-                        {bdpiMetrics.efficiency.score.toFixed(1)}
+                        {(bdpiMetrics?.efficiency?.value ?? 0).toFixed(1)}
                       </div>
                     </div>
                     <div
                       className="rounded-lg px-4 py-3 border-2 border-blue-200"
                       style={{
                         backgroundColor: getScoreBgColor(
-                          bdpiMetrics.bdpi.score,
+                          bdpiMetrics?.bdpi?.value ?? null,
                         ),
                       }}
                     >
@@ -462,10 +466,10 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics.bdpi.score),
+                          color: getScoreTextColor(bdpiMetrics?.bdpi?.value ?? null),
                         }}
                       >
-                        {bdpiMetrics.bdpi.score.toFixed(1)}
+                        {(bdpiMetrics?.bdpi?.value ?? 0).toFixed(1)}
                       </div>
                     </div>
                   </div>

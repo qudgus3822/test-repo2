@@ -97,8 +97,6 @@ export type MetricStatusType =
 
 // 개별 지표 값 타입 (상세 지표용 - 코드품질, 리뷰품질, 개발효율 탭)
 export interface MetricScoreValue {
-  // [변경: 2026-01-26 16:00, 임도휘 수정] score 필드는 현재 사용하지 않음 (실제값: value, 달성률: avgRate 사용)
-  score: number | null;
   isUsed: boolean; // 지표 수집 가능 여부 (aggregation=total일 때 6개 지표 외에는 false)
   value?: number | null; // 월 평균값
   unit?: string; // 단위
@@ -110,9 +108,8 @@ export interface MetricScoreValue {
 
 // 카테고리 점수 타입 (BDPI 탭용)
 export interface CategoryScoreValue {
-  // [변경: 2026-01-26 16:10, 임도휘 수정] score 필드는 현재 사용하지 않음, avgRate 사용
-  score: number;
-  avgRate?: number; // BDPI 탭에서 실제 사용하는 필드
+  value?: number; // 실제값
+  avgRate?: number; // 달성률 (BDPI 탭에서 사용)
 }
 
 // 전월대비 타입
