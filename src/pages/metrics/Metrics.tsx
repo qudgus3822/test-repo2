@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/components/ui/Card";
@@ -103,7 +103,6 @@ const MetricsPage = () => {
 
   // 지표 설정 동기화 상태 조회 (10초 폴링)
   const { isProcessing } = useSyncStatus();
-  const prevIsProcessingRef = useRef(isProcessing);
 
   // 지표 리스트 API 호출 (모달에서 사용)
   const { data: metricsListData, refetch: metricsListRefetch } =
@@ -166,23 +165,6 @@ const MetricsPage = () => {
     setActiveTab("bdpi");
     setAchievementRateFilter("all");
   }, [currentDate, setAchievementRateFilter, setActiveTab]);
-
-  // [변경: 2026-01-22 14:30, 김병현 수정] 집계 완료 시 (isProcessing: true → false) 데이터 refetch
-  useEffect(() => {
-    if (prevIsProcessingRef.current && !isProcessing) {
-      metricsListRefetch();
-      lastUpdatedRefetch();
-      criteriaRefetch();
-      goalAchievementRefetch();
-    }
-    prevIsProcessingRef.current = isProcessing;
-  }, [
-    isProcessing,
-    metricsListRefetch,
-    lastUpdatedRefetch,
-    criteriaRefetch,
-    goalAchievementRefetch,
-  ]);
 
   // 변경사항 확정
   const handleConfirmChanges = () => {
@@ -293,7 +275,6 @@ const MetricsPage = () => {
         isOpen={isMetricStandardSettingModalOpen}
         onClose={() => {
           setIsMetricStandardSettingModalOpen(false);
-          console.log("모달 닫힘 - refetch 시작");
           metricsListRefetch();
           lastUpdatedRefetch();
           criteriaRefetch();
