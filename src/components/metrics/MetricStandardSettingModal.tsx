@@ -54,8 +54,8 @@ export const MetricStandardSettingModal = ({
     (state) => state.isSettingsChangeConfirmModalOpen,
   );
 
-  // 집계 진행 중 여부
-  const { isProcessing } = useSyncStatus();
+  // 집계 진행 중 여부 및 강제 상태 설정 함수
+  const { isProcessing, setProcessing } = useSyncStatus();
 
   // 상태별 아이콘 설정
   const excellentConfig = getStatusIconConfig(MetricStatus.EXCELLENT);
@@ -217,10 +217,11 @@ export const MetricStandardSettingModal = ({
     try {
       // 변경내역 적용 API 호출
       await applySettingsChanges();
+      // [변경: 2026-01-27 16:30, 김병현 수정] 강제로 processing 상태로 설정하여 집계 완료 감지 보장
+      setProcessing();
       // 팝업창 닫기 + 설정 화면 모두 닫기
       setIsSettingsChangeConfirmModalOpen(false);
       onClose();
-      // 집계 상태는 useSyncStatus 폴링으로 자동 감지됨
     } catch {
       window.confirm("변경사항 반영 중 오류가 발생했습니다.");
     } finally {
