@@ -293,7 +293,6 @@ const MetricsPage = () => {
         isOpen={isMetricStandardSettingModalOpen}
         onClose={() => {
           setIsMetricStandardSettingModalOpen(false);
-          console.log("모달 닫힘 - refetch 시작");
           metricsListRefetch();
           lastUpdatedRefetch();
           criteriaRefetch();
