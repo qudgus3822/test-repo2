@@ -2,12 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchLastAggregatedAt } from "@/api/metrics";
 import { formatKoreanDateTime } from "@/libs/date/format";
 
-// Polling 간격 (10초)
-const POLLING_INTERVAL = 10 * 1000;
-
 /**
  * 마지막 집계 시간을 조회하는 훅
  * API 조회 실패 시 현재 시간을 fallback으로 반환
+ * [변경: 2026-01-27 16:00, 김병현 수정] 폴링 제거 - Layout에서 useSyncStatus로 집계 완료 감지 후 invalidate
  *
  * @returns 한국 형식으로 포맷된 마지막 집계 시간 문자열
  */
@@ -16,7 +14,6 @@ export function useLastAggregatedAt() {
     queryKey: ["lastAggregatedAt"],
     queryFn: fetchLastAggregatedAt,
     staleTime: 1000 * 60 * 5, // 5분
-    refetchInterval: POLLING_INTERVAL, // 10초마다 폴링
     retry: 3,
   });
 

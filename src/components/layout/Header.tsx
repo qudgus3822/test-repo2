@@ -5,6 +5,7 @@ import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useAuth } from "@/api/hooks/useAuth";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { AggregatingIndicator } from "@/components/ui/AggregatingIndicator";
 import { BRAND_COLORS, TEXT_COLORS, SURFACE_COLORS } from "@/styles/colors";
 
 export default function Header() {
@@ -52,6 +53,9 @@ export default function Header() {
 
         {/* 우측 메뉴 */}
         <div className="flex items-center gap-5 h-[48px]">
+          {/* 집계 진행중 표시 */}
+          <AggregatingIndicator />
+
           {/* 최근 업데이트 */}
           <div className="flex font-medium items-center gap-2 text-sm" style={{ color: TEXT_COLORS.tertiary }}>
             <span>최근 업데이트 :</span>

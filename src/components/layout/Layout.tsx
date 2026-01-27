@@ -3,8 +3,8 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
-import { useLastAggregatedAt } from "@/api/hooks/useLastAggregatedAt";
-// [변경: 2026-01-27 00:00, 김병현 수정] 전역 데이터 리로딩을 위한 Query Keys import
+import { useSyncStatus } from "@/api/hooks/useSyncStatus";
+// [변경: 2026-01-27 16:00, 김병현 수정] 전역 데이터 리로딩을 위한 Query Keys import
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
 import { developerProductivityKeys } from "@/api/hooks/useDeveloperProductivity";
@@ -20,17 +20,13 @@ import { projectDashboardSummaryKeys } from "@/api/hooks/useProjectDashboardSumm
 export default function Layout() {
   const location = useLocation();
   const queryClient = useQueryClient();
-  const { rawDate } = useLastAggregatedAt();
-  const prevRawDateRef = useRef<string | undefined>(rawDate);
+  const { isProcessing } = useSyncStatus();
+  const prevIsProcessingRef = useRef(isProcessing);
 
-  // [변경: 2026-01-27 00:00, 김병현 수정] lastAggregatedAt 변경 감지 시 전역 데이터 리로딩
+  // [변경: 2026-01-27 16:00, 김병현 수정] 집계 완료 시 (isProcessing: true → false) 전역 데이터 리로딩
   useEffect(() => {
-    // 이전 값과 현재 값이 다르고, 둘 다 유효한 값일 때만 invalidate
-    if (
-      prevRawDateRef.current !== undefined &&
-      rawDate !== undefined &&
-      prevRawDateRef.current !== rawDate
-    ) {
+    // 이전에 processing 상태였다가 완료된 경우에만 invalidate
+    if (prevIsProcessingRef.current && !isProcessing) {
       // Dashboard 페이지 관련 쿼리
       queryClient.invalidateQueries({ queryKey: companyQualityKeys.all });
       queryClient.invalidateQueries({ queryKey: serviceStabilityKeys.all });
@@ -53,9 +49,12 @@ export default function Layout() {
       queryClient.invalidateQueries({
         queryKey: projectDashboardSummaryKeys.all,
       });
+
+      // Header의 최근 업데이트 시간 갱신
+      queryClient.invalidateQueries({ queryKey: ["lastAggregatedAt"] });
     }
-    prevRawDateRef.current = rawDate;
-  }, [rawDate, queryClient]);
+    prevIsProcessingRef.current = isProcessing;
+  }, [isProcessing, queryClient]);
 
   // [변경: 2026-01-19 18:30, 김병현 수정] /organization 페이지만 고정 높이 적용
   const isFixHeight = location.pathname === "/organization";
