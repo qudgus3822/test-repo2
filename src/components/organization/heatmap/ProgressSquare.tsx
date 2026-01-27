@@ -19,6 +19,9 @@ interface ProgressSquareProps {
   hideValue?: boolean;
   /** 로딩 상태 */
   isLoading?: boolean;
+  // [변경: 2026-01-27 17:00, 임도휘 수정] 툴팁에 단위 표시용
+  /** 단위 (예: "건", "시간" 등) */
+  unit?: string;
 }
 
 /**
@@ -46,6 +49,7 @@ export const ProgressSquare = ({
   value,
   hideValue = false,
   isLoading = false,
+  unit,
 }: ProgressSquareProps) => {
   // [변경: 2026-01-26 15:50, 임도휘 수정] 표시 모드에 따라 달성률일 때 '%' 추가
   const displayMode = useOrganizationStore((state) => state.displayMode);
@@ -54,8 +58,8 @@ export const ProgressSquare = ({
     ? (avgRate !== null && avgRate !== undefined)  // 달성률 모드: avgRate 확인
     : (value !== null && value !== undefined);  // 실제값 모드: value 확인
 
-  // [변경: 2026-01-27 10:30, 임도휘 수정] 값 포맷팅 (최대 4글자, 초과 시 '..' 처리 + Tooltip으로 전체 값 표시)
-  const MAX_DISPLAY_LENGTH = 4;
+  // [변경: 2026-01-27 10:30, 임도휘 수정] 값 포맷팅 (최대 5글자, 초과 시 '..' 처리 + Tooltip으로 전체 값 표시)
+  const MAX_DISPLAY_LENGTH = 5;
 
   const formatValue = (): { display: string; full: string } => {
     if (hideValue) return { display: "", full: "" };
@@ -71,14 +75,21 @@ export const ProgressSquare = ({
       formattedNum = `${value}`;
     }
 
-    // 4글자 초과 시 잘라서 .. 표시
+    // [변경: 2026-01-27 17:00, 임도휘 수정] 툴팁에 단위 포함
+    const fullWithUnit = unit ? `${formattedNum} ${unit}` : formattedNum;
+
+    // 5글자 초과 시 잘라서 .. 표시 (마지막 글자가 "."이면 4글자로 자름)
     if (formattedNum.length > MAX_DISPLAY_LENGTH) {
+      let sliceLength = MAX_DISPLAY_LENGTH;
+      if (formattedNum[MAX_DISPLAY_LENGTH - 1] === ".") {
+        sliceLength = MAX_DISPLAY_LENGTH - 1;
+      }
       return {
-        display: `${formattedNum.slice(0, MAX_DISPLAY_LENGTH)}..`,
-        full: formattedNum,
+        display: `${formattedNum.slice(0, sliceLength)}..`,
+        full: fullWithUnit,
       };
     }
-    return { display: formattedNum, full: formattedNum };
+    return { display: formattedNum, full: fullWithUnit };
   };
 
   const { display: displayValue, full: fullValue } = formatValue();
@@ -97,12 +108,11 @@ export const ProgressSquare = ({
   // [변경: 2026-01-27 10:30, 임도휘 수정] 텍스트 엘리먼트 분리 (Tooltip 래핑용)
   const textElement = (
     <span
-      className={`text-md font-bold overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass}`}
-      style={
-        hasData
-          ? { textShadow: isLevel5 ? "0 1px 4px rgba(0, 0, 0, 0.8)" : "0 1px 4px rgba(255, 255, 255, 0.8)" }
-          : undefined
-      }
+      className={`font-bold overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass}`}
+      style={{
+        fontSize: "15px",
+        ...(hasData && { textShadow: isLevel5 ? "0 1px 4px rgba(0, 0, 0, 0.8)" : "0 1px 4px rgba(255, 255, 255, 0.8)" }),
+      }}
     >
       {displayValue}
     </span>
