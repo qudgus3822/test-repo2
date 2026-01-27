@@ -52,6 +52,9 @@ export default function Layout() {
 
       // Header의 최근 업데이트 시간 갱신
       queryClient.invalidateQueries({ queryKey: ["lastAggregatedAt"] });
+
+      //지표 상세정보 쿼리 
+      queryClient.invalidateQueries({ queryKey: ["metricDefinition"] });
     }
     prevIsProcessingRef.current = isProcessing;
   }, [isProcessing, queryClient]);
