@@ -261,10 +261,10 @@ export const CodeReviewStatusModal = () => {
                       </div>
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.completed.breakdown.singleContributor > 0 && (
-                          <div
-                            className="flex items-center justify-center font-medium whitespace-nowrap"
-                            title={`MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`}
-                            style={{
+                          <Tooltip
+                            content={`MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`}
+                            wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
+                            wrapperStyle={{
                               width: `${
                                 (summary.completed.breakdown.singleContributor /
                                   summary.completed.count) *
@@ -272,54 +272,53 @@ export const CodeReviewStatusModal = () => {
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.completed.breakdown
-                                  .multipleContributors > 0
+                                summary.completed.breakdown.multipleContributors > 0
                                   ? "calc(100% - 40px)"
                                   : "100%",
-                              backgroundColor:
-                                CODE_REVIEW_COLORS.completedSingle,
+                              backgroundColor: CODE_REVIEW_COLORS.completedSingle,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            {(summary.completed.breakdown.singleContributor /
-                              summary.completed.count) *
-                              100 >=
-                            30
-                              ? `MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`
-                              : summary.completed.breakdown.singleContributor}
-                          </div>
+                            <div>
+                              {(summary.completed.breakdown.singleContributor /
+                                summary.completed.count) *
+                                100 >=
+                              30
+                                ? `MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`
+                                : summary.completed.breakdown.singleContributor}
+                            </div>
+                          </Tooltip>
                         )}
                         {summary.completed.breakdown.multipleContributors >
                           0 && (
-                          <div
-                            className="flex items-center justify-center font-medium whitespace-nowrap"
-                            title={`MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`}
-                            style={{
+                          <Tooltip
+                            content={`MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`}
+                            wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
+                            wrapperStyle={{
                               width: `${
-                                (summary.completed.breakdown
-                                  .multipleContributors /
+                                (summary.completed.breakdown.multipleContributors /
                                   summary.completed.count) *
                                 100
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.completed.breakdown.singleContributor >
-                                0
+                                summary.completed.breakdown.singleContributor > 0
                                   ? "calc(100% - 40px)"
                                   : "100%",
-                              backgroundColor:
-                                CODE_REVIEW_COLORS.completedMultiple,
+                              backgroundColor: CODE_REVIEW_COLORS.completedMultiple,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            {(summary.completed.breakdown.multipleContributors /
-                              summary.completed.count) *
-                              100 >=
-                            30
-                              ? `MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`
-                              : summary.completed.breakdown
-                                  .multipleContributors + "개"}
-                          </div>
+                            <div>
+                              {(summary.completed.breakdown.multipleContributors /
+                                summary.completed.count) *
+                                100 >=
+                              30
+                                ? `MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`
+                                : summary.completed.breakdown.multipleContributors +
+                                  "개"}
+                            </div>
+                          </Tooltip>
                         )}
                       </div>
                     </div>
@@ -340,67 +339,64 @@ export const CodeReviewStatusModal = () => {
                       </div>
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.incomplete.breakdown.singleContributor > 0 && (
-                          <div
-                            className="flex items-center justify-center font-medium whitespace-nowrap"
-                            title={`MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`}
-                            style={{
+                          <Tooltip
+                            content={`MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`}
+                            wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
+                            wrapperStyle={{
                               width: `${
-                                (summary.incomplete.breakdown
-                                  .singleContributor /
+                                (summary.incomplete.breakdown.singleContributor /
                                   summary.incomplete.count) *
                                 100
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.incomplete.breakdown
-                                  .multipleContributors > 0
+                                summary.incomplete.breakdown.multipleContributors > 0
                                   ? "calc(100% - 40px)"
                                   : "100%",
-                              backgroundColor:
-                                CODE_REVIEW_COLORS.incompleteSingle,
+                              backgroundColor: CODE_REVIEW_COLORS.incompleteSingle,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            {(summary.incomplete.breakdown.singleContributor /
-                              summary.incomplete.count) *
-                              100 >=
-                            30
-                              ? `MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`
-                              : summary.incomplete.breakdown.singleContributor}
-                          </div>
+                            <div>
+                              {(summary.incomplete.breakdown.singleContributor /
+                                summary.incomplete.count) *
+                                100 >=
+                              30
+                                ? `MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`
+                                : summary.incomplete.breakdown.singleContributor}
+                            </div>
+                          </Tooltip>
                         )}
                         {summary.incomplete.breakdown.multipleContributors >
                           0 && (
-                          <div
-                            className="flex items-center justify-center font-medium whitespace-nowrap"
-                            title={`MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`}
-                            style={{
+                          <Tooltip
+                            content={`MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`}
+                            wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
+                            wrapperStyle={{
                               width: `${
-                                (summary.incomplete.breakdown
-                                  .multipleContributors /
+                                (summary.incomplete.breakdown.multipleContributors /
                                   summary.incomplete.count) *
                                 100
                               }%`,
                               minWidth: "40px",
                               maxWidth:
-                                summary.incomplete.breakdown.singleContributor >
-                                0
+                                summary.incomplete.breakdown.singleContributor > 0
                                   ? "calc(100% - 40px)"
                                   : "100%",
-                              backgroundColor:
-                                CODE_REVIEW_COLORS.incompleteMultiple,
+                              backgroundColor: CODE_REVIEW_COLORS.incompleteMultiple,
                               color: CODE_REVIEW_COLORS.progressText,
                             }}
                           >
-                            {(summary.incomplete.breakdown
-                              .multipleContributors /
-                              summary.incomplete.count) *
-                              100 >=
-                            30
-                              ? `MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`
-                              : summary.incomplete.breakdown
-                                  .multipleContributors + "개"}
-                          </div>
+                            <div>
+                              {(summary.incomplete.breakdown.multipleContributors /
+                                summary.incomplete.count) *
+                                100 >=
+                              30
+                                ? `MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`
+                                : summary.incomplete.breakdown.multipleContributors +
+                                  "개"}
+                            </div>
+                          </Tooltip>
                         )}
                       </div>
                     </div>
@@ -529,7 +525,10 @@ export const CodeReviewStatusModal = () => {
                             </td>
                             <td className="px-2.5 py-1 text-gray-900 text-center">
                               <Tooltip
-                                content={item.mrAuthor.email || `${item.mrAuthor.username}${DEFAULT_EMAIL_DOMAIN}`}
+                                content={
+                                  item.mrAuthor.email ||
+                                  `${item.mrAuthor.username}${DEFAULT_EMAIL_DOMAIN}`
+                                }
                                 direction="bottom"
                               >
                                 <span className="cursor-default">
