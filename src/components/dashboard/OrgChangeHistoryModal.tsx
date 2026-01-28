@@ -9,14 +9,15 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import type { OrgTypeSettingsNode } from "@/types/organization.types";
 
 // 조직도 팝업용 칼럼 너비
+{/* [변경: 2026-01-28 14:05, 임도휘 수정] 반응형 말줄임 적용으로 칼럼 너비 조정 */}
 const orgHistoryColWidths = {
   bullet: "3%",
   date: "15%",
   divider: "2%",
-  processedBy: "19%",
+  processedBy: "17%",
   changeType: "9%",
   orgType: "9%",
-  name: "14%",
+  name: "18%",
   detail: "27%",
 };
 
@@ -223,7 +224,8 @@ export const OrgChangeHistoryModal = ({
                   </span>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto py-2">
+              {/* [변경: 2026-01-28 14:05, 임도휘 수정] 스크롤바 여백 추가 */}
+              <div className="flex-1 overflow-y-auto py-2 pr-1">
                 <ChangeHistoryList
                   yearMonth={currentMonth}
                   colWidths={orgHistoryColWidths}

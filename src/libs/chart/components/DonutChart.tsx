@@ -126,7 +126,8 @@ export const DonutChart = ({
             <span className="text-sm font-medium text-gray-900">{label}</span>
             {labelTooltip && (
               <span className="absolute left-full ml-1 flex items-center">
-                <Tooltip content={labelTooltip} color="#6B7280" maxWidth={340} direction="bottom">
+                {/* [변경: 2026-01-28 14:05, 임도휘 수정] 툴팁 너비 조정 */}
+                <Tooltip content={labelTooltip} color="#6B7280" maxWidth={230} direction="bottom">
                   <Info className="w-4 h-4 text-gray-400 cursor-pointer" />
                 </Tooltip>
               </span>

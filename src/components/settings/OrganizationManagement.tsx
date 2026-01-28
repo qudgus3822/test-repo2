@@ -312,15 +312,16 @@ const MemberList = ({
 };
 
 // 조직도 관리 페이지용 칼럼 너비
+{/* [변경: 2026-01-28 14:05, 임도휘 수정] 반응형 말줄임 적용으로 칼럼 너비 조정 */}
 const orgManagementColWidths = {
   bullet: "1%",
   date: "11%",
   divider: "1%",
-  processedBy: "11%",
+  processedBy: "12%",
   changeType: "6%",
   orgType: "6%",
   name: "14%",
-  detail: "25%",
+  detail: "24%",
 };
 
 // 변경 이력 컴포넌트
@@ -534,7 +535,8 @@ export const OrganizationManagement = () => {
               </div>
               <span className="text-gray-300">|</span>
               <div className="flex items-center gap-1">
-                <span className="px-2 py-0.5 text-xs rounded bg-gray-100">
+                {/* [변경: 2026-01-28 14:05, 임도휘 수정] 비개발 배지 스타일 변경 */}
+                <span className="px-2 py-0.5 text-xs rounded bg-gray-200 text-gray-600">
                   비개발
                 </span>
                 <span>비개발조직</span>
