@@ -9,60 +9,6 @@ import { formatDisplayDateTime } from "@/utils/date";
 import { getChangeDetailWithSuffix } from "@/utils/organization";
 import type { OrgHistoryItem } from "@/types/organization.types";
 
-// 테스트 데이터 (글자수 초과 확인용)
-const TEST_DATA: OrgHistoryItem[] = [
-  {
-    changeType: "ADD",
-    changeDate: "2026-01-27 18:02:48",
-    category: "POLICY",
-    target: "2000",
-    name: "모두플랫폼개발실",
-    changeDetail: "개발유형추가",
-    processedBy: "수동(moco.junhyuk)",
-    isEvaluationTarget: true,
-  },
-  {
-    changeType: "EXCLUDE",
-    changeDate: "2026-01-27 16:53:15",
-    category: "POLICY",
-    target: "2100",
-    name: "글로벌디지털혁신추진본부개발팀",
-    changeDetail: "개발유형제외 - 조직개편으로 인한 유형 변경",
-    processedBy: "수동(moco.administrator.junhyuk)",
-    isEvaluationTarget: false,
-  },
-  {
-    changeType: "CREATED",
-    changeDate: "2026-01-09 13:26:00",
-    category: "GROUP",
-    target: "1000",
-    name: "IT부문",
-    changeDetail: "실 생성 : IT부문",
-    processedBy: "자동(LDAP)",
-    isEvaluationTarget: true,
-  },
-  {
-    changeType: "CREATED",
-    changeDate: "2026-01-09 13:26:00",
-    category: "GROUP",
-    target: "2000",
-    name: "모두플랫폼개발실솔루션사업부",
-    changeDetail: "실 생성 : 모두플랫폼개발실솔루션사업부 신규 조직 생성",
-    processedBy: "수동(moco.dohyun.administrator)",
-    isEvaluationTarget: true,
-  },
-  {
-    changeType: "ADD",
-    changeDate: "2026-01-06 16:19:19",
-    category: "POLICY",
-    target: "3100",
-    name: "C플랫폼개발팀",
-    changeDetail: "개발유형추가",
-    processedBy: "수동(moco.dohyun)",
-    isEvaluationTarget: true,
-  },
-];
-
 export interface ChangeHistoryColWidths {
   bullet: string;
   date: string;
@@ -108,15 +54,12 @@ export const ChangeHistoryList = ({
   );
 
   // GROUP, POLICY 카테고리만 필터링
-  // 테스트 모드: USE_TEST_DATA를 true로 변경하면 TEST_DATA 사용
-  const USE_TEST_DATA = true;
   const filteredData = useMemo<OrgHistoryItem[]>(() => {
-    const sourceData = USE_TEST_DATA ? TEST_DATA : data?.changes;
-    if (!sourceData) return [];
-    return sourceData.filter(
+    if (!data?.changes) return [];
+    return data.changes.filter(
       (item) => item.category === "GROUP" || item.category === "POLICY",
     );
-  }, [data, USE_TEST_DATA]);
+  }, [data]);
 
   if (isLoading) {
     return (
