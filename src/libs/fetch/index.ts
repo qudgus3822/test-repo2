@@ -62,7 +62,7 @@ const waitForRefresh = (): Promise<boolean> => {
  */
 const refreshToken = async (): Promise<boolean> => {
   try {
-    const response = await fetch(`${env.apiBaseUrl}/auth/refresh-token`, {
+    const response = await fetch(`${env.apiBaseUrl}/api/v1/auth/refresh-token`, {
       method: "POST",
       credentials: "include",
       headers: {
