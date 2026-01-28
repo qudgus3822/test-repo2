@@ -856,13 +856,16 @@ export const OrganizationFlatTable = ({
           MetricData
         >;
         // [변경: 2026-01-26 15:55, 임도휘 수정] score 대신 avgRate 사용
+        // [변경: 2026-01-28 17:30, 임도휘 수정] aggregationType 고려하여 totalValue/value 분기
         const isBdpi =
           sortConfig.column === "bdpi" || sortConfig.column === "BDPI";
         const sortField = isBdpi
           ? "avgRate"
           : displayMode === "rate"
             ? "avgRate"
-            : "value";
+            : aggregationType === "total"
+              ? "totalValue"
+              : "value";
         aValue = aMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
         bValue = bMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
       }
@@ -886,6 +889,7 @@ export const OrganizationFlatTable = ({
     itemSummaryCountsMap,
     summaryCategoryIds,
     displayMode,
+    aggregationType,
   ]);
   if (isLoading || isError || flatItems.length === 0) {
     return (

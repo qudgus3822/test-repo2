@@ -63,14 +63,20 @@ export const MetricTooltip = ({
       : "--";
 
   // [변경: 2026-01-26 15:50, 임도휘 수정] 현재값 포맷팅 (value 필드 사용)
-  const formattedValue =
-    value !== null
-      ? typeof value === "number"
-        ? Number.isInteger(value)
-          ? `${value}`
-          : `${value.toFixed(1)}`
-        : `${value}`
-      : "--";
+  // [변경: 2026-01-28 17:00, 임도휘 수정] 소수점 표기 조건 추가 (정수부=0 && 소수첫째=0이면 둘째자리까지)
+  const formatCurrentValue = (val: number | null): string => {
+    if (val === null) return "--";
+    if (typeof val !== "number") return `${val}`;
+    if (Number.isInteger(val)) return `${val}`;
+
+    // 정수부가 0이고 소수점 첫째자리도 0이면 둘째자리까지
+    const integerPart = Math.floor(Math.abs(val));
+    const firstDecimal = Math.floor(Math.abs(val * 10) % 10);
+    const needsSecondDecimal = integerPart === 0 && firstDecimal === 0;
+    return needsSecondDecimal ? val.toFixed(2) : val.toFixed(1);
+  };
+
+  const formattedValue = formatCurrentValue(value);
 
   const tooltipContent = (
     <div
