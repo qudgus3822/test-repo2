@@ -58,43 +58,79 @@ export const ProgressSquare = ({
     ? (avgRate !== null && avgRate !== undefined)  // 달성률 모드: avgRate 확인
     : (value !== null && value !== undefined);  // 실제값 모드: value 확인
 
-  // [변경: 2026-01-27 10:30, 임도휘 수정] 값 포맷팅 (최대 5글자, 초과 시 '..' 처리 + Tooltip으로 전체 값 표시)
-  const MAX_DISPLAY_LENGTH = 5;
+  // [변경: 2026-01-28 15:00, 임도휘 수정] 글자수 기반 포맷팅
+  // - 6글자 이하: 소수점 1자리
+  // - 7글자 (1만 단위): X.XXX만 (소수점 3자리)
+  // - 8글자 (10만 단위): XX.XX만 (소수점 2자리)
+  // - 9글자 (100만 단위): XXX.X만 (소수점 1자리)
+  // - 10글자 이상: 말줄임
+  const MAX_DISPLAY_LENGTH = 7;
 
   const formatValue = (): { display: string; full: string } => {
     if (hideValue) return { display: "", full: "" };
     if (!hasData) return { display: "--", full: "--" };
 
     let formattedNum: string;
+    let fullValue: string;
+
     if (typeof value === "number") {
-      formattedNum = Number.isInteger(value) ? `${value}` : `${value.toFixed(1)}`;
+      // 달성률 모드일 때
       if (displayMode === "rate") {
-        formattedNum = `${formattedNum}%`;
+        formattedNum = Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
+        fullValue = formattedNum;
+      } else {
+        // 실제값 모드: 글자수 기반 포맷팅
+        // 글자수 계산 시 항상 소수점 1자리 기준 (예: 1234 → "1234.0" = 6글자)
+        const baseFormatted = value.toFixed(1);
+        const charCount = baseFormatted.length;
+        // [변경: 2026-01-28 16:30, 임도휘 수정] 소수점 표기 조건
+        // - 정수인 경우 소수점 없이 표시
+        // - 소수인 경우: 정수부가 0이고 소수점 첫째자리도 0이면 둘째자리까지, 아니면 첫째자리까지
+        const isInteger = Number.isInteger(value);
+        const integerPart = Math.floor(Math.abs(value));
+        const firstDecimal = Math.floor(Math.abs(value * 10) % 10);
+        const needsSecondDecimal = !isInteger && integerPart === 0 && firstDecimal === 0;
+        fullValue = isInteger ? `${value}` : (needsSecondDecimal ? value.toFixed(2) : baseFormatted);
+
+        if (charCount <= 6) {
+          // 6글자 이하 (천단위): 정수는 그대로, 소수는 소수점 1자리
+          formattedNum = fullValue;
+        } else if (charCount === 7) {
+          // 7글자 (1만 단위): 소수점 3자리 + "만"
+          const inMan = value / 10000;
+          formattedNum = `${inMan.toFixed(3)}만`;
+        } else if (charCount === 8) {
+          // 8글자 (10만 단위): 소수점 2자리 + "만"
+          const inMan = value / 10000;
+          formattedNum = `${inMan.toFixed(2)}만`;
+        } else if (charCount === 9) {
+          // 9글자 (100만 단위): 소수점 1자리 + "만"
+          const inMan = value / 10000;
+          formattedNum = `${inMan.toFixed(1)}만`;
+        } else {
+          // 10글자 이상: 원본값에서 말줄임 (만 단위 변환 없음)
+          formattedNum = `${fullValue.slice(0, MAX_DISPLAY_LENGTH - 2)}..`;
+        }
       }
     } else {
+      // 문자열인 경우
       formattedNum = `${value}`;
-    }
-
-    // [변경: 2026-01-27 17:00, 임도휘 수정] 툴팁에 단위 포함
-    const fullWithUnit = unit ? `${formattedNum} ${unit}` : formattedNum;
-
-    // 5글자 초과 시 잘라서 .. 표시 (마지막 글자가 "."이면 4글자로 자름)
-    if (formattedNum.length > MAX_DISPLAY_LENGTH) {
-      let sliceLength = MAX_DISPLAY_LENGTH;
-      if (formattedNum[MAX_DISPLAY_LENGTH - 1] === ".") {
-        sliceLength = MAX_DISPLAY_LENGTH - 1;
+      fullValue = `${value}`;
+      // 문자열이 길 경우 말줄임
+      if (formattedNum.length > MAX_DISPLAY_LENGTH) {
+        formattedNum = `${formattedNum.slice(0, MAX_DISPLAY_LENGTH - 1)}..`;
       }
-      return {
-        display: `${formattedNum.slice(0, sliceLength)}..`,
-        full: fullWithUnit,
-      };
     }
+
+    // 툴팁에 단위 포함
+    const fullWithUnit = unit ? `${fullValue} ${unit}` : fullValue;
+
     return { display: formattedNum, full: fullWithUnit };
   };
 
   const { display: displayValue, full: fullValue } = formatValue();
-  // [변경: 2026-01-27 10:30, 임도휘 수정] 말줄임 시 Tooltip 표시 여부
-  const needsTooltip = displayValue !== fullValue;
+  // [변경: 2026-01-28 16:00, 임도휘 수정] 모든 셀에 툴팁 표시 (데이터가 있는 경우)
+  const needsTooltip = hasData && fullValue !== "--";
 
   // [변경: 2026-01-26 15:50, 임도휘 수정] avgRate가 있을 때만 프로그레스 바 표시
   const hasAvgRate = avgRate !== null && avgRate !== undefined;
@@ -106,11 +142,12 @@ export const ProgressSquare = ({
   const textColorClass = !hasData ? "text-gray-400" : isLevel5 ? "text-white" : "text-gray-900";
 
   // [변경: 2026-01-27 10:30, 임도휘 수정] 텍스트 엘리먼트 분리 (Tooltip 래핑용)
+  // [변경: 2026-01-28 16:20, 임도휘 수정] 텍스트 크기 15px → 14.5px
   const textElement = (
     <span
       className={`font-bold overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass}`}
       style={{
-        fontSize: "15px",
+        fontSize: "14.5px",
         ...(hasData && { textShadow: isLevel5 ? "0 1px 4px rgba(0, 0, 0, 0.8)" : "0 1px 4px rgba(255, 255, 255, 0.8)" }),
       }}
     >
