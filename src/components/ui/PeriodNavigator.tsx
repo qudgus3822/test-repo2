@@ -89,9 +89,10 @@ export const PeriodNavigator = ({
   };
 
   return (
-    <div className="flex items-center gap-5">
+    <div className="flex items-center gap-5 ">
       {/* 기간 선택 */}
-      <div className="flex items-center gap-3">
+      {/* <div className="flex items-center gap-3 hidden"> */}
+      <div className="items-center gap-3 hidden">
         <span className="text-sm font-medium text-gray-700">기간 선택</span>
         <select
           value="monthly"
