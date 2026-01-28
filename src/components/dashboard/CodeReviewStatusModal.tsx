@@ -263,6 +263,7 @@ export const CodeReviewStatusModal = () => {
                         {summary.completed.breakdown.singleContributor > 0 && (
                           <Tooltip
                             content={`MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`}
+                            direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
                               width: `${
@@ -293,6 +294,7 @@ export const CodeReviewStatusModal = () => {
                           0 && (
                           <Tooltip
                             content={`MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`}
+                            direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
                               width: `${
@@ -341,6 +343,7 @@ export const CodeReviewStatusModal = () => {
                         {summary.incomplete.breakdown.singleContributor > 0 && (
                           <Tooltip
                             content={`MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`}
+                            direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
                               width: `${
@@ -371,6 +374,7 @@ export const CodeReviewStatusModal = () => {
                           0 && (
                           <Tooltip
                             content={`MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`}
+                            direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
                               width: `${
