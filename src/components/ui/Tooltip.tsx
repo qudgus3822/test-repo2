@@ -13,6 +13,8 @@ interface TooltipProps {
   hideArrow?: boolean; // 화살표 숨김 여부 (기본값: false)
   fontSize?: string; // 글씨 크기 (기본값: "text-sm")
   noWrap?: boolean; // 줄바꿈 방지 여부 (기본값: false)
+  wrapperClassName?: string; // [변경: 2026-01-28 14:30, 김병현 수정] wrapper div 커스텀 클래스 (기본값: "inline-block")
+  wrapperStyle?: React.CSSProperties; // [변경: 2026-01-28 14:30, 김병현 수정] wrapper div 커스텀 스타일
 }
 
 /**
@@ -47,6 +49,8 @@ export const Tooltip = ({
   hideArrow = false,
   fontSize = "text-sm",
   noWrap = false,
+  wrapperClassName = "inline-block",
+  wrapperStyle,
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -118,7 +122,8 @@ export const Tooltip = ({
     <>
       <div
         ref={triggerRef}
-        className="inline-block"
+        className={wrapperClassName}
+        style={wrapperStyle}
         onMouseEnter={() => setIsVisible(true)}
         onMouseLeave={() => setIsVisible(false)}
       >
