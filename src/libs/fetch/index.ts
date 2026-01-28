@@ -34,6 +34,48 @@ const handleUnauthorized = () => {
   }
 };
 
+// [변경: 2026-01-28 00:00, 김병현 수정] 토큰 갱신 관련 변수 및 함수 추가
+// 토큰 갱신 중복 요청 방지를 위한 변수
+let isRefreshing = false;
+let refreshSubscribers: ((success: boolean) => void)[] = [];
+
+/**
+ * 토큰 갱신 완료 후 대기 중인 요청들에게 알림
+ */
+const onRefreshComplete = (success: boolean) => {
+  refreshSubscribers.forEach((callback) => callback(success));
+  refreshSubscribers = [];
+};
+
+/**
+ * 토큰 갱신 완료를 기다리는 Promise 반환
+ */
+const waitForRefresh = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    refreshSubscribers.push(resolve);
+  });
+};
+
+/**
+ * 토큰 갱신 시도
+ * @returns 갱신 성공 여부
+ */
+const refreshToken = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(`${env.apiBaseUrl}/auth/refresh-token`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
 interface ApiFetchOptions extends RequestInit {
   /**
    * 401 에러 시 자동 로그아웃 처리를 건너뛸지 여부
@@ -90,12 +132,39 @@ export const apiFetch = async (
     url = inputUrl;
   }
 
-  const response = await fetch(url, mergedOptions);
+  let response = await fetch(url, mergedOptions);
 
+  // [변경: 2026-01-28 00:00, 김병현 수정] 401 에러 시 토큰 갱신 후 재시도 로직 추가
   // 401 에러 처리 (skipAuthRedirect 옵션이 없을 때만)
   if (response.status === 401 && !init?.skipAuthRedirect) {
-    handleUnauthorized();
-    throw new Error("세션이 만료되었습니다. 다시 로그인해주세요.");
+    // 이미 토큰 갱신 중이면 완료될 때까지 대기
+    if (isRefreshing) {
+      const success = await waitForRefresh();
+      if (success) {
+        // 토큰 갱신 성공 시 원래 요청 재시도
+        response = await fetch(url, mergedOptions);
+        return response;
+      } else {
+        handleUnauthorized();
+        throw new Error("세션이 만료되었습니다. 다시 로그인해주세요.");
+      }
+    }
+
+    // 토큰 갱신 시도
+    isRefreshing = true;
+    const refreshSuccess = await refreshToken();
+    isRefreshing = false;
+    onRefreshComplete(refreshSuccess);
+
+    if (refreshSuccess) {
+      // 토큰 갱신 성공 시 원래 요청 재시도
+      response = await fetch(url, mergedOptions);
+      return response;
+    } else {
+      // 토큰 갱신 실패 시 로그아웃 처리
+      handleUnauthorized();
+      throw new Error("세션이 만료되었습니다. 다시 로그인해주세요.");
+    }
   }
 
   return response;
