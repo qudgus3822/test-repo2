@@ -6,7 +6,7 @@
  * - 지표별 정렬 기능 포함
  */
 
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from "react";
 import {
   ArrowUp,
   ArrowDown,
@@ -564,27 +564,36 @@ export const OrganizationFlatTable = ({
   const metricOrder = globalMetricOrder ?? getMetricOrderFromApi();
 
   // 테이블 전체보기 (zoom) 관련
-  const tableContainerRef = useRef<HTMLDivElement>(null);
+  // [변경: 2026-01-28 14:30, 임도휘 수정] ref callback 방식으로 변경 - ref 연결 시 state 변경으로 effect 재실행
+  const [tableContainer, setTableContainer] = useState<HTMLDivElement | null>(null);
+  const tableContainerRef = useCallback((node: HTMLDivElement | null) => {
+    setTableContainer(node);
+  }, []);
   const [zoomLevel, setZoomLevel] = useState(1);
 
-  useEffect(() => {
-    if (!isZoomed || !tableContainerRef.current) {
+  useLayoutEffect(() => {
+    if (!isZoomed || !tableContainer) {
       setZoomLevel(1);
       return;
     }
     const calculateZoom = () => {
-      const containerWidth = tableContainerRef.current?.clientWidth ?? 0;
+      const containerWidth = tableContainer?.clientWidth ?? 0;
       if (containerWidth === 0) return;
       const fixedWidth = 340 + 4 * 56; // 564px
-      const metricColumnsWidth = metricOrder.length * 74;
+      // [변경: 2026-01-28 14:20, 임도휘 수정] BDPI 칼럼 숨김 처리로 실제 표시되는 지표 수로 계산
+      // 기존: metricOrder.length * 74 (BDPI 포함 시 전체 지표 수)
+      const visibleMetricCount = metricOrder.filter(
+        (code) => code !== "bdpi" && code !== "BDPI"
+      ).length;
+      const metricColumnsWidth = visibleMetricCount * 74;
       const totalTableWidth = fixedWidth + metricColumnsWidth;
       setZoomLevel(Math.min(1, containerWidth / totalTableWidth));
     };
     calculateZoom();
     const observer = new ResizeObserver(calculateZoom);
-    observer.observe(tableContainerRef.current);
+    observer.observe(tableContainer);
     return () => observer.disconnect();
-  }, [isZoomed, metricOrder.length]);
+  }, [isZoomed, metricOrder, tableContainer]);
 
   // API 응답에서 thresholds 추출
   const thresholds = data?.thresholds;
@@ -985,19 +994,20 @@ export const OrganizationFlatTable = ({
                     return <ArrowDown className="w-4.5 h-4.5 text-blue-600" />;
                   };
 
+                  {/* [변경: 2026-01-28 14:10, 임도휘 수정] 위험 컬럼 정렬 시 파란색 테두리 표시 수정 - inline boxShadow가 ring 클래스를 덮어쓰는 문제 해결 */}
+                  const isLastCategory = catIndex === SUMMARY_CATEGORIES.length - 1;
+                  const baseShadow = isLastCategory ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : "";
+                  const activeShadow = isActive ? "inset 0 0 0 2px rgb(96 165 250)" : "";
+                  const combinedShadow = [activeShadow, baseShadow].filter(Boolean).join(", ") || undefined;
+
                   return (
                     <th
                       key={cat.id}
-                      className={`px-0 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[56px] min-w-[56px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30 ${
-                        isActive ? "ring-2 ring-inset ring-blue-400" : ""
-                      }`}
+                      className="px-0 py-2 text-center text-sm font-medium text-gray-700 whitespace-nowrap border-r border-gray-200 w-[56px] min-w-[56px] h-[113px] cursor-pointer hover:brightness-95 select-none sticky z-30"
                       style={{
                         backgroundColor: SUMMARY_BG_COLORS[cat.id],
                         left: `${340 + catIndex * 56}px`,
-                        boxShadow:
-                          catIndex === SUMMARY_CATEGORIES.length - 1
-                            ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
-                            : undefined,
+                        boxShadow: combinedShadow,
                       }}
                       onClick={() => toggleSort(cat.id)}
                     >
