@@ -189,53 +189,6 @@ export const useOrganizationTree = (
     },
     enabled: enabled && !!yearMonth,
     staleTime: 2 * 60 * 1000, // 2분
-    // [변경: 2026-01-25 17:10, 김병현 수정] TODO: 반드시 삭제 - 임시 조직 순서 정렬
-    select: (data) => {
-      const TEAM_ORDER = [
-        "규제기술실",
-        "코어플랫폼개발실",
-        "서비스BE개발실",
-        "웹FE개발실",
-        "모바일 APP개발실",
-        "플랫폼실",
-        "Data/AI실",
-        "IT지원실",
-        "SRE팀",
-        "모두플랫폼개발실",
-      ];
-
-      // [변경: 2026-01-26 00:00, 김병현 수정] tree와 items 모두 정렬 적용
-      if (data.tree) {
-        data.tree.forEach((dept) => {
-          if (dept.children) {
-            dept.children.sort((a, b) => {
-              const aIndex = TEAM_ORDER.indexOf(a.name);
-              const bIndex = TEAM_ORDER.indexOf(b.name);
-              // 목록에 없는 팀은 맨 뒤로
-              if (aIndex === -1 && bIndex === -1) return 0;
-              if (aIndex === -1) return 1;
-              if (bIndex === -1) return -1;
-              return aIndex - bIndex;
-            });
-          }
-        });
-      }
-
-      // format=list 응답 (items)에도 정렬 적용
-      if (data.items) {
-        data.items.sort((a, b) => {
-          const aIndex = TEAM_ORDER.indexOf(a.name);
-          const bIndex = TEAM_ORDER.indexOf(b.name);
-          // 목록에 없는 항목은 맨 뒤로
-          if (aIndex === -1 && bIndex === -1) return 0;
-          if (aIndex === -1) return 1;
-          if (bIndex === -1) return -1;
-          return aIndex - bIndex;
-        });
-      }
-
-      return data;
-    },
   });
 };
 
@@ -256,39 +209,6 @@ export const useOrganizationTreeBasic = (
     },
     enabled: enabled && !!yearMonth,
     staleTime: 2 * 60 * 1000, // 2분
-    // [변경: 2026-01-25 17:10, 김병현 수정] TODO: 반드시 삭제 - 임시 조직 순서 정렬
-    select: (data) => {
-      const TEAM_ORDER = [
-        "규제기술실",
-        "코어플랫폼개발실",
-        "서비스BE개발실",
-        "웹FE개발실",
-        "모바일 APP개발실",
-        "플랫폼실",
-        "Data/AI실",
-        "IT지원실",
-        "SRE팀",
-        "모두플랫폼개발실",
-      ];
-
-      if (data.tree) {
-        data.tree.forEach((dept) => {
-          if (dept.children) {
-            dept.children.sort((a, b) => {
-              const aIndex = TEAM_ORDER.indexOf(a.name);
-              const bIndex = TEAM_ORDER.indexOf(b.name);
-              // 목록에 없는 팀은 맨 뒤로
-              if (aIndex === -1 && bIndex === -1) return 0;
-              if (aIndex === -1) return 1;
-              if (bIndex === -1) return -1;
-              return aIndex - bIndex;
-            });
-          }
-        });
-      }
-
-      return data;
-    },
   });
 };
 
