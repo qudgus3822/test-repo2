@@ -238,6 +238,7 @@ export interface MetricDefinitionResponse {
   description: string;
   tooltip: string | null;
   formula: string | null;
+  aggregationCondition: string | null; // [변경: 2026-01-28 10:00, 김병현 수정] 유효집계 조건 필드 추가
   trend: MetricTrend | null;
   value: number | null;
   avgRate?: number | null;

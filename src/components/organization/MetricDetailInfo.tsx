@@ -100,68 +100,74 @@ export const MetricDetailInfo = ({
       </button>
 
       {/* 타이틀 */}
-      <div className="text-sm text-gray-500 mb-3">지표 상세 정보</div>
+      {/* <div className="text-sm text-gray-500 mb-3">지표 상세 정보</div> */}
 
       {/* 지표명 */}
       <div className="text-lg font-semibold text-blue-700 mb-4">
         {metricName}
+        {metricUnit && metricUnit && (
+          <span className="ml-1">({metricUnit})</span>
+        )}
       </div>
 
-      {/* 상세 정보 그리드 */}
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-        {/* 좌측 영역 */}
-        <div className="space-y-4">
-          {/* 지표 단위 */}
-          <div>
-            <div className="text-sm text-gray-500 mb-1">지표 단위</div>
-            <div className="text-sm text-gray-900">{metricUnit}</div>
+      {/* [변경: 2026-01-28 10:00, 김병현 수정] 카드 레이아웃 변경 (4:4:2 비율) */}
+      <div className="grid grid-cols-10 gap-4">
+        {/* 첫 번째 카드 - 지표 설명 (4비율) */}
+        <div className="col-span-4 border border-gray-300 rounded-lg p-4">
+          <div className="text-sm font-bold text-gray-700 mb-2">
+            지표 설명
           </div>
+          <div className="text-sm text-gray-900 whitespace-pre-line">
+            {metricDescription}
+          </div>
+        </div>
 
-          {/* 계산식 */}
+        {/* 두 번째 카드 - 유효집계 조건 + 계산식 (4비율) */}
+        <div className="col-span-4 border border-gray-300 rounded-lg p-4 flex flex-col">
           <div>
-            <div className="text-sm text-gray-500 mb-1">계산식</div>
+            <div className="text-sm font-bold text-gray-700 mb-2">
+              유효집계 조건
+            </div>
+            <div className="text-sm text-gray-900 whitespace-pre-line">
+              {data?.aggregationCondition || "--"}
+            </div>
+          </div>
+          {/* 계산식 - 유효집계 조건 아래 */}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="text-sm font-bold text-gray-700 mb-2">계산식</div>
             {metricFormula ? (
-              <div className="text-sm text-gray-900 bg-white border border-gray-200 rounded px-3 py-2">
+              <div className="text-sm text-gray-900 bg-white rounded px-3 py-2 border border-gray-200">
                 {metricFormula}
               </div>
             ) : (
-              <div className="inline-block bg-white border border-gray-200 rounded px-3 py-2">
-                <span className="text-sm text-gray-400">--</span>
+              <div className="text-sm text-gray-400 bg-white rounded px-3 py-2 border border-gray-200">
+                --
               </div>
             )}
           </div>
         </div>
 
-        {/* 우측 영역 */}
-        <div className="space-y-4">
-          {/* 설정된 목표값 */}
-          <div>
-            <div className="text-sm text-gray-500 mb-1">설정된 목표값</div>
+        {/* 세 번째 영역 - 위아래 나눔 (2비율) */}
+        <div className="col-span-2 flex flex-col gap-4">
+          {/* 위: 설정된 목표값 */}
+          <div className="flex-1 border border-gray-300 rounded-lg p-4">
+            <div className="text-sm font-bold text-gray-700 mb-2">
+              설정된 목표값
+            </div>
             <div className="text-sm text-gray-900">
               {metricTarget}
-              {metricTarget !== "-" && metricUnit !== "-" && (
+              {metricTarget !== "--" && metricUnit !== "--" && (
                 <span className="ml-1">{metricUnit}</span>
               )}
             </div>
           </div>
-
-          {/* 전월 대비 지표 추세 */}
-          <div>
-            <div className="text-sm text-gray-500 mb-1">
+          {/* 아래: 전월대비 지표 추세 */}
+          <div className="flex-1 border border-gray-300 rounded-lg p-4">
+            <div className="text-sm font-bold text-gray-700 mb-2">
               전월 대비 지표 추세
             </div>
-            <div className="inline-block bg-white border border-gray-200 rounded px-3 py-2">
-              <TrendDisplay trend={trend} />
-            </div>
+            <TrendDisplay trend={trend} />
           </div>
-        </div>
-      </div>
-
-      {/* 지표 상세 설명 - 전체 너비 */}
-      <div className="mt-4">
-        <div className="text-sm text-gray-500 mb-1">지표 상세 설명</div>
-        <div className="text-sm text-gray-900 whitespace-pre-line">
-          {metricDescription}
         </div>
       </div>
     </div>
