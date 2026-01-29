@@ -2,6 +2,7 @@ import { ChevronRight, ChevronDown, X } from "lucide-react";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import type { OrgTypeSettingsChange } from "@/types/organization.types";
 import { StatusBadge } from "../organization/StatusBadge";
+import { excludeDepartmentNames } from "../settings/constants/excludeDepartment";
 
 export interface OrgItemState {
   id: string;
@@ -117,7 +118,9 @@ export const OrgItemRow = ({
         </div>
 
         {showCheckbox &&
-          (isDisabled || isTeamDisabledByParent ? (
+          (isDisabled ||
+          isTeamDisabledByParent ||
+          excludeDepartmentNames.includes(item.name) ? (
             <div className="w-4.5 h-4.5 flex items-center justify-center border border-gray-300 rounded bg-gray-100">
               <X className="w-5 h-5 text-gray-300" />
             </div>

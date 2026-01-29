@@ -188,16 +188,19 @@ export const ProgressSquare = ({
 
       {/* 값 텍스트 오버레이 */}
       {/* [변경: 2026-01-27 10:30, 임도휘 수정] 말줄임 시 Tooltip으로 전체 값 표시 (방향: 아래, 화살표 없음) */}
+      {/* [변경: 2026-01-29 17:00, 김병현 수정] 툴팁이 셀 전체에서 표시되도록 수정 */}
       {!isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          {needsTooltip ? (
-            <Tooltip content={fullValue} direction="bottom" fontSize="text-xs" noWrap hideArrow>
+        needsTooltip ? (
+          <Tooltip content={fullValue} direction="bottom" fontSize="text-xs" noWrap hideArrow>
+            <div className="absolute inset-0 flex items-center justify-center">
               {textElement}
-            </Tooltip>
-          ) : (
-            textElement
-          )}
-        </div>
+            </div>
+          </Tooltip>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            {textElement}
+          </div>
+        )
       )}
     </div>
   );

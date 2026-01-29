@@ -30,6 +30,8 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { LastSyncInfo } from "@/components/ui/LastSyncInfo";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { StatusBadge } from "../organization/StatusBadge";
+import { excludeDepartmentNames } from "./constants/excludeDepartment";
+
 
 // 실장/팀장 찾기 헬퍼 함수
 const findLeader = (children?: OrganizationNode[]): string => {
@@ -71,42 +73,44 @@ const DepartmentList = ({
             조직 데이터가 없습니다
           </div>
         ) : (
-          departments.map((dept) => {
-            const leader = findLeader(dept.children);
-            return (
-              <div
-                key={dept.code}
-                className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
-                  selectedCode === dept.code
-                    ? "bg-blue-50 border-l-blue-500"
-                    : "border-l-transparent"
-                }`}
-                onClick={() => onSelect(dept.code)}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <OrgTypeBadge
-                        isEvaluationTarget={dept.isEvaluationTarget}
-                        fixedWidth
-                      />
-                      <span className="font-medium text-gray-900 text-sm">
-                        {dept.name}
-                      </span>
-                      <StatusBadge change={dept.changes}></StatusBadge>
+          departments
+            .filter((dept) => !excludeDepartmentNames.includes(dept.name))
+            .map((dept) => {
+              const leader = findLeader(dept.children);
+              return (
+                <div
+                  key={dept.code}
+                  className={`h-[65px] px-4 cursor-pointer border-b border-gray-100 hover:bg-gray-50 transition-colors border-l-4 flex items-center ${
+                    selectedCode === dept.code
+                      ? "bg-blue-50 border-l-blue-500"
+                      : "border-l-transparent"
+                  }`}
+                  onClick={() => onSelect(dept.code)}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <OrgTypeBadge
+                          isEvaluationTarget={dept.isEvaluationTarget}
+                          fixedWidth
+                        />
+                        <span className="font-medium text-gray-900 text-sm">
+                          {dept.name}
+                        </span>
+                        <StatusBadge change={dept.changes}></StatusBadge>
+                      </div>
+                      <p className="text-xs text-gray-500">{leader}</p>
                     </div>
-                    <p className="text-xs text-gray-500">{leader}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
-                      {dept.memberCount}명
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">
+                        {dept.memberCount}명
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-gray-400" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })
         )}
       </div>
     </Card>
@@ -312,7 +316,9 @@ const MemberList = ({
 };
 
 // 조직도 관리 페이지용 칼럼 너비
-{/* [변경: 2026-01-28 14:05, 임도휘 수정] 반응형 말줄임 적용으로 칼럼 너비 조정 */}
+{
+  /* [변경: 2026-01-28 14:05, 임도휘 수정] 반응형 말줄임 적용으로 칼럼 너비 조정 */
+}
 const orgManagementColWidths = {
   bullet: "1%",
   date: "11%",
