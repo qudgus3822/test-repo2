@@ -131,11 +131,12 @@ export const ProjectTable = ({
           className="sticky top-20 bg-white z-10"
           style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
         >
-          <tr className="text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 w-[16%]">
+          {/* [변경: 2026-01-29 18:00, 임도휘 수정] 테이블 헤더 반응형 패딩 (1480px 미만: px-0.5, 1480px 이상: px-4), 폰트 사이즈 (xl 미만: 10px, xl 이상: text-sm) */}
+          <tr className="text-left text-[10px] xl:text-sm font-medium text-gray-700">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[16%]">
               {TABLE_HEADERS.epicName.label}
             </th>
-            <th className="px-4 py-3 w-[7%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.activeTicketCount.tooltip}
@@ -150,7 +151,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[7%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.updatedCount.tooltip}
@@ -165,7 +166,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[7%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.completedCount.tooltip}
@@ -180,7 +181,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[7%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.createdCount.tooltip}
@@ -195,7 +196,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[7%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.bugCount.tooltip}
@@ -210,7 +211,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[7%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.incidentCount.tooltip}
@@ -225,7 +226,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[8%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[8%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.avgResolutionTime.tooltip}
@@ -240,7 +241,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[8%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[8%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.avgDetectionTime.tooltip}
@@ -255,7 +256,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[8%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[8%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.avgDiagnosisTime.tooltip}
@@ -270,7 +271,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[8%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[8%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.avgRecoveryTime.tooltip}
@@ -285,7 +286,7 @@ export const ProjectTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[10%] text-center">
+            <th className="px-0.5 min-[1480px]:px-4 py-3 w-[10%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip
                   content={TABLE_HEADERS.createdAt.tooltip}
@@ -306,7 +307,7 @@ export const ProjectTable = ({
               key={project.id}
               className="border-b border-gray-100 hover:bg-gray-50"
             >
-              <td className="px-4 py-4 max-w-[200px]">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 max-w-[200px]">
                 <div
                   className="text-sm font-medium text-gray-900 truncate"
                   title={project.name}
@@ -323,37 +324,37 @@ export const ProjectTable = ({
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.activeTicketCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.updatedCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.completedCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.createdCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.bugCount, UNIT_CASE)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.incidentCount, UNIT_CASE)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatTime(project.avgResolutionTime)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatTime(project.avgDetectionTime)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatTime(project.avgDiagnosisTime)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatTime(project.avgRecoveryTime)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {project.createdAt
                   ? formatDateString(project.createdAt)
                   : NULL_DISPLAY}
