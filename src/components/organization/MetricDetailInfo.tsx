@@ -45,7 +45,7 @@ const TrendDisplay = ({ trend }: { trend?: MetricTrend | null }) => {
   // down인 경우: 빨간색 | ▼ 감소 추세
   return (
     <div
-      className="flex items-center gap-1 text-sm font-medium"
+      className="flex items-center gap-1 bg-white text-sm font-medium"
       style={{ color: TREND_COLORS.decrease }}
     >
       <span>▼</span>
@@ -114,9 +114,7 @@ export const MetricDetailInfo = ({
       <div className="grid grid-cols-10 gap-4">
         {/* 첫 번째 카드 - 지표 설명 (4비율) */}
         <div className="col-span-4 border border-gray-300 rounded-lg p-4">
-          <div className="text-sm font-bold text-gray-700 mb-2">
-            지표 설명
-          </div>
+          <div className="text-sm font-bold text-gray-700 mb-2">지표 설명</div>
           <div className="text-sm text-gray-900 whitespace-pre-line">
             {metricDescription}
           </div>
@@ -154,7 +152,8 @@ export const MetricDetailInfo = ({
             <div className="text-sm font-bold text-gray-700 mb-2">
               설정된 목표값
             </div>
-            <div className="text-sm text-gray-900">
+            {/* [변경: 2026-01-29 17:45, 김병현 수정] 목표값도 계산식처럼 하얀 배경으로 표시 */}
+            <div className="text-sm text-gray-900 bg-white rounded px-3 py-2 border border-gray-200 w-fit">
               {metricTarget}
               {metricTarget !== "--" && metricUnit !== "--" && (
                 <span className="ml-1">{metricUnit}</span>
@@ -166,7 +165,10 @@ export const MetricDetailInfo = ({
             <div className="text-sm font-bold text-gray-700 mb-2">
               전월 대비 지표 추세
             </div>
-            <TrendDisplay trend={trend} />
+            {/* [변경: 2026-01-29 17:50, 김병현 수정] 지표 추세도 하얀 배경으로 표시 */}
+            <div className="bg-white rounded px-3 py-2 border border-gray-200 w-fit">
+              <TrendDisplay trend={trend} />
+            </div>
           </div>
         </div>
       </div>
