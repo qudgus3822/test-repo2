@@ -32,7 +32,6 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { StatusBadge } from "../organization/StatusBadge";
 import { excludeDepartmentNames } from "./constants/excludeDepartment";
 
-
 // 실장/팀장 찾기 헬퍼 함수
 const findLeader = (children?: OrganizationNode[]): string => {
   if (!children) return "";
@@ -537,7 +536,8 @@ export const OrganizationManagement = () => {
                   개발
                 </span>
                 <span>개발조직</span>
-                {organizationData.includeMemberCount + "명"}
+                {organizationData.includeMemberCount &&
+                  organizationData.includeMemberCount + "명"}
               </div>
               <span className="text-gray-300">|</span>
               <div className="flex items-center gap-1">
@@ -546,7 +546,8 @@ export const OrganizationManagement = () => {
                   비개발
                 </span>
                 <span>비개발조직</span>
-                {organizationData.excludeMemberCount + "명"}
+                {organizationData.excludeMemberCount &&
+                  organizationData.excludeMemberCount + "명"}
               </div>
             </div>
           </div>
