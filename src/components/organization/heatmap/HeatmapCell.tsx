@@ -120,9 +120,11 @@ export const HeatmapCell = ({
       onClick={handleClick}
       title={avgRateTooltip}
     >
+      {/* [변경: 2026-01-29 15:00, 김병현 수정] 툴팁에는 항상 value 값 표시를 위해 tooltipValue prop 추가 */}
       <ProgressSquare
         avgRate={avgRate}
         value={displayValue}
+        tooltipValue={value}
         hideValue={hideValue}
         isLoading={isLoading}
         unit={unit}
