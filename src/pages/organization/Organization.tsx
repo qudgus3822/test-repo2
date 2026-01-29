@@ -295,7 +295,8 @@ const OrganizationPage = () => {
           </div>
         </div>
 
-        {/* 탭 라인 */}
+        {/* [변경: 2026-01-29 18:00, 임도휘 수정] 탭 라인 - 데이터 없을 경우 숨김 처리 */}
+        {hasData && (
         <div className="flex-shrink-0 flex items-center justify-between py-3 border-b border-gray-200">
           {/* 좌측 */}
           <div className="flex items-center">
@@ -483,6 +484,7 @@ const OrganizationPage = () => {
             )}
           </div>
         </div>
+        )}
 
         {/* 검색 영역: 플랫뷰일 때만 표시 */}
         {viewType === "flat" && isSearchAreaOpen && (
