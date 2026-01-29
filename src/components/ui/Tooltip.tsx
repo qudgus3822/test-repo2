@@ -15,6 +15,8 @@ interface TooltipProps {
   noWrap?: boolean; // 줄바꿈 방지 여부 (기본값: false)
   wrapperClassName?: string; // [변경: 2026-01-28 14:30, 김병현 수정] wrapper div 커스텀 클래스 (기본값: "inline-block")
   wrapperStyle?: React.CSSProperties; // [변경: 2026-01-28 14:30, 김병현 수정] wrapper div 커스텀 스타일
+  // [변경: 2026-01-29 17:30, 김병현 수정] 툴팁과 트리거 요소 사이의 간격 조정
+  offset?: number; // 툴팁 오프셋 (기본값: 8px)
 }
 
 /**
@@ -51,6 +53,7 @@ export const Tooltip = ({
   noWrap = false,
   wrapperClassName = "inline-block",
   wrapperStyle,
+  offset = 8,
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -67,7 +70,7 @@ export const Tooltip = ({
 
       if (direction === "bottom") {
         setPosition({
-          top: rect.bottom + 8,
+          top: rect.bottom + offset,
           left: rect.left + rect.width / 2,
         });
         setArrowTop(null);
@@ -88,7 +91,7 @@ export const Tooltip = ({
         });
       } else if (direction === "top") {
         setPosition({
-          top: rect.top - 8,
+          top: rect.top - offset,
           left: rect.left + rect.width / 2,
         });
         setArrowTop(null);
@@ -98,7 +101,7 @@ export const Tooltip = ({
         const triggerCenterY = rect.top + rect.height / 2;
         setPosition({
           top: rect.top,
-          left: rect.right + 8,
+          left: rect.right + offset,
         });
         setAdjustedTransform(null);
         // 툴팁 렌더링 후 화살표 위치 계산
@@ -112,7 +115,7 @@ export const Tooltip = ({
         });
       }
     }
-  }, [isVisible, direction]);
+  }, [isVisible, direction, offset]);
 
   if (!content) {
     return <>{children}</>;
