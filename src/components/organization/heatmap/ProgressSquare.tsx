@@ -15,6 +15,9 @@ interface ProgressSquareProps {
   avgRate: number | null;
   /** 표시할 값 */
   value?: number | string | null;
+  // [변경: 2026-01-29 15:00, 김병현 수정] 툴팁에 항상 원본 value 표시를 위한 prop 추가
+  /** 툴팁에 표시할 값 (지정하지 않으면 value 사용) */
+  tooltipValue?: number | string | null;
   /** 값 숨기기 여부 */
   hideValue?: boolean;
   /** 로딩 상태 */
@@ -47,6 +50,7 @@ const getHeightPercentage = (avgRate: number): number => {
 export const ProgressSquare = ({
   avgRate,
   value,
+  tooltipValue,
   hideValue = false,
   isLoading = false,
   unit,
@@ -122,8 +126,15 @@ export const ProgressSquare = ({
       }
     }
 
+    // [변경: 2026-01-29 15:00, 김병현 수정] 툴팁에는 tooltipValue가 있으면 해당 값 사용, 없으면 fullValue 사용
+    const tooltipDisplay = tooltipValue !== null && tooltipValue !== undefined
+      ? (typeof tooltipValue === "number"
+          ? (Number.isInteger(tooltipValue) ? `${tooltipValue}` : tooltipValue.toFixed(1))
+          : `${tooltipValue}`)
+      : fullValue;
+
     // 툴팁에 단위 포함
-    const fullWithUnit = unit ? `${fullValue} ${unit}` : fullValue;
+    const fullWithUnit = unit ? `${tooltipDisplay} ${unit}` : tooltipDisplay;
 
     return { display: formattedNum, full: fullWithUnit };
   };
