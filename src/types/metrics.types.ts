@@ -50,6 +50,7 @@ export interface MetricItem {
   description?: string; // 상세 설명
   tooltip?: string; // 툴팁 설명 (짧은 설명)
   sources?: string[]; // 데이터 소스 배열 (예: ["sonarqube", "gitlab"])
+  aggregationCondition? : string; // 집계 조건 
 }
 
 // ==================== 달성률 기준 설정 ====================

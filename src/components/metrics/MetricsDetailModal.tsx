@@ -139,6 +139,17 @@ export const MetricsDetailModal = ({
                 {metric.description || "--"}
               </p>
             </div>
+
+            {metric.aggregationCondition && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  유효집계 조건
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-lg px-4 py-3 whitespace-pre-line">
+                  {metric.aggregationCondition || "--"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
