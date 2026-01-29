@@ -169,9 +169,14 @@ export const ProgressSquare = ({
 
   // [변경: 2026-01-27 10:30, 임도휘 수정] 텍스트 엘리먼트 분리 (Tooltip 래핑용)
   // [변경: 2026-01-28 16:20, 임도휘 수정] 텍스트 크기 15px → 14.5px
+  // [변경: 2026-01-29 16:30, 임도휘 수정] 달성률 모드에서는 말줄임 제외, 실제값 모드에서만 말줄임 적용
+  const truncateClass =
+    displayMode === "value"
+      ? "overflow-hidden text-ellipsis whitespace-nowrap"
+      : "whitespace-nowrap";
   const textElement = (
     <span
-      className={`font-bold overflow-hidden text-ellipsis whitespace-nowrap px-0.5 ${textColorClass}`}
+      className={`font-bold ${truncateClass} px-0.5 ${textColorClass}`}
       style={{
         fontSize: "14.5px",
         ...(hasData && {
