@@ -90,7 +90,7 @@ const ProjectsPage = () => {
       {/* 탭 + 테이블 */}
       <Card className="p-0">
         {/* 탭 */}
-        <div className="px-4 pt-3">
+        <div>
           <ProjectTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -100,7 +100,7 @@ const ProjectsPage = () => {
         </div>
 
         {/* 테이블 */}
-        <div className="p-4">
+        <div className="py-4">
           {activeTab === "tf" ? (
             <>
               <InfoBanner message="지라 전체 에픽 중 분류유형이 'TF' 표기된 프로젝트성 에픽에 대해 해당 지표들을 한눈에 확인할 수 있습니다." />

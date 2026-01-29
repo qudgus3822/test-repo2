@@ -90,11 +90,12 @@ export const OperationTable = ({
     <div>
       <table className="w-full">
         <thead className="sticky top-20 bg-white z-10" style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}>
+          {/* [변경: 2026-01-29 18:00, 임도휘 수정] 테이블 헤더 반응형 패딩 (lg 미만: px-1, lg~xl: px-2, xl 이상: px-4) */}
           <tr className="text-left text-sm font-medium text-gray-700">
-            <th className="px-4 py-3 w-[30%]">
+            <th className="px-1 lg:px-2 xl:px-4 py-3 w-[30%]">
               {TABLE_HEADERS.epicName.label}
             </th>
-            <th className="px-4 py-3 w-[14%] text-center">
+            <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.activeTicketCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -106,7 +107,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[14%] text-center">
+            <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.updatedCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -118,7 +119,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[14%] text-center">
+            <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.completedCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -130,7 +131,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[14%] text-center">
+            <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.createdCount.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -142,7 +143,7 @@ export const OperationTable = ({
                 </span>
               </div>
             </th>
-            <th className="px-4 py-3 w-[14%] text-center">
+            <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
                 <Tooltip content={TABLE_HEADERS.createdAt.tooltip} direction="top">
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
@@ -158,7 +159,7 @@ export const OperationTable = ({
               key={item.id}
               className="border-b border-gray-100 hover:bg-gray-50"
             >
-              <td className="px-4 py-4 max-w-[200px]">
+              <td className="px-1 lg:px-2 xl:px-4 py-4 max-w-[200px]">
                 <div
                   className="text-sm font-medium text-gray-900 truncate"
                   title={item.name}
@@ -175,19 +176,19 @@ export const OperationTable = ({
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(item.activeTicketCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(item.updatedCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(item.completedCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(item.createdCount, UNIT_COUNT)}
               </td>
-              <td className="px-4 py-4 text-center text-sm text-gray-900">
+              <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {item.createdAt ? formatDateString(item.createdAt) : NULL_DISPLAY}
               </td>
             </tr>

@@ -6,12 +6,15 @@ import {
   List,
   ChevronDown,
   ChevronUp,
+  ChevronsDown,
+  ChevronsUp,
+  Shrink,
+  Expand,
 } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { DateFilter } from "@/components/ui/DateFilter";
-import { Switch } from "@/components/ui/Switch";
 import {
   OrganizationTabs,
   OrganizationTable,
@@ -292,41 +295,42 @@ const OrganizationPage = () => {
           </div>
         </div>
 
-        {/* 서브탭: 하이어라키뷰 / 플랫뷰 */}
+        {/* 탭 라인 */}
         <div className="flex-shrink-0 flex items-center justify-between py-3 border-b border-gray-200">
-          {/* 좌측: 뷰타입 탭 + 플랫뷰 필터 */}
+          {/* 좌측 */}
           <div className="flex items-center">
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 하이어라키뷰/플랫뷰 필터 - 반응형 처리 (lg 미만: 아이콘만, xl 미만: 패딩 축소) */}
             <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
               <button
                 onClick={() => setViewType("hierarchy")}
-                className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium transition-colors ${
+                className={`cursor-pointer flex items-center gap-1.5 px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                   viewType === "hierarchy"
                     ? "bg-[#005FCC] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 <Network className="w-4 h-4" />
-                하이어라키뷰
+                <span className="hidden lg:inline">하이어라키뷰</span>
               </button>
               <button
                 onClick={() => setViewType("flat")}
-                className={`cursor-pointer flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                className={`cursor-pointer flex items-center gap-1.5 px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
                   viewType === "flat"
                     ? "bg-[#005FCC] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 <List className="w-4 h-4" />
-                플랫뷰
+                <span className="hidden lg:inline">플랫뷰</span>
               </button>
             </div>
 
-            {/* 플랫뷰일 때만 실/팀/개인 필터 표시 */}
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 플랫뷰일 때만 실/팀/개인 필터 표시 - 반응형 처리 (xl 미만: 패딩 축소) */}
             {viewType === "flat" && (
               <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setFlatViewFilter("division")}
-                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
+                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                     flatViewFilter === "division"
                       ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -336,7 +340,7 @@ const OrganizationPage = () => {
                 </button>
                 <button
                   onClick={() => setFlatViewFilter("team")}
-                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
                     flatViewFilter === "team"
                       ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -346,7 +350,7 @@ const OrganizationPage = () => {
                 </button>
                 <button
                   onClick={() => setFlatViewFilter("member")}
-                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium border-l border-slate-200 transition-colors ${
+                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
                     flatViewFilter === "member"
                       ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -357,12 +361,12 @@ const OrganizationPage = () => {
               </div>
             )}
 
-            {/* 전체/BDPI 탭: 평균/총합 필터 */}
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 평균/총합 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
             {(activeTab === "all" || activeTab === "bdpi") && (
               <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setAggregationType("avg")}
-                  className={`cursor-pointer px-4 py-1.5 text-sm font-medium transition-colors ${
+                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                     aggregationType === "avg" || activeTab === "bdpi"
                       ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -375,7 +379,7 @@ const OrganizationPage = () => {
                     activeTab !== "bdpi" && setAggregationType("total")
                   }
                   disabled={activeTab === "bdpi"}
-                  className={`px-4 py-1.5 border-l border-slate-200 text-sm font-medium transition-colors ${
+                  className={`px-2 xl:px-4 py-1.5 border-l border-slate-200 text-sm font-medium whitespace-nowrap transition-colors ${
                     activeTab === "bdpi"
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                       : aggregationType === "total"
@@ -391,16 +395,17 @@ const OrganizationPage = () => {
 
           {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
           <div className="flex items-center gap-2">
-            {/* 플랫뷰: 검색 아이콘 버튼 */}
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 플랫뷰: 통합 검색 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
             {viewType === "flat" && (
               <Button
                 variant="primary"
                 size="sm"
+                responsive
                 onClick={() => setIsSearchAreaOpen(!isSearchAreaOpen)}
               >
-                <span className="flex items-center gap-1.5">
+                <span className="flex items-center gap-0.5 xl:gap-1.5">
                   <Search className="w-4 h-4" />
-                  통합 검색
+                  <span className="hidden xl:inline">통합 검색</span>
                   {isSearchAreaOpen ? (
                     <ChevronUp className="w-5 h-5" />
                   ) : (
@@ -409,33 +414,72 @@ const OrganizationPage = () => {
                 </span>
               </Button>
             )}
-            {/* 하이어라키뷰: 전체 팀 열기/접기 버튼 */}
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 하이어라키뷰: 전체 팀 열기/접기 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
             {viewType === "hierarchy" && (
-              <Button variant="normal" size="sm" onClick={handleToggleTeams}>
-                {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+              <Button
+                variant="normal"
+                size="sm"
+                responsive
+                className="xl:min-w-[122px]"
+                onClick={handleToggleTeams}
+              >
+                <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                  {isTeamsExpanded ? (
+                    <ChevronsUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronsDown className="w-4 h-4" />
+                  )}
+                  <span className="hidden xl:inline">
+                    {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+                  </span>
+                </span>
               </Button>
             )}
-            {/* 전체 탭: 테이블 전체보기 버튼 */}
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 지표맞춤 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
             {activeTab === "all" && (
               <Button
                 variant={isTableZoomed ? "primary" : "normal"}
                 size="sm"
-                className="min-w-[100px]"
+                responsive
+                className="xl:min-w-[110px]"
                 onClick={() => setIsTableZoomed(!isTableZoomed)}
               >
-                {isTableZoomed ? "기본 (100%)" : "지표맞춤"}
+                <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                  {isTableZoomed ? (
+                    <Expand className="w-4 h-4" />
+                  ) : (
+                    <Shrink className="w-4 h-4" />
+                  )}
+                  <span className="hidden xl:inline">
+                    {isTableZoomed ? "기본 (100%)" : "지표맞춤"}
+                  </span>
+                </span>
               </Button>
             )}
-            {/* [변경: 2026-01-22 16:00, 김병현 수정] 실제값/달성률 전환 스위치 (실제값이 기본) */}
+            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 실제값/달성률 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
             {activeTab === "all" && (
-              <Switch
-                checked={displayMode === "rate"}
-                onChange={(checked) =>
-                  setDisplayMode(checked ? "rate" : "value")
-                }
-                leftLabel="실제값"
-                rightLabel="달성률"
-              />
+              <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setDisplayMode("value")}
+                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                    displayMode === "value"
+                      ? "bg-[#005FCC] text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  실제값
+                </button>
+                <button
+                  onClick={() => setDisplayMode("rate")}
+                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
+                    displayMode === "rate"
+                      ? "bg-[#005FCC] text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  달성률
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -547,8 +591,8 @@ const OrganizationPage = () => {
             </div>
           )}
 
-          {/* [변경: 2026-01-25 14:00, 김병현 수정] ScoreLegend 중복 제거 - 전체/BDPI 탭 공통 렌더링 */}
-          {hasData && <ScoreLegend />}
+          {/* [변경: 2026-01-29 17:00, 임도휘 수정] ScoreLegend - 반응형 처리 (820px 미만: small 크기, lg 미만: gap 축소) */}
+          {hasData && <ScoreLegend responsive />}
         </div>
       </Card>
 
