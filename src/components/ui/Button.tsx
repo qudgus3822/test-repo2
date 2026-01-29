@@ -35,10 +35,19 @@ const BUTTON_SIZES = {
   lg: "px-6 py-4 text-lg",
 };
 
+// [변경: 2026-01-29 17:00, 임도휘 수정] 반응형 패딩 적용 시 사용 (xl:1280px 미만: 패딩 줄임, xl:1280px 이상: 기본 패딩)
+const BUTTON_SIZES_RESPONSIVE = {
+  sm: "px-2 xl:px-3 py-1.5 text-sm",
+  md: "px-3 xl:px-5 py-2 text-md",
+  lg: "px-4 xl:px-6 py-4 text-lg",
+};
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: keyof typeof BUTTON_VARIANTS;
   size?: keyof typeof BUTTON_SIZES;
   fullWidth?: boolean;
+  /** 반응형 패딩 적용 여부 (xl:1280px 기준) */
+  responsive?: boolean;
 }
 
 export const Button = ({
@@ -46,6 +55,7 @@ export const Button = ({
   variant = "primary",
   size = "md",
   fullWidth = false,
+  responsive = false,
   children,
   disabled,
   ...props
@@ -53,11 +63,11 @@ export const Button = ({
   return (
     <button
       className={clsx(
-        "flex cursor-pointer items-center justify-center rounded-[8px] font-medium text-[#000000]",
+        "flex cursor-pointer items-center justify-center rounded-[8px] font-medium text-[#000000] whitespace-nowrap",
         "focus:outline-none",
         "disabled:cursor-not-allowed disabled:opacity-90 disabled:border-gray-200",
         BUTTON_VARIANTS[variant],
-        BUTTON_SIZES[size],
+        responsive ? BUTTON_SIZES_RESPONSIVE[size] : BUTTON_SIZES[size],
         fullWidth && "w-full",
         className,
       )}
