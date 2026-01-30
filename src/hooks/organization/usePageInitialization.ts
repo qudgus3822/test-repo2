@@ -24,6 +24,7 @@ export const usePageInitialization = () => {
     setIsMetricColumnDragged,
     setDisplayMode,
     setMetricOrder,
+    setIsTeamsExpanded,
   } = useOrganizationStore(
     useShallow((state) => ({
       setPeriod: state.setPeriod,
@@ -32,6 +33,7 @@ export const usePageInitialization = () => {
       setIsMetricColumnDragged: state.setIsMetricColumnDragged,
       setDisplayMode: state.setDisplayMode,
       setMetricOrder: state.setMetricOrder,
+      setIsTeamsExpanded: state.setIsTeamsExpanded,
     })),
   );
 
@@ -49,6 +51,8 @@ export const usePageInitialization = () => {
     setIsMetricColumnDragged(false);
     // [변경: 2026-01-22 16:00, 김병현 수정] 페이지 진입 시 실제값 모드로 설정
     setDisplayMode("value");
+    // [변경: 2026-01-30 10:30, 임도휘 수정] 전체 팀 펼침 상태 초기화
+    setIsTeamsExpanded(false);
     // 조직 관련 쿼리 캐시 무효화하여 최신 데이터 조회
     queryClient.invalidateQueries({ queryKey: organizationTreeKeys.all });
   }, [
@@ -57,6 +61,7 @@ export const usePageInitialization = () => {
     setActiveTab,
     setIsMetricColumnDragged,
     setDisplayMode,
+    setIsTeamsExpanded,
     queryClient,
   ]);
 

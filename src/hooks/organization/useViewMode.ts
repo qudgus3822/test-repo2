@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { FlatViewFilterType } from "@/components/organization";
 import type { AggregationType } from "@/types/organization.types";
+import { useOrganizationStore } from "@/store/useOrganizationStore";
 
 /**
  * 뷰 모드 관련 상태 관리 훅
@@ -12,7 +13,20 @@ import type { AggregationType } from "@/types/organization.types";
  */
 export const useViewMode = (activeTab: string) => {
   // 서브탭 상태: 하이어라키뷰 / 플랫뷰
-  const [viewType, setViewType] = useState<"hierarchy" | "flat">("hierarchy");
+  const [viewType, setViewTypeState] = useState<"hierarchy" | "flat">("hierarchy");
+
+  // [변경: 2026-01-30 10:30, 임도휘 수정] 뷰 타입 변경 시 전체 팀 펼침 상태 초기화
+  const setIsTeamsExpanded = useOrganizationStore(
+    (state) => state.setIsTeamsExpanded,
+  );
+
+  const setViewType = useCallback(
+    (type: "hierarchy" | "flat") => {
+      setViewTypeState(type);
+      setIsTeamsExpanded(false);
+    },
+    [setIsTeamsExpanded],
+  );
 
   // 플랫뷰 필터: 실 / 팀 / 개인
   const [flatViewFilter, setFlatViewFilter] =
