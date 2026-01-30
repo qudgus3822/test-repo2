@@ -124,6 +124,10 @@ interface OrganizationAction {
    */
   collapseToDefault: (orgIds: string[]) => void;
   /**
+   * 전체 팀 펼침 상태 설정
+   */
+  setIsTeamsExpanded: (isExpanded: boolean) => void;
+  /**
    * 지표 칼럼 순서 설정 (드래그앤드롭 시)
    */
   setMetricOrder: (order: string[]) => void;
@@ -178,7 +182,8 @@ export const useOrganizationStore = create<
   OrganizationStore & OrganizationAction
 >((set) => ({
   ...initState,
-  setActiveTab: (tab: TabType) => set({ activeTab: tab }),
+  // [변경: 2026-01-30 10:30, 임도휘 수정] 탭 변경 시 전체 팀 펼침 상태 초기화
+  setActiveTab: (tab: TabType) => set({ activeTab: tab, isTeamsExpanded: false }),
   setPeriod: (period: PeriodType) => set({ period }),
   setCurrentDate: (date: Date) => set({ currentDate: date }),
   addCompareGroup: (group: CompareGroup) =>
@@ -224,6 +229,7 @@ export const useOrganizationStore = create<
       showMembers: true,
       isTeamsExpanded: false,
     })),
+  setIsTeamsExpanded: (isExpanded: boolean) => set({ isTeamsExpanded: isExpanded }),
   setMetricOrder: (order: string[]) => set({ metricOrder: order }),
   clearMetricOrder: () => set({ metricOrder: null }),
   setIsMetricColumnDragged: (isDragged: boolean) =>
