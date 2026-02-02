@@ -8,13 +8,10 @@ import { TargetValueAchievement } from "@/components/dashboard/TargetValueAchiev
 import { MetricsTable } from "@/components/metrics/MetricsTable";
 import { useMetricsStore } from "@/store/useMetricsStore";
 import { MetricsDetailModal } from "@/components/metrics/MetricsDetailModal";
-import { MetricRateSettingModal } from "@/components/metrics/MetricRateSettingModal";
 import { SettingsChangeConfirmModal } from "@/components/metrics/SettingsChangeConfirmModal";
 import { MetricStandardSettingModal } from "@/components/metrics/MetricStandardSettingModal";
-import type { MetricItem } from "@/types/metrics.types";
-import { MetricCategory } from "@/types/metrics.types";
 import { formatYearMonth } from "@/utils";
-import { useMetricsList, metricsListKeys } from "@/api/hooks/useMetricsList";
+import { metricsListKeys } from "@/api/hooks/useMetricsList";
 import { useSyncStatus } from "@/api/hooks/useSyncStatus";
 import { Button, AggregatingIndicator } from "@/components/ui";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -40,9 +37,6 @@ const MetricsPage = () => {
     isMetricsDetailModalOpen,
     setIsMetricsDetailModalOpen,
     selectedMetric,
-    isMetricRateSettingModalOpen,
-    setIsMetricRateSettingModalOpen,
-    activeTab,
     isSettingsChangeConfirmModalOpen,
     setIsSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
@@ -58,9 +52,6 @@ const MetricsPage = () => {
       isMetricsDetailModalOpen: state.isMetricsDetailModalOpen,
       setIsMetricsDetailModalOpen: state.setIsMetricsDetailModalOpen,
       selectedMetric: state.selectedMetric,
-      isMetricRateSettingModalOpen: state.isMetricRateSettingModalOpen,
-      setIsMetricRateSettingModalOpen: state.setIsMetricRateSettingModalOpen,
-      activeTab: state.activeTab,
       isSettingsChangeConfirmModalOpen: state.isSettingsChangeConfirmModalOpen,
       setIsSettingsChangeConfirmModalOpen:
         state.setIsSettingsChangeConfirmModalOpen,
@@ -105,29 +96,10 @@ const MetricsPage = () => {
   const { isProcessing } = useSyncStatus();
   // const prevIsProcessingRef = useRef(isProcessing);
 
-  // 지표 리스트 API 호출 (모달에서 사용)
-  const { data: metricsListData } = useMetricsList(month);
-  const metrics = metricsListData?.metrics ?? [];
-
-  // activeTab을 MetricCategory로 변환
-  const getSelectedCategory = (): MetricCategory => {
-    switch (activeTab) {
-      case "codeQuality":
-        return MetricCategory.CODE_QUALITY;
-      case "reviewQuality":
-        return MetricCategory.REVIEW_QUALITY;
-      case "developmentEfficiency":
-        return MetricCategory.DEVELOPMENT_EFFICIENCY;
-      default:
-        return MetricCategory.CODE_QUALITY;
-    }
-  };
-
   // [변경: 2026-01-08 11:45, 김병현 수정] 모달이 열릴 때 body 스크롤 비활성화 및 레이아웃 시프트 방지
   useEffect(() => {
     const isAnyModalOpen =
       isMetricsDetailModalOpen ||
-      isMetricRateSettingModalOpen ||
       isSettingsChangeConfirmModalOpen ||
       isMetricStandardSettingModalOpen;
 
@@ -155,7 +127,6 @@ const MetricsPage = () => {
     }
   }, [
     isMetricsDetailModalOpen,
-    isMetricRateSettingModalOpen,
     isSettingsChangeConfirmModalOpen,
     isMetricStandardSettingModalOpen,
   ]);
@@ -243,19 +214,6 @@ const MetricsPage = () => {
         isOpen={isMetricsDetailModalOpen}
         onClose={() => setIsMetricsDetailModalOpen(false)}
         metric={selectedMetric}
-      />
-
-      {/* 지표 리스트 - 비율 설정 모달 */}
-      <MetricRateSettingModal
-        isOpen={isMetricRateSettingModalOpen}
-        onClose={() => setIsMetricRateSettingModalOpen(false)}
-        metrics={metrics}
-        category={getSelectedCategory()}
-        month={month}
-        onSave={(updatedMetrics: MetricItem[]) => {
-          // TODO: API 연동 시 실제 저장 로직 구현
-          console.log("Updated metric rates:", updatedMetrics);
-        }}
       />
 
       {/* 변경사항 반영 확인 모달 */}

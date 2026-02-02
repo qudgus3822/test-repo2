@@ -37,10 +37,6 @@ interface MetricsStore {
    */
   isAchievementRateSettingModalOpen: boolean;
   /**
-   * 비율 설정 모달이 열려있는지 여부입니다.
-   */
-  isMetricRateSettingModalOpen: boolean;
-  /**
    * 달성률 우수 기준값입니다.
    */
   achievementRateExcellentThreshold: number;
@@ -128,12 +124,6 @@ interface MetricsAction {
     isAchievementRateSettingModalOpen: boolean,
   ) => void;
   /**
-   * 비율 설정 모달을 엽니다.
-   */
-  setIsMetricRateSettingModalOpen: (
-    isMetricRateSettingModalOpen: boolean,
-  ) => void;
-  /**
    * 달성률 우수 기준값을 설정합니다.
    */
   setAchievementRateExcellentThreshold: (threshold: number) => void;
@@ -204,7 +194,6 @@ const initState: MetricsStore = {
   achievementRateFilter: "all",
   isTargetValueSettingModalOpen: false,
   isAchievementRateSettingModalOpen: false,
-  isMetricRateSettingModalOpen: false,
   achievementRateExcellentThreshold: DEFAULT_EXCELLENT_THRESHOLD,
   achievementRateWarningThreshold: 0,
   achievementRateDangerThreshold: DEFAULT_DANGER_THRESHOLD,
@@ -236,8 +225,6 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
   setIsAchievementRateSettingModalOpen: (
     isAchievementRateSettingModalOpen: boolean,
   ) => set({ isAchievementRateSettingModalOpen }),
-  setIsMetricRateSettingModalOpen: (isMetricRateSettingModalOpen: boolean) =>
-    set({ isMetricRateSettingModalOpen }),
   setAchievementRateExcellentThreshold: (threshold: number) =>
     set({ achievementRateExcellentThreshold: threshold }),
   setAchievementRateWarningThreshold: (threshold: number) =>
