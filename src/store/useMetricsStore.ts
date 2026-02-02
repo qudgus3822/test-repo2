@@ -29,14 +29,6 @@ interface MetricsStore {
    */
   achievementRateFilter: AchievementRateFilterType;
   /**
-   * 목표값 설정 모달이 열려있는지 여부입니다.
-   */
-  isTargetValueSettingModalOpen: boolean;
-  /**
-   * 달성률 설정 모달이 열려있는지 여부입니다.
-   */
-  isAchievementRateSettingModalOpen: boolean;
-  /**
    * 달성률 우수 기준값입니다.
    */
   achievementRateExcellentThreshold: number;
@@ -112,18 +104,6 @@ interface MetricsAction {
    */
   setAchievementRateFilter: (filter: AchievementRateFilterType) => void;
   /**
-   * 목표값 설정 모달을 엽니다.
-   */
-  setIsTargetValueSettingModalOpen: (
-    isTargetValueSettingModalOpen: boolean,
-  ) => void;
-  /**
-   * 달성률 설정 모달을 엽니다.
-   */
-  setIsAchievementRateSettingModalOpen: (
-    isAchievementRateSettingModalOpen: boolean,
-  ) => void;
-  /**
    * 달성률 우수 기준값을 설정합니다.
    */
   setAchievementRateExcellentThreshold: (threshold: number) => void;
@@ -192,8 +172,6 @@ const initState: MetricsStore = {
   currentDate: new Date(),
   activeTab: "bdpi",
   achievementRateFilter: "all",
-  isTargetValueSettingModalOpen: false,
-  isAchievementRateSettingModalOpen: false,
   achievementRateExcellentThreshold: DEFAULT_EXCELLENT_THRESHOLD,
   achievementRateWarningThreshold: 0,
   achievementRateDangerThreshold: DEFAULT_DANGER_THRESHOLD,
@@ -220,11 +198,6 @@ export const useMetricsStore = create<MetricsStore & MetricsAction>((set) => ({
   setActiveTab: (tab: TabType) => set({ activeTab: tab }),
   setAchievementRateFilter: (filter: AchievementRateFilterType) =>
     set({ achievementRateFilter: filter }),
-  setIsTargetValueSettingModalOpen: (isTargetValueSettingModalOpen: boolean) =>
-    set({ isTargetValueSettingModalOpen }),
-  setIsAchievementRateSettingModalOpen: (
-    isAchievementRateSettingModalOpen: boolean,
-  ) => set({ isAchievementRateSettingModalOpen }),
   setAchievementRateExcellentThreshold: (threshold: number) =>
     set({ achievementRateExcellentThreshold: threshold }),
   setAchievementRateWarningThreshold: (threshold: number) =>
