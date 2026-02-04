@@ -1,11 +1,4 @@
-import {
-  Home,
-  FolderKanban,
-  Users,
-  BarChart3,
-  Settings,
-  TriangleAlert,
-} from "lucide-react";
+import { Home, FolderKanban, Users, BarChart3, Settings } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PALETTE_COLORS } from "@/styles/colors";
 
@@ -28,13 +21,6 @@ const menuItems = [
     icon: Users,
     path: "/organization",
     isVisible: true,
-  },
-  {
-    id: "incidents",
-    label: "장애 관리",
-    icon: TriangleAlert,
-    path: "/incidents",
-    isVisible: false,
   },
   {
     id: "metrics",
