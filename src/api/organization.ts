@@ -243,6 +243,7 @@ export interface MetricDefinitionResponse {
   value: number | null;
   avgRate?: number | null;
   status: string | null;
+  direction?: "FORWARD" | "REVERSE" | "NONE" | null;
 }
 
 /**
