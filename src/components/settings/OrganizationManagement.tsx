@@ -345,7 +345,7 @@ const ChangeHistorySection = ({ yearMonth }: { yearMonth: string }) => {
           }`}
         />
         <span className="font-medium text-gray-700 text-sm">
-          실/팀 변경 이력
+          당월 실/팀 변경 이력
         </span>
       </div>
       {/* 실/팀 변경 이력 */}

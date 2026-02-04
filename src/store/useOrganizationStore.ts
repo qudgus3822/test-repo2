@@ -211,10 +211,12 @@ export const useOrganizationStore = create<
   expandAll: (orgIds: string[]) =>
     set(() => ({
       expandedOrganizations: new Set(orgIds),
+      isTeamsExpanded: false,
     })),
   collapseAll: () =>
     set(() => ({
       expandedOrganizations: new Set(),
+      isTeamsExpanded: false,
     })),
   expandAllTeams: (orgIds: string[]) =>
     set(() => ({
