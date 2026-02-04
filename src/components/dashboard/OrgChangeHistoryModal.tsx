@@ -9,16 +9,16 @@ import { useDashboardStore } from "@/store/useDashboardStore";
 import type { OrgTypeSettingsNode } from "@/types/organization.types";
 
 // 조직도 팝업용 칼럼 너비
-{/* [변경: 2026-01-28 14:05, 임도휘 수정] 반응형 말줄임 적용으로 칼럼 너비 조정 */}
+// [변경: 2026-01-28 14:05, 임도휘 수정] 반응형 말줄임 적용으로 칼럼 너비 조정
 const orgHistoryColWidths = {
   bullet: "3%",
-  date: "15%",
+  date: "16%",
   divider: "2%",
   processedBy: "17%",
   changeType: "9%",
   orgType: "9%",
   name: "18%",
-  detail: "27%",
+  detail: "26%",
 };
 
 // 현재 월 YYYY-MM 형식으로 가져오기

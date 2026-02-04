@@ -1,4 +1,4 @@
-{/* [변경: 2026-01-28 14:05, 임도휘 수정] 변경자, 변경 조직, 변경 이력에 반응형 말줄임 + 툴팁 적용 */}
+// [변경: 2026-01-28 14:05, 임도휘 수정] 변경자, 변경 조직, 변경 이력에 반응형 말줄임 + 툴팁 적용
 import { useMemo } from "react";
 import { OrgTypeBadge } from "@/components/ui/OrgTypeBadge";
 import { ChangeTypeBadge } from "@/components/ui/ChangeTypeBadge";
@@ -81,7 +81,10 @@ export const ChangeHistoryList = ({
     <table className={`w-full text-sm text-gray-600 table-fixed ${className}`}>
       <tbody className="block overflow-y-auto" style={{ maxHeight }}>
         {filteredData.map((item, index) => (
-          <tr key={`${item.changeDate}-${index}`} className="w-full table table-fixed">
+          <tr
+            key={`${item.changeDate}-${index}`}
+            className="w-full table table-fixed"
+          >
             <td
               className="text-gray-400 text-center py-1.5"
               style={{ width: colWidths.bullet }}
