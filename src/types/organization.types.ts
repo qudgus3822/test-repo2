@@ -50,11 +50,13 @@ export const MemberRoleLabel = {
 // 직책 타입
 export type MemberPosition =
   | "" // 없음 (일반 사원)
+  | "PART_LEADER" // 파트장
   | "TEAM_LEADER" // 팀장
   | "DEPARTMENT_HEAD" // 실장
   | "OVERALL_MANAGER"; // 총괄
 
 export const MemberPositionLabel = {
+  PART_LEADER: "파트장",
   TEAM_LEADER: "팀장",
   DEPARTMENT_HEAD: "실장",
   OVERALL_MANAGER: "총괄",

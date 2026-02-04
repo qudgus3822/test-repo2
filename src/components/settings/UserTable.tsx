@@ -55,7 +55,7 @@ export const UserTable = ({ users }: UserTableProps) => (
               <td className="px-4 py-3">{user.name}</td>
               <td className="px-4 py-3">{user.departmentName}</td>
               <td className="px-4 py-3">
-                {getMemberRoleOrPositionLabel(user.title, user.personalTitle)}
+                {user.departmentName === "모두의코딩" ? "-" : getMemberRoleOrPositionLabel(user.title, user.personalTitle)}
               </td>
               <td className="px-4 py-3 text-center">{user.role}</td>
               <td className="px-4 py-3 text-center">
