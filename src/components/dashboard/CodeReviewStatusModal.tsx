@@ -26,7 +26,7 @@ const DEFAULT_EMAIL_DOMAIN = "@bithumbcorp.com";
 type SortDirection = "asc" | "desc";
 
 // 상태 뱃지 컴포넌트
-const StatusBadge = ({ status }: { status: ReviewStatus }) => {
+const ReviewStatusBadge = ({ status }: { status: ReviewStatus }) => {
   const colors = REVIEW_STATUS_BADGE_COLORS[status] ?? {
     bg: "#E5E7EB",
     text: "#7B7B7B",
@@ -577,7 +577,7 @@ export const CodeReviewStatusModal = () => {
                               </Tooltip>
                             </td>
                             <td className="px-2.5 py-1 text-center">
-                              <StatusBadge status={item.status} />
+                              <ReviewStatusBadge status={item.status} />
                             </td>
                             <td className="px-2.5 py-1 text-center">
                               <button

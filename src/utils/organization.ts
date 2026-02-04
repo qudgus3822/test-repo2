@@ -98,6 +98,7 @@ export const getMemberPositionLabel = (position?: MemberPosition): string => {
   if (!position) return "";
   const labels: Record<MemberPosition, string> = {
     "": "",
+    PART_LEADER: "파트장",
     TEAM_LEADER: "팀장",
     DEPARTMENT_HEAD: "실장",
     OVERALL_MANAGER: "총괄",
@@ -132,7 +133,7 @@ export const getMemberRoleOrPositionLabel = (
   position?: MemberPosition | string,
 ): string => {
   const roleLabel = getMemberRoleLabel(role as MemberRole);
-  if (position) {
+  if (position && position !== "-") {
     const positionLabel = getMemberPositionLabel(position as MemberPosition);
     return `${positionLabel} | ${roleLabel}`;
   }
