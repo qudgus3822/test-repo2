@@ -17,40 +17,51 @@ interface MetricDetailInfoProps {
 }
 
 // 추세 표시 컴포넌트
-const TrendDisplay = ({ trend }: { trend?: MetricTrend | null }) => {
-  const direction = trend?.direction;
+// [변경: 2026-02-04 15:30, 김병현 수정] 개선/악화 표현 및 디자인 개선
+const TrendDisplay = ({
+  trend,
+  direction: defDirection,
+}: {
+  trend?: MetricTrend | null;
+  direction?: "FORWARD" | "REVERSE" | "NONE" | null;
+}) => {
+  const trendDirection = trend?.direction;
 
   // new, no_data, null인 경우: 회색 | --
-  if (!direction || direction === "new" || direction === "no_data") {
+  if (
+    !trendDirection ||
+    trendDirection === "new" ||
+    trendDirection === "no_data"
+  ) {
     return <span className="text-sm text-gray-400">--</span>;
   }
 
   // same인 경우: 회색 | 변화 없음
-  if (direction === "same") {
-    return <span className="text-sm text-gray-500">변화 없음</span>;
-  }
-
-  // up인 경우: 초록색 | ▲ 증가 추세
-  if (direction === "up") {
+  if (trendDirection === "same") {
     return (
-      <div
-        className="flex items-center gap-1 text-sm font-medium"
-        style={{ color: TREND_COLORS.increase }}
-      >
-        <span>▲</span>
-        <span>증가 추세</span>
-      </div>
+      <span className="text-sm text-gray-500 flex items-center gap-1">
+        <span>➖</span>
+        <span>변화 없음</span>
+      </span>
     );
   }
 
-  // down인 경우: 빨간색 | ▼ 감소 추세
+  // 개선/악화 판단: FORWARD면 up이 개선, REVERSE면 down이 개선
+  const isImprovement =
+    (defDirection === "FORWARD" && trendDirection === "up") ||
+    (defDirection === "REVERSE" && trendDirection === "down");
+
+  const color = isImprovement ? TREND_COLORS.increase : TREND_COLORS.decrease;
+  const icon = trendDirection === "up" ? "▲" : "▼";
+  const label = isImprovement ? "개선" : "악화";
+
   return (
     <div
-      className="flex items-center gap-1 bg-white text-sm font-medium"
-      style={{ color: TREND_COLORS.decrease }}
+      className="flex items-center gap-1.5 text-sm font-semibold"
+      style={{ color }}
     >
-      <span>▼</span>
-      <span>감소 추세</span>
+      <span>{icon}</span>
+      <span>{label}</span>
     </div>
   );
 };
@@ -74,6 +85,7 @@ export const MetricDetailInfo = ({
   const metricTarget = data?.targetValue || "--";
   const metricFormula = data?.formula || "";
   const trend = data?.trend;
+  const direction = data?.direction;
 
   // 로딩 중일 때 전체 영역에 로딩 스피너 표시
   if (isLoading) {
@@ -128,7 +140,7 @@ export const MetricDetailInfo = ({
             <div className="text-sm font-bold text-gray-700 mb-2">
               유효집계 조건
             </div>
-            <div className="text-sm text-gray-900 whitespace-pre-line">
+            <div className="text-sm text-gray-900 whitespace-pre-wrap">
               {data?.aggregationCondition || "--"}
             </div>
           </div>
@@ -169,8 +181,25 @@ export const MetricDetailInfo = ({
             </div>
             {/* [변경: 2026-01-29 17:50, 김병현 수정] 지표 추세도 하얀 배경으로 표시 */}
             <div className="bg-white rounded px-3 py-2 border border-gray-200 w-fit">
-              <TrendDisplay trend={trend} />
+              <TrendDisplay trend={trend} direction={direction} />
             </div>
+            {/* [변경: 2026-02-04 15:30, 김병현 수정] 지표 방향 표시 디자인 개선 */}
+            {direction && direction !== "NONE" && (
+              <div className="mt-3 text-sm text-gray-500 flex items-center gap-1.5">
+                {direction === "FORWARD" && (
+                  <>
+                    <span>-</span>
+                    <span>높을수록 좋은 지표</span>
+                  </>
+                )}
+                {direction === "REVERSE" && (
+                  <>
+                    <span>-</span>
+                    <span>낮을수록 좋은 지표</span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
