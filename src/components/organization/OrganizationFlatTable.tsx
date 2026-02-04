@@ -923,6 +923,7 @@ export const OrganizationFlatTable = ({
         <MetricDetailInfo
           metricCode={selectedMetricCode}
           onClose={handleMetricDetailClose}
+          selectedMonth={month}
         />
       )}
 

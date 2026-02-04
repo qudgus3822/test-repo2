@@ -750,6 +750,7 @@ export const OrganizationTable = ({
         <MetricDetailInfo
           metricCode={selectedMetricCode}
           onClose={handleMetricDetailClose}
+          selectedMonth={month}
         />
       )}
 
