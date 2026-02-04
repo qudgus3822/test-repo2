@@ -179,7 +179,9 @@ export const getStatusColor = (status: StatusType | null): string => {
  * // Returns: { icon: CheckCircle2, color: "#10b981", bgColor: "#10b98120", label: "달성" }
  * ```
  */
-export const getStatusIconConfig = (status: StatusType | null): StatusIconConfig => {
+export const getStatusIconConfig = (
+  status: StatusType | null,
+): StatusIconConfig => {
   if (!status) {
     return {
       icon: AlertCircle,

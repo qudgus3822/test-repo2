@@ -13,6 +13,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 interface MetricDetailInfoProps {
   metricCode: string;
   onClose: () => void;
+  selectedMonth?: string;
 }
 
 // 추세 표시 컴포넌트
@@ -57,11 +58,12 @@ const TrendDisplay = ({ trend }: { trend?: MetricTrend | null }) => {
 export const MetricDetailInfo = ({
   metricCode,
   onClose,
+  selectedMonth,
 }: MetricDetailInfoProps) => {
   // API 호출
   const { data, isLoading } = useQuery({
-    queryKey: ["metricDefinition", metricCode],
-    queryFn: () => fetchMetricDefinition(metricCode),
+    queryKey: ["metricDefinition", metricCode, selectedMonth],
+    queryFn: () => fetchMetricDefinition(metricCode, selectedMonth),
     staleTime: 5 * 60 * 1000, // 5분
   });
 

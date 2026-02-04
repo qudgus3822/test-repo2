@@ -252,8 +252,9 @@ export interface MetricDefinitionResponse {
  */
 export const fetchMetricDefinition = async (
   metricCode: string,
+  yearMonth?: string,
 ): Promise<MetricDefinitionResponse> => {
-  return apiGet<MetricDefinitionResponse>(`/metrics/definitions/${metricCode}`);
+  return apiGet<MetricDefinitionResponse>(`/metrics/definitions/${metricCode}?yearMonth=${yearMonth}`);
 };
 
 // 지표 순서 응답 타입
