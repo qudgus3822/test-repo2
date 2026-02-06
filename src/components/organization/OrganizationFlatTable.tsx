@@ -6,7 +6,13 @@
  * - 지표별 정렬 기능 포함
  */
 
-import { useState, useMemo, useCallback, useEffect, useLayoutEffect } from "react";
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+} from "react";
 import {
   ArrowUp,
   ArrowDown,
@@ -307,9 +313,10 @@ const CombinedRow = ({
 
         // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용, hasData 조건에서 score 체크 제거
         const avgRate = metric?.avgRate ?? null;
-        const value = aggregationType === "total"
-          ? (metric?.totalValue ?? null)
-          : (metric?.value ?? null);
+        const value =
+          aggregationType === "total"
+            ? metric?.totalValue ?? null
+            : metric?.value ?? null;
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -565,7 +572,9 @@ export const OrganizationFlatTable = ({
 
   // 테이블 전체보기 (zoom) 관련
   // [변경: 2026-01-28 14:30, 임도휘 수정] ref callback 방식으로 변경 - ref 연결 시 state 변경으로 effect 재실행
-  const [tableContainer, setTableContainer] = useState<HTMLDivElement | null>(null);
+  const [tableContainer, setTableContainer] = useState<HTMLDivElement | null>(
+    null,
+  );
   const tableContainerRef = useCallback((node: HTMLDivElement | null) => {
     setTableContainer(node);
   }, []);
@@ -583,7 +592,7 @@ export const OrganizationFlatTable = ({
       // [변경: 2026-01-28 14:20, 임도휘 수정] BDPI 칼럼 숨김 처리로 실제 표시되는 지표 수로 계산
       // 기존: metricOrder.length * 74 (BDPI 포함 시 전체 지표 수)
       const visibleMetricCount = metricOrder.filter(
-        (code) => code !== "bdpi" && code !== "BDPI"
+        (code) => code !== "bdpi" && code !== "BDPI",
       ).length;
       const metricColumnsWidth = visibleMetricCount * 74;
       const totalTableWidth = fixedWidth + metricColumnsWidth;
@@ -862,10 +871,10 @@ export const OrganizationFlatTable = ({
         const sortField = isBdpi
           ? "avgRate"
           : displayMode === "rate"
-            ? "avgRate"
-            : aggregationType === "total"
-              ? "totalValue"
-              : "value";
+          ? "avgRate"
+          : aggregationType === "total"
+          ? "totalValue"
+          : "value";
         aValue = aMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
         bValue = bMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
       }
@@ -893,7 +902,7 @@ export const OrganizationFlatTable = ({
   ]);
   if (isLoading || isError || flatItems.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[510px]">
+      <div className="flex items-center justify-center min-h-[410px]">
         {isLoading ? (
           <LoadingSpinner />
         ) : (
@@ -906,7 +915,7 @@ export const OrganizationFlatTable = ({
   // 검색 결과가 없을 때
   if (flatItems.length === 0 && searchKeyword.trim()) {
     return (
-      <div className="flex items-center justify-center min-h-[510px]">
+      <div className="flex items-center justify-center min-h-[410px]">
         <p className="text-gray-500">'{searchKeyword}' 검색 결과가 없습니다.</p>
       </div>
     );
@@ -966,7 +975,9 @@ export const OrganizationFlatTable = ({
           onDragEnd={handleDragEnd}
         >
           <table
-            className={`border-separate border-spacing-0 table-fixed ${isZoomed ? "flat-table-zoomed" : ""}`}
+            className={`border-separate border-spacing-0 table-fixed ${
+              isZoomed ? "flat-table-zoomed" : ""
+            }`}
             style={isZoomed ? { zoom: zoomLevel } : undefined}
           >
             <thead className="sticky top-0 z-20">
@@ -999,11 +1010,20 @@ export const OrganizationFlatTable = ({
                     return <ArrowDown className="w-4.5 h-4.5 text-blue-600" />;
                   };
 
-                  {/* [변경: 2026-01-28 14:10, 임도휘 수정] 위험 컬럼 정렬 시 파란색 테두리 표시 수정 - inline boxShadow가 ring 클래스를 덮어쓰는 문제 해결 */}
-                  const isLastCategory = catIndex === SUMMARY_CATEGORIES.length - 1;
-                  const baseShadow = isLastCategory ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)" : "";
-                  const activeShadow = isActive ? "inset 0 0 0 2px rgb(96 165 250)" : "";
-                  const combinedShadow = [activeShadow, baseShadow].filter(Boolean).join(", ") || undefined;
+                  {
+                    /* [변경: 2026-01-28 14:10, 임도휘 수정] 위험 컬럼 정렬 시 파란색 테두리 표시 수정 - inline boxShadow가 ring 클래스를 덮어쓰는 문제 해결 */
+                  }
+                  const isLastCategory =
+                    catIndex === SUMMARY_CATEGORIES.length - 1;
+                  const baseShadow = isLastCategory
+                    ? "4px 0 8px -2px rgba(0, 0, 0, 0.1)"
+                    : "";
+                  const activeShadow = isActive
+                    ? "inset 0 0 0 2px rgb(96 165 250)"
+                    : "";
+                  const combinedShadow =
+                    [activeShadow, baseShadow].filter(Boolean).join(", ") ||
+                    undefined;
 
                   return (
                     <th
@@ -1024,10 +1044,10 @@ export const OrganizationFlatTable = ({
                           {cat.id === "overAchieved"
                             ? "초과달성"
                             : cat.id === "excellent"
-                              ? "우수"
-                              : cat.id === "warning"
-                                ? "경고"
-                                : "위험"}
+                            ? "우수"
+                            : cat.id === "warning"
+                            ? "경고"
+                            : "위험"}
                         </span>
                         <span>{renderSortIcon()}</span>
                       </div>
@@ -1076,7 +1096,9 @@ export const OrganizationFlatTable = ({
                     key={
                       item.type === "department"
                         ? `row-${(item.data as OrganizationDepartment).code}`
-                        : `row-${(item.data as OrganizationMember).employeeID}-${index}`
+                        : `row-${
+                            (item.data as OrganizationMember).employeeID
+                          }-${index}`
                     }
                     item={item}
                     summaryCounts={summaryCounts}

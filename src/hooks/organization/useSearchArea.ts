@@ -4,6 +4,7 @@ import type { FlatViewFilterType } from "@/components/organization";
 interface UseSearchAreaParams {
   viewType: "hierarchy" | "flat";
   flatViewFilter: FlatViewFilterType;
+  currentDate?: Date;
 }
 
 /**
@@ -17,6 +18,7 @@ interface UseSearchAreaParams {
 export const useSearchArea = ({
   viewType,
   flatViewFilter,
+  currentDate,
 }: UseSearchAreaParams) => {
   // 검색 영역 표시 상태
   const [isSearchAreaOpen, setIsSearchAreaOpen] = useState(false);
@@ -71,6 +73,14 @@ export const useSearchArea = ({
     resetSearch();
     setIsSearchAreaOpen(false);
   }, [viewType, resetSearch]);
+
+  // [변경: 2026-02-06 00:00, 임도휘 수정] 날짜 변경 시 검색 상태 초기화
+  useEffect(() => {
+    if (currentDate) {
+      resetSearch();
+      setIsSearchAreaOpen(false);
+    }
+  }, [currentDate, resetSearch]);
 
   return {
     isSearchAreaOpen,

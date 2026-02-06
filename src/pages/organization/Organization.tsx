@@ -114,6 +114,7 @@ const OrganizationPage = () => {
   } = useDetailModal();
 
   // 뷰 모드 관련 상태
+  // [변경: 2026-02-06 00:00, 임도휘 수정] currentDate 전달하여 날짜 변경 시 뷰 모드 초기화
   const {
     viewType,
     setViewType,
@@ -125,9 +126,10 @@ const OrganizationPage = () => {
     setIsTableZoomed,
     isMetricDetailOpen,
     setIsMetricDetailOpen,
-  } = useViewMode(activeTab);
+  } = useViewMode(activeTab, currentDate);
 
   // 검색 영역 관련 상태
+  // [변경: 2026-02-06 00:00, 임도휘 수정] currentDate 전달하여 날짜 변경 시 검색 상태 초기화
   const {
     isSearchAreaOpen,
     setIsSearchAreaOpen,
@@ -138,7 +140,7 @@ const OrganizationPage = () => {
     setSearchResultCount,
     handleSearch,
     handleSearchKeyDown,
-  } = useSearchArea({ viewType, flatViewFilter });
+  } = useSearchArea({ viewType, flatViewFilter, currentDate });
 
   // 현재 선택된 날짜를 YYYY-MM 형식으로 변환
   const yearMonth = formatYearMonth(currentDate);
@@ -231,7 +233,12 @@ const OrganizationPage = () => {
   const organizations = useMemo(() => data?.tree ?? [], [data?.tree]);
 
   // 데이터가 있는지 확인 (tree 또는 items에 isEvaluationTarget: true인 조직이 있는지)
+  // [변경: 2026-02-06 00:00, 임도휘 수정] 검색 키워드가 있는 경우 검색 결과가 없거나 로딩 중이어도 필터 영역 표시
   const hasData = useMemo(() => {
+    // 검색 키워드가 있는 경우, 로딩 중이거나 검색 결과가 없어도 필터는 표시해야 함
+    if (activeSearchKeyword.trim()) {
+      return true;
+    }
     if (isLoading || isError) return false;
     // format=list 응답 (items 배열)
     if (data?.items && data.items.length > 0) {
@@ -239,7 +246,7 @@ const OrganizationPage = () => {
     }
     // format=tree 응답 (tree 배열)
     return organizations.filter((org) => org.isEvaluationTarget).length > 0;
-  }, [isLoading, isError, data?.items, organizations]);
+  }, [isLoading, isError, data?.items, organizations, activeSearchKeyword]);
 
   // 화면 진입 시 Level 1(부문)까지 펼침 상태로 초기화
   useEffect(() => {
