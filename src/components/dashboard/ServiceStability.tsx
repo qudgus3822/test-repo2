@@ -53,7 +53,7 @@ const formatMetric = (
   metric: ServiceStabilityMetric,
 ): DisplayMetric => {
   const { direction, changePercent } = metric.monthlyComparison;
-  const showTrend = direction !== "no_data" && direction !== "new";
+  const showTrend = direction !== "no_data" && direction !== "new" && changePercent !== 0;
 
   return {
     id: config.id,
