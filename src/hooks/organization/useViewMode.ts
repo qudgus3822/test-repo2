@@ -10,8 +10,9 @@ import { useOrganizationStore } from "@/store/useOrganizationStore";
  * - 집계 타입 (평균/총합)
  * - 테이블 줌 모드
  * - 지표 상세 정보 표시 상태
+ * - 날짜 변경 시 모든 상태 초기화
  */
-export const useViewMode = (activeTab: string) => {
+export const useViewMode = (activeTab: string, currentDate?: Date) => {
   // 서브탭 상태: 하이어라키뷰 / 플랫뷰
   const [viewType, setViewTypeState] = useState<"hierarchy" | "flat">("hierarchy");
 
@@ -46,6 +47,18 @@ export const useViewMode = (activeTab: string) => {
   useEffect(() => {
     setIsTableZoomed(false);
   }, [activeTab]);
+
+  // [변경: 2026-02-06 00:00, 임도휘 수정] 날짜 변경 시 모든 뷰 모드 상태 초기화
+  useEffect(() => {
+    if (currentDate) {
+      setViewTypeState("hierarchy");
+      setFlatViewFilter("division");
+      setAggregationType("avg");
+      setIsTableZoomed(false);
+      setIsMetricDetailOpen(false);
+      setIsTeamsExpanded(false);
+    }
+  }, [currentDate, setIsTeamsExpanded]);
 
   return {
     viewType,
