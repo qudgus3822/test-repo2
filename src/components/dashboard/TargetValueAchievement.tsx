@@ -58,13 +58,13 @@ export const TargetValueAchievement = memo(function TargetValueAchievement({
   return (
     <div className="grid grid-cols-1">
       <h3 className="text-lg font-semibold text-gray-900">목표 달성률</h3>
-      <div className="flex flex-col items-center py-1">
+      {/* [변경: 2026-02-11 15:30, 임도휘 수정] 창 너비 축소 시 도넛차트·텍스트 카드 영역 벗어남 방지 반응형 scale 적용 */}
+      <div className="flex flex-col items-center py-1 lg:scale-[0.75] [@media(min-width:1160px)]:scale-[0.85] [@media(min-width:1400px)]:scale-100 origin-center">
         <DonutChart
           value={percentage}
           maxValue={100}
           showPercentage
           gradient={ACHIEVEMENT_GRADIENT}
-          //size={140}
           strokeWidth={20}
           noDataLabel={hasData ? undefined : "-%"}
         />
