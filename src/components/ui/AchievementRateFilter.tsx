@@ -102,7 +102,7 @@ export const AchievementRateFilter = ({
   };
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-3 whitespace-nowrap">
       <span className="text-sm font-medium text-gray-700">달성률</span>
       <div className="relative" ref={dropdownRef}>
         {/* 선택된 값 표시 */}

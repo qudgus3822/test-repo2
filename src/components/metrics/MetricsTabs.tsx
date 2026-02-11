@@ -28,5 +28,5 @@ export const MetricsTabs = ({
     },
   ];
 
-  return <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />;
+  return <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} className="flex space-x-6 whitespace-nowrap text-xs [@media(min-width:855px)]:text-[15px]" buttonTextSizeClass="[font-size:inherit]" />;
 };

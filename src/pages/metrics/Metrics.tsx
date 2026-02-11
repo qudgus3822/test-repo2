@@ -187,7 +187,7 @@ const MetricsPage = () => {
           </Card>
         </div>
 
-        <div className="flex gap-6 md:h-[230px] lg:h-[260px]">
+        <div className="flex gap-6 h-[260px]">
           {/* 지표 현황 */}
           <div className="w-2/3 h-full">
             <Card className="h-full w-full flex items-center">

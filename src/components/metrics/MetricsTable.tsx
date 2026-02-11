@@ -213,7 +213,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   return (
     <div className="flex flex-col">
       {/* Tabs와 달성률 필터 */}
-      <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+      <div className="flex items-end justify-between border-b border-gray-200 pb-2 mb-4">
         {/* Tabs 영역 */}
         <MetricsTabs
           allCount={achievementRateFilteredAllMetrics.length}
@@ -251,7 +251,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
               className="sticky top-20 bg-white z-10"
               style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
             >
-              <tr className="text-left text-sm font-medium text-gray-700">
+              <tr className="text-left text-sm font-medium text-gray-700 whitespace-nowrap">
                 <th className="px-4 py-3 w-[25%]">지표명</th>
                 <th className="px-4 py-3 w-[12%] text-center">범주</th>
                 <th className="px-4 py-3 w-[12%] text-center">현재값</th>
