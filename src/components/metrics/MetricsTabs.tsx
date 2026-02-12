@@ -28,5 +28,6 @@ export const MetricsTabs = ({
     },
   ];
 
-  return <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} className="flex space-x-6 whitespace-nowrap text-xs [@media(min-width:855px)]:text-[15px]" buttonTextSizeClass="[font-size:inherit]" />;
+  // [변경: 2026-02-12 14:39, 임도휘 수정] 텍스트 줄바꿈 방지, 855px 미만 텍스트 축소·탭 간격 축소 반응형 처리
+  return <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} className="flex space-x-2 [@media(min-width:855px)]:space-x-6 whitespace-nowrap text-xs [@media(min-width:855px)]:text-[15px]" buttonTextSizeClass="[font-size:inherit]" />;
 };
