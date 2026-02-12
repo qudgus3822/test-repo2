@@ -101,15 +101,16 @@ export const AchievementRateFilter = ({
     setIsOpen(false);
   };
 
+  // [변경: 2026-02-12 14:39, 임도휘 수정] 텍스트 줄바꿈 방지, 855px 미만 텍스트·드롭다운 너비 축소 반응형 처리
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-sm font-medium text-gray-700">달성률</span>
+    <div className="flex items-center gap-3 whitespace-nowrap text-xs [@media(min-width:855px)]:text-sm">
+      <span className="font-medium text-gray-700">달성률</span>
       <div className="relative" ref={dropdownRef}>
         {/* 선택된 값 표시 */}
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="min-w-[200px] px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between gap-2"
+          className="min-w-[160px] [@media(min-width:855px)]:min-w-[200px] px-3 py-1.5 bg-white border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between gap-2"
         >
           <div className="flex items-center gap-2">
             {selectedOption?.icon && (
@@ -135,7 +136,7 @@ export const AchievementRateFilter = ({
                 key={option.value}
                 type="button"
                 onClick={() => handleSelect(option.value)}
-                className={`w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${
+                className={`w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 first:rounded-t-lg last:rounded-b-lg ${
                   value === option.value ? "bg-blue-50" : ""
                 }`}
               >

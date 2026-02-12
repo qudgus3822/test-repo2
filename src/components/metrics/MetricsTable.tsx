@@ -213,7 +213,8 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
   return (
     <div className="flex flex-col">
       {/* Tabs와 달성률 필터 */}
-      <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-4">
+      {/* [변경: 2026-02-12 14:39, 임도휘 수정] 탭·필터 세로 정렬 보정 (items-center → items-end) */}
+      <div className="flex items-end justify-between border-b border-gray-200 pb-2 mb-4">
         {/* Tabs 영역 */}
         <MetricsTabs
           allCount={achievementRateFilteredAllMetrics.length}
@@ -251,14 +252,15 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
               className="sticky top-20 bg-white z-10"
               style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
             >
-              <tr className="text-left text-sm font-medium text-gray-700">
-                <th className="px-4 py-3 w-[25%]">지표명</th>
-                <th className="px-4 py-3 w-[12%] text-center">범주</th>
-                <th className="px-4 py-3 w-[12%] text-center">현재값</th>
+              {/* [변경: 2026-02-12 14:39, 임도휘 수정] thead 텍스트 줄바꿈 방지, 셀 좌우 패딩 반응형 처리 (~755px: 0.5, 755px~855px: 2, 855px~: 4) */}
+              <tr className="text-left text-sm font-medium text-gray-700 whitespace-nowrap">
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[25%]">지표명</th>
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[12%] text-center">범주</th>
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[12%] text-center">현재값</th>
 
-                <th className="px-4 py-3 w-[12%] text-center">목표값</th>
-                <th className="px-4 py-3 w-[12%] text-center">달성률</th>
-                <th className="px-4 py-3 w-[12%] text-center">
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[12%] text-center">목표값</th>
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[12%] text-center">달성률</th>
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[12%] text-center">
                   <div className="flex items-center justify-center gap-1.5">
                     비율
                     <span
@@ -289,7 +291,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                     </span>
                   </div>
                 </th>
-                <th className="px-4 py-3 w-[12%] text-center">상세</th>
+                <th className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 w-[12%] text-center">상세</th>
               </tr>
             </thead>
             <tbody>
@@ -297,18 +299,19 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                 <tr>
                   <td
                     colSpan={7}
-                    className="px-4 py-16 text-center text-gray-500"
+                    className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-16 text-center text-gray-500"
                   >
                     선택된 범주에 해당하는 지표가 없습니다.
                   </td>
                 </tr>
               ) : (
+                // [변경: 2026-02-12 14:39, 임도휘 수정] tbody 셀 좌우 패딩 반응형 처리 (~755px: 0.5, 755px~855px: 2, 855px~: 4)
                 sortedMetrics.map((metric, index) => (
                   <tr
                     key={metric.metricCode || index}
                     className="border-b border-gray-100 hover:bg-gray-50 whitespace-nowrap overflow-x-auto"
                   >
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-sm text-gray-900">
                       <div className="flex items-center space-x-2">
                         <span>{metric.name}</span>
                         {metric.tooltip && (
@@ -322,7 +325,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-center">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-sm text-center">
                       {(() => {
                         const style = getCategoryStyle(metric.category);
                         return (
@@ -339,16 +342,16 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                         );
                       })()}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 text-center">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-sm text-gray-900 text-center">
                       {metric.currentValue === null
                         ? "--"
                         : `${metric.currentValue}${metric.unit}`}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-center">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-sm text-gray-600 text-center">
                       {metric.targetValue}
                       {metric.unit}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3">
                       <div className="flex items-center justify-center space-x-2">
                         {metric.achievementRate === null ? (
                           <span className="text-sm text-gray-400">--</span>
@@ -374,10 +377,10 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-center">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-sm text-gray-600 text-center">
                       {metric.weightRatio.toFixed(1)}%
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-center">
                       <button
                         className="text-gray-400 hover:text-gray-600 cursor-pointer"
                         onClick={() => handleMetricsDetailClick(metric)}

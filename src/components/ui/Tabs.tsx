@@ -11,6 +11,7 @@ interface TabsProps<T extends string> {
   className?: string;
   countClassName?: string;
   showCountBrackets?: boolean;
+  buttonTextSizeClass?: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export const Tabs = <T extends string>({
   className,
   countClassName,
   showCountBrackets = true,
+  buttonTextSizeClass,
 }: TabsProps<T>) => {
   return (
     <div className={className ?? "flex space-x-6"}>
@@ -31,7 +33,7 @@ export const Tabs = <T extends string>({
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`pb-4 px-1.5 text-[15px] font-medium border-b-2 -mb-[12px] transition-colors cursor-pointer ${
+          className={`pb-4 px-1.5 ${buttonTextSizeClass ?? "text-[15px]"} font-medium border-b-2 -mb-[12px] transition-colors cursor-pointer ${
             activeTab === tab.id
               ? "border-blue-500 text-blue-600"
               : "border-transparent text-gray-500 hover:text-gray-700"
