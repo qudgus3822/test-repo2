@@ -21,21 +21,46 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
     (state) => state.setIsTeamsExpanded,
   );
 
+  // [변경: 2026-02-13 13:52, 임도휘 수정] 필터 변경 시 테이블 헤더 정렬 초기화를 위해 setSortConfig 가져옴
+  const setSortConfig = useOrganizationStore(
+    (state) => state.setSortConfig,
+  );
+
   const setViewType = useCallback(
     (type: "hierarchy" | "flat") => {
       setViewTypeState(type);
       setIsTeamsExpanded(false);
+      // [변경: 2026-02-13 13:52, 임도휘 수정] 뷰 타입 변경 시 정렬 초기화
+      setSortConfig({ column: null, direction: null });
     },
-    [setIsTeamsExpanded],
+    [setIsTeamsExpanded, setSortConfig],
   );
 
   // 플랫뷰 필터: 실 / 팀 / 개인
-  const [flatViewFilter, setFlatViewFilter] =
+  const [flatViewFilter, setFlatViewFilterState] =
     useState<FlatViewFilterType>("division");
 
+  // [변경: 2026-02-13 13:52, 임도휘 수정] 실/팀/개인 필터 변경 시 정렬 초기화
+  const setFlatViewFilter = useCallback(
+    (filter: FlatViewFilterType) => {
+      setFlatViewFilterState(filter);
+      setSortConfig({ column: null, direction: null });
+    },
+    [setSortConfig],
+  );
+
   // 집계 타입 필터: 평균 / 총합 (전체 탭 전용)
-  const [aggregationType, setAggregationType] =
+  const [aggregationType, setAggregationTypeState] =
     useState<AggregationType>("avg");
+
+  // [변경: 2026-02-13 13:52, 임도휘 수정] 평균/총합 필터 변경 시 정렬 초기화
+  const setAggregationType = useCallback(
+    (type: AggregationType) => {
+      setAggregationTypeState(type);
+      setSortConfig({ column: null, direction: null });
+    },
+    [setSortConfig],
+  );
 
   // 테이블 전체보기 (zoom 축소) 모드
   const [isTableZoomed, setIsTableZoomed] = useState(false);

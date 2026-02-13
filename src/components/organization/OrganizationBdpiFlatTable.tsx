@@ -362,6 +362,11 @@ export const OrganizationBdpiFlatTable = ({
     direction: null,
   });
 
+  // [변경: 2026-02-13 13:52, 임도휘 수정] 실/팀/개인, 평균/총합 필터 변경 시 정렬 초기화
+  useEffect(() => {
+    setSortConfig({ column: null, direction: null });
+  }, [filterType, aggregationType]);
+
   // 정렬 토글 (3단계: null → asc → desc → null)
   const toggleSort = useCallback((column: SortColumn) => {
     setSortConfig((prev) => {
