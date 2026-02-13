@@ -117,7 +117,9 @@ export const OrgItemRow = ({
           <StatusBadge change={item.changes} />
         </div>
 
+        {/* [변경: 2026-02-13 14:10, 임도휘 수정] 당월 영역 IT부문(level 1) 체크박스 미노출 처리 */}
         {showCheckbox &&
+          item.level !== 1 &&
           (isDisabled ||
           isTeamDisabledByParent ||
           excludeDepartmentNames.includes(item.name) ? (
