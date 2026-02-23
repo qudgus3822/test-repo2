@@ -53,6 +53,13 @@ export const MetricStandardSettingModal = ({
   const isSettingsChangeConfirmModalOpen = useMetricsStore(
     (state) => state.isSettingsChangeConfirmModalOpen,
   );
+  // [변경: 2026-02-23 00:00, 김병현 수정] 초기화 시 store threshold 값 원복을 위해 setter 참조
+  const setAchievementRateExcellentThreshold = useMetricsStore(
+    (state) => state.setAchievementRateExcellentThreshold,
+  );
+  const setAchievementRateDangerThreshold = useMetricsStore(
+    (state) => state.setAchievementRateDangerThreshold,
+  );
 
   // 집계 진행 중 여부 및 강제 상태 설정 함수
   const { isProcessing, setProcessing } = useSyncStatus();
@@ -195,6 +202,11 @@ export const MetricStandardSettingModal = ({
     setIsResetting(true);
     try {
       await resetPreviewData();
+      // [변경: 2026-02-23 00:00, 김병현 수정] 초기화 시 store의 threshold 값을 criteriaData 원본값으로 원복
+      setAchievementRateExcellentThreshold(
+        criteriaData?.thresholds.excellent ?? 80,
+      );
+      setAchievementRateDangerThreshold(criteriaData?.thresholds.danger ?? 70);
       // 팝업창 닫기 + 설정 화면 모두 닫기
       setIsSettingsResetConfirmModalOpen(false);
       onClose();
