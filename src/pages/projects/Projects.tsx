@@ -72,9 +72,9 @@ const ProjectsPage = () => {
             <div className="w-full flex items-center justify-between gap-4">
               <DateFilter
                 period={period}
-                onPeriodChange={setPeriod}
+                onPeriodChange={(p) => { setPeriod(p); setActiveTab("tf"); }}
                 currentDate={currentDate}
-                onDateChange={setCurrentDate}
+                onDateChange={(d) => { setCurrentDate(d); setActiveTab("tf"); }}
               />
             </div>
           </Card>
