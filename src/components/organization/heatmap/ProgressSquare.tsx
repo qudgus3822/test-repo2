@@ -94,15 +94,9 @@ export const ProgressSquare = ({
         // - 정수인 경우 소수점 없이 표시
         // - 소수인 경우: 정수부가 0이고 소수점 첫째자리도 0이면 둘째자리까지, 아니면 첫째자리까지
         const isInteger = Number.isInteger(value);
-        const integerPart = Math.floor(Math.abs(value));
-        const firstDecimal = Math.floor(Math.abs(value * 10) % 10);
-        const needsSecondDecimal =
-          !isInteger && integerPart === 0 && firstDecimal === 0;
         fullValue = isInteger
           ? `${value}`
-          : needsSecondDecimal
-            ? value.toFixed(2)
-            : baseFormatted;
+          : parseFloat(value.toFixed(2)).toString();
 
         if (charCount <= 6) {
           // 6글자 이하 (천단위): 정수는 그대로, 소수는 소수점 1자리
