@@ -83,7 +83,7 @@ export const ProgressSquare = ({
       if (displayMode === "rate") {
         formattedNum = Number.isInteger(value)
           ? `${value}%`
-          : `${value.toFixed(1)}%`;
+          : `${parseFloat(value.toFixed(2))}%`;
         fullValue = formattedNum;
       } else {
         // 실제값 모드: 글자수 기반 포맷팅
@@ -140,7 +140,7 @@ export const ProgressSquare = ({
         ? typeof tooltipValue === "number"
           ? Number.isInteger(tooltipValue)
             ? `${tooltipValue}`
-            : tooltipValue.toFixed(2)
+            : parseFloat(tooltipValue.toFixed(2)).toString()
           : `${tooltipValue}`
         : fullValue;
 
