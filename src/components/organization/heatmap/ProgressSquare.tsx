@@ -140,7 +140,7 @@ export const ProgressSquare = ({
         ? typeof tooltipValue === "number"
           ? Number.isInteger(tooltipValue)
             ? `${tooltipValue}`
-            : tooltipValue.toFixed(1)
+            : tooltipValue.toFixed(2)
           : `${tooltipValue}`
         : fullValue;
 
