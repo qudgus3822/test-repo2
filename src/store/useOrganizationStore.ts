@@ -6,6 +6,7 @@ import type {
   OrganizationFilterType,
 } from "@/types/organization.types";
 import type { SortConfig } from "@/components/organization/heatmap/types";
+import type { MetricVisibleInfoResponse } from "@/api/organization";
 
 // 점수 기준값 상수
 export const SCORE_EXCELLENT_THRESHOLD = 80;
@@ -68,6 +69,10 @@ interface OrganizationStore {
    * [변경: 2026-01-25 15:00, 김병현 수정] 테이블 정렬 설정
    */
   sortConfig: SortConfig;
+  /**
+   * 지표 표시 정보 목록
+   */
+  metricVisibleInfoList: MetricVisibleInfoResponse[];
 }
 
 interface OrganizationAction {
@@ -151,6 +156,10 @@ interface OrganizationAction {
    * [변경: 2026-01-25 15:00, 김병현 수정] 정렬 설정
    */
   setSortConfig: (config: SortConfig) => void;
+  /**
+   * 지표 표시 정보 목록 설정
+   */
+  setMetricVisibleInfoList: (list: MetricVisibleInfoResponse[]) => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -176,6 +185,7 @@ const initState: OrganizationStore = {
   displayMode: "value", // [변경: 2026-01-22 15:00, 김병현 수정] 초기: 실제값 표시
   metricSources: {}, // 초기: 빈 객체
   sortConfig: { column: null, direction: null }, // [변경: 2026-01-25 15:00, 김병현 수정] 초기: 정렬 없음
+  metricVisibleInfoList: [], // 초기: 빈 배열
 };
 
 export const useOrganizationStore = create<
@@ -243,4 +253,6 @@ export const useOrganizationStore = create<
     set({ metricSources: sources }),
   // [변경: 2026-01-25 15:00, 김병현 수정] 정렬 설정
   setSortConfig: (config: SortConfig) => set({ sortConfig: config }),
+  setMetricVisibleInfoList: (list: MetricVisibleInfoResponse[]) =>
+    set({ metricVisibleInfoList: list }),
 }));

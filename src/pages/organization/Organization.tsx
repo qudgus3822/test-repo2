@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Search,
   Cable,
@@ -29,6 +30,7 @@ import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { fetchMetricVisibleInfo } from "@/api/organization";
 import type { OrganizationDepartment } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 import { useDetailModal } from "@/hooks/organization/useDetailModal";
@@ -78,6 +80,7 @@ const OrganizationPage = () => {
     setMetricSources,
     displayMode,
     setDisplayMode,
+    setMetricVisibleInfoList,
   } = useOrganizationStore(
     useShallow((state) => ({
       activeTab: state.activeTab,
@@ -95,8 +98,11 @@ const OrganizationPage = () => {
       // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
       displayMode: state.displayMode,
       setDisplayMode: state.setDisplayMode,
+      setMetricVisibleInfoList: state.setMetricVisibleInfoList,
     })),
   );
+
+  
 
   const setOrgHistoryModal = useDashboardStore(
     (state) => state.setOrgHistoryModal,
@@ -160,6 +166,20 @@ const OrganizationPage = () => {
       setMetricSources(sourcesMap);
     }
   }, [metricsListData, setMetricSources]);
+
+  // 지표 표시 정보 조회 (페이지 진입 시 1회, 5분 캐시)
+  const { data: visibleInfoData } = useQuery({
+    queryKey: ["metricDefinitionVisibleInfo"],
+    queryFn: () => fetchMetricVisibleInfo(),
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+
+  // 지표 표시 정보를 store에 동기화
+  useEffect(() => {
+    if (visibleInfoData) {
+      setMetricVisibleInfoList(visibleInfoData);
+    }
+  }, [visibleInfoData, setMetricVisibleInfoList]);
 
   // 탭별 API 옵션 설정 (하위 테이블 컴포넌트와 동일한 queryKey 사용을 위함)
   // 주의: Query Key 일치를 위해 테이블 컴포넌트의 apiOptions 구조와 정확히 동일해야 함

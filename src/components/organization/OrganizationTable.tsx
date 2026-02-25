@@ -6,7 +6,13 @@
  * - 지표 칼럼 드래그 앤 드롭 정렬 기능
  */
 
-import { useState, useCallback, useEffect, useLayoutEffect, useMemo } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ChevronRight, ChevronDown, GripHorizontal, Info } from "lucide-react";
 import {
@@ -56,6 +62,7 @@ import {
   type MetricData,
   type SummaryCounts,
 } from "./heatmap/types";
+
 
 // 플랫 아이템 타입
 interface FlatTreeItem {
@@ -216,11 +223,6 @@ const CombinedDepartmentRow = ({
       ))}
       {/* 스크롤 영역 - 지표 칼럼들 */}
       {metricOrder.map((code) => {
-        // BDPI 칼럼은 전체 탭에서 표시하지 않음
-        if (code === "bdpi" || code === "BDPI") {
-          return;
-        }
-
         const metric = metrics?.[code];
 
         // isUsed가 false인 경우(수집불가 지표) - 하이어라키뷰에서는 조직별 배경색 적용
@@ -236,9 +238,10 @@ const CombinedDepartmentRow = ({
 
         // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용, hasData 조건에서 score 체크 제거
         const avgRate = metric?.avgRate ?? null;
-        const value = aggregationType === "total"
-          ? (metric?.totalValue ?? null)
-          : (metric?.value ?? null);
+        const value =
+          aggregationType === "total"
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null);
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -340,11 +343,6 @@ const CombinedMemberRow = ({
       ))}
       {/* 스크롤 영역 - 지표 칼럼들 */}
       {metricOrder.map((code) => {
-        // BDPI 칼럼은 전체 탭에서 표시하지 않음
-        if (code === "bdpi" || code === "BDPI") {
-          return;
-        }
-
         const metric = metrics?.[code];
 
         // isUsed가 false인 경우(수집불가 지표) - 하이어라키뷰에서는 조직별 배경색 적용
@@ -360,9 +358,10 @@ const CombinedMemberRow = ({
 
         // [변경: 2026-01-26 15:50, 임도휘 수정] score 대신 avgRate 사용, hasData 조건에서 score 체크 제거
         const avgRate = metric?.avgRate ?? null;
-        const value = aggregationType === "total"
-          ? (metric?.totalValue ?? null)
-          : (metric?.value ?? null);
+        const value =
+          aggregationType === "total"
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null);
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -529,6 +528,7 @@ export const OrganizationTable = ({
     metricOrder: globalMetricOrder,
     setMetricOrder: setGlobalMetricOrder,
     setIsMetricColumnDragged,
+    metricVisibleInfoList,
   } = useOrganizationStore(
     useShallow((state) => ({
       expandedOrganizations: state.expandedOrganizations,
@@ -538,7 +538,17 @@ export const OrganizationTable = ({
       metricOrder: state.metricOrder,
       setMetricOrder: state.setMetricOrder,
       setIsMetricColumnDragged: state.setIsMetricColumnDragged,
+      metricVisibleInfoList: state.metricVisibleInfoList,
     })),
+  );
+
+  // enumCode → isSummable 맵 (aggregationType=total 시 숨김 판단용)
+  const isSummableMap = useMemo(
+    () =>
+      Object.fromEntries(
+        metricVisibleInfoList.map((info) => [info.enumCode, info.isSummable]),
+      ),
+    [metricVisibleInfoList],
   );
 
   // 지표 순서 변경 hook
@@ -563,6 +573,23 @@ export const OrganizationTable = ({
   // 실제 사용할 지표 순서 (전역 스토어 > API 응답 순서)
   const metricOrder = globalMetricOrder ?? getMetricOrderFromApi();
 
+  // [변경: 2026-02-25 10:00, 김병현 수정] aggregationType=total 시 isSummable=false 지표 숨김 판단
+  const isMetricHidden = useCallback(
+    (code: string) => {
+      return aggregationType === "total" && isSummableMap[code] === false;
+    },
+    [isSummableMap, aggregationType],
+  );
+
+  // [변경: 2026-02-25 10:00, 김병현 수정] dnd-kit SortableContext용 가시 지표 순서 (BDPI + 숨김 항목 제외)
+  const visibleMetricOrder = useMemo(
+    () =>
+      metricOrder.filter(
+        (code) => code !== "bdpi" && code !== "BDPI" && !isMetricHidden(code),
+      ),
+    [metricOrder, isMetricHidden],
+  );
+
   // API에서 조회한 순서로 전역 스토어 업데이트 (최초 1회)
   useEffect(() => {
     if (isLoading || isFetching) return;
@@ -583,7 +610,9 @@ export const OrganizationTable = ({
 
   // 테이블 전체보기 (zoom) 관련
   // [변경: 2026-01-28 14:30, 임도휘 수정] ref callback 방식으로 변경 - ref 연결 시 state 변경으로 effect 재실행
-  const [tableContainer, setTableContainer] = useState<HTMLDivElement | null>(null);
+  const [tableContainer, setTableContainer] = useState<HTMLDivElement | null>(
+    null,
+  );
   const tableContainerRef = useCallback((node: HTMLDivElement | null) => {
     setTableContainer(node);
   }, []);
@@ -601,7 +630,7 @@ export const OrganizationTable = ({
       // [변경: 2026-01-28 14:20, 임도휘 수정] BDPI 칼럼 숨김 처리로 실제 표시되는 지표 수로 계산
       // 기존: metricOrder.length * 74 (BDPI 포함 시 전체 지표 수)
       const visibleMetricCount = metricOrder.filter(
-        (code) => code !== "bdpi" && code !== "BDPI"
+        (code) => code !== "bdpi" && code !== "BDPI",
       ).length;
       const metricColumnsWidth = visibleMetricCount * 74;
       const totalTableWidth = fixedWidth + metricColumnsWidth;
@@ -632,6 +661,8 @@ export const OrganizationTable = ({
   const handleMetricDetailClose = useCallback(() => {
     setSelectedMetricCode(null);
   }, []);
+
+
 
   // 드래그 앤 드롭 센서 설정
   const sensors = useSensors(
@@ -849,13 +880,10 @@ export const OrganizationTable = ({
                 })}
                 {/* 스크롤 영역 헤더 - 지표 칼럼들 */}
                 <SortableContext
-                  items={metricOrder}
+                  items={visibleMetricOrder}
                   strategy={horizontalListSortingStrategy}
                 >
-                  {metricOrder.map((code) => {
-                    if (code === "bdpi" || code === "BDPI") {
-                      return;
-                    }
+                  {visibleMetricOrder.map((code) => {
                     const metricInfo = metricInfoMap[code];
 
                     return (
@@ -884,7 +912,7 @@ export const OrganizationTable = ({
                     item={item}
                     summaryCounts={summaryCounts}
                     onToggle={toggleOrganization}
-                    metricOrder={metricOrder}
+                    metricOrder={visibleMetricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
                   />
@@ -895,7 +923,7 @@ export const OrganizationTable = ({
                     }-${index}`}
                     item={item}
                     summaryCounts={summaryCounts}
-                    metricOrder={metricOrder}
+                    metricOrder={visibleMetricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
                   />
