@@ -57,7 +57,10 @@ export default function Header() {
           <AggregatingIndicator />
 
           {/* 최근 업데이트 */}
-          <div className="flex font-medium items-center gap-2 text-sm" style={{ color: TEXT_COLORS.tertiary }}>
+          <div
+            className="flex font-medium items-center gap-2 text-sm"
+            style={{ color: TEXT_COLORS.tertiary }}
+          >
             <span>최근 업데이트 :</span>
             <span>{lastUpdatedAt}</span>
           </div>
@@ -68,15 +71,32 @@ export default function Header() {
           {/* 사용자 프로필 + 로그아웃 버튼 */}
           <div className="flex items-center gap-2.5">
             {/* 사용자 프로필 */}
-            <Tooltip content={user?.email || ""} direction="bottom" hideArrow fontSize="text-xs">
-              <div className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center group-hover:ring-2 group-hover:ring-gray-300 transition-all" style={{ backgroundColor: SURFACE_COLORS.cardBorder }}>
-                  <User className="w-5 h-5" style={{ color: TEXT_COLORS.tertiary }} />
+
+            <Tooltip
+              content={user?.departmentName || user?.email || ""}
+              direction="bottom"
+              hideArrow
+              fontSize="text-xs"
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: SURFACE_COLORS.cardBorder }}
+                >
+                  <User
+                    className="w-5 h-5"
+                    style={{ color: TEXT_COLORS.tertiary }}
+                  />
                 </div>
                 {user && (
-                  <span className="text-sm text-gray-900 flex items-center gap-0.5 group-hover:underline">
+                  <span className="text-sm text-gray-900 flex items-center gap-0.5">
                     <span className="font-bold">{user.name}</span>
-                    <span className="font-normal" style={{ color: TEXT_COLORS.tertiary }}>님</span>
+                    <span
+                      className="font-normal"
+                      style={{ color: TEXT_COLORS.tertiary }}
+                    >
+                      님
+                    </span>
                   </span>
                 )}
               </div>
@@ -84,12 +104,21 @@ export default function Header() {
 
             {/* 로그아웃 버튼 */}
             {user && (
-              <Tooltip content="로그아웃" direction="bottom" hideArrow fontSize="text-xs" noWrap>
+              <Tooltip
+                content="로그아웃"
+                direction="bottom"
+                hideArrow
+                fontSize="text-xs"
+                noWrap
+              >
                 <button
                   onClick={handleProfileClick}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
-                  <LogOut className="w-5 h-5" style={{ color: TEXT_COLORS.tertiary }} />
+                  <LogOut
+                    className="w-5 h-5"
+                    style={{ color: TEXT_COLORS.tertiary }}
+                  />
                 </button>
               </Tooltip>
             )}

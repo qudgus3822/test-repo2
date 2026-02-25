@@ -304,193 +304,190 @@ const OrganizationPage = () => {
 
         {/* [변경: 2026-01-29 18:00, 임도휘 수정] 탭 라인 - 데이터 없을 경우 숨김 처리 */}
         {hasData && (
-        <div className="flex-shrink-0 flex items-center justify-between py-3 border-b border-gray-200">
-          {/* 좌측 */}
-          <div className="flex items-center">
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 하이어라키뷰/플랫뷰 필터 - 반응형 처리 (lg 미만: 아이콘만, xl 미만: 패딩 축소) */}
-            <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
-              <button
-                onClick={() => setViewType("hierarchy")}
-                className={`cursor-pointer flex items-center gap-1.5 px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                  viewType === "hierarchy"
-                    ? "bg-[#005FCC] text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                <Network className="w-4 h-4" />
-                <span className="hidden lg:inline">하이어라키뷰</span>
-              </button>
-              <button
-                onClick={() => setViewType("flat")}
-                className={`cursor-pointer flex items-center gap-1.5 px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
-                  viewType === "flat"
-                    ? "bg-[#005FCC] text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
-              >
-                <List className="w-4 h-4" />
-                <span className="hidden lg:inline">플랫뷰</span>
-              </button>
-            </div>
-
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 플랫뷰일 때만 실/팀/개인 필터 표시 - 반응형 처리 (xl 미만: 패딩 축소) */}
-            {viewType === "flat" && (
-              <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setFlatViewFilter("division")}
-                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                    flatViewFilter === "division"
-                      ? "bg-[#005FCC] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  실
-                </button>
-                <button
-                  onClick={() => setFlatViewFilter("team")}
-                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
-                    flatViewFilter === "team"
-                      ? "bg-[#005FCC] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  팀
-                </button>
-                <button
-                  onClick={() => setFlatViewFilter("member")}
-                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
-                    flatViewFilter === "member"
-                      ? "bg-[#005FCC] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  개인
-                </button>
-              </div>
-            )}
-
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 평균/총합 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
-            {(activeTab === "all" || activeTab === "bdpi") && (
-              <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setAggregationType("avg")}
-                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                    aggregationType === "avg" || activeTab === "bdpi"
-                      ? "bg-[#005FCC] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  평균
-                </button>
-                <button
-                  onClick={() =>
-                    activeTab !== "bdpi" && setAggregationType("total")
-                  }
-                  disabled={activeTab === "bdpi"}
-                  className={`px-2 xl:px-4 py-1.5 border-l border-slate-200 text-sm font-medium whitespace-nowrap transition-colors ${
-                    activeTab === "bdpi"
-                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : aggregationType === "total"
-                        ? "bg-[#005FCC] text-white cursor-pointer"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
-                  }`}
-                >
-                  총합
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
-          <div className="flex items-center gap-2">
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 플랫뷰: 통합 검색 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
-            {viewType === "flat" && (
-              <Button
-                variant="primary"
-                size="sm"
-                responsive
-                onClick={() => setIsSearchAreaOpen(!isSearchAreaOpen)}
-              >
-                <span className="flex items-center gap-0.5 xl:gap-1.5">
-                  <Search className="w-4 h-4" />
-                  <span className="hidden xl:inline">통합 검색</span>
-                  {isSearchAreaOpen ? (
-                    <ChevronUp className="w-5 h-5" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5" />
-                  )}
-                </span>
-              </Button>
-            )}
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 하이어라키뷰: 전체 팀 열기/접기 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
-            {viewType === "hierarchy" && (
-              <Button
-                variant="normal"
-                size="sm"
-                responsive
-                className="xl:min-w-[122px]"
-                onClick={handleToggleTeams}
-              >
-                <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                  {isTeamsExpanded ? (
-                    <ChevronsUp className="w-4 h-4" />
-                  ) : (
-                    <ChevronsDown className="w-4 h-4" />
-                  )}
-                  <span className="hidden xl:inline">
-                    {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
-                  </span>
-                </span>
-              </Button>
-            )}
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 지표맞춤 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
-            {activeTab === "all" && (
-              <Button
-                variant={isTableZoomed ? "primary" : "normal"}
-                size="sm"
-                responsive
-                className="xl:min-w-[110px]"
-                onClick={() => setIsTableZoomed(!isTableZoomed)}
-              >
-                <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                  {isTableZoomed ? (
-                    <Expand className="w-4 h-4" />
-                  ) : (
-                    <Shrink className="w-4 h-4" />
-                  )}
-                  <span className="hidden xl:inline">
-                    {isTableZoomed ? "기본 (100%)" : "지표맞춤"}
-                  </span>
-                </span>
-              </Button>
-            )}
-            {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 실제값/달성률 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
-            {activeTab === "all" && (
+          <div className="flex-shrink-0 flex items-center justify-between py-3 border-b border-gray-200">
+            {/* 좌측 */}
+            <div className="flex items-center">
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 하이어라키뷰/플랫뷰 필터 - 반응형 처리 (lg 미만: 아이콘만, xl 미만: 패딩 축소) */}
               <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
                 <button
-                  onClick={() => setDisplayMode("value")}
-                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                    displayMode === "value"
+                  onClick={() => setViewType("hierarchy")}
+                  className={`cursor-pointer flex items-center gap-1.5 px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                    viewType === "hierarchy"
                       ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
-                  실제값
+                  <Network className="w-4 h-4" />
+                  <span className="hidden lg:inline">하이어라키뷰</span>
                 </button>
                 <button
-                  onClick={() => setDisplayMode("rate")}
-                  className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
-                    displayMode === "rate"
+                  onClick={() => setViewType("flat")}
+                  className={`cursor-pointer flex items-center gap-1.5 px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
+                    viewType === "flat"
                       ? "bg-[#005FCC] text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
-                  달성률
+                  <List className="w-4 h-4" />
+                  <span className="hidden lg:inline">플랫뷰</span>
                 </button>
               </div>
-            )}
+
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 플랫뷰일 때만 실/팀/개인 필터 표시 - 반응형 처리 (xl 미만: 패딩 축소) */}
+              {viewType === "flat" && (
+                <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setFlatViewFilter("division")}
+                    className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                      flatViewFilter === "division"
+                        ? "bg-[#005FCC] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    실
+                  </button>
+                  <button
+                    onClick={() => setFlatViewFilter("team")}
+                    className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
+                      flatViewFilter === "team"
+                        ? "bg-[#005FCC] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    팀
+                  </button>
+                  <button
+                    onClick={() => setFlatViewFilter("member")}
+                    className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
+                      flatViewFilter === "member"
+                        ? "bg-[#005FCC] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    개인
+                  </button>
+                </div>
+              )}
+
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 평균/총합 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
+              {(activeTab === "all" || activeTab === "bdpi") && (
+                <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setAggregationType("avg")}
+                    className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                      aggregationType === "avg" || activeTab === "bdpi"
+                        ? "bg-[#005FCC] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    평균
+                  </button>
+                  {activeTab !== "bdpi" && (
+                    <button
+                      onClick={() => setAggregationType("total")}
+                      className={`px-2 xl:px-4 py-1.5 border-l border-slate-200 text-sm font-medium whitespace-nowrap transition-colors ${
+                        aggregationType === "total"
+                          ? "bg-[#005FCC] text-white cursor-pointer"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
+                      }`}
+                    >
+                      총합
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 우측: 뷰타입별 영역 + 보기/숨기기 버튼 */}
+            <div className="flex items-center gap-2">
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 플랫뷰: 통합 검색 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
+              {viewType === "flat" && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  responsive
+                  onClick={() => setIsSearchAreaOpen(!isSearchAreaOpen)}
+                >
+                  <span className="flex items-center gap-0.5 xl:gap-1.5">
+                    <Search className="w-4 h-4" />
+                    <span className="hidden xl:inline">통합 검색</span>
+                    {isSearchAreaOpen ? (
+                      <ChevronUp className="w-5 h-5" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5" />
+                    )}
+                  </span>
+                </Button>
+              )}
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 하이어라키뷰: 전체 팀 열기/접기 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
+              {viewType === "hierarchy" && (
+                <Button
+                  variant="normal"
+                  size="sm"
+                  responsive
+                  className="xl:min-w-[122px]"
+                  onClick={handleToggleTeams}
+                >
+                  <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                    {isTeamsExpanded ? (
+                      <ChevronsUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronsDown className="w-4 h-4" />
+                    )}
+                    <span className="hidden xl:inline">
+                      {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+                    </span>
+                  </span>
+                </Button>
+              )}
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 지표맞춤 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
+              {activeTab === "all" && (
+                <Button
+                  variant={isTableZoomed ? "primary" : "normal"}
+                  size="sm"
+                  responsive
+                  className="xl:min-w-[110px]"
+                  onClick={() => setIsTableZoomed(!isTableZoomed)}
+                >
+                  <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                    {isTableZoomed ? (
+                      <Expand className="w-4 h-4" />
+                    ) : (
+                      <Shrink className="w-4 h-4" />
+                    )}
+                    <span className="hidden xl:inline">
+                      {isTableZoomed ? "기본 (100%)" : "지표맞춤"}
+                    </span>
+                  </span>
+                </Button>
+              )}
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 실제값/달성률 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
+              {activeTab === "all" && (
+                <div className="flex items-center border border-slate-200 rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setDisplayMode("value")}
+                    className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
+                      displayMode === "value"
+                        ? "bg-[#005FCC] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    실제값
+                  </button>
+                  <button
+                    onClick={() => setDisplayMode("rate")}
+                    className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap border-l border-slate-200 transition-colors ${
+                      displayMode === "rate"
+                        ? "bg-[#005FCC] text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                  >
+                    달성률
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         )}
 
         {/* 검색 영역: 플랫뷰일 때만 표시 */}
