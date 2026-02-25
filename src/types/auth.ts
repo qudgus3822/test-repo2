@@ -8,6 +8,7 @@ export interface User {
   name: string;
   role: UserRole;
   department?: string;
+  departmentName?: string;
   teamId?: string;
   permissions: string[];
   accessibleProjects: string[];

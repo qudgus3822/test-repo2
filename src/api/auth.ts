@@ -53,6 +53,7 @@ export const checkAuthStatus = async (): Promise<User | null> => {
       name: data.username || data.name,
       role: data.role || "DEVELOPER",
       department: data.department,
+      departmentName: data.departmentName, // 조직도 API에서 추가된 필드
       teamId: data.teamId,
       permissions: data.permissions || [],
       accessibleProjects: data.accessibleProjects || [],
