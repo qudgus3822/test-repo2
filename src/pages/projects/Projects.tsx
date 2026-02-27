@@ -14,6 +14,10 @@ import { useProjectTableData } from "@/hooks/projects/useProjectTableData";
 import { useOperationTableData } from "@/hooks/projects/useOperationTableData";
 import { formatYearMonth } from "@/utils/date";
 import type { ProjectSummary } from "@/types/project.types";
+import { getMockProjectDashboardSummary } from "@/mocks/projects.mock";
+
+// VITE_USE_MOCK_DATA=true 이면 mock 데이터 사용
+const USE_MOCK = import.meta.env.VITE_USE_MOCK_DATA === "true";
 
 // 안내 메시지 컴포넌트
 const InfoBanner = ({ message }: { message: string }) => (
@@ -31,8 +35,11 @@ const ProjectsPage = () => {
   // API 호출을 위한 월 포맷 (YYYY-MM)
   const month = formatYearMonth(currentDate);
 
-  // 프로젝트 대시보드 요약 데이터 조회
-  const { data: summaryData } = useProjectDashboardSummary(month);
+  // 프로젝트 대시보드 요약 데이터 조회 (mock 모드에서는 API 비활성화)
+  const { data: summaryApiData } = useProjectDashboardSummary(month, !USE_MOCK);
+
+  // mock 모드일 때 mock 요약 데이터 사용
+  const summaryData = USE_MOCK ? getMockProjectDashboardSummary(month) : summaryApiData;
 
   // TF 프로젝트 테이블 데이터
   const tfTable = useProjectTableData(month, activeTab === "tf");

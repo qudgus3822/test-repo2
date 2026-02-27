@@ -82,7 +82,12 @@ export const ProjectTable = ({
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage && onLoadMore) {
+      if (
+        entry.isIntersecting &&
+        hasNextPage &&
+        !isFetchingNextPage &&
+        onLoadMore
+      ) {
         onLoadMore();
       }
     },
@@ -325,13 +330,39 @@ export const ProjectTable = ({
                 </a>
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
-                {formatCount(project.activeTicketCount, UNIT_COUNT)}
+                {/* [변경: 2026-02-27 00:00, 김병현 수정] 활성 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {project.activeTicketCount !== null &&
+                project.activeTicketCount !== undefined ? (
+                  <a
+                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=parentEpic%20%3D%20${project.epicId}%20AND%20statusCategory%20in%20(%22In%20Progress%22%2C%20%22To%20Do%22)`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {formatCount(project.activeTicketCount, UNIT_COUNT)}
+                  </a>
+                ) : (
+                  NULL_DISPLAY
+                )}
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.updatedCount, UNIT_COUNT)}
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
-                {formatCount(project.completedCount, UNIT_COUNT)}
+                {/* [변경: 2026-02-27 00:00, 김병현 수정] 완료 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {project.completedCount !== null &&
+                project.completedCount !== undefined ? (
+                  <a
+                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=parentEpic%20%3D%20${project.epicId}%20AND%20statusCategory%20%3D%20%22Done%22`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {formatCount(project.completedCount, UNIT_COUNT)}
+                  </a>
+                ) : (
+                  NULL_DISPLAY
+                )}
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.createdCount, UNIT_COUNT)}
