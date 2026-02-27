@@ -18,9 +18,16 @@ import { HelpModal } from "@/components/ui/HelpModal";
 
 // 대시보드 도움말 이미지 목록 - 실제 이미지 파일 경로로 교체
 const DASHBOARD_HELP_IMAGES = [
-  { src: "/help/dashboard-help-1.svg", alt: "대시보드 도움말 1" },
-  { src: "/help/dashboard-help-2.svg", alt: "대시보드 도움말 2" },
-  { src: "/help/dashboard-help-3.svg", alt: "대시보드 도움말 3" },
+  { src: "/help/dashboard-help-0.png", alt: "대시보드 도움말 1" },
+  { src: "/help/dashboard-help-1.png", alt: "대시보드 도움말 2" },
+  { src: "/help/dashboard-help-2.png", alt: "대시보드 도움말 3" },
+  { src: "/help/dashboard-help-3.png", alt: "대시보드 도움말 4" },
+  { src: "/help/dashboard-help-4.png", alt: "대시보드 도움말 5" },
+  { src: "/help/dashboard-help-5.png", alt: "대시보드 도움말 6" },
+  { src: "/help/dashboard-help-6.png", alt: "대시보드 도움말 7" },
+  { src: "/help/dashboard-help-7.png", alt: "대시보드 도움말 8" },
+  { src: "/help/dashboard-help-8.png", alt: "대시보드 도움말 9" },
+  { src: "/help/dashboard-help-9.png", alt: "대시보드 도움말 10" },
 ];
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
@@ -32,21 +39,16 @@ const DashboardPage = () => {
   const queryClient = useQueryClient();
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
-  const {
-    period,
-    setPeriod,
-    currentDate,
-    setCurrentDate,
-    setOrgHistoryModal,
-  } = useDashboardStore(
-    useShallow((state) => ({
-      period: state.period,
-      setPeriod: state.setPeriod,
-      currentDate: state.currentDate,
-      setCurrentDate: state.setCurrentDate,
-      setOrgHistoryModal: state.setOrgHistoryModal,
-    })),
-  );
+  const { period, setPeriod, currentDate, setCurrentDate, setOrgHistoryModal } =
+    useDashboardStore(
+      useShallow((state) => ({
+        period: state.period,
+        setPeriod: state.setPeriod,
+        currentDate: state.currentDate,
+        setCurrentDate: state.setCurrentDate,
+        setOrgHistoryModal: state.setOrgHistoryModal,
+      })),
+    );
 
   // 페이지 진입 시 초기화: 당월로 설정, 쿼리 캐시 무효화
   useEffect(() => {

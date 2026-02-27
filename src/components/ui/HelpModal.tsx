@@ -22,12 +22,18 @@ export const HelpModal = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shouldRender, setShouldRender] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [imgVisible, setImgVisible] = useState(true);
 
-  // 모달 열릴 때 첫 번째 이미지로 초기화
+  // 모달 열릴 때 첫 번째 이미지로 초기화 및 전체 이미지 preload
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(0);
       setShouldRender(true);
+      // 모든 이미지 미리 로드하여 전환 시 끊김 방지
+      images.forEach((img) => {
+        const image = new Image();
+        image.src = img.src;
+      });
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setIsAnimating(true);
@@ -38,12 +44,21 @@ export const HelpModal = ({
       const timer = setTimeout(() => setShouldRender(false), 300);
       return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, images]);
 
   const isLastImage = currentIndex === images.length - 1;
 
+  // 이미지 전환 시 fade out -> 인덱스 변경 -> fade in
+  const changeImage = (nextIndex: number) => {
+    setImgVisible(false);
+    setTimeout(() => {
+      setCurrentIndex(nextIndex);
+      setImgVisible(true);
+    }, 150);
+  };
+
   const handlePrev = () => {
-    setCurrentIndex((prev) => Math.max(prev - 1, 0));
+    changeImage(Math.max(currentIndex - 1, 0));
   };
 
   // 마지막 이미지에서 다음 클릭 시 닫힘
@@ -51,7 +66,7 @@ export const HelpModal = ({
     if (isLastImage) {
       onClose();
     } else {
-      setCurrentIndex((prev) => prev + 1);
+      changeImage(currentIndex + 1);
     }
   };
 
@@ -94,10 +109,11 @@ export const HelpModal = ({
           {/* 이미지 영역 */}
           <div className="relative flex items-center justify-center bg-gray-50 min-w-[600px] min-h-[400px]">
             <img
-              key={currentIndex}
               src={images[currentIndex].src}
               alt={images[currentIndex].alt}
-              className="max-w-full max-h-[600px] object-contain"
+              className={`max-w-full max-h-[600px] object-contain transition-opacity duration-150 ${
+                imgVisible ? "opacity-100" : "opacity-0"
+              }`}
             />
           </div>
 
@@ -108,7 +124,7 @@ export const HelpModal = ({
               {images.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={() => changeImage(idx)}
                   className={`w-2 h-2 rounded-full transition-colors cursor-pointer ${
                     idx === currentIndex ? "bg-blue-500" : "bg-gray-300"
                   }`}
