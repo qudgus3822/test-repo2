@@ -246,6 +246,26 @@ export interface MetricDefinitionResponse {
   direction?: "FORWARD" | "REVERSE" | "NONE" | null;
 }
 
+// export interface MetricVisibleInfo {
+//   metricCode: string;
+//   isSummable: boolean;
+//   groups: string[];
+// }
+export interface MetricVisibleInfoResponse {
+  metricCode: string;
+  enumCode: string;
+  isSummable: boolean;
+  groups: string[];
+}
+
+export const fetchMetricVisibleInfo = async (): Promise<
+  MetricVisibleInfoResponse[]
+> => {
+  return apiGet<MetricVisibleInfoResponse[]>(
+    `/metrics/definitions-visible-info`,
+  );
+};
+
 /**
  * 지표 정의 조회 API
  * @param metricCode - 지표 코드
@@ -255,7 +275,9 @@ export const fetchMetricDefinition = async (
   metricCode: string,
   yearMonth?: string,
 ): Promise<MetricDefinitionResponse> => {
-  return apiGet<MetricDefinitionResponse>(`/metrics/definitions/${metricCode}?yearMonth=${yearMonth}`);
+  return apiGet<MetricDefinitionResponse>(
+    `/metrics/definitions/${metricCode}?yearMonth=${yearMonth}`,
+  );
 };
 
 // 지표 순서 응답 타입

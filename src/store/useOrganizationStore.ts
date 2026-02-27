@@ -6,6 +6,7 @@ import type {
   OrganizationFilterType,
 } from "@/types/organization.types";
 import type { SortConfig } from "@/components/organization/heatmap/types";
+import type { MetricVisibleInfoResponse } from "@/api/organization";
 
 // 점수 기준값 상수
 export const SCORE_EXCELLENT_THRESHOLD = 80;
@@ -49,6 +50,10 @@ interface OrganizationStore {
    */
   isTeamsExpanded: boolean;
   /**
+   * [변경: 2026-02-26 00:00, 김병현 수정] 개인(멤버)까지 전체 펼침 상태
+   */
+  isAllExpanded: boolean;
+  /**
    * 지표 칼럼 순서 (드래그앤드롭으로 변경된 순서, null이면 API 응답 순서 사용)
    */
   metricOrder: string[] | null;
@@ -68,6 +73,10 @@ interface OrganizationStore {
    * [변경: 2026-01-25 15:00, 김병현 수정] 테이블 정렬 설정
    */
   sortConfig: SortConfig;
+  /**
+   * 지표 표시 정보 목록
+   */
+  metricVisibleInfoList: MetricVisibleInfoResponse[];
 }
 
 interface OrganizationAction {
@@ -128,6 +137,10 @@ interface OrganizationAction {
    */
   setIsTeamsExpanded: (isExpanded: boolean) => void;
   /**
+   * [변경: 2026-02-26 00:00, 김병현 수정] 개인(멤버)까지 전체 열기
+   */
+  expandAllMembers: (orgIds: string[]) => void;
+  /**
    * 지표 칼럼 순서 설정 (드래그앤드롭 시)
    */
   setMetricOrder: (order: string[]) => void;
@@ -151,6 +164,10 @@ interface OrganizationAction {
    * [변경: 2026-01-25 15:00, 김병현 수정] 정렬 설정
    */
   setSortConfig: (config: SortConfig) => void;
+  /**
+   * 지표 표시 정보 목록 설정
+   */
+  setMetricVisibleInfoList: (list: MetricVisibleInfoResponse[]) => void;
 }
 
 const initialCompareGroups: CompareGroup[] = [
@@ -171,11 +188,13 @@ const initState: OrganizationStore = {
   expandedOrganizations: new Set(DEFAULT_EXPANDED_CODES), // 초기: IT부문만 펼침 (실 단위까지 보임)
   showMembers: true, // 기본: 멤버 표시
   isTeamsExpanded: false, // 초기: 팀 접힌 상태
+  isAllExpanded: false, // [변경: 2026-02-26 00:00, 김병현 수정] 초기: 개인까지 전체 접힌 상태
   metricOrder: null, // 초기: API 응답 순서 사용
   isMetricColumnDragged: false, // 초기: 드래그 발생 안 함
   displayMode: "value", // [변경: 2026-01-22 15:00, 김병현 수정] 초기: 실제값 표시
   metricSources: {}, // 초기: 빈 객체
   sortConfig: { column: null, direction: null }, // [변경: 2026-01-25 15:00, 김병현 수정] 초기: 정렬 없음
+  metricVisibleInfoList: [], // 초기: 빈 배열
 };
 
 export const useOrganizationStore = create<
@@ -183,7 +202,7 @@ export const useOrganizationStore = create<
 >((set) => ({
   ...initState,
   // [변경: 2026-01-30 10:30, 임도휘 수정] 탭 변경 시 전체 팀 펼침 상태 초기화
-  setActiveTab: (tab: TabType) => set({ activeTab: tab, isTeamsExpanded: false }),
+  setActiveTab: (tab: TabType) => set({ activeTab: tab, isTeamsExpanded: false, isAllExpanded: false }),
   setPeriod: (period: PeriodType) => set({ period }),
   setCurrentDate: (date: Date) => set({ currentDate: date }),
   addCompareGroup: (group: CompareGroup) =>
@@ -212,17 +231,20 @@ export const useOrganizationStore = create<
     set(() => ({
       expandedOrganizations: new Set(orgIds),
       isTeamsExpanded: false,
+      isAllExpanded: false,
     })),
   collapseAll: () =>
     set(() => ({
       expandedOrganizations: new Set(),
       isTeamsExpanded: false,
+      isAllExpanded: false,
     })),
   expandAllTeams: (orgIds: string[]) =>
     set(() => ({
       expandedOrganizations: new Set(orgIds),
       showMembers: true,
       isTeamsExpanded: true,
+      isAllExpanded: false,
     })),
   setShowMembers: (show: boolean) => set({ showMembers: show }),
   collapseToDefault: (orgIds: string[]) =>
@@ -230,8 +252,17 @@ export const useOrganizationStore = create<
       expandedOrganizations: new Set(orgIds),
       showMembers: true,
       isTeamsExpanded: false,
+      isAllExpanded: false,
     })),
   setIsTeamsExpanded: (isExpanded: boolean) => set({ isTeamsExpanded: isExpanded }),
+  // [변경: 2026-02-26 00:00, 김병현 수정] 개인(멤버)까지 전체 열기
+  expandAllMembers: (orgIds: string[]) =>
+    set(() => ({
+      expandedOrganizations: new Set(orgIds),
+      showMembers: true,
+      isTeamsExpanded: true,
+      isAllExpanded: true,
+    })),
   setMetricOrder: (order: string[]) => set({ metricOrder: order }),
   clearMetricOrder: () => set({ metricOrder: null }),
   setIsMetricColumnDragged: (isDragged: boolean) =>
@@ -243,4 +274,6 @@ export const useOrganizationStore = create<
     set({ metricSources: sources }),
   // [변경: 2026-01-25 15:00, 김병현 수정] 정렬 설정
   setSortConfig: (config: SortConfig) => set({ sortConfig: config }),
+  setMetricVisibleInfoList: (list: MetricVisibleInfoResponse[]) =>
+    set({ metricVisibleInfoList: list }),
 }));

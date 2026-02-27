@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Settings } from "lucide-react";
+import { Loader2, Settings, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/Button";
 import { useModalAnimation } from "@/hooks";
@@ -41,14 +41,8 @@ export const MetricStandardSettingModal = ({
     useState<SettingType | null>(null);
 
   // store에서 확인 팝업 상태 가져오기
-  const isSettingsResetConfirmModalOpen = useMetricsStore(
-    (state) => state.isSettingsResetConfirmModalOpen,
-  );
   const setIsSettingsChangeConfirmModalOpen = useMetricsStore(
     (state) => state.setIsSettingsChangeConfirmModalOpen,
-  );
-  const setIsSettingsResetConfirmModalOpen = useMetricsStore(
-    (state) => state.setIsSettingsResetConfirmModalOpen,
   );
   const isSettingsChangeConfirmModalOpen = useMetricsStore(
     (state) => state.isSettingsChangeConfirmModalOpen,
@@ -185,35 +179,24 @@ export const MetricStandardSettingModal = ({
     ratioCount.developmentEfficiency > 0 ||
     achievementRateChanged;
 
-  // 변경 초기화 버튼 클릭
-  const handleResetClick = () => {
-    // 변경 사항이 없으면 팝업 없이 모달 닫기
+  // [변경: 2026-02-26 00:00, 김병현 수정] X 버튼/오버레이 클릭 시 확인 팝업 없이 바로 초기화 후 닫기
+  const [isClosing, setIsClosing] = useState(false);
+  const handleResetClick = async () => {
     if (!hasChanges) {
       onClose();
       return;
     }
-    setIsSettingsResetConfirmModalOpen(true);
-  };
-
-  // 변경 초기화 확인
-  const [isResetting, setIsResetting] = useState(false);
-
-  const handleResetConfirm = async () => {
-    setIsResetting(true);
+    setIsClosing(true);
     try {
       await resetPreviewData();
-      // [변경: 2026-02-23 00:00, 김병현 수정] 초기화 시 store의 threshold 값을 criteriaData 원본값으로 원복
       setAchievementRateExcellentThreshold(
         criteriaData?.thresholds.excellent ?? 80,
       );
       setAchievementRateDangerThreshold(criteriaData?.thresholds.danger ?? 70);
-      // 팝업창 닫기 + 설정 화면 모두 닫기
-      setIsSettingsResetConfirmModalOpen(false);
       onClose();
     } catch {
       window.confirm("변경내역 초기화 중 오류가 발생했습니다.");
-    } finally {
-      setIsResetting(false);
+      setIsClosing(false);
     }
   };
 
@@ -250,7 +233,7 @@ export const MetricStandardSettingModal = ({
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
-        onClick={onClose}
+        onClick={isClosing ? undefined : handleResetClick}
       />
 
       {/* 모달 */}
@@ -259,7 +242,14 @@ export const MetricStandardSettingModal = ({
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
       >
-        <div className="bg-white rounded-lg shadow-xl w-[1300px] max-h-[90vh] flex flex-col">
+        <div className="relative bg-white rounded-lg shadow-xl w-[1300px] max-h-[90vh] flex flex-col">
+          {/* 닫기 로딩 오버레이 */}
+          {isClosing && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 rounded-lg gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              <p className="text-sm text-gray-500">변경사항 초기화 중입니다...</p>
+            </div>
+          )}
           {/* 헤더 */}
           <div className="flex items-start justify-between px-6 py-4 border-b border-gray-200">
             <div>
@@ -274,12 +264,13 @@ export const MetricStandardSettingModal = ({
                 해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다.
               </p>
             </div>
-            {/* <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 cursor-pointer ml-4 flex-shrink-0"
+            <button
+              onClick={handleResetClick}
+              disabled={isClosing}
+              className="text-gray-400 hover:text-gray-600 cursor-pointer ml-4 flex-shrink-0 disabled:cursor-not-allowed"
             >
               <X className="w-5 h-5" />
-            </button> */}
+            </button>
           </div>
 
           {/* 본문 */}
@@ -416,9 +407,9 @@ export const MetricStandardSettingModal = ({
                 {/* 버튼 영역 */}
                 <div className="flex items-end gap-3 self-end">
                   <AggregatingIndicator />
-                  <Button variant="cancel" size="sm" onClick={handleResetClick}>
+                  {/* <Button variant="cancel" size="sm" onClick={handleResetClick}>
                     변경 초기화
-                  </Button>
+                  </Button> */}
                   <Tooltip
                     maxWidth={400}
                     content={
@@ -487,18 +478,6 @@ export const MetricStandardSettingModal = ({
         }
       />
 
-      {/* 변경 초기화 확인 팝업 */}
-      <ConfirmPopup
-        isOpen={isSettingsResetConfirmModalOpen}
-        onClose={() => setIsSettingsResetConfirmModalOpen(false)}
-        onConfirm={handleResetConfirm}
-        title="변경사항을 초기화하시겠습니까?"
-        description={`현재 변경된 설정은 모두 초기화되며,\n이 작업은 되돌릴 수 없습니다.`}
-        isLoading={isResetting}
-        errorMessage={
-          "변경내역 초기화 중 오류가 발생했습니다.\n다시 시도해주세요."
-        }
-      />
     </>
   );
 };

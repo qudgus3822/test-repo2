@@ -41,14 +41,13 @@ function App() {
                 <Route path="/" element={<DashboardPage />} />
                 {/* 대시보드 홈 */}
                 <Route path="/dashboard" element={<DashboardPage />} />
-                {/* 지표 관리 */}
-                <Route path="/metrics" element={<MetricsPage />} />
-
                 {/* M2 이후 작업할 페이지 */}
                 {/* 프로젝트/운영 */}
                 <Route path="/projects" element={<ProjectsPage />} />
                 {/* 조직 비교 */}
                 <Route path="/organization" element={<OrganizationPage />} />
+                {/* 지표 관리 */}
+                <Route path="/metrics" element={<MetricsPage />} />
                 {/* 설정 */}
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>

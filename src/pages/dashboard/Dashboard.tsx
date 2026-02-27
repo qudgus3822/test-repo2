@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Cable } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Cable, HelpCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -14,6 +14,57 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Button } from "@/components/ui/Button";
+import { HelpModal } from "@/components/ui/HelpModal";
+
+// 대시보드 도움말 이미지 목록 - 실제 이미지 파일 경로로 교체
+const DASHBOARD_HELP_IMAGES = [
+  { src: "/help/dashboard-help-0.png", alt: "대시보드 도움말 1", title: "홈" },
+  {
+    src: "/help/dashboard-help-1.png",
+    alt: "대시보드 도움말 2",
+    title: "홈 > BDPI",
+  },
+  {
+    src: "/help/dashboard-help-2.png",
+    alt: "대시보드 도움말 3",
+    title: "홈 > BDPI",
+  },
+  {
+    src: "/help/dashboard-help-3.png",
+    alt: "대시보드 도움말 4",
+    title: "홈 > 서비스 안정성",
+  },
+  {
+    src: "/help/dashboard-help-4.png",
+    alt: "대시보드 도움말 5",
+    title: "홈 > 개발생산성 트렌드",
+  },
+  {
+    src: "/help/dashboard-help-5.png",
+    alt: "대시보드 도움말 6",
+    title: "홈 > 목표 달성률",
+  },
+  {
+    src: "/help/dashboard-help-6.png",
+    alt: "대시보드 도움말 7",
+    title: "홈 > 지표순위",
+  },
+  {
+    src: "/help/dashboard-help-7.png",
+    alt: "대시보드 도움말 8",
+    title: "홈 > 조직도",
+  },
+  {
+    src: "/help/dashboard-help-8.png",
+    alt: "대시보드 도움말 9",
+    title: "홈 > 상세보기(코드 리뷰 진행 현황)",
+  },
+  {
+    src: "/help/dashboard-help-9.png",
+    alt: "대시보드 도움말 10",
+    title: "홈 > 튜토리얼",
+  },
+];
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
 import { developerProductivityKeys } from "@/api/hooks/useDeveloperProductivity";
@@ -22,22 +73,18 @@ import { metricRankingsKeys } from "@/api/hooks/useMetricRankings";
 
 const DashboardPage = () => {
   const queryClient = useQueryClient();
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
-  const {
-    period,
-    setPeriod,
-    currentDate,
-    setCurrentDate,
-    setOrgHistoryModal,
-  } = useDashboardStore(
-    useShallow((state) => ({
-      period: state.period,
-      setPeriod: state.setPeriod,
-      currentDate: state.currentDate,
-      setCurrentDate: state.setCurrentDate,
-      setOrgHistoryModal: state.setOrgHistoryModal,
-    })),
-  );
+  const { period, setPeriod, currentDate, setCurrentDate, setOrgHistoryModal } =
+    useDashboardStore(
+      useShallow((state) => ({
+        period: state.period,
+        setPeriod: state.setPeriod,
+        currentDate: state.currentDate,
+        setCurrentDate: state.setCurrentDate,
+        setOrgHistoryModal: state.setOrgHistoryModal,
+      })),
+    );
 
   // 페이지 진입 시 초기화: 당월로 설정, 쿼리 캐시 무효화
   useEffect(() => {
@@ -78,6 +125,14 @@ const DashboardPage = () => {
                 <Cable className="w-4 h-4" />
               </Button>
             </div>
+            {/* 도움말 버튼 */}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsHelpModalOpen(true)}
+            >
+              <HelpCircle className="w-4 h-4" />
+            </Button>
             {/* TODO: Phase2 개발 예정 - PDF 내보내기 버튼
             <Button
               variant="primary"
@@ -120,6 +175,14 @@ const DashboardPage = () => {
 
       {/* 조직도 변경 히스토리 모달 */}
       <OrgChangeHistoryModal targetMonth={formattedMonth} />
+
+      {/* 도움말 모달 */}
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        images={DASHBOARD_HELP_IMAGES}
+        title="대시보드 도움말"
+      />
     </div>
   );
 };

@@ -527,6 +527,7 @@ export const OrganizationFlatTable = ({
     metricSources,
     sortConfig,
     setSortConfig,
+    metricVisibleInfoList,
   } = useOrganizationStore(
     useShallow((state) => ({
       metricOrder: state.metricOrder,
@@ -536,7 +537,20 @@ export const OrganizationFlatTable = ({
       metricSources: state.metricSources,
       sortConfig: state.sortConfig,
       setSortConfig: state.setSortConfig,
+      metricVisibleInfoList: state.metricVisibleInfoList,
     })),
+  );
+
+  // enumCode → { isSummable, groups } 맵 (total 숨김 및 member 필터 숨김 판단용)
+  const metricVisibleMap = useMemo(
+    () =>
+      Object.fromEntries(
+        metricVisibleInfoList.map((info) => [
+          info.enumCode,
+          { isSummable: info.isSummable, groups: info.groups },
+        ]),
+      ),
+    [metricVisibleInfoList],
   );
 
   // API 응답에서 지표 순서 추출
@@ -569,6 +583,32 @@ export const OrganizationFlatTable = ({
 
   // 실제 사용할 지표 순서 (전역 스토어 > API 응답 순서)
   const metricOrder = globalMetricOrder ?? getMetricOrderFromApi();
+
+  // 현재 필터 조건에 따라 숨겨야 하는 지표 코드 판별
+  const isMetricHidden = useCallback(
+    (code: string) => {
+      const visibleInfo = metricVisibleMap[code];
+      return (
+        (aggregationType === "total" && visibleInfo?.isSummable === false) ||
+        (filterType === "member" &&
+          visibleInfo !== undefined &&
+          !visibleInfo.groups.includes("user"))
+      );
+    },
+    [metricVisibleMap, aggregationType, filterType],
+  );
+
+  // SortableContext에 넘길 보이는 항목만의 순서 (BDPI 및 숨김 항목 제외)
+  const visibleMetricOrder = useMemo(
+    () =>
+      metricOrder.filter(
+        (code) =>
+          code !== "bdpi" &&
+          code !== "BDPI" &&
+          !isMetricHidden(code),
+      ),
+    [metricOrder, isMetricHidden],
+  );
 
   // 테이블 전체보기 (zoom) 관련
   // [변경: 2026-01-28 14:30, 임도휘 수정] ref callback 방식으로 변경 - ref 연결 시 state 변경으로 effect 재실행
@@ -754,10 +794,11 @@ export const OrganizationFlatTable = ({
       const { active, over } = event;
 
       if (over && active.id !== over.id) {
+        // 전체 metricOrder 기준으로 인덱스 계산
         const oldIndex = metricOrder.indexOf(active.id as string);
         const newIndex = metricOrder.indexOf(over.id as string);
 
-        // 낙관적 업데이트: 전역 스토어 상태 먼저 변경 (뷰 전환 시에도 유지됨)
+        // 낙관적 업데이트: 전체 metricOrder 기준으로 직접 이동
         const newOrder = arrayMove([...metricOrder], oldIndex, newIndex);
         setGlobalMetricOrder(newOrder);
 
@@ -996,7 +1037,15 @@ export const OrganizationFlatTable = ({
 
                   const excellentThreshold = thresholds?.excellent ?? 80;
                   const dangerThreshold = thresholds?.danger ?? 60;
-                  const criteriaTooltip = `초과달성: 100% 초과\n우수: ${excellentThreshold}% 이상 ~ 100% 이하\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만\n위험: ${dangerThreshold}% 미만`;
+                  // [변경: 2026-02-27 00:00, 김병현 수정] 각 범례별 개별 툴팁으로 분리
+                  const criteriaTooltip =
+                    cat.id === "overAchieved"
+                      ? "목표값에 대한 달성률을 기반으로 구분합니다.\n\n초과달성: 100% 초과"
+                      : cat.id === "excellent"
+                      ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n우수: ${excellentThreshold}% 이상 ~ 100% 이하`
+                      : cat.id === "warning"
+                      ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만`
+                      : `목표값에 대한 달성률을 기반으로 구분합니다.\n\n위험: ${dangerThreshold}% 미만`;
 
                   const renderSortIcon = () => {
                     if (!isActive) {
@@ -1056,13 +1105,10 @@ export const OrganizationFlatTable = ({
                 })}
                 {/* 스크롤 영역 헤더 - 지표 칼럼들 */}
                 <SortableContext
-                  items={metricOrder}
+                  items={visibleMetricOrder}
                   strategy={horizontalListSortingStrategy}
                 >
-                  {metricOrder.map((code) => {
-                    if (code === "bdpi" || code === "BDPI") {
-                      return;
-                    }
+                  {visibleMetricOrder.map((code) => {
                     const metricInfo = metricInfoMap[code];
                     const isActive =
                       sortConfig.column === code &&
@@ -1104,7 +1150,7 @@ export const OrganizationFlatTable = ({
                     summaryCounts={summaryCounts}
                     filterType={filterType}
                     onMemberClick={handleMemberClick}
-                    metricOrder={metricOrder}
+                    metricOrder={visibleMetricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
                   />

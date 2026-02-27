@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Search,
   Cable,
@@ -29,6 +30,7 @@ import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
 import { useMetricsList } from "@/api/hooks/useMetricsList";
+import { fetchMetricVisibleInfo } from "@/api/organization";
 import type { OrganizationDepartment } from "@/types/organization.types";
 import { formatYearMonth } from "@/utils";
 import { useDetailModal } from "@/hooks/organization/useDetailModal";
@@ -61,6 +63,24 @@ const getDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   return codes;
 };
 
+// [변경: 2026-02-26 00:00, 김병현 수정] 모든 조직 코드 수집 (부문 + 실 + 팀)
+// 개인열기 클릭 시 사용 → 팀 하위 멤버까지 모두 보임
+const getAllDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
+  const codes: string[] = [];
+  const collect = (org: OrganizationDepartment) => {
+    codes.push(org.code);
+    if (org.children) {
+      org.children.forEach((child) => {
+        if (child.type === "department") {
+          collect(child);
+        }
+      });
+    }
+  };
+  orgs.forEach((org) => collect(org));
+  return codes;
+};
+
 const OrganizationPage = () => {
   // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
   const {
@@ -70,14 +90,17 @@ const OrganizationPage = () => {
     currentDate,
     setCurrentDate,
     expandAllTeams,
+    expandAllMembers,
     expandAll,
     collapseToDefault,
     isTeamsExpanded,
+    isAllExpanded,
     isMetricColumnDragged,
     setIsMetricColumnDragged,
     setMetricSources,
     displayMode,
     setDisplayMode,
+    setMetricVisibleInfoList,
   } = useOrganizationStore(
     useShallow((state) => ({
       activeTab: state.activeTab,
@@ -86,17 +109,22 @@ const OrganizationPage = () => {
       currentDate: state.currentDate,
       setCurrentDate: state.setCurrentDate,
       expandAllTeams: state.expandAllTeams,
+      expandAllMembers: state.expandAllMembers,
       expandAll: state.expandAll,
       collapseToDefault: state.collapseToDefault,
       isTeamsExpanded: state.isTeamsExpanded,
+      isAllExpanded: state.isAllExpanded,
       isMetricColumnDragged: state.isMetricColumnDragged,
       setIsMetricColumnDragged: state.setIsMetricColumnDragged,
       setMetricSources: state.setMetricSources,
       // [변경: 2026-01-22 10:00, 김병현 수정] 지표 표시 모드 상태 (실제값/달성률)
       displayMode: state.displayMode,
       setDisplayMode: state.setDisplayMode,
+      setMetricVisibleInfoList: state.setMetricVisibleInfoList,
     })),
   );
+
+  
 
   const setOrgHistoryModal = useDashboardStore(
     (state) => state.setOrgHistoryModal,
@@ -160,6 +188,20 @@ const OrganizationPage = () => {
       setMetricSources(sourcesMap);
     }
   }, [metricsListData, setMetricSources]);
+
+  // 지표 표시 정보 조회 (페이지 진입 시 1회, 5분 캐시)
+  const { data: visibleInfoData } = useQuery({
+    queryKey: ["metricDefinitionVisibleInfo"],
+    queryFn: () => fetchMetricVisibleInfo(),
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+
+  // 지표 표시 정보를 store에 동기화
+  useEffect(() => {
+    if (visibleInfoData) {
+      setMetricVisibleInfoList(visibleInfoData);
+    }
+  }, [visibleInfoData, setMetricVisibleInfoList]);
 
   // 탭별 API 옵션 설정 (하위 테이블 컴포넌트와 동일한 queryKey 사용을 위함)
   // 주의: Query Key 일치를 위해 테이블 컴포넌트의 apiOptions 구조와 정확히 동일해야 함
@@ -258,16 +300,22 @@ const OrganizationPage = () => {
     }
   }, [organizations, expandAll]);
 
-  const handleToggleTeams = () => {
-    if (isTeamsExpanded) {
-      // 접기: 초기 화면 진입 시와 동일 (Level 1만 펼침 → 실 단위까지 보임)
-      const level1Codes = getLevel1DepartmentCodes(organizations);
-      collapseToDefault(level1Codes);
-    } else {
-      // 열기: 실 단위까지 펼침 → 팀 단위까지 보임
-      const deptCodes = getDepartmentCodes(organizations);
-      expandAllTeams(deptCodes);
-    }
+  // [변경: 2026-02-26 00:00, 김병현 수정] 팀열기: 실 단위까지 펼침 → 팀 목록까지 보임
+  const handleExpandTeams = () => {
+    const deptCodes = getDepartmentCodes(organizations);
+    expandAllTeams(deptCodes);
+  };
+
+  // [변경: 2026-02-26 00:00, 김병현 수정] 개인열기: 모든 조직 코드 펼침 → 멤버까지 보임
+  const handleExpandAll = () => {
+    const allCodes = getAllDepartmentCodes(organizations);
+    expandAllMembers(allCodes);
+  };
+
+  // [변경: 2026-02-26 00:00, 김병현 수정] 초기화: Level 1(부문)만 펼침 → 실 단위까지 보임
+  const handleReset = () => {
+    const level1Codes = getLevel1DepartmentCodes(organizations);
+    collapseToDefault(level1Codes);
   };
 
   // [변경: 2026-01-19 00:00, 김병현 수정] 100vh 레이아웃 적용 - 상단 영역 고정, 테이블 영역 스크롤
@@ -419,26 +467,43 @@ const OrganizationPage = () => {
                   </span>
                 </Button>
               )}
-              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 하이어라키뷰: 전체 팀 열기/접기 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
+              {/* [변경: 2026-02-26 00:00, 김병현 수정] 하이어라키뷰: 팀열기/개인열기/초기화 버튼 3개 */}
               {viewType === "hierarchy" && (
-                <Button
-                  variant="normal"
-                  size="sm"
-                  responsive
-                  className="xl:min-w-[122px]"
-                  onClick={handleToggleTeams}
-                >
-                  <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                    {isTeamsExpanded ? (
-                      <ChevronsUp className="w-4 h-4" />
-                    ) : (
+                <>
+                  <Button
+                    variant={isTeamsExpanded && !isAllExpanded ? "primary" : "normal"}
+                    size="sm"
+                    responsive
+                    onClick={handleExpandTeams}
+                  >
+                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
                       <ChevronsDown className="w-4 h-4" />
-                    )}
-                    <span className="hidden xl:inline">
-                      {isTeamsExpanded ? "전체 팀 접기" : "전체 팀 열기"}
+                      <span className="hidden xl:inline">팀 열기</span>
                     </span>
-                  </span>
-                </Button>
+                  </Button>
+                  <Button
+                    variant={isAllExpanded ? "primary" : "normal"}
+                    size="sm"
+                    responsive
+                    onClick={handleExpandAll}
+                  >
+                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                      <ChevronsDown className="w-4 h-4" />
+                      <span className="hidden xl:inline">개인 열기</span>
+                    </span>
+                  </Button>
+                  <Button
+                    variant="normal"
+                    size="sm"
+                    responsive
+                    onClick={handleReset}
+                  >
+                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                      <ChevronsUp className="w-4 h-4" />
+                      <span className="hidden xl:inline">초기화</span>
+                    </span>
+                  </Button>
+                </>
               )}
               {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 지표맞춤 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
               {activeTab === "all" && (
