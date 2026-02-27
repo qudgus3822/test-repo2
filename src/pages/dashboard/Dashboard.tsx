@@ -18,16 +18,52 @@ import { HelpModal } from "@/components/ui/HelpModal";
 
 // 대시보드 도움말 이미지 목록 - 실제 이미지 파일 경로로 교체
 const DASHBOARD_HELP_IMAGES = [
-  { src: "/help/dashboard-help-0.png", alt: "대시보드 도움말 1" },
-  { src: "/help/dashboard-help-1.png", alt: "대시보드 도움말 2" },
-  { src: "/help/dashboard-help-2.png", alt: "대시보드 도움말 3" },
-  { src: "/help/dashboard-help-3.png", alt: "대시보드 도움말 4" },
-  { src: "/help/dashboard-help-4.png", alt: "대시보드 도움말 5" },
-  { src: "/help/dashboard-help-5.png", alt: "대시보드 도움말 6" },
-  { src: "/help/dashboard-help-6.png", alt: "대시보드 도움말 7" },
-  { src: "/help/dashboard-help-7.png", alt: "대시보드 도움말 8" },
-  { src: "/help/dashboard-help-8.png", alt: "대시보드 도움말 9" },
-  { src: "/help/dashboard-help-9.png", alt: "대시보드 도움말 10" },
+  { src: "/help/dashboard-help-0.png", alt: "대시보드 도움말 1", title: "홈" },
+  {
+    src: "/help/dashboard-help-1.png",
+    alt: "대시보드 도움말 2",
+    title: "홈 > BDPI",
+  },
+  {
+    src: "/help/dashboard-help-2.png",
+    alt: "대시보드 도움말 3",
+    title: "홈 > BDPI",
+  },
+  {
+    src: "/help/dashboard-help-3.png",
+    alt: "대시보드 도움말 4",
+    title: "홈 > 서비스 안정성",
+  },
+  {
+    src: "/help/dashboard-help-4.png",
+    alt: "대시보드 도움말 5",
+    title: "홈 > 개발생산성 트렌드",
+  },
+  {
+    src: "/help/dashboard-help-5.png",
+    alt: "대시보드 도움말 6",
+    title: "홈 > 목표 달성률",
+  },
+  {
+    src: "/help/dashboard-help-6.png",
+    alt: "대시보드 도움말 7",
+    title: "홈 > 지표순위",
+  },
+  {
+    src: "/help/dashboard-help-7.png",
+    alt: "대시보드 도움말 8",
+    title: "홈 > 조직도",
+  },
+  {
+    src: "/help/dashboard-help-8.png",
+    alt: "대시보드 도움말 9",
+    title: "홈 > 상세보기(코드 리뷰 진행 현황)",
+  },
+  {
+    src: "/help/dashboard-help-9.png",
+    alt: "대시보드 도움말 10",
+    title: "홈 > 튜토리얼",
+  },
 ];
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
@@ -88,15 +124,15 @@ const DashboardPage = () => {
               >
                 <Cable className="w-4 h-4" />
               </Button>
-              {/* 도움말 버튼 */}
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setIsHelpModalOpen(true)}
-              >
-                <HelpCircle className="w-4 h-4" />
-              </Button>
             </div>
+            {/* 도움말 버튼 */}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setIsHelpModalOpen(true)}
+            >
+              <HelpCircle className="w-4 h-4" />
+            </Button>
             {/* TODO: Phase2 개발 예정 - PDF 내보내기 버튼
             <Button
               variant="primary"

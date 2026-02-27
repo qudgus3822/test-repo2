@@ -4,6 +4,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
 interface HelpImage {
   src: string;
   alt: string;
+  title?: string;
 }
 
 interface HelpModalProps {
@@ -84,17 +85,17 @@ export const HelpModal = ({
 
       {/* 모달 */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${
+        className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-300 ${
           isAnimating ? "opacity-100 scale-100" : "opacity-0 scale-95"
         }`}
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-lg shadow-xl flex flex-col"
+          className="bg-white rounded-lg shadow-xl flex flex-col w-[95vw] h-[95vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 헤더 */}
-          <div className="p-4 border-b border-gray-200">
+          <div className="p-4 border-b border-gray-200 shrink-0">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
               <button
@@ -107,14 +108,28 @@ export const HelpModal = ({
           </div>
 
           {/* 이미지 영역 */}
-          <div className="relative flex items-center justify-center bg-gray-50 min-w-[600px] min-h-[400px]">
-            <img
-              src={images[currentIndex].src}
-              alt={images[currentIndex].alt}
-              className={`max-w-full max-h-[600px] object-contain transition-opacity duration-150 ${
-                imgVisible ? "opacity-100" : "opacity-0"
-              }`}
-            />
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* 이미지 타이틀 (있을 때만 표시) */}
+            {images[currentIndex].title && (
+              <div
+                className={`w-full px-6 py-3 border-b border-gray-200 bg-white shrink-0 transition-opacity duration-150 ${
+                  imgVisible ? "opacity-100" : "opacity-0"
+                }`}
+              >
+                <h3 className="text-base font-semibold text-gray-800">
+                  {images[currentIndex].title}
+                </h3>
+              </div>
+            )}
+            <div className="flex items-center justify-center bg-gray-50 flex-1 overflow-hidden">
+              <img
+                src={images[currentIndex].src}
+                alt={images[currentIndex].alt}
+                className={`max-w-full max-h-full object-contain transition-opacity duration-150 ${
+                  imgVisible ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            </div>
           </div>
 
           {/* 하단 네비게이션 */}
