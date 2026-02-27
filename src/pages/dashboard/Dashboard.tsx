@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Cable } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Cable, HelpCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -14,6 +14,14 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Button } from "@/components/ui/Button";
+import { HelpModal } from "@/components/ui/HelpModal";
+
+// 대시보드 도움말 이미지 목록 - 실제 이미지 파일 경로로 교체
+const DASHBOARD_HELP_IMAGES = [
+  { src: "/help/dashboard-help-1.svg", alt: "대시보드 도움말 1" },
+  { src: "/help/dashboard-help-2.svg", alt: "대시보드 도움말 2" },
+  { src: "/help/dashboard-help-3.svg", alt: "대시보드 도움말 3" },
+];
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
 import { developerProductivityKeys } from "@/api/hooks/useDeveloperProductivity";
@@ -22,6 +30,7 @@ import { metricRankingsKeys } from "@/api/hooks/useMetricRankings";
 
 const DashboardPage = () => {
   const queryClient = useQueryClient();
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
   const {
     period,
@@ -77,6 +86,14 @@ const DashboardPage = () => {
               >
                 <Cable className="w-4 h-4" />
               </Button>
+              {/* 도움말 버튼 */}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsHelpModalOpen(true)}
+              >
+                <HelpCircle className="w-4 h-4" />
+              </Button>
             </div>
             {/* TODO: Phase2 개발 예정 - PDF 내보내기 버튼
             <Button
@@ -120,6 +137,14 @@ const DashboardPage = () => {
 
       {/* 조직도 변경 히스토리 모달 */}
       <OrgChangeHistoryModal targetMonth={formattedMonth} />
+
+      {/* 도움말 모달 */}
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        images={DASHBOARD_HELP_IMAGES}
+        title="대시보드 도움말"
+      />
     </div>
   );
 };
