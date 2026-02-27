@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
 import { OrgTypeLegend } from "@/components/ui/OrgTypeLegend";
 import { OrgItemRow, type OrgItemState } from "@/components/ui/OrgItemRow";
 import { ChangeHistoryList } from "@/components/ui/ChangeHistoryList";
@@ -163,7 +163,15 @@ export const OrgChangeHistoryModal = ({
           {/* 헤더 */}
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">조직도</h2>
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-1.5">
+                  조직도
+                  <span className="group relative cursor-pointer">
+                    <Info className="w-4 h-4 text-gray-400" />
+                    <div className="absolute left-0 top-6 hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 w-64 z-10">
+                      현재 조직 구조와 당월 실/팀 변경 이력을 확인할 수 있습니다.
+                    </div>
+                  </span>
+                </h2>
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleClose}
