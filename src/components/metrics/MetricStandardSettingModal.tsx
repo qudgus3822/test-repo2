@@ -200,6 +200,16 @@ export const MetricStandardSettingModal = ({
     }
   };
 
+  // [변경: 2026-03-03 00:00, 김병현 수정] 변경 초기화 버튼 클릭 시 확인 팝업 표시
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const handleResetButtonClick = () => {
+    if (!hasChanges) {
+      onClose();
+      return;
+    }
+    setIsResetConfirmOpen(true);
+  };
+
   // 최종 반영 버튼 클릭
   const handleApplyClick = () => {
     setIsSettingsChangeConfirmModalOpen(true);
@@ -409,9 +419,9 @@ export const MetricStandardSettingModal = ({
                 {/* 버튼 영역 */}
                 <div className="flex items-end gap-3 self-end">
                   <AggregatingIndicator />
-                  {/* <Button variant="cancel" size="sm" onClick={handleResetClick}>
+                  <Button variant="cancel" size="sm" onClick={handleResetButtonClick}>
                     변경 초기화
-                  </Button> */}
+                  </Button>
                   <Tooltip
                     maxWidth={400}
                     content={
@@ -478,6 +488,18 @@ export const MetricStandardSettingModal = ({
         errorMessage={
           "변경사항 반영 중 오류가 발생했습니다.\n다시 시도해주세요."
         }
+      />
+
+      {/* 변경 초기화 확인 팝업 */}
+      <ConfirmPopup
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={async () => {
+          setIsResetConfirmOpen(false);
+          await handleResetClick();
+        }}
+        title="변경사항을 초기화하시겠습니까?"
+        description={`변경된 설정이 모두 초기화됩니다.\n이 작업은 되돌릴 수 없습니다.`}
       />
     </>
   );
