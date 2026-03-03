@@ -315,8 +315,8 @@ const CombinedRow = ({
         const avgRate = metric?.avgRate ?? null;
         const value =
           aggregationType === "total"
-            ? metric?.totalValue ?? null
-            : metric?.value ?? null;
+            ? (metric?.totalValue ?? null)
+            : (metric?.value ?? null);
         const targetValue = metric?.targetValue ?? null;
         const unit = metric?.unit;
         const metricName = metric?.metricName;
@@ -588,6 +588,14 @@ export const OrganizationFlatTable = ({
   const isMetricHidden = useCallback(
     (code: string) => {
       const visibleInfo = metricVisibleMap[code];
+
+      if (
+        visibleInfo.groups.length === 0 &&
+        aggregationType !== "total" &&
+        filterType !== "member"
+      ) {
+        return true; // groups 빈 배열, 평균,  실/팀 일 경우에는 숨김처리 실/팀의 평균 값이 없는 지표가 있음 (테스트 커버리지, 코드 결함 밀도)
+      }
       return (
         (aggregationType === "total" && visibleInfo?.isSummable === false) ||
         (filterType === "member" &&
@@ -602,10 +610,7 @@ export const OrganizationFlatTable = ({
   const visibleMetricOrder = useMemo(
     () =>
       metricOrder.filter(
-        (code) =>
-          code !== "bdpi" &&
-          code !== "BDPI" &&
-          !isMetricHidden(code),
+        (code) => code !== "bdpi" && code !== "BDPI" && !isMetricHidden(code),
       ),
     [metricOrder, isMetricHidden],
   );
@@ -912,10 +917,10 @@ export const OrganizationFlatTable = ({
         const sortField = isBdpi
           ? "avgRate"
           : displayMode === "rate"
-          ? "avgRate"
-          : aggregationType === "total"
-          ? "totalValue"
-          : "value";
+            ? "avgRate"
+            : aggregationType === "total"
+              ? "totalValue"
+              : "value";
         aValue = aMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
         bValue = bMetrics?.[sortConfig.column!]?.[sortField] ?? -1;
       }
@@ -1042,10 +1047,10 @@ export const OrganizationFlatTable = ({
                     cat.id === "overAchieved"
                       ? "목표값에 대한 달성률을 기반으로 구분합니다.\n\n초과달성: 100% 초과"
                       : cat.id === "excellent"
-                      ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n우수: ${excellentThreshold}% 이상 ~ 100% 이하`
-                      : cat.id === "warning"
-                      ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만`
-                      : `목표값에 대한 달성률을 기반으로 구분합니다.\n\n위험: ${dangerThreshold}% 미만`;
+                        ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n우수: ${excellentThreshold}% 이상 ~ 100% 이하`
+                        : cat.id === "warning"
+                          ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만`
+                          : `목표값에 대한 달성률을 기반으로 구분합니다.\n\n위험: ${dangerThreshold}% 미만`;
 
                   const renderSortIcon = () => {
                     if (!isActive) {
@@ -1093,10 +1098,10 @@ export const OrganizationFlatTable = ({
                           {cat.id === "overAchieved"
                             ? "초과달성"
                             : cat.id === "excellent"
-                            ? "우수"
-                            : cat.id === "warning"
-                            ? "경고"
-                            : "위험"}
+                              ? "우수"
+                              : cat.id === "warning"
+                                ? "경고"
+                                : "위험"}
                         </span>
                         <span>{renderSortIcon()}</span>
                       </div>
