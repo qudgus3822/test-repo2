@@ -91,7 +91,6 @@ const OrganizationPage = () => {
     setCurrentDate,
     expandAllTeams,
     expandAllMembers,
-    expandAll,
     collapseToDefault,
     isTeamsExpanded,
     isAllExpanded,
@@ -110,7 +109,6 @@ const OrganizationPage = () => {
       setCurrentDate: state.setCurrentDate,
       expandAllTeams: state.expandAllTeams,
       expandAllMembers: state.expandAllMembers,
-      expandAll: state.expandAll,
       collapseToDefault: state.collapseToDefault,
       isTeamsExpanded: state.isTeamsExpanded,
       isAllExpanded: state.isAllExpanded,
@@ -288,15 +286,25 @@ const OrganizationPage = () => {
     return organizations.filter((org) => org.isEvaluationTarget).length > 0;
   }, [isLoading, isError, data?.items, organizations, activeSearchKeyword]);
 
-  // 화면 진입 시 Level 1(부문)까지 펼침 상태로 초기화
+  // [변경: 2026-03-03 00:00, 김병현 수정] API 재호출(평균/총합 전환 등) 후 이전 펼침 상태 복원
+  // isTeamsExpanded/isAllExpanded 상태에 따라 적절한 펼침 함수 호출
   useEffect(() => {
     if (organizations.length > 0) {
-      const level1Codes = getLevel1DepartmentCodes(organizations);
-      if (level1Codes.length > 0) {
-        expandAll(level1Codes);
+      const { isTeamsExpanded, isAllExpanded } = useOrganizationStore.getState();
+      if (isAllExpanded) {
+        const allCodes = getAllDepartmentCodes(organizations);
+        useOrganizationStore.getState().expandAllMembers(allCodes);
+      } else if (isTeamsExpanded) {
+        const deptCodes = getDepartmentCodes(organizations);
+        useOrganizationStore.getState().expandAllTeams(deptCodes);
+      } else {
+        const level1Codes = getLevel1DepartmentCodes(organizations);
+        if (level1Codes.length > 0) {
+          useOrganizationStore.getState().expandAll(level1Codes);
+        }
       }
     }
-  }, [organizations, expandAll]);
+  }, [organizations]);
 
   // [변경: 2026-02-26 00:00, 김병현 수정] 팀열기: 실 단위까지 펼침 → 팀 목록까지 보임
   const handleExpandTeams = () => {
