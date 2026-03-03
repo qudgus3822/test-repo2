@@ -193,7 +193,7 @@ graph TD
 
 ## ✅ 체크리스트
 
-### 코드 품질
+### 코드품질
 - [ ] 코드 리뷰 준비 완료
 - [ ] 빌드 성공 (`npm run build`)
 - [ ] ESLint 통과 (`npm run lint`)

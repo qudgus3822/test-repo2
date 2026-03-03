@@ -139,7 +139,7 @@ export const ProjectTable = ({
           {/* [변경: 2026-01-29 18:00, 임도휘 수정] 테이블 헤더 반응형 패딩 (1480px 미만: px-0.5, 1480px 이상: px-4), 폰트 사이즈 (xl 미만: 10px, xl 이상: text-sm) */}
           <tr className="text-left text-[10px] xl:text-sm font-medium text-gray-700">
             <th className="px-0.5 min-[1480px]:px-4 py-3 w-[16%]">
-              {TABLE_HEADERS.epicName.label}
+              {TABLE_HEADERS.epicName.label.join("\n")}
             </th>
             <th className="px-0.5 min-[1480px]:px-4 py-3 w-[7%] text-center">
               <div className="flex flex-col items-center gap-1">
@@ -149,10 +149,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.activeTicketCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.activeTicketCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.activeTicketCount.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -164,10 +162,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.updatedCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.updatedCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.updatedCount.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -179,10 +175,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.completedCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.completedCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.completedCount.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -194,10 +188,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.createdCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.createdCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.createdCount.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -209,10 +201,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.bugCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.bugCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.bugCount.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -224,10 +214,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.incidentCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.incidentCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.incidentCount.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -239,10 +227,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.avgResolutionTime.label[0]}
-                  <br />
-                  {TABLE_HEADERS.avgResolutionTime.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.avgResolutionTime.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -254,10 +240,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.avgDetectionTime.label[0]}
-                  <br />
-                  {TABLE_HEADERS.avgDetectionTime.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.avgDetectionTime.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -269,10 +253,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.avgDiagnosisTime.label[0]}
-                  <br />
-                  {TABLE_HEADERS.avgDiagnosisTime.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.avgDiagnosisTime.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -284,10 +266,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.avgRecoveryTime.label[0]}
-                  <br />
-                  {TABLE_HEADERS.avgRecoveryTime.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.avgRecoveryTime.label.join("\n")}
                 </span>
               </div>
             </th>
@@ -299,8 +279,8 @@ export const ProjectTable = ({
                 >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span className="leading-[2.5]">
-                  {TABLE_HEADERS.createdAt.label}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.createdAt.label.join("\n")}
                 </span>
               </div>
             </th>

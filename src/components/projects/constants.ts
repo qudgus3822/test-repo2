@@ -9,7 +9,7 @@ export const NULL_DISPLAY = "--";
 
 // 공통 테이블 헤더 설정
 export const COMMON_HEADERS = {
-  epicName: { label: "에픽명" },
+  epicName: { label: ["에픽명"] },
   activeTicketCount: {
     label: ["활성", "티켓 수"],
     tooltip: "해당 월에 활성화 된 티켓 개수",

@@ -11,7 +11,10 @@ const TABLE_HEADERS = {
 };
 
 // 숫자 포맷 헬퍼 (null → "--", 0 이상 → 숫자 + 단위)
-const formatCount = (value: number | null | undefined, unit: string): string => {
+const formatCount = (
+  value: number | null | undefined,
+  unit: string,
+): string => {
   if (value === null || value === undefined) return NULL_DISPLAY;
   return `${value}${unit}`;
 };
@@ -44,7 +47,12 @@ export const OperationTable = ({
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage && onLoadMore) {
+      if (
+        entry.isIntersecting &&
+        hasNextPage &&
+        !isFetchingNextPage &&
+        onLoadMore
+      ) {
         onLoadMore();
       }
     },
@@ -89,66 +97,78 @@ export const OperationTable = ({
   return (
     <div>
       <table className="w-full">
-        <thead className="sticky top-20 bg-white z-10" style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}>
+        <thead
+          className="sticky top-20 bg-white z-10"
+          style={{ boxShadow: "inset 0 -1px 0 #e5e7eb" }}
+        >
           {/* [변경: 2026-01-29 18:00, 임도휘 수정] 테이블 헤더 반응형 패딩 (lg 미만: px-1, lg~xl: px-2, xl 이상: px-4) */}
           <tr className="text-left text-sm font-medium text-gray-700">
             <th className="px-1 lg:px-2 xl:px-4 py-3 w-[30%]">
-              {TABLE_HEADERS.epicName.label}
+              {TABLE_HEADERS.epicName.label.join("\n")}
             </th>
             <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.activeTicketCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.activeTicketCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.activeTicketCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.activeTicketCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.activeTicketCount.label.join("\n")}
                 </span>
               </div>
             </th>
             <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.updatedCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.updatedCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.updatedCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.updatedCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.updatedCount.label.join("\n")}
                 </span>
               </div>
             </th>
             <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.completedCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.completedCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.completedCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.completedCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.completedCount.label.join("\n")}
                 </span>
               </div>
             </th>
             <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.createdCount.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.createdCount.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span>
-                  {TABLE_HEADERS.createdCount.label[0]}
-                  <br />
-                  {TABLE_HEADERS.createdCount.label[1]}
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.createdCount.label.join("\n")}
                 </span>
               </div>
             </th>
             <th className="px-1 lg:px-2 xl:px-4 py-3 w-[14%] text-center">
               <div className="flex flex-col items-center gap-1">
-                <Tooltip content={TABLE_HEADERS.createdAt.tooltip} direction="top">
+                <Tooltip
+                  content={TABLE_HEADERS.createdAt.tooltip}
+                  direction="top"
+                >
                   <Info className="w-3.5 h-3.5 text-gray-400 cursor-pointer" />
                 </Tooltip>
-                <span className="leading-[2.5]">{TABLE_HEADERS.createdAt.label}</span>
+                <span className="whitespace-pre-line">
+                  {TABLE_HEADERS.createdAt.label.join("\n")}
+                </span>
               </div>
             </th>
           </tr>
@@ -189,7 +209,9 @@ export const OperationTable = ({
                 {formatCount(item.createdCount, UNIT_COUNT)}
               </td>
               <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
-                {item.createdAt ? formatDateString(item.createdAt) : NULL_DISPLAY}
+                {item.createdAt
+                  ? formatDateString(item.createdAt)
+                  : NULL_DISPLAY}
               </td>
             </tr>
           ))}
