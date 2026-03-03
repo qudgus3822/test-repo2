@@ -34,7 +34,7 @@ const SettingsPage = () => {
               activeTab={activeTab}
               onTabChange={setActiveTab}
             />
-            {activeTab === "user" && (
+            {
               <Tooltip
                 content={USER_MANAGEMENT_TOOLTIP}
                 direction="bottom"
@@ -43,7 +43,7 @@ const SettingsPage = () => {
               >
                 <Info className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
               </Tooltip>
-            )}
+            }
           </div>
         </div>
 
