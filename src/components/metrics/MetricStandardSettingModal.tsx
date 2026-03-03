@@ -247,7 +247,9 @@ export const MetricStandardSettingModal = ({
           {isClosing && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 rounded-lg gap-3">
               <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-              <p className="text-sm text-gray-500">변경사항 초기화 중입니다...</p>
+              <p className="text-sm text-gray-500">
+                변경사항 초기화 중입니다...
+              </p>
             </div>
           )}
           {/* 헤더 */}
@@ -260,8 +262,8 @@ export const MetricStandardSettingModal = ({
                 className="mt-1 text-sm"
                 style={{ color: CHANGE_COLORS.emphasis }}
               >
-                변경된 목표값•달성기준•비율 설정은 즉시 전체 화면에 반영되며
-                해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다.
+                변경된 목표값•달성률•비율 설정은 즉시 전체 화면에 반영되며 해당
+                월 데이터는 변경 기준에 맞춰 모두 재집계됩니다.
               </p>
             </div>
             <button
@@ -477,7 +479,6 @@ export const MetricStandardSettingModal = ({
           "변경사항 반영 중 오류가 발생했습니다.\n다시 시도해주세요."
         }
       />
-
     </>
   );
 };

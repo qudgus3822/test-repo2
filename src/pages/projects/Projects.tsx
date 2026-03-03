@@ -39,13 +39,18 @@ const ProjectsPage = () => {
   const { data: summaryApiData } = useProjectDashboardSummary(month, !USE_MOCK);
 
   // mock 모드일 때 mock 요약 데이터 사용
-  const summaryData = USE_MOCK ? getMockProjectDashboardSummary(month) : summaryApiData;
+  const summaryData = USE_MOCK
+    ? getMockProjectDashboardSummary(month)
+    : summaryApiData;
 
   // TF 프로젝트 테이블 데이터
   const tfTable = useProjectTableData(month, activeTab === "tf");
 
   // 운영 프로젝트 테이블 데이터
-  const operationTable = useOperationTableData(month, activeTab === "operation");
+  const operationTable = useOperationTableData(
+    month,
+    activeTab === "operation",
+  );
 
   // API 응답을 SummaryCard의 ProjectSummary 형태로 변환
   const tfSummary: ProjectSummary | null = useMemo(() => {
@@ -79,9 +84,15 @@ const ProjectsPage = () => {
             <div className="w-full flex items-center justify-between gap-4">
               <DateFilter
                 period={period}
-                onPeriodChange={(p) => { setPeriod(p); setActiveTab("tf"); }}
+                onPeriodChange={(p) => {
+                  setPeriod(p);
+                  setActiveTab("tf");
+                }}
                 currentDate={currentDate}
-                onDateChange={(d) => { setCurrentDate(d); setActiveTab("tf"); }}
+                onDateChange={(d) => {
+                  setCurrentDate(d);
+                  setActiveTab("tf");
+                }}
               />
             </div>
           </Card>
@@ -110,7 +121,7 @@ const ProjectsPage = () => {
         <div className="py-4">
           {activeTab === "tf" ? (
             <>
-              <InfoBanner message="지라 전체 에픽 중 분류유형이 'TF' 표기된 프로젝트성 에픽에 대해 해당 지표들을 한눈에 확인할 수 있습니다." />
+              <InfoBanner message="지라 전체 에픽 중 분류 유형이 'TF'로 표기된 프로젝트성 에픽 중 업데이트 활동이 있는 프로젝트 목록을 확인할 수 있습니다." />
               <ProjectTable
                 projects={tfTable.projects}
                 isLoading={tfTable.isLoading}
@@ -121,7 +132,7 @@ const ProjectsPage = () => {
             </>
           ) : (
             <>
-              <InfoBanner message="지라 OPR2 긴급운영의 에픽은 유형(버그/장애/애프터잡)을 운영 특성상 분류하여 라벨링하기 어려운 상황으로 버그 및 장애 관련 지표가 제공되지 않습니다." />
+              <InfoBanner message="지라 긴급 운영(OPR2)의 에픽은 운영 특성상 유형(버그/장애/애프터잡)을 분류하여 라벨링 하기 어려운 상황으로, 버그 및 장애 관련 지표가 제공되지 않습니다." />
               <OperationTable
                 items={operationTable.items}
                 isLoading={operationTable.isLoading}

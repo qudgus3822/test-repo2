@@ -6,7 +6,7 @@ import { useDeveloperProductivity } from "@/api/hooks/useDeveloperProductivity";
 
 const chartColors = [...MULTI_LINE_COLORS];
 
-const metrics = ["BDPI 평균", "코드 품질", "리뷰 품질", "개발 효율", "목표치"];
+const metrics = ["BDPI 평균", "코드품질", "리뷰품질", "개발효율", "목표치"];
 
 interface ProductivityTrendProps {
   month: string;
@@ -54,9 +54,9 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
       return {
         month: `${year}년 ${parseInt(monthNum)}월`,
         "BDPI 평균": item?.bdpiAverage ?? 0,
-        "코드 품질": item?.quality ?? 0,
-        "리뷰 품질": item?.review ?? 0,
-        "개발 효율": item?.efficiency ?? 0,
+        "코드품질": item?.quality ?? 0,
+        "리뷰품질": item?.review ?? 0,
+        "개발효율": item?.efficiency ?? 0,
         "목표치": item?.target ?? 0,
         _hasData: hasData, // 데이터 존재 여부 플래그
       };

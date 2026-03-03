@@ -74,7 +74,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
             {
               id: "code",
               value: data.quality.score,
-              label: "코드 품질",
+              label: "코드품질",
               sublabel: `${
                 data.quality.achievedMetrics === null
                   ? "-"
@@ -87,7 +87,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
             {
               id: "review",
               value: data.review.score,
-              label: "리뷰 품질",
+              label: "리뷰품질",
               sublabel: `${
                 data.review.achievedMetrics === null
                   ? "-"
@@ -100,7 +100,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
             {
               id: "efficiency",
               value: data.efficiency.score,
-              label: "개발 효율",
+              label: "개발효율",
               sublabel: `${
                 data.efficiency.achievedMetrics === null
                   ? "-"

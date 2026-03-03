@@ -22,7 +22,7 @@ export interface CompanyQualityMetrics {
   month: string; // 'YYYY-MM' 형식
   bdpiAverage: number; // 전사 BDPI 평균
   monthlyComparison: MonthlyComparison; // 전월 대비 변화
-  quality: QualityMetric; // 코드 품질
-  review: QualityMetric; // 리뷰 품질
-  efficiency: QualityMetric; // 개발 효율
+  quality: QualityMetric; // 코드품질
+  review: QualityMetric; // 리뷰품질
+  efficiency: QualityMetric; // 개발효율
 }

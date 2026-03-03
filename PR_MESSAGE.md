@@ -388,7 +388,7 @@ graph LR
 
 ## 체크리스트
 
-### 코드 품질
+### 코드품질
 - [x] 코드 리뷰 준비 완료
 - [x] 빌드 성공 (`npm run build`)
 - [x] ESLint 통과 (`npm run lint`)
