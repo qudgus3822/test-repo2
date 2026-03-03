@@ -467,42 +467,49 @@ const OrganizationPage = () => {
                   </span>
                 </Button>
               )}
-              {/* [변경: 2026-02-26 00:00, 김병현 수정] 하이어라키뷰: 팀열기/개인열기/초기화 버튼 3개 */}
+              {/* [변경: 2026-03-03 00:00, 김병현 수정] 하이어라키뷰: 팀열기→개인열기→초기화 순환 버튼 1개 */}
               {viewType === "hierarchy" && (
                 <>
-                  <Button
-                    variant={isTeamsExpanded && !isAllExpanded ? "primary" : "normal"}
-                    size="sm"
-                    responsive
-                    onClick={handleExpandTeams}
-                  >
-                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                      <ChevronsDown className="w-4 h-4" />
-                      <span className="hidden xl:inline">팀 열기</span>
-                    </span>
-                  </Button>
-                  <Button
-                    variant={isAllExpanded ? "primary" : "normal"}
-                    size="sm"
-                    responsive
-                    onClick={handleExpandAll}
-                  >
-                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                      <ChevronsDown className="w-4 h-4" />
-                      <span className="hidden xl:inline">개인 열기</span>
-                    </span>
-                  </Button>
-                  <Button
-                    variant="normal"
-                    size="sm"
-                    responsive
-                    onClick={handleReset}
-                  >
-                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                      <ChevronsUp className="w-4 h-4" />
-                      <span className="hidden xl:inline">초기화</span>
-                    </span>
-                  </Button>
+                  {isAllExpanded ? (
+                    // 전체 열림 상태 → 초기화 버튼
+                    <Button
+                      variant="normal"
+                      size="sm"
+                      responsive
+                      onClick={handleReset}
+                    >
+                      <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                        <ChevronsUp className="w-4 h-4" />
+                        <span className="hidden xl:inline">초기화</span>
+                      </span>
+                    </Button>
+                  ) : isTeamsExpanded ? (
+                    // 팀 열림 상태 → 개인 열기 버튼
+                    <Button
+                      variant="normal"
+                      size="sm"
+                      responsive
+                      onClick={handleExpandAll}
+                    >
+                      <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                        <ChevronsDown className="w-4 h-4" />
+                        <span className="hidden xl:inline">개인 열기</span>
+                      </span>
+                    </Button>
+                  ) : (
+                    // 기본 상태 → 팀 열기 버튼
+                    <Button
+                      variant="normal"
+                      size="sm"
+                      responsive
+                      onClick={handleExpandTeams}
+                    >
+                      <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                        <ChevronsDown className="w-4 h-4" />
+                        <span className="hidden xl:inline">팀 열기</span>
+                      </span>
+                    </Button>
+                  )}
                 </>
               )}
               {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 지표맞춤 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
