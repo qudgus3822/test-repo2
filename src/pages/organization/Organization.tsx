@@ -124,8 +124,6 @@ const OrganizationPage = () => {
     })),
   );
 
-  
-
   const setOrgHistoryModal = useDashboardStore(
     (state) => state.setOrgHistoryModal,
   );
@@ -418,30 +416,29 @@ const OrganizationPage = () => {
               )}
 
               {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 평균/총합 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
-              {(activeTab === "all" || activeTab === "bdpi") && (
+              {/* [변경: 2026-03-03, 김병현 수정] BDPI 탭에서는 평균/총합 버튼 전체 숨김 */}
+              {activeTab === "all" && (
                 <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                   <button
                     onClick={() => setAggregationType("avg")}
                     className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
-                      aggregationType === "avg" || activeTab === "bdpi"
+                      aggregationType === "avg"
                         ? "bg-[#005FCC] text-white"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
                     평균
                   </button>
-                  {activeTab !== "bdpi" && (
-                    <button
-                      onClick={() => setAggregationType("total")}
-                      className={`px-2 xl:px-4 py-1.5 border-l border-slate-200 text-sm font-medium whitespace-nowrap transition-colors ${
-                        aggregationType === "total"
-                          ? "bg-[#005FCC] text-white cursor-pointer"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
-                      }`}
-                    >
-                      총합
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setAggregationType("total")}
+                    className={`px-2 xl:px-4 py-1.5 border-l border-slate-200 text-sm font-medium whitespace-nowrap transition-colors ${
+                      aggregationType === "total"
+                        ? "bg-[#005FCC] text-white cursor-pointer"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
+                    }`}
+                  >
+                    총합
+                  </button>
                 </div>
               )}
             </div>
