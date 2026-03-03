@@ -164,12 +164,16 @@ export const ProgressSquare = ({
   // [변경: 2026-01-27 10:30, 임도휘 수정] 텍스트 엘리먼트 분리 (Tooltip 래핑용)
   // [변경: 2026-01-28 16:20, 임도휘 수정] 텍스트 크기 15px → 14.5px
   // [변경: 2026-01-29 17:30, 임도휘 수정] CSS 말줄임 제거 (JavaScript에서 10글자 이상 시 ".." 처리)
+  // [변경: 2026-03-03 11:00, 김병현 수정] 글자수에 따라 폰트 크기 조정
+  const len = displayValue.length;
+  const dynamicFontSize = len <= 5 ? "14.5px" : len <= 7 ? "12.5px" : "10px";
+
   const truncateClass = "whitespace-nowrap";
   const textElement = (
     <span
       className={`font-bold ${truncateClass} px-0.5 ${textColorClass}`}
       style={{
-        fontSize: "14.5px",
+        fontSize: dynamicFontSize,
         ...(hasData && {
           textShadow: isLevel5
             ? "0 1px 4px rgba(0, 0, 0, 0.8)"

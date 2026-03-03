@@ -243,7 +243,7 @@ export const MetricStandardSettingModal = ({
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-200 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
-        onClick={isClosing ? undefined : handleResetClick}
+        onClick={isClosing || isApplying ? undefined : handleResetClick}
       />
 
       {/* 모달 */}
@@ -278,7 +278,7 @@ export const MetricStandardSettingModal = ({
             </div>
             <button
               onClick={handleResetClick}
-              disabled={isClosing}
+              disabled={isClosing || isApplying}
               className="text-gray-400 hover:text-gray-600 cursor-pointer ml-4 flex-shrink-0 disabled:cursor-not-allowed"
             >
               <X className="w-5 h-5" />
