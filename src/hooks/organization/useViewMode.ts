@@ -82,7 +82,6 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
       // 지표 상세 정보 닫기
       setIsMetricDetailOpen(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate]);
 
   return {

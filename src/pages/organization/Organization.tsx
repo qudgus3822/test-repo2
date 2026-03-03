@@ -290,7 +290,8 @@ const OrganizationPage = () => {
   // isTeamsExpanded/isAllExpanded 상태에 따라 적절한 펼침 함수 호출
   useEffect(() => {
     if (organizations.length > 0) {
-      const { isTeamsExpanded, isAllExpanded } = useOrganizationStore.getState();
+      const { isTeamsExpanded, isAllExpanded } =
+        useOrganizationStore.getState();
       if (isAllExpanded) {
         const allCodes = getAllDepartmentCodes(organizations);
         useOrganizationStore.getState().expandAllMembers(allCodes);
