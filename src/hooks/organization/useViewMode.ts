@@ -74,14 +74,16 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
   }, [activeTab]);
 
   // [변경: 2026-02-06 00:00, 임도휘 수정] 날짜 변경 시 펼침 상태만 초기화 (필터는 유지)
+  // [변경: 2026-03-03 00:00, 김병현 수정] setIsTeamsExpanded를 dependency에서 제거 (store 액션 함수는 안정적이므로 불필요, dependency 포함 시 setSortConfig 호출 후 재실행되는 버그 발생)
   useEffect(() => {
     if (currentDate) {
       // 펼침 상태만 초기화
-      setIsTeamsExpanded(false);
+      useOrganizationStore.getState().setIsTeamsExpanded(false);
       // 지표 상세 정보 닫기
       setIsMetricDetailOpen(false);
     }
-  }, [currentDate, setIsTeamsExpanded]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDate]);
 
   return {
     viewType,
