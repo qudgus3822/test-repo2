@@ -60,7 +60,7 @@ export const MetricsSummary = ({ month }: MetricsSummaryProps) => {
       <div className="flex items-center gap-2">
         <h3 className="text-lg font-semibold text-gray-900">지표 현황</h3>
         <Tooltip
-          content="지표 기준 설정에서 변경된 목표값•달성기준•비율 설정은 즉시 전체 화면에 반영되며 해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다."
+          content="지표 기준 설정에서 변경된 목표값•달성률•비율 설정은 즉시 전체 화면에 반영되며 해당 월 데이터는 변경 기준에 맞춰 모두 재집계됩니다."
           maxWidth={300}
           direction="bottom"
         >

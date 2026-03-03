@@ -11,7 +11,7 @@ export const NULL_DISPLAY = "--";
 export const COMMON_HEADERS = {
   epicName: { label: "에픽명" },
   activeTicketCount: {
-    label: ["활성", "티켓수"],
+    label: ["활성", "티켓 수"],
     tooltip: "해당 월에 활성화 된 티켓 개수",
   },
   updatedCount: {
@@ -19,15 +19,15 @@ export const COMMON_HEADERS = {
     tooltip: "해당 월에 업데이트 된 개수이며, 생성과 완료는 집계 제외",
   },
   completedCount: {
-    label: ["완료", "티켓수"],
+    label: ["완료", "티켓 수"],
     tooltip: "해당 월에 완료된 티켓 개수",
   },
   createdCount: {
-    label: ["생성", "티켓수"],
+    label: ["생성", "티켓 수"],
     tooltip: "해당 월에 신규로 생성된 티켓 개수",
   },
   createdAt: {
-    label: "생성일자",
+    label: ["생성", "일자"],
     tooltip: "해당 에픽 생성일",
   },
 } as const;

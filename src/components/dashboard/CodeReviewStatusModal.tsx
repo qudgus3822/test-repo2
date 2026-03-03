@@ -262,7 +262,7 @@ export const CodeReviewStatusModal = () => {
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.completed.breakdown.singleContributor > 0 && (
                           <Tooltip
-                            content={`MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`}
+                            content={`MR 기여자 1명-${summary.completed.breakdown.singleContributor}개`}
                             direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
@@ -285,7 +285,7 @@ export const CodeReviewStatusModal = () => {
                                 summary.completed.count) *
                                 100 >=
                               30
-                                ? `MR 기여자 1명 ${summary.completed.breakdown.singleContributor}개`
+                                ? `MR 기여자 1명-${summary.completed.breakdown.singleContributor}개`
                                 : summary.completed.breakdown.singleContributor}
                             </div>
                           </Tooltip>
@@ -293,7 +293,7 @@ export const CodeReviewStatusModal = () => {
                         {summary.completed.breakdown.multipleContributors >
                           0 && (
                           <Tooltip
-                            content={`MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`}
+                            content={`MR 기여자 2명이상-${summary.completed.breakdown.multipleContributors}개`}
                             direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
@@ -316,7 +316,7 @@ export const CodeReviewStatusModal = () => {
                                 summary.completed.count) *
                                 100 >=
                               30
-                                ? `MR기여자 2명이상 ${summary.completed.breakdown.multipleContributors}개`
+                                ? `MR 기여자 2명이상-${summary.completed.breakdown.multipleContributors}개`
                                 : summary.completed.breakdown.multipleContributors +
                                   "개"}
                             </div>
@@ -342,7 +342,7 @@ export const CodeReviewStatusModal = () => {
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.incomplete.breakdown.singleContributor > 0 && (
                           <Tooltip
-                            content={`MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`}
+                            content={`MR 기여자 1명-${summary.incomplete.breakdown.singleContributor}개`}
                             direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
@@ -365,7 +365,7 @@ export const CodeReviewStatusModal = () => {
                                 summary.incomplete.count) *
                                 100 >=
                               30
-                                ? `MR 기여자 1명 ${summary.incomplete.breakdown.singleContributor}개`
+                                ? `MR 기여자 1명-${summary.incomplete.breakdown.singleContributor}개`
                                 : summary.incomplete.breakdown.singleContributor}
                             </div>
                           </Tooltip>
@@ -373,7 +373,7 @@ export const CodeReviewStatusModal = () => {
                         {summary.incomplete.breakdown.multipleContributors >
                           0 && (
                           <Tooltip
-                            content={`MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`}
+                            content={`MR 기여자 2명이상-${summary.incomplete.breakdown.multipleContributors}개`}
                             direction="bottom"
                             wrapperClassName="flex items-center justify-center font-medium whitespace-nowrap"
                             wrapperStyle={{
@@ -396,7 +396,7 @@ export const CodeReviewStatusModal = () => {
                                 summary.incomplete.count) *
                                 100 >=
                               30
-                                ? `MR기여자 2명이상 ${summary.incomplete.breakdown.multipleContributors}개`
+                                ? `MR 기여자 2명이상-${summary.incomplete.breakdown.multipleContributors}개`
                                 : summary.incomplete.breakdown.multipleContributors +
                                   "개"}
                             </div>
