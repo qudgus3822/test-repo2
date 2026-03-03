@@ -419,7 +419,11 @@ export const MetricStandardSettingModal = ({
                 {/* 버튼 영역 */}
                 <div className="flex items-end gap-3 self-end">
                   <AggregatingIndicator />
-                  <Button variant="cancel" size="sm" onClick={handleResetButtonClick}>
+                  <Button
+                    variant="cancel"
+                    size="sm"
+                    onClick={handleResetButtonClick}
+                  >
                     변경 초기화
                   </Button>
                   <Tooltip
