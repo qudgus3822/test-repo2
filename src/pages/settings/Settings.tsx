@@ -11,8 +11,6 @@ const tabs: { id: SettingsTab; label: string }[] = [
   { id: "user", label: "사용자 관리" },
 ];
 
-const USER_MANAGEMENT_TOOLTIP = `현재는 단일 관리자 권한으로, 인사 정보 기준 총괄/실장/팀장 직책만 로그인 권한이 자동으로 주어집니다.\n이외 사용자 추가 요청이 필요한 경우 슬랙 #휴넷모두의코딩 채널로 연락주세요.`;
-
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("organization");
 
