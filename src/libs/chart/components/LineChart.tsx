@@ -11,7 +11,7 @@ import {
 import { CHART_STYLES, LINE_CHART_MARGIN, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | undefined;
 }
 
 type YAxisDomainType = "auto" | "dataMinMax" | "fromZero" | [number, number];
@@ -34,6 +34,7 @@ interface LineChartProps {
     dataPoint: DataPoint,
   ) => string | number; // 툴팁 값 포맷터
   zeroLabel?: string; // 값이 0일 때 툴팁에 표시할 텍스트 (기본값: 없음)
+  nullLabel?: string; // 값이 null/undefined일 때 툴팁에 표시할 텍스트 (기본값: 없음)
 }
 
 /**
@@ -54,6 +55,7 @@ export const LineChart = ({
   dashedColor = "#9CA3AF", // gray-400
   tooltipValueFormatter,
   zeroLabel,
+  nullLabel,
 }: LineChartProps) => {
   // y축 domain 계산
   const getDomain = (): [number | string, number | string] | undefined => {
@@ -96,12 +98,14 @@ export const LineChart = ({
                 {yKeys.map((key) => {
                   const item = payload.find((p) => p.dataKey === key);
                   if (!item) return null;
-                  const rawValue = item.value as number;
+                  const rawValue = item.value as number | null | undefined;
                   const displayValue = tooltipValueFormatter
-                    ? tooltipValueFormatter(rawValue, key, dataPoint)
-                    : zeroLabel !== undefined && rawValue === 0
-                      ? zeroLabel
-                      : rawValue;
+                    ? tooltipValueFormatter(rawValue as number, key, dataPoint)
+                    : rawValue == null
+                      ? (nullLabel ?? rawValue)
+                      : zeroLabel !== undefined && rawValue === 0
+                        ? zeroLabel
+                        : rawValue;
                   return (
                     <p
                       key={key}

@@ -53,11 +53,11 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
 
       return {
         month: `${year}년 ${parseInt(monthNum)}월`,
-        "BDPI 평균": item?.bdpiAverage ?? 0,
-        "코드품질": item?.quality ?? 0,
-        "리뷰품질": item?.review ?? 0,
-        "개발효율": item?.efficiency ?? 0,
-        "목표치": item?.target ?? 0,
+        "BDPI 평균": item?.bdpiAverage,
+        "코드품질": item?.quality,
+        "리뷰품질": item?.review,
+        "개발효율": item?.efficiency,
+        "목표치": item?.target,
         _hasData: hasData, // 데이터 존재 여부 플래그
       };
     });
@@ -67,7 +67,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
   const tooltipValueFormatter = (
     value: number,
     _key: string,
-    dataPoint: Record<string, string | number | boolean>,
+    dataPoint: Record<string, string | number | boolean | undefined>,
   ) => {
     if (!dataPoint._hasData) {
       return "-";
