@@ -58,7 +58,7 @@ export const MetricTooltip = ({
       ? typeof targetValue === "number"
         ? Number.isInteger(targetValue)
           ? `${targetValue}`
-          : `${targetValue.toFixed(1)}`
+          : `${targetValue.toFixed(2)}`
         : `${targetValue}`
       : "--";
 
@@ -73,7 +73,7 @@ export const MetricTooltip = ({
     const integerPart = Math.floor(Math.abs(val));
     const firstDecimal = Math.floor(Math.abs(val * 10) % 10);
     const needsSecondDecimal = integerPart === 0 && firstDecimal === 0;
-    return needsSecondDecimal ? val.toFixed(2) : val.toFixed(1);
+    return needsSecondDecimal ? val.toFixed(2) : val.toFixed(2);
   };
 
   const formattedValue = formatCurrentValue(value);
@@ -142,7 +142,7 @@ export const MetricTooltip = ({
           <div className="flex-1">
             <div className="text-xs text-gray-400 mb-1">달성률</div>
             <div className="text-md font-medium text-gray-900">
-              {avgRate !== null ? `${avgRate.toFixed(1)} %` : "--"}
+              {avgRate !== null ? `${avgRate.toFixed(2)} %` : "--"}
             </div>
           </div>
           {/* 달성단계 */}

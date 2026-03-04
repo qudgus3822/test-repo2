@@ -76,7 +76,7 @@ const ChangeRateDisplay = ({
           className="w-4 h-4"
         />
       )}
-      <span>{Math.abs(changePercent).toFixed(1)}%</span>
+      <span>{Math.abs(changePercent).toFixed(2)}%</span>
     </div>
   );
 };

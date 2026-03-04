@@ -98,8 +98,8 @@ export const DonutChart = ({
             {noDataLabel
               ? noDataLabel
               : showPercentage
-                ? `${percentage.toFixed(1)}%`
-                : value.toFixed(1)}
+                ? `${percentage.toFixed(2)}%`
+                : value.toFixed(2)}
           </div>
           {trend && (
             <div
