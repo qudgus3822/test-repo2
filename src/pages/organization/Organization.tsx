@@ -426,12 +426,11 @@ const OrganizationPage = () => {
               )}
 
               {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 평균/총합 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
-              {/* [변경: 2026-03-04, 김병현 수정] BDPI 탭에서도 버튼 표시하되 평균 선택 상태로 고정 (실제 상태 변경 없음) */}
+              {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체/BDPI 탭: 평균/총합 필터 - 반응형 처리 (xl 미만: 패딩 축소) */}
+              {/* [변경: 2026-03-04, 김병현 수정] BDPI 탭에서 총합 버튼 숨김 처리 */}
               <div className="flex items-center ml-4 border border-slate-200 rounded-lg overflow-hidden">
                 <button
-                  onClick={() =>
-                    activeTab === "all" && setAggregationType("avg")
-                  }
+                  onClick={() => setAggregationType("avg")}
                   className={`cursor-pointer px-2 xl:px-4 py-1.5 text-sm font-medium whitespace-nowrap transition-colors ${
                     activeTab === "bdpi" || aggregationType === "avg"
                       ? "bg-[#005FCC] text-white"
@@ -441,13 +440,10 @@ const OrganizationPage = () => {
                   평균
                 </button>
                 <button
-                  onClick={() =>
-                    activeTab === "all" && setAggregationType("total")
-                  }
-                  disabled={activeTab === "bdpi"}
+                  onClick={() => setAggregationType("total")}
                   className={`px-2 xl:px-4 py-1.5 border-l border-slate-200 text-sm font-medium whitespace-nowrap transition-colors ${
                     activeTab === "bdpi"
-                      ? "bg-gray-100 text-gray-300 cursor-not-allowed"
+                      ? "hidden"
                       : aggregationType === "total"
                         ? "bg-[#005FCC] text-white cursor-pointer"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200 cursor-pointer"
