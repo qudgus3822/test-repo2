@@ -134,6 +134,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
           dashedKeys={["목표치"]}
           yAxisDomain={yAxisDomain}
           tooltipValueFormatter={tooltipValueFormatter}
+          nullLabel="-"
         />
       </div>
     </Card>
