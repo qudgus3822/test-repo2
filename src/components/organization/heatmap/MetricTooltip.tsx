@@ -138,7 +138,7 @@ export const MetricTooltip = ({
           <div className="flex-1">
             <div className="text-xs text-gray-400 mb-1">달성률</div>
             <div className="text-md font-medium text-gray-900">
-              {avgRate !== null ? `${avgRate.toFixed(2)} %` : "--"}
+              {avgRate !== null ? `${parseFloat(avgRate.toFixed(2))} %` : "--"}
             </div>
           </div>
           {/* 달성단계 */}
