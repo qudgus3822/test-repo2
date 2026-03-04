@@ -69,11 +69,7 @@ export const MetricTooltip = ({
     if (typeof val !== "number") return `${val}`;
     if (Number.isInteger(val)) return `${val}`;
 
-    // 정수부가 0이고 소수점 첫째자리도 0이면 둘째자리까지
-    const integerPart = Math.floor(Math.abs(val));
-    const firstDecimal = Math.floor(Math.abs(val * 10) % 10);
-    const needsSecondDecimal = integerPart === 0 && firstDecimal === 0;
-    return needsSecondDecimal ? val.toFixed(2) : val.toFixed(2);
+    return parseFloat(val.toFixed(2)).toString();
   };
 
   const formattedValue = formatCurrentValue(value);
