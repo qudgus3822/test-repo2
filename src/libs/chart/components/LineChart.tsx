@@ -33,6 +33,7 @@ interface LineChartProps {
     key: string,
     dataPoint: DataPoint,
   ) => string | number; // 툴팁 값 포맷터
+  zeroLabel?: string; // 값이 0일 때 툴팁에 표시할 텍스트 (기본값: 없음)
 }
 
 /**
@@ -52,6 +53,7 @@ export const LineChart = ({
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
   tooltipValueFormatter,
+  zeroLabel,
 }: LineChartProps) => {
   // y축 domain 계산
   const getDomain = (): [number | string, number | string] | undefined => {
@@ -94,9 +96,12 @@ export const LineChart = ({
                 {yKeys.map((key) => {
                   const item = payload.find((p) => p.dataKey === key);
                   if (!item) return null;
+                  const rawValue = item.value as number;
                   const displayValue = tooltipValueFormatter
-                    ? tooltipValueFormatter(item.value as number, key, dataPoint)
-                    : item.value;
+                    ? tooltipValueFormatter(rawValue, key, dataPoint)
+                    : zeroLabel !== undefined && rawValue === 0
+                      ? zeroLabel
+                      : rawValue;
                   return (
                     <p
                       key={key}

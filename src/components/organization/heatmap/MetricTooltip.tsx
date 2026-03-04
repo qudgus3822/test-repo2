@@ -58,7 +58,7 @@ export const MetricTooltip = ({
       ? typeof targetValue === "number"
         ? Number.isInteger(targetValue)
           ? `${targetValue}`
-          : `${targetValue.toFixed(2)}`
+          : `${parseFloat(targetValue.toFixed(2))}`
         : `${targetValue}`
       : "--";
 

@@ -72,7 +72,7 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
     if (!dataPoint._hasData) {
       return "-";
     }
-    return value;
+    return value === 0 ? "-" : value;
   };
 
   // yAxisDomain 계산 (데이터의 최소값, 최대값)

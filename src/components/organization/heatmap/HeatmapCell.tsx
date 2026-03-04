@@ -111,7 +111,7 @@ export const HeatmapCell = ({
 
   // [변경: 2026-01-26 15:50, 임도휘 수정] hideValue가 true일 때 마우스 오버 시 달성률 표시 (avgRate 사용)
   const avgRateTooltip =
-    hideValue && avgRate !== null ? `달성률: ${avgRate.toFixed(2)}%` : undefined;
+    hideValue && avgRate !== null ? `달성률: ${parseFloat(avgRate.toFixed(2))}%` : undefined;
 
   return (
     <div

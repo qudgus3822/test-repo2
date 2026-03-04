@@ -214,7 +214,7 @@ export const MetricsPreviewTable = ({
                   </div>
                 </td>
                 <td className="px-4 text-sm text-gray-600">
-                  {metric.weightRatio.toFixed(2)}%
+                  {parseFloat(metric.weightRatio.toFixed(2))}%
                 </td>
               </tr>
             ))}

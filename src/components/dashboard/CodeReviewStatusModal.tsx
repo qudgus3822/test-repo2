@@ -257,7 +257,7 @@ export const CodeReviewStatusModal = () => {
                     >
                       <div className="text-sm font-medium text-gray-900 mb-2 text-center">
                         리뷰 완료 {summary.completed.count}개 (
-                        {summary.completed.rate.toFixed(2)}%)
+                        {parseFloat(summary.completed.rate.toFixed(2))}%)
                       </div>
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.completed.breakdown.singleContributor > 0 && (
@@ -337,7 +337,7 @@ export const CodeReviewStatusModal = () => {
                     >
                       <div className="text-sm font-medium text-gray-900 mb-2 text-center">
                         리뷰 미완료 {summary.incomplete.count}개 (
-                        {summary.incomplete.rate.toFixed(2)}%)
+                        {parseFloat(summary.incomplete.rate.toFixed(2))}%)
                       </div>
                       <div className="flex h-6 rounded overflow-hidden text-xs">
                         {summary.incomplete.breakdown.singleContributor > 0 && (
