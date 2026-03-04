@@ -197,6 +197,8 @@ export const MetricStandardSettingModal = ({
     } catch {
       window.confirm("변경내역 초기화 중 오류가 발생했습니다.");
       setIsClosing(false);
+    } finally {
+      setIsClosing(false);
     }
   };
 
