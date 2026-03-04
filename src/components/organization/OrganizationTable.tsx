@@ -842,16 +842,8 @@ export const OrganizationTable = ({
                   const excellentThreshold = thresholds?.excellent ?? 80;
                   const dangerThreshold = thresholds?.danger ?? 60;
 
-                  // [변경: 2026-02-27 00:00, 김병현 수정] 각 범례별 개별 툴팁으로 분리
-                  const criteriaTooltip =
-                    cat.id === "overAchieved"
-                      ? "목표값에 대한 달성률을 기반으로 구분합니다.\n\n초과달성: 100% 초과"
-                      : cat.id === "excellent"
-                        ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n우수: ${excellentThreshold}% 이상 ~ 100% 이하`
-                        : cat.id === "warning"
-                          ? `목표값에 대한 달성률을 기반으로 구분합니다.\n\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만`
-                          : `목표값에 대한 달성률을 기반으로 구분합니다.\n\n위험: ${dangerThreshold}% 미만`;
-
+                  const criteriaTooltip = `지표 기준 설정에서 설정한 달성률을 기반으로 구분합니다.\n\n초과달성: 100% 초과\n우수: ${excellentThreshold}% 이상 ~ 100% 이하\n경고: ${dangerThreshold}% 이상 ~ ${excellentThreshold}% 미만\n위험: ${dangerThreshold}% 미만`;
+                  
                   return (
                     <th
                       key={cat.id}

@@ -104,7 +104,7 @@ const ChangeRateDisplay = ({
           className="w-4 h-4"
         />
       )}
-      <span>{Math.abs(changePercent).toFixed(2)}%</span>
+      <span>{parseFloat(Math.abs(changePercent).toFixed(2))}%</span>
     </div>
   );
 };

@@ -125,7 +125,7 @@ export const MetricsDetailModal = ({
               </h3>
               <div className="bg-gray-50 rounded-lg px-4 py-3">
                 <div className="text-sm font-medium text-gray-900">
-                  {metric.weightRatio.toFixed(2)}%
+                  {parseFloat(metric.weightRatio.toFixed(2))}%
                 </div>
               </div>
             </div> */}

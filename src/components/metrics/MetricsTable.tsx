@@ -378,7 +378,7 @@ export const MetricsTable = ({ month }: MetricsTableProps) => {
                       </div>
                     </td>
                     <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-sm text-gray-600 text-center">
-                      {metric.weightRatio.toFixed(2)}%
+                      {parseFloat(metric.weightRatio.toFixed(2))}%
                     </td>
                     <td className="px-0.5 [@media(min-width:755px)]:px-2 [@media(min-width:855px)]:px-4 py-3 text-center">
                       <button
