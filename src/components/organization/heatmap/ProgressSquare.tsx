@@ -88,7 +88,7 @@ export const ProgressSquare = ({
       } else {
         // 실제값 모드: 글자수 기반 포맷팅
         // 글자수 계산 시 항상 소수점 1자리 기준 (예: 1234 → "1234.0" = 6글자)
-        const baseFormatted = value.toFixed(1);
+        const baseFormatted = value.toFixed(2);
         const charCount = baseFormatted.length;
         // [변경: 2026-01-28 16:30, 임도휘 수정] 소수점 표기 조건
         // - 정수인 경우 소수점 없이 표시
@@ -112,7 +112,7 @@ export const ProgressSquare = ({
         } else if (charCount === 9) {
           // 9글자 (100만 단위): 소수점 1자리 + "만"
           const inMan = value / 10000;
-          formattedNum = `${inMan.toFixed(1)}만`;
+          formattedNum = `${inMan.toFixed(2)}만`;
         } else {
           // 10글자 이상: 원본값에서 말줄임 (만 단위 변환 없음)
           formattedNum = `${fullValue.slice(0, MAX_DISPLAY_LENGTH - 2)}..`;

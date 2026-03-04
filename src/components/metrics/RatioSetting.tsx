@@ -116,7 +116,7 @@ export const RatioSetting = ({ month, onApply }: RatioSettingProps) => {
   // 비율 계산 함수
   const calculateRatio = (weight: number): string => {
     if (totalWeight === 0) return "0.0";
-    return ((weight / totalWeight) * 100).toFixed(1);
+    return ((weight / totalWeight) * 100).toFixed(2);
   };
 
   // 가중치 변경 핸들러

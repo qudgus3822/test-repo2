@@ -177,7 +177,7 @@ export const MemberMetricRankingModal = ({
                         score !== null && score >= 100 ? "#fff" : "#374151",
                     }}
                   >
-                    {score !== null ? `${score.toFixed(1)}%` : "--"}
+                    {score !== null ? `${score.toFixed(2)}%` : "--"}
                   </span>
                 </div>
               </div>

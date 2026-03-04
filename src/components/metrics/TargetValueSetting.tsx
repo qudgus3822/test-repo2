@@ -44,8 +44,8 @@ const validateTargetValue = (value: string): ValidationError => {
     return "empty";
   }
 
-  // 숫자 및 소수점 첫째자리까지만 허용하는 정규식
-  const validNumberRegex = /^[0-9]+(\.[0-9])?$/;
+  // 숫자 및 소수점 둘째자리까지만 허용하는 정규식
+  const validNumberRegex = /^[0-9]+(\.[0-9]{1,2})?$/;
   if (!validNumberRegex.test(trimmedValue)) {
     return "invalid";
   }
@@ -59,7 +59,7 @@ const getErrorMessage = (error: ValidationError): string => {
     case "empty":
       return "목표값을 입력해주세요.";
     case "invalid":
-      return "정수 및 소수점 첫번째 자리까지 입력";
+      return "정수 및 소수점 두번째 자리까지 입력";
     default:
       return "";
   }

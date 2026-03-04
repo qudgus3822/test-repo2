@@ -248,7 +248,7 @@ export const OrganizationDetailModal = ({
                           color: getScoreTextColor(deptMetrics.bdpi.value ?? null),
                         }}
                       >
-                        {(deptMetrics.bdpi.value ?? 0).toFixed(1)}
+                        {(deptMetrics.bdpi.value ?? 0).toFixed(2)}
                       </span>
                     </td>
                   </tr>
@@ -321,7 +321,7 @@ export const OrganizationDetailModal = ({
                           color: getScoreTextColor(memberMetrics.bdpi.value ?? null),
                         }}
                       >
-                        {(memberMetrics.bdpi.value ?? 0).toFixed(1)}
+                        {(memberMetrics.bdpi.value ?? 0).toFixed(2)}
                       </span>
                     </td>
                   </tr>
@@ -411,7 +411,7 @@ export const OrganizationDetailModal = ({
                           ),
                         }}
                       >
-                        {(bdpiMetrics?.quality?.value ?? 0).toFixed(1)}
+                        {(bdpiMetrics?.quality?.value ?? 0).toFixed(2)}
                       </div>
                     </div>
                     <div
@@ -431,7 +431,7 @@ export const OrganizationDetailModal = ({
                           ),
                         }}
                       >
-                        {(bdpiMetrics?.review?.value ?? 0).toFixed(1)}
+                        {(bdpiMetrics?.review?.value ?? 0).toFixed(2)}
                       </div>
                     </div>
                     <div
@@ -451,7 +451,7 @@ export const OrganizationDetailModal = ({
                           ),
                         }}
                       >
-                        {(bdpiMetrics?.efficiency?.value ?? 0).toFixed(1)}
+                        {(bdpiMetrics?.efficiency?.value ?? 0).toFixed(2)}
                       </div>
                     </div>
                     <div
@@ -469,7 +469,7 @@ export const OrganizationDetailModal = ({
                           color: getScoreTextColor(bdpiMetrics?.bdpi?.value ?? null),
                         }}
                       >
-                        {(bdpiMetrics?.bdpi?.value ?? 0).toFixed(1)}
+                        {(bdpiMetrics?.bdpi?.value ?? 0).toFixed(2)}
                       </div>
                     </div>
                   </div>

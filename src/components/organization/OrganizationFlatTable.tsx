@@ -589,11 +589,7 @@ export const OrganizationFlatTable = ({
     (code: string) => {
       const visibleInfo = metricVisibleMap[code];
 
-      if (
-        visibleInfo.groups.length === 0 &&
-        aggregationType !== "total" &&
-        filterType !== "member"
-      ) {
+      if (visibleInfo.groups.length === 0) {
         return true; // groups 빈 배열, 평균,  실/팀 일 경우에는 숨김처리 실/팀의 평균 값이 없는 지표가 있음 (테스트 커버리지, 코드 결함 밀도)
       }
       return (

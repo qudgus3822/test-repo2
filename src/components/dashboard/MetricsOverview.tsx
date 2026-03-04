@@ -140,7 +140,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
             <div className="text-center flex flex-col gap-3.5">
               {/* [변경: 2026-01-27 16:30, 임도휘 수정] BDPI 값 세로 확대(scale-y-110), 색상 변경(darkBlue) */}
               <div className="text-4xl font-bold [@media(min-width:1400px)]:text-5xl scale-y-110 origin-center" style={{ color: PALETTE_COLORS.darkBlue }}>
-                {bdpiAverage.value === 0 ? "-" : bdpiAverage.value.toFixed(1)}
+                {bdpiAverage.value === 0 ? "-" : bdpiAverage.value.toFixed(2)}
               </div>
               {/* [변경: 2026-01-27 14:30, 임도휘 수정] 전사 BDPI 평균 텍스트 줄바꿈 방지 */}
               <div className="flex items-center justify-center gap-1">
@@ -188,7 +188,7 @@ export const MetricsOverview = ({ month }: MetricsOverviewProps) => {
                         <img src={downIcon} alt="down" />
                       )}
                     </span>
-                    <span>{Math.abs(bdpiAverage.trend.value).toFixed(1)}%</span>
+                    <span>{Math.abs(bdpiAverage.trend.value).toFixed(2)}%</span>
                   </div>
                 )}
               </div>
