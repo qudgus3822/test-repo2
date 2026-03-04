@@ -14,7 +14,9 @@ import { useOrganizationStore } from "@/store/useOrganizationStore";
  */
 export const useViewMode = (activeTab: string, currentDate?: Date) => {
   // 서브탭 상태: 하이어라키뷰 / 플랫뷰
-  const [viewType, setViewTypeState] = useState<"hierarchy" | "flat">("hierarchy");
+  const [viewType, setViewTypeState] = useState<"hierarchy" | "flat">(
+    "hierarchy",
+  );
 
   // [변경: 2026-01-30 10:30, 임도휘 수정] 뷰 타입 변경 시 전체 팀 펼침 상태 초기화
   const setIsTeamsExpanded = useOrganizationStore(
@@ -22,9 +24,7 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
   );
 
   // [변경: 2026-02-13 13:52, 임도휘 수정] 필터 변경 시 테이블 헤더 정렬 초기화를 위해 setSortConfig 가져옴
-  const setSortConfig = useOrganizationStore(
-    (state) => state.setSortConfig,
-  );
+  const setSortConfig = useOrganizationStore((state) => state.setSortConfig);
 
   const setViewType = useCallback(
     (type: "hierarchy" | "flat") => {
@@ -90,6 +90,7 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
       setIsMetricDetailOpen(false);
     }
   }, [currentDate]);
+
 
   return {
     viewType,
