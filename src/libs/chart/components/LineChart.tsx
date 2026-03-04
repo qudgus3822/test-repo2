@@ -11,7 +11,7 @@ import {
 import { CHART_STYLES, LINE_CHART_MARGIN, MULTI_LINE_COLORS } from "../config";
 
 interface DataPoint {
-  [key: string]: string | number | boolean | undefined;
+  [key: string]: string | number | boolean | null | undefined;
 }
 
 type YAxisDomainType = "auto" | "dataMinMax" | "fromZero" | [number, number];
@@ -33,8 +33,8 @@ interface LineChartProps {
     key: string,
     dataPoint: DataPoint,
   ) => string | number; // 툴팁 값 포맷터
-  zeroLabel?: string; // 값이 0일 때 툴팁에 표시할 텍스트 (기본값: 없음)
   nullLabel?: string; // 값이 null/undefined일 때 툴팁에 표시할 텍스트 (기본값: 없음)
+  connectNulls?: boolean; // null/undefined 구간을 이어서 그릴지 여부 (기본값: false)
 }
 
 /**
@@ -54,8 +54,8 @@ export const LineChart = ({
   dashedKeys = [],
   dashedColor = "#9CA3AF", // gray-400
   tooltipValueFormatter,
-  zeroLabel,
   nullLabel,
+  connectNulls = false,
 }: LineChartProps) => {
   // y축 domain 계산
   const getDomain = (): [number | string, number | string] | undefined => {
@@ -95,23 +95,27 @@ export const LineChart = ({
             return (
               <div style={CHART_STYLES.tooltip.contentStyle}>
                 <p style={CHART_STYLES.tooltip.labelStyle}>{label}</p>
-                {yKeys.map((key) => {
+                {yKeys.map((key, index) => {
                   const item = payload.find((p) => p.dataKey === key);
-                  if (!item) return null;
-                  const rawValue = item.value as number | null | undefined;
+                  // null/undefined 값은 recharts가 payload에 포함시키지 않으므로 dataPoint에서 직접 읽음
+                  const rawValue = item
+                    ? (item.value as number | null | undefined)
+                    : (dataPoint[key] as number | null | undefined);
+                  const isDashed = dashedKeys.includes(key);
+                  const color =
+                    item?.color ??
+                    (isDashed ? dashedColor : colors[index % colors.length]);
                   const displayValue = tooltipValueFormatter
                     ? tooltipValueFormatter(rawValue as number, key, dataPoint)
                     : rawValue == null
                       ? (nullLabel ?? rawValue)
-                      : zeroLabel !== undefined && rawValue === 0
-                        ? zeroLabel
-                        : rawValue;
+                      : rawValue;
                   return (
                     <p
                       key={key}
                       style={{
                         ...CHART_STYLES.tooltip.itemStyle,
-                        color: item.color,
+                        color,
                       }}
                     >
                       {`${key}: ${displayValue}`}
@@ -167,6 +171,7 @@ export const LineChart = ({
               strokeDasharray={isDashed ? "5 5" : undefined}
               dot={showDots && !isDashed ? { r: 4 } : false}
               activeDot={showDots ? { r: 6 } : false}
+              connectNulls={connectNulls}
             />
           );
         })}

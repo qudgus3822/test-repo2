@@ -53,12 +53,18 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
 
       return {
         month: `${year}년 ${parseInt(monthNum)}월`,
-        "BDPI 평균": item?.bdpiAverage,
-        "코드품질": item?.quality,
-        "리뷰품질": item?.review,
-        "개발효율": item?.efficiency,
-        "목표치": item?.target,
-        _hasData: hasData, // 데이터 존재 여부 플래그
+        // [변경: 2026-03-04 00:00, 김병현 수정] null이면 0으로 채워 라인이 끊기지 않게 하고, 개별 null 여부는 _null_* 플래그로 관리
+        "BDPI 평균": item?.bdpiAverage ?? 0,
+        "코드품질": item?.quality ?? 0,
+        "리뷰품질": item?.review ?? 0,
+        "개발효율": item?.efficiency ?? 0,
+        "목표치": item?.target ?? 0,
+        _null_BDPI평균: item?.bdpiAverage == null,
+        _null_코드품질: item?.quality == null,
+        _null_리뷰품질: item?.review == null,
+        _null_개발효율: item?.efficiency == null,
+        _null_목표치: item?.target == null,
+        _hasData: hasData,
       };
     });
   }, [developerProductivityData, month]);
@@ -66,13 +72,15 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
   // 툴팁 값 포맷터 (데이터 없는 경우 "-" 표시)
   const tooltipValueFormatter = (
     value: number,
-    _key: string,
-    dataPoint: Record<string, string | number | boolean | undefined>,
+    key: string,
+    dataPoint: Record<string, string | number | boolean | undefined | null>,
   ) => {
-    if (!dataPoint._hasData) {
+    // [변경: 2026-03-04 00:00, 김병현 수정] 각 지표별 null 여부를 개별 플래그로 체크
+    const nullKey = `_null_${key.replace(" ", "")}`;
+    if (dataPoint[nullKey]) {
       return "-";
     }
-    return value === 0 ? "-" : value;
+    return value;
   };
 
   // yAxisDomain 계산 (데이터의 최소값, 최대값)
@@ -134,7 +142,6 @@ export const ProductivityTrend = ({ month }: ProductivityTrendProps) => {
           dashedKeys={["목표치"]}
           yAxisDomain={yAxisDomain}
           tooltipValueFormatter={tooltipValueFormatter}
-          nullLabel="-"
         />
       </div>
     </Card>
