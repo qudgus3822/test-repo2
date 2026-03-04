@@ -26,6 +26,7 @@ interface DisplayMetric {
   status: StatusType;
   trend: {
     show: boolean;
+    isSame: boolean;
     isPositive: boolean;
     value: number;
   };
@@ -53,7 +54,7 @@ const formatMetric = (
   metric: ServiceStabilityMetric,
 ): DisplayMetric => {
   const { direction, changePercent } = metric.monthlyComparison;
-  const showTrend = direction !== "no_data" && direction !== "new" && changePercent !== 0;
+  const showTrend = direction !== "no_data" && direction !== "new";
 
   return {
     id: config.id,
@@ -63,6 +64,7 @@ const formatMetric = (
     status: metric.status,
     trend: {
       show: showTrend,
+      isSame: changePercent === 0,
       isPositive: direction === "up",
       value: Math.abs(changePercent),
     },
@@ -104,27 +106,37 @@ const MetricCard = ({ metric }: { metric: DisplayMetric }) => {
       <div className="flex items-center gap-1 text-sm">
         <span>전월대비</span>
         {metric.trend.show ? (
-          <div
-            className="flex items-center gap-1 font-medium"
-            style={{
-              color: metric.trend.isPositive
-                ? TREND_COLORS.increase
-                : TREND_COLORS.decrease,
-            }}
-          >
-            <img
-              src={metric.trend.isPositive ? upIcon : downIcon}
-              alt={metric.trend.isPositive ? "up" : "down"}
-            />
-            <span>{metric.trend.value}%</span>
-          </div>
+          metric.trend.isSame ? (
+            // [변경: 2026-03-04, 김병현 수정] same(0%) 케이스 회색 처리 추가
+            <span className="font-medium text-gray-400">0%</span>
+          ) : (
+            <div
+              className="flex items-center gap-1 font-medium"
+              style={{
+                color: metric.trend.isPositive
+                  ? TREND_COLORS.increase
+                  : TREND_COLORS.decrease,
+              }}
+            >
+              <img
+                src={metric.trend.isPositive ? upIcon : downIcon}
+                alt={metric.trend.isPositive ? "up" : "down"}
+              />
+              <span>{metric.trend.value}%</span>
+            </div>
+          )
         ) : (
           <span className="text-gray-400">--</span>
         )}
       </div>
 
       {/* 메트릭 라벨 */}
-      <div className="text-md text-gray-500 font-bold line-clamp-2 text-center" title={metric.label}>{metric.label}</div>
+      <div
+        className="text-md text-gray-500 font-bold line-clamp-2 text-center"
+        title={metric.label}
+      >
+        {metric.label}
+      </div>
     </div>
   );
 };

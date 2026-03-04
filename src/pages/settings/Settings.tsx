@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { Info } from "lucide-react";
 import { OrganizationManagement } from "@/components/settings/OrganizationManagement";
 import { UserManagement } from "@/components/settings/UserManagement";
 import { Tabs } from "@/components/ui/Tabs";
-import { Tooltip } from "@/components/ui/Tooltip";
 import { Card } from "@/components/ui/Card";
 
 type SettingsTab = "organization" | "user";
@@ -34,16 +32,6 @@ const SettingsPage = () => {
               activeTab={activeTab}
               onTabChange={setActiveTab}
             />
-            {
-              <Tooltip
-                content={USER_MANAGEMENT_TOOLTIP}
-                direction="bottom"
-                maxWidth={380}
-                wrapperClassName="inline-flex items-center pb-4 -mb-3"
-              >
-                <Info className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600" />
-              </Tooltip>
-            }
           </div>
         </div>
 

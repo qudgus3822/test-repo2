@@ -292,6 +292,7 @@ const OrganizationPage = () => {
     if (organizations.length > 0) {
       const { isTeamsExpanded, isAllExpanded } =
         useOrganizationStore.getState();
+        
       if (isAllExpanded) {
         const allCodes = getAllDepartmentCodes(organizations);
         useOrganizationStore.getState().expandAllMembers(allCodes);
