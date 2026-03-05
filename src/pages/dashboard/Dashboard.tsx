@@ -59,11 +59,6 @@ const DASHBOARD_HELP_IMAGES = [
     alt: "대시보드 도움말 9",
     title: "홈 > 상세보기(코드 리뷰 진행 현황)",
   },
-  {
-    src: "/help/dashboard-help-9.png",
-    alt: "대시보드 도움말 10",
-    title: "홈 > 튜토리얼",
-  },
 ];
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
