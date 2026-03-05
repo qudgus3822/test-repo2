@@ -168,6 +168,7 @@ export const MemberMetricRankingModal = ({
                         backgroundColor: getAchievementRateColor(score),
                       }}
                     />
+                    
                   )}
                   {/* 점수 표시 */}
                   <span
