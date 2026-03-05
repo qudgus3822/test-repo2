@@ -155,7 +155,7 @@ export const MemberMetricRankingModal = ({
             {sortedMetrics.map(({ name, score }, index) => (
               <div key={`${name}-${index}`} className="flex items-center gap-2">
                 {/* 지표명 */}
-                <div className="w-[100px] text-sm text-gray-700 truncate flex-shrink-0">
+                <div className="w-[120px] text-sm text-gray-700 truncate flex-shrink-0">
                   {name}
                 </div>
                 {/* 막대 그래프 */}
@@ -168,6 +168,7 @@ export const MemberMetricRankingModal = ({
                         backgroundColor: getAchievementRateColor(score),
                       }}
                     />
+                    
                   )}
                   {/* 점수 표시 */}
                   <span
