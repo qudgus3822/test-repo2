@@ -91,7 +91,7 @@ export const HelpModal = ({
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-lg shadow-xl flex flex-col w-[95vw] h-[95vh]"
+          className="bg-white rounded-lg shadow-xl flex flex-col max-w-[90vw] max-h-[90vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* 헤더 */}
@@ -108,7 +108,7 @@ export const HelpModal = ({
           </div>
 
           {/* 이미지 영역 */}
-          <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex flex-col overflow-hidden">
             {/* 이미지 타이틀 (있을 때만 표시) */}
             {images[currentIndex].title && (
               <div
@@ -121,11 +121,11 @@ export const HelpModal = ({
                 </h3>
               </div>
             )}
-            <div className="flex items-center justify-center bg-gray-50 flex-1 overflow-hidden">
+            <div className="flex items-center justify-center  px-4 pt-4 pb-8">
               <img
                 src={images[currentIndex].src}
                 alt={images[currentIndex].alt}
-                className={`max-w-full max-h-full object-contain transition-opacity duration-150 ${
+                className={`max-w-[80vw] max-h-[65vh] object-contain transition-opacity duration-150 ${
                   imgVisible ? "opacity-100" : "opacity-0"
                 }`}
               />
