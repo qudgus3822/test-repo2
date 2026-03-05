@@ -26,6 +26,9 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
   // [변경: 2026-02-13 13:52, 임도휘 수정] 필터 변경 시 테이블 헤더 정렬 초기화를 위해 setSortConfig 가져옴
   const setSortConfig = useOrganizationStore((state) => state.setSortConfig);
 
+  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 (테이블 내부 MetricDetailInfo)
+  const [isMetricDetailOpen, setIsMetricDetailOpen] = useState(false);
+
   const setViewType = useCallback(
     (type: "hierarchy" | "flat") => {
       setViewTypeState(type);
@@ -41,10 +44,12 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
     useState<FlatViewFilterType>("division");
 
   // [변경: 2026-02-13 13:52, 임도휘 수정] 실/팀/개인 필터 변경 시 정렬 초기화
+  // [변경: 2026-03-05 00:00, 김병현 수정] flatViewFilter 변경 시 지표 상세 정보 닫기
   const setFlatViewFilter = useCallback(
     (filter: FlatViewFilterType) => {
       setFlatViewFilterState(filter);
       setSortConfig({ column: null, direction: null });
+      setIsMetricDetailOpen(false);
     },
     [setSortConfig],
   );
@@ -54,19 +59,18 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
     useState<AggregationType>("avg");
 
   // [변경: 2026-02-13 13:52, 임도휘 수정] 평균/총합 필터 변경 시 정렬 초기화
+  // [변경: 2026-03-05 00:00, 김병현 수정] aggregationType 변경 시 지표 상세 정보 닫기
   const setAggregationType = useCallback(
     (type: AggregationType) => {
       setAggregationTypeState(type);
       setSortConfig({ column: null, direction: null });
+      setIsMetricDetailOpen(false);
     },
     [setSortConfig],
   );
 
   // 테이블 전체보기 (zoom 축소) 모드
   const [isTableZoomed, setIsTableZoomed] = useState(false);
-
-  // [변경: 2026-01-20 15:30, 김병현 수정] 지표 상세 정보 표시 상태 (테이블 내부 MetricDetailInfo)
-  const [isMetricDetailOpen, setIsMetricDetailOpen] = useState(false);
 
   // 탭 변경 시 전체보기 모드 초기화
   useEffect(() => {
@@ -90,7 +94,6 @@ export const useViewMode = (activeTab: string, currentDate?: Date) => {
       setIsMetricDetailOpen(false);
     }
   }, [currentDate]);
-
 
   return {
     viewType,
