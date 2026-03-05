@@ -136,7 +136,7 @@ export const Tooltip = ({
         createPortal(
           <div
             ref={tooltipRef}
-            className={`fixed z-[9999] px-3 py-2 ${fontSize} text-white rounded-lg shadow-lg pointer-events-none ${noWrap ? "whitespace-nowrap" : "whitespace-pre-line break-words"}`}
+            className={`fixed z-[9999] px-3 py-2 ${fontSize} text-white rounded-lg shadow-lg pointer-events-none ${noWrap ? "whitespace-pre" : "whitespace-pre-line break-words"}`}
             style={{
               backgroundColor: color,
               ...(direction === "bottom"
@@ -155,7 +155,8 @@ export const Tooltip = ({
                       top: `${position.top - 8}px`,
                       left: `${position.left}px`,
                     }),
-              ...(maxWidth !== undefined && { maxWidth: `${maxWidth}px` }),
+              // noWrap일 때는 maxWidth를 무시하여 텍스트가 잘리지 않도록 함
+              ...(!noWrap && maxWidth !== undefined && { maxWidth: `${maxWidth}px` }),
             }}
           >
             {content}

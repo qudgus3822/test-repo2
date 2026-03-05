@@ -11,6 +11,7 @@ import {
   ChevronsUp,
   Shrink,
   Expand,
+  HelpCircle,
 } from "lucide-react";
 import { useShallow } from "zustand/react/shallow";
 import { Card } from "@/components/ui/Card";
@@ -26,6 +27,7 @@ import {
   OrganizationDetailModal,
 } from "@/components/organization";
 import { OrgChangeHistoryModal } from "@/components/dashboard";
+import { HelpModal } from "@/components/ui/HelpModal";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
@@ -81,7 +83,58 @@ const getAllDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   return codes;
 };
 
+// 조직 현황 도움말 이미지 목록
+const ORGANIZATION_HELP_IMAGES: { src: string; alt: string; title: string }[] =
+  [
+    {
+      src: "/help/organization-help-0.png",
+      alt: "조직 비교 도움말 1",
+      title: "조직 비교",
+    },
+    {
+      src: "/help/organization-help-1.png",
+      alt: "조직 비교 도움말 2",
+      title: "조직 비교 > 뷰 - 하이어라키/플랫",
+    },
+    {
+      src: "/help/organization-help-2.png",
+      alt: "조직 비교 도움말 3",
+      title: "조직 비교 > 뷰 - 평균/총합",
+    },
+    {
+      src: "/help/organization-help-3.png",
+      alt: "조직 비교 도움말 4",
+      title: "조직 비교 > 뷰 - 실제값/달성률",
+    },
+    {
+      src: "/help/organization-help-4.png",
+      alt: "조직 비교 도움말 5",
+      title: "조직 비교 > 뷰 - 기타",
+    },
+    {
+      src: "/help/organization-help-5.png",
+      alt: "조직 비교 도움말 6",
+      title: "조직 비교 > 조직 이름",
+    },
+    {
+      src: "/help/organization-help-6.png",
+      alt: "조직 비교 도움말 7",
+      title: "조직 비교 > 달성 단계",
+    },
+    {
+      src: "/help/organization-help-7.png",
+      alt: "조직 비교 도움말 8",
+      title: "조직 비교 > 지표 데이터",
+    },
+    {
+      src: "/help/organization-help-8.png",
+      alt: "조직 비교 도움말 9",
+      title: "조직 비교 > 탭 - 전체/BDPI",
+    },
+  ];
+
 const OrganizationPage = () => {
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
   // [변경: 2026-01-25 15:30, 김병현 수정] useShallow를 사용하여 store 상태 한번에 선언
   const {
     activeTab,
@@ -349,7 +402,18 @@ const OrganizationPage = () => {
         className={`flex-1 min-h-0 flex flex-col ${isMetricDetailOpen ? "overflow-auto" : "overflow-hidden"} `}
       >
         <div className="flex-shrink-0">
-          <OrganizationTabs />
+          <OrganizationTabs
+            rightContent={
+              /* 도움말 버튼 */
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsHelpModalOpen(true)}
+              >
+                <HelpCircle className="w-4 h-4" />
+              </Button>
+            }
+          />
         </div>
 
         {/* 첫 번째 줄: 기간 선택 */}
@@ -513,8 +577,7 @@ const OrganizationPage = () => {
                         }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                       >
-                        <ChevronsDown className="w-4 h-4" />
-                        팀 열기
+                        <ChevronsDown className="w-4 h-4" />팀 열기
                       </button>
                       <button
                         onClick={() => {
@@ -711,6 +774,14 @@ const OrganizationPage = () => {
 
       {/* 조직도 변경 히스토리 모달 */}
       <OrgChangeHistoryModal targetMonth={yearMonth} />
+
+      {/* 도움말 모달 */}
+      <HelpModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+        images={ORGANIZATION_HELP_IMAGES}
+        title="조직 현황 도움말"
+      />
     </div>
   );
 };
