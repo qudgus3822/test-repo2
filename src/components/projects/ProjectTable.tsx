@@ -22,19 +22,19 @@ const TABLE_HEADERS = {
     tooltip: "해당 월 프로젝트 발생한 장애 총 개수 (월 누적)",
   },
   avgResolutionTime: {
-    label: ["장애", "해결시간"],
+    label: ["장애", "해결 시간"],
     tooltip: "해당 월 프로젝트 발생한 장애의 평균 해결시간 (일 평균)",
   },
   avgDetectionTime: {
-    label: ["장애", "탐지시간"],
+    label: ["장애", "탐지 시간"],
     tooltip: "해당 월 프로젝트 발생한 장애의 평균 탐지시간 (일 평균)",
   },
   avgDiagnosisTime: {
-    label: ["장애", "진단시간"],
+    label: ["장애", "진단 시간"],
     tooltip: "해당 월 프로젝트 발생한 장애의 평균 진단시간 (일 평균)",
   },
   avgRecoveryTime: {
-    label: ["장애", "복구시간"],
+    label: ["장애", "복구 시간"],
     tooltip: "해당 월 프로젝트 발생한 장애의 평균 복구시간 (일 평균)",
   },
 };
