@@ -77,6 +77,7 @@ export default function Header() {
               direction="bottom"
               hideArrow
               fontSize="text-xs"
+              noWrap
             >
               <div className="flex items-center gap-3">
                 <div
