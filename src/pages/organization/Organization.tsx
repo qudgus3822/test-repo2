@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
@@ -92,8 +92,6 @@ const OrganizationPage = () => {
     expandAllTeams,
     expandAllMembers,
     collapseToDefault,
-    isTeamsExpanded,
-    isAllExpanded,
     isMetricColumnDragged,
     setIsMetricColumnDragged,
     setMetricSources,
@@ -110,8 +108,6 @@ const OrganizationPage = () => {
       expandAllTeams: state.expandAllTeams,
       expandAllMembers: state.expandAllMembers,
       collapseToDefault: state.collapseToDefault,
-      isTeamsExpanded: state.isTeamsExpanded,
-      isAllExpanded: state.isAllExpanded,
       isMetricColumnDragged: state.isMetricColumnDragged,
       setIsMetricColumnDragged: state.setIsMetricColumnDragged,
       setMetricSources: state.setMetricSources,
@@ -234,6 +230,24 @@ const OrganizationPage = () => {
 
   // 이전 필터 값을 추적하는 ref (필터 변경 감지용)
   const prevFiltersRef = useRef({ viewType, flatViewFilter, aggregationType });
+
+  // [변경: 2026-03-04 00:00, 김병현 수정] 하이어라키뷰 펼치기 드롭다운 상태
+  const [isExpandDropdownOpen, setIsExpandDropdownOpen] = useState(false);
+  const expandDropdownRef = useRef<HTMLDivElement>(null);
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        expandDropdownRef.current &&
+        !expandDropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsExpandDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // 필터 변경 시 드래그 플래그가 true이면 API 재호출하여 칼럼 순서 동기화
   // [변경: 2026-01-22, 김병현 수정] 필터 변경 시에도 드래그된 순서 유지 (서버에 저장되어 있으므로)
@@ -475,50 +489,56 @@ const OrganizationPage = () => {
                   </span>
                 </Button>
               )}
-              {/* [변경: 2026-03-03 00:00, 김병현 수정] 하이어라키뷰: 팀열기→개인열기→초기화 순환 버튼 1개 */}
+              {/* [변경: 2026-03-04 00:00, 김병현 수정] 하이어라키뷰: 펼치기 드롭다운 */}
               {viewType === "hierarchy" && (
-                <>
-                  {isAllExpanded ? (
-                    // 전체 열림 상태 → 초기화 버튼
-                    <Button
-                      variant="normal"
-                      size="sm"
-                      responsive
-                      onClick={handleReset}
-                    >
-                      <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                <div ref={expandDropdownRef} className="relative">
+                  <Button
+                    variant="normal"
+                    size="sm"
+                    responsive
+                    onClick={() => setIsExpandDropdownOpen((prev) => !prev)}
+                  >
+                    <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
+                      <ChevronsDown className="w-4 h-4" />
+                      <span className="hidden xl:inline">펼치기</span>
+                      <ChevronDown className="w-3 h-3" />
+                    </span>
+                  </Button>
+                  {isExpandDropdownOpen && (
+                    <div className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          handleExpandTeams();
+                          setIsExpandDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      >
+                        <ChevronsDown className="w-4 h-4" />
+                        팀 열기
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleExpandAll();
+                          setIsExpandDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors border-t border-gray-100"
+                      >
+                        <ChevronsDown className="w-4 h-4" />
+                        개인 열기
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleReset();
+                          setIsExpandDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors border-t border-gray-100"
+                      >
                         <ChevronsUp className="w-4 h-4" />
-                        <span className="hidden xl:inline">초기화</span>
-                      </span>
-                    </Button>
-                  ) : isTeamsExpanded ? (
-                    // 팀 열림 상태 → 개인 열기 버튼
-                    <Button
-                      variant="normal"
-                      size="sm"
-                      responsive
-                      onClick={handleExpandAll}
-                    >
-                      <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                        <ChevronsDown className="w-4 h-4" />
-                        <span className="hidden xl:inline">개인 열기</span>
-                      </span>
-                    </Button>
-                  ) : (
-                    // 기본 상태 → 팀 열기 버튼
-                    <Button
-                      variant="normal"
-                      size="sm"
-                      responsive
-                      onClick={handleExpandTeams}
-                    >
-                      <span className="flex items-center gap-0.5 xl:gap-1.5 h-5">
-                        <ChevronsDown className="w-4 h-4" />
-                        <span className="hidden xl:inline">팀 열기</span>
-                      </span>
-                    </Button>
+                        초기화
+                      </button>
+                    </div>
                   )}
-                </>
+                </div>
               )}
               {/* [변경: 2026-01-29 17:00, 임도휘 수정] 전체 탭: 지표맞춤 버튼 - 반응형 처리 (xl 미만: 아이콘만, 패딩/gap 축소) */}
               {activeTab === "all" && (

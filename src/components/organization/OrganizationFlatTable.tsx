@@ -742,6 +742,12 @@ export const OrganizationFlatTable = ({
     onMetricDetailChange?.(selectedMetricCode !== null);
   }, [selectedMetricCode, onMetricDetailChange]);
 
+  // [변경: 2026-03-04 00:00, 김병현 수정] aggregationType 변경 시 selectedMetricCode 초기화
+  // [변경: 2026-03-05 00:00, 김병현 수정] filterType 변경 시 selectedMetricCode 초기화
+  useEffect(() => {
+    setSelectedMetricCode(null);
+  }, [aggregationType, filterType]);
+
   // 지표 선택 핸들러
   const handleMetricSelect = useCallback((code: string) => {
     setSelectedMetricCode((prev) => (prev === code ? null : code));

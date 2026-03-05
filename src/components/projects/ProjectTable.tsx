@@ -14,11 +14,11 @@ import {
 const TABLE_HEADERS = {
   ...COMMON_HEADERS,
   bugCount: {
-    label: ["버그 해결 수"],
+    label: ["버그", "해결 수"],
     tooltip: "해당 월 프로젝트 발생한 버그 총 개수 (월 누적)",
   },
   incidentCount: {
-    label: ["장애 해결 수"],
+    label: ["장애", "해결 수"],
     tooltip: "해당 월 프로젝트 발생한 장애 총 개수 (월 누적)",
   },
   avgResolutionTime: {
