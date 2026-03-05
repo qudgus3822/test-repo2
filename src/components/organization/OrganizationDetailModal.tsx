@@ -245,7 +245,9 @@ export const OrganizationDetailModal = ({
                           backgroundColor: getScoreBgColor(
                             deptMetrics.bdpi.value ?? null,
                           ),
-                          color: getScoreTextColor(deptMetrics.bdpi.value ?? null),
+                          color: getScoreTextColor(
+                            deptMetrics.bdpi.value ?? null,
+                          ),
                         }}
                       >
                         {parseFloat((deptMetrics.bdpi.value ?? 0).toFixed(2))}
@@ -318,7 +320,9 @@ export const OrganizationDetailModal = ({
                           backgroundColor: getScoreBgColor(
                             memberMetrics.bdpi.value ?? null,
                           ),
-                          color: getScoreTextColor(memberMetrics.bdpi.value ?? null),
+                          color: getScoreTextColor(
+                            memberMetrics.bdpi.value ?? null,
+                          ),
                         }}
                       >
                         {parseFloat((memberMetrics.bdpi.value ?? 0).toFixed(2))}
@@ -393,7 +397,7 @@ export const OrganizationDetailModal = ({
                     지표 점수
                   </h3>
                   {/* [변경: 2026-01-26 17:00, 임도휘 수정] score → value 필드 사용 */}
-                <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <div
                       className="rounded-lg px-4 py-3"
                       style={{
@@ -411,7 +415,9 @@ export const OrganizationDetailModal = ({
                           ),
                         }}
                       >
-                        {parseFloat((bdpiMetrics?.quality?.value ?? 0).toFixed(2))}
+                        {parseFloat(
+                          (bdpiMetrics?.quality?.value ?? 0).toFixed(2),
+                        )}
                       </div>
                     </div>
                     <div
@@ -431,7 +437,9 @@ export const OrganizationDetailModal = ({
                           ),
                         }}
                       >
-                        {parseFloat((bdpiMetrics?.review?.value ?? 0).toFixed(2))}
+                        {parseFloat(
+                          (bdpiMetrics?.review?.value ?? 0).toFixed(2),
+                        )}
                       </div>
                     </div>
                     <div
@@ -451,7 +459,9 @@ export const OrganizationDetailModal = ({
                           ),
                         }}
                       >
-                        {parseFloat((bdpiMetrics?.efficiency?.value ?? 0).toFixed(2))}
+                        {parseFloat(
+                          (bdpiMetrics?.efficiency?.value ?? 0).toFixed(2),
+                        )}
                       </div>
                     </div>
                     <div
@@ -466,7 +476,9 @@ export const OrganizationDetailModal = ({
                       <div
                         className="text-lg font-semibold"
                         style={{
-                          color: getScoreTextColor(bdpiMetrics?.bdpi?.value ?? null),
+                          color: getScoreTextColor(
+                            bdpiMetrics?.bdpi?.value ?? null,
+                          ),
                         }}
                       >
                         {parseFloat((bdpiMetrics?.bdpi?.value ?? 0).toFixed(2))}
@@ -495,7 +507,6 @@ export const OrganizationDetailModal = ({
                       showGrid={true}
                       showDots={true}
                       showLegend={true}
-                      zeroLabel="-"
                     />
                   </div>
                 </div>
