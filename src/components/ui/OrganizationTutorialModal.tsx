@@ -23,6 +23,7 @@ interface TutorialStep {
   title: string;
   description: string;
   icon: React.ElementType;
+  iconBg: string;
   highlight: Highlight | null;
 }
 
@@ -33,6 +34,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "조직비교 화면에서는 조직별 개발생산성을 다양한 기준으로 비교할 수 있습니다.",
     icon: BarChart3,
+    iconBg: "bg-orange-500",
     highlight: null,
   },
   {
@@ -41,6 +43,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "전체 탭은 조직별 30개 지표를 비교하고, BDPI 탭은 4개 핵심 지표(코드품질/리뷰품질/개발효율/BDPI)와 전월 대비 변화량을 확인합니다.",
     icon: Layers,
+    iconBg: "bg-blue-600",
     highlight: { x: 0.5, y: 1, width: 8.5, height: 7 },
   },
   {
@@ -49,6 +52,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "하이어라키뷰는 조직 구조를 트리 형태로, 플랫뷰는 목록 형태로 보여줍니다. 플랫뷰는 실/팀/개인 버튼을 통해 원하는 조직 레벨만 선택해 한 번에 조회할 수 있습니다.",
     icon: Layers,
+    iconBg: "bg-indigo-500",
     highlight: { x: 0.5, y: 15, width: 15.5, height: 6 },
   },
   {
@@ -57,6 +61,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "평균은 조회 월 동안 지표가 실제로 수집된 날짜의 값만 모아 '하루 기준 평균값'으로 환산해 조직 간 비교합니다. 지표 데이터가 없는 날은 계산에서 제외되며, 조직별 수집일 수에 따라 평균값이 달라질 수 있습니다. 총합은 조회 월 동안 지표의 일별 값을 모두 합산해 월 누적으로 조직 간 비교합니다. 데이터가 없는 날은 합산에서 제외되며, 총합은 버그발생수/장애발생수/리뷰요청수/리뷰참여수/커밋빈도/배포빈도 6개 지표만 제공합니다.",
     icon: BarChart3,
+    iconBg: "bg-green-500",
     highlight: { x: 16, y: 15, width: 8.5, height: 6 },
   },
   {
@@ -65,6 +70,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "실제값/달성률 버튼은 셀에 표시되는 수치 기준을 전환합니다. 실제값은 지표의 원본 수치를 보여주며, 데이터가 없으면 '--'로 표시됩니다. 달성률은 지표의 목표값 대비 달성 정도(%)를 표시하며, 셀 배경색은 달성률 범례 기준으로 구간별로 표현됩니다.",
     icon: BarChart3,
+    iconBg: "bg-purple-500",
     highlight: { x: 89, y: 15, width: 10, height: 6 },
   },
   {
@@ -73,6 +79,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "팀 열기: 하위 조직을 일괄 펼침 | 지표맞춤: 30개 지표 컬럼이 한 화면에 보이도록 자동 조정",
     icon: Grid3X3,
+    iconBg: "bg-cyan-500",
     highlight: { x: 75, y: 15, width: 14.5, height: 6 },
   },
   {
@@ -81,6 +88,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "실/팀/개인 조직을 트리/목록 구조로 확인합니다. 조직명 옆 배지로 조직 유형/변경 상태를 확인할 수 있습니다.",
     icon: Layers,
+    iconBg: "bg-teal-500",
     highlight: { x: 0.5, y: 22, width: 23, height: 72 },
   },
   {
@@ -89,6 +97,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "조직별로 30개 지표가 초과달성/우수/경고/위험 각 단계에 해당하는 개수를 집계해 보여줍니다.",
     icon: Target,
+    iconBg: "bg-amber-500",
     highlight: { x: 23, y: 22, width: 15, height: 72 },
   },
   {
@@ -97,6 +106,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     description:
       "조직별 지표를 셀 단위로 비교합니다. 지표명 클릭 시 해당 지표의 상세 설명을 확인할 수 있고, 셀 클릭 시 상세 정보 툴팁이 표시됩니다. 컬럼 헤더 드래그로 컬럼 순서 변경도 가능합니다. '--' 표기는 해당 활동 기록이 아직 존재하지 않는 경우를 나타내고 빈칸은 개인·팀·실 단위로 집계가 불가능한 데이터입니다.",
     icon: Grid3X3,
+    iconBg: "bg-pink-500",
     highlight: { x: 38, y: 22, width: 61.5, height: 72 },
   },
   // {
@@ -208,7 +218,7 @@ export const OrganizationTutorialModal = ({
       {/* 모달 */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-7xl w-full overflow-hidden">
         {/* 상단 컬러 바 */}
-        <div className="h-2 bg-orange-500" />
+        <div className={`h-2 ${step.iconBg}`} />
 
         {/* 닫기 버튼 */}
         <button
@@ -222,7 +232,9 @@ export const OrganizationTutorialModal = ({
         <div className="p-6">
           {/* 헤더 */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+            <div
+              className={`w-10 h-10 ${step.iconBg} rounded-xl flex items-center justify-center`}
+            >
               <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
