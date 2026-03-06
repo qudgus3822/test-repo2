@@ -14,52 +14,7 @@ import { DateFilter } from "@/components/ui/DateFilter";
 import { Card } from "@/components/ui/Card";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { Button } from "@/components/ui/Button";
-import { HelpModal } from "@/components/ui/HelpModal";
-
-// 대시보드 도움말 이미지 목록 - 실제 이미지 파일 경로로 교체
-const DASHBOARD_HELP_IMAGES = [
-  { src: "/help/dashboard-help-0.png", alt: "대시보드 도움말 1", title: "홈" },
-  {
-    src: "/help/dashboard-help-1.png",
-    alt: "대시보드 도움말 2",
-    title: "홈 > BDPI",
-  },
-  {
-    src: "/help/dashboard-help-2.png",
-    alt: "대시보드 도움말 3",
-    title: "홈 > BDPI",
-  },
-  {
-    src: "/help/dashboard-help-3.png",
-    alt: "대시보드 도움말 4",
-    title: "홈 > 서비스 안정성",
-  },
-  {
-    src: "/help/dashboard-help-4.png",
-    alt: "대시보드 도움말 5",
-    title: "홈 > 개발생산성 트렌드",
-  },
-  {
-    src: "/help/dashboard-help-5.png",
-    alt: "대시보드 도움말 6",
-    title: "홈 > 목표 달성률",
-  },
-  {
-    src: "/help/dashboard-help-6.png",
-    alt: "대시보드 도움말 7",
-    title: "홈 > 지표순위",
-  },
-  {
-    src: "/help/dashboard-help-7.png",
-    alt: "대시보드 도움말 8",
-    title: "홈 > 조직도",
-  },
-  {
-    src: "/help/dashboard-help-8.png",
-    alt: "대시보드 도움말 9",
-    title: "홈 > 상세보기(코드 리뷰 진행 현황)",
-  },
-];
+import { DashboardTutorialModal } from "@/components/ui/DashboardTutorialModal";
 import { companyQualityKeys } from "@/api/hooks/useCompanyQuality";
 import { serviceStabilityKeys } from "@/api/hooks/useServiceStability";
 import { developerProductivityKeys } from "@/api/hooks/useDeveloperProductivity";
@@ -172,11 +127,9 @@ const DashboardPage = () => {
       <OrgChangeHistoryModal targetMonth={formattedMonth} />
 
       {/* 도움말 모달 */}
-      <HelpModal
+      <DashboardTutorialModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
-        images={DASHBOARD_HELP_IMAGES}
-        title="대시보드 도움말"
       />
     </div>
   );
