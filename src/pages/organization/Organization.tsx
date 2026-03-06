@@ -27,7 +27,7 @@ import {
   OrganizationDetailModal,
 } from "@/components/organization";
 import { OrgChangeHistoryModal } from "@/components/dashboard";
-import { HelpModal } from "@/components/ui/HelpModal";
+import { OrganizationTutorialModal } from "@/components/ui/OrganizationTutorialModal";
 import { useOrganizationStore } from "@/store/useOrganizationStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import { useOrganizationTree } from "@/api/hooks/useOrganizationTree";
@@ -83,55 +83,6 @@ const getAllDepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
   return codes;
 };
 
-// 조직 현황 도움말 이미지 목록
-const ORGANIZATION_HELP_IMAGES: { src: string; alt: string; title: string }[] =
-  [
-    {
-      src: "/help/organization-help-0.png",
-      alt: "조직 비교 도움말 1",
-      title: "조직 비교",
-    },
-    {
-      src: "/help/organization-help-1.png",
-      alt: "조직 비교 도움말 2",
-      title: "조직 비교 > 뷰 - 하이어라키/플랫",
-    },
-    {
-      src: "/help/organization-help-2.png",
-      alt: "조직 비교 도움말 3",
-      title: "조직 비교 > 뷰 - 평균/총합",
-    },
-    {
-      src: "/help/organization-help-3.png",
-      alt: "조직 비교 도움말 4",
-      title: "조직 비교 > 뷰 - 실제값/달성률",
-    },
-    {
-      src: "/help/organization-help-4.png",
-      alt: "조직 비교 도움말 5",
-      title: "조직 비교 > 뷰 - 기타",
-    },
-    {
-      src: "/help/organization-help-5.png",
-      alt: "조직 비교 도움말 6",
-      title: "조직 비교 > 조직 이름",
-    },
-    {
-      src: "/help/organization-help-6.png",
-      alt: "조직 비교 도움말 7",
-      title: "조직 비교 > 달성 단계",
-    },
-    {
-      src: "/help/organization-help-7.png",
-      alt: "조직 비교 도움말 8",
-      title: "조직 비교 > 지표 데이터",
-    },
-    {
-      src: "/help/organization-help-8.png",
-      alt: "조직 비교 도움말 9",
-      title: "조직 비교 > 탭 - 전체/BDPI",
-    },
-  ];
 
 const OrganizationPage = () => {
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
@@ -776,11 +727,9 @@ const OrganizationPage = () => {
       <OrgChangeHistoryModal targetMonth={yearMonth} />
 
       {/* 도움말 모달 */}
-      <HelpModal
+      <OrganizationTutorialModal
         isOpen={isHelpModalOpen}
         onClose={() => setIsHelpModalOpen(false)}
-        images={ORGANIZATION_HELP_IMAGES}
-        title="조직 현황 도움말"
       />
     </div>
   );
