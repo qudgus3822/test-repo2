@@ -124,6 +124,7 @@ const ProjectsPage = () => {
               <InfoBanner message="'분류 유형'이 'TF'로 표기된 Jira Epic 중 하위 티켓의 업데이트가 있는 Epic만 노출됩니다." />
               <ProjectTable
                 projects={tfTable.projects}
+                month={month}
                 isLoading={tfTable.isLoading}
                 hasNextPage={tfTable.hasNextPage}
                 isFetchingNextPage={tfTable.isFetchingNextPage}
@@ -135,6 +136,7 @@ const ProjectsPage = () => {
               <InfoBanner message="Jira OPR2 Space의 Epic은 운영 특성상 유형(버그/장애/애프터잡)을 분류하기 어려워, 버그·장애 관련 지표는 제공되지 않습니다." />
               <OperationTable
                 items={operationTable.items}
+                month={month}
                 isLoading={operationTable.isLoading}
                 hasNextPage={operationTable.hasNextPage}
                 isFetchingNextPage={operationTable.isFetchingNextPage}
