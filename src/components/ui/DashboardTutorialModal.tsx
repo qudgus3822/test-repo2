@@ -40,7 +40,7 @@ interface TutorialStep {
 const tutorialSteps: TutorialStep[] = [
   {
     step: 1,
-    title: "Barcode Plus에 오신 것을 환영합니다!",
+    title: "홈 화면 소개",
     icon: HelpCircle,
     iconBg: "bg-orange-500",
     description:
@@ -128,16 +128,16 @@ const tutorialSteps: TutorialStep[] = [
     image: "codeReview",
     highlight: null,
   },
-  {
-    step: 10,
-    title: "튜토리얼 완료!",
-    icon: HelpCircle,
-    iconBg: "bg-orange-500",
-    description:
-      "튜토리얼이 완료되었습니다. 우측 상단의 [?] 버튼을 클릭하면 단계별 튜토리얼을 언제든 다시 볼 수 있습니다.",
-    image: "dashboard",
-    highlight: null,
-  },
+  // {
+  //   step: 10,
+  //   title: "튜토리얼 완료!",
+  //   icon: HelpCircle,
+  //   iconBg: "bg-orange-500",
+  //   description:
+  //     "튜토리얼이 완료되었습니다. 우측 상단의 [?] 버튼을 클릭하면 단계별 튜토리얼을 언제든 다시 볼 수 있습니다.",
+  //   image: "dashboard",
+  //   highlight: null,
+  // },
 ];
 
 const HighlightOverlay = ({ highlight }: { highlight: Highlight | null }) => {
@@ -213,8 +213,7 @@ export const DashboardTutorialModal = ({
     currentStep < totalSteps - 1
       ? setCurrentStep(currentStep + 1)
       : handleClose();
-  const handlePrev = () =>
-    currentStep > 0 && setCurrentStep(currentStep - 1);
+  const handlePrev = () => currentStep > 0 && setCurrentStep(currentStep - 1);
   const handleClose = () => {
     setCurrentStep(0);
     onClose();
@@ -225,9 +224,11 @@ export const DashboardTutorialModal = ({
       if (!isOpen) return;
       if (e.key === "ArrowRight")
         setCurrentStep((s) => (s < totalSteps - 1 ? s + 1 : (onClose(), 0)));
-      if (e.key === "ArrowLeft")
-        setCurrentStep((s) => (s > 0 ? s - 1 : s));
-      if (e.key === "Escape") { setCurrentStep(0); onClose(); }
+      if (e.key === "ArrowLeft") setCurrentStep((s) => (s > 0 ? s - 1 : s));
+      if (e.key === "Escape") {
+        setCurrentStep(0);
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);

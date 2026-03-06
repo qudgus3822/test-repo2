@@ -7,7 +7,6 @@ import {
   Layers,
   Target,
   Grid3X3,
-  CheckCircle2,
 } from "lucide-react";
 
 const ORG_COMPARE_SCREENSHOT = "/help/org-compare.png";
@@ -100,14 +99,14 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     icon: Grid3X3,
     highlight: { x: 38, y: 22, width: 61.5, height: 72 },
   },
-  {
-    id: "complete",
-    title: "튜토리얼 완료!",
-    description:
-      "조직비교 화면의 주요 기능을 모두 살펴보았습니다. 이제 조직별 개발생산성을 효과적으로 비교하고 분석해 보세요!",
-    icon: CheckCircle2,
-    highlight: null,
-  },
+  // {
+  //   id: "complete",
+  //   title: "튜토리얼 완료!",
+  //   description:
+  //     "조직비교 화면의 주요 기능을 모두 살펴보았습니다. 이제 조직별 개발생산성을 효과적으로 비교하고 분석해 보세요!",
+  //   icon: CheckCircle2,
+  //   highlight: null,
+  // },
 ];
 
 const HighlightOverlay = ({ highlight }: { highlight: Highlight | null }) => {
@@ -116,10 +115,27 @@ const HighlightOverlay = ({ highlight }: { highlight: Highlight | null }) => {
 
   return (
     <div className="absolute inset-0 pointer-events-none">
-      <div className="absolute bg-black/60" style={{ left: 0, top: 0, right: 0, height: `${y}%` }} />
-      <div className="absolute bg-black/60" style={{ left: 0, top: `${y}%`, width: `${x}%`, height: `${height}%` }} />
-      <div className="absolute bg-black/60" style={{ left: `${x + width}%`, top: `${y}%`, right: 0, height: `${height}%` }} />
-      <div className="absolute bg-black/60" style={{ left: 0, top: `${y + height}%`, right: 0, bottom: 0 }} />
+      <div
+        className="absolute bg-black/60"
+        style={{ left: 0, top: 0, right: 0, height: `${y}%` }}
+      />
+      <div
+        className="absolute bg-black/60"
+        style={{ left: 0, top: `${y}%`, width: `${x}%`, height: `${height}%` }}
+      />
+      <div
+        className="absolute bg-black/60"
+        style={{
+          left: `${x + width}%`,
+          top: `${y}%`,
+          right: 0,
+          height: `${height}%`,
+        }}
+      />
+      <div
+        className="absolute bg-black/60"
+        style={{ left: 0, top: `${y + height}%`, right: 0, bottom: 0 }}
+      />
       <div
         className="absolute rounded-lg"
         style={{
@@ -128,7 +144,8 @@ const HighlightOverlay = ({ highlight }: { highlight: Highlight | null }) => {
           width: `${width}%`,
           height: `${height}%`,
           border: "3px solid #f97316",
-          boxShadow: "0 0 0 4px rgba(249, 115, 22, 0.3), 0 0 30px rgba(249, 115, 22, 0.5)",
+          boxShadow:
+            "0 0 0 4px rgba(249, 115, 22, 0.3), 0 0 30px rgba(249, 115, 22, 0.5)",
           animation: "organizationTutorialPulse 2s infinite",
         }}
       />
@@ -157,9 +174,10 @@ export const OrganizationTutorialModal = ({
   const Icon = step.icon;
 
   const handleNext = () =>
-    currentStep < totalSteps - 1 ? setCurrentStep(currentStep + 1) : handleClose();
-  const handlePrev = () =>
-    currentStep > 0 && setCurrentStep(currentStep - 1);
+    currentStep < totalSteps - 1
+      ? setCurrentStep(currentStep + 1)
+      : handleClose();
+  const handlePrev = () => currentStep > 0 && setCurrentStep(currentStep - 1);
   const handleClose = () => {
     setCurrentStep(0);
     onClose();
@@ -170,9 +188,11 @@ export const OrganizationTutorialModal = ({
       if (!isOpen) return;
       if (e.key === "ArrowRight")
         setCurrentStep((s) => (s < totalSteps - 1 ? s + 1 : (onClose(), 0)));
-      if (e.key === "ArrowLeft")
-        setCurrentStep((s) => (s > 0 ? s - 1 : s));
-      if (e.key === "Escape") { setCurrentStep(0); onClose(); }
+      if (e.key === "ArrowLeft") setCurrentStep((s) => (s > 0 ? s - 1 : s));
+      if (e.key === "Escape") {
+        setCurrentStep(0);
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
