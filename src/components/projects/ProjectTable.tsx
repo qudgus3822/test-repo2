@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useMemo } from "react";
 import { ExternalLink, Info, Loader2 } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { ProjectItem } from "@/types/project.types";
@@ -56,6 +56,8 @@ const formatTime = (value: number | null | undefined): string => {
 
 interface ProjectTableProps {
   projects: ProjectItem[];
+  /** 조회 월 (YYYY-MM 형식) */
+  month: string;
   /** 초기 로딩 중 여부 */
   isLoading?: boolean;
   /** 다음 페이지 존재 여부 */
@@ -71,12 +73,22 @@ interface ProjectTableProps {
  */
 export const ProjectTable = ({
   projects,
+  month,
   isLoading = false,
   hasNextPage = false,
   isFetchingNextPage = false,
   onLoadMore,
 }: ProjectTableProps) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // [변경: 2026-03-06 00:00, 김병현 수정] month(YYYY-MM)로 월 시작일/종료일 계산
+  const { monthStart, monthEnd } = useMemo(() => {
+    const [year, mon] = month.split("-").map(Number);
+    const start = `${year}-${String(mon).padStart(2, "0")}-01`;
+    const lastDay = new Date(year, mon, 0).getDate();
+    const end = `${year}-${String(mon).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    return { monthStart: start, monthEnd: end };
+  }, [month]);
 
   // IntersectionObserver를 사용한 무한 스크롤
   const handleObserver = useCallback(
@@ -311,10 +323,11 @@ export const ProjectTable = ({
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {/* [변경: 2026-02-27 00:00, 김병현 수정] 활성 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {/* [변경: 2026-03-06 00:00, 김병현 수정] 활성 티켓 JQL: 월 기간 내 변경된 티켓 */}
                 {project.activeTicketCount !== null &&
                 project.activeTicketCount !== undefined ? (
                   <a
-                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=parentEpic%20%3D%20${project.epicId}%20AND%20statusCategory%20in%20(%22In%20Progress%22%2C%20%22To%20Do%22)`}
+                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${project.epicId} AND (status CHANGED DURING ("${monthStart}", "${monthEnd}") OR assignee CHANGED DURING ("${monthStart}", "${monthEnd}") OR summary CHANGED DURING ("${monthStart}", "${monthEnd}") OR description CHANGED DURING ("${monthStart}", "${monthEnd}") OR (updated >= "${monthStart}" AND updated <= "${monthEnd}") OR (created >= "${monthStart}" AND created <= "${monthEnd}")) AND status NOT IN ("Canceled", "취소")`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -330,10 +343,11 @@ export const ProjectTable = ({
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {/* [변경: 2026-02-27 00:00, 김병현 수정] 완료 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {/* [변경: 2026-03-06 00:00, 김병현 수정] 완료 티켓 JQL: 월 기간 내 resolved된 티켓 */}
                 {project.completedCount !== null &&
                 project.completedCount !== undefined ? (
                   <a
-                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=parentEpic%20%3D%20${project.epicId}%20AND%20statusCategory%20%3D%20%22Done%22`}
+                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${project.epicId} AND resolved >= "${monthStart}" AND resolved <= "${monthEnd}"`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 hover:underline"
@@ -345,7 +359,20 @@ export const ProjectTable = ({
                 )}
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
-                {formatCount(project.createdCount, UNIT_COUNT)}
+                {/* [변경: 2026-03-06 00:00, 김병현 수정] 생성 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {project.createdCount !== null &&
+                project.createdCount !== undefined ? (
+                  <a
+                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${project.epicId} AND created >= "${monthStart}" AND created <= "${monthEnd}"`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {formatCount(project.createdCount, UNIT_COUNT)}
+                  </a>
+                ) : (
+                  NULL_DISPLAY
+                )}
               </td>
               <td className="px-0.5 min-[1480px]:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(project.bugCount, UNIT_CASE)}

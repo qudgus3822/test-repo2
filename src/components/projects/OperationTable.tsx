@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useMemo } from "react";
 import { ExternalLink, Info, Loader2 } from "lucide-react";
 import { Tooltip } from "@/components/ui/Tooltip";
 import type { OperationItem } from "@/types/project.types";
@@ -21,6 +21,8 @@ const formatCount = (
 
 interface OperationTableProps {
   items: OperationItem[];
+  /** 조회 월 (YYYY-MM 형식) */
+  month: string;
   /** 초기 로딩 중 여부 */
   isLoading?: boolean;
   /** 다음 페이지 존재 여부 */
@@ -36,12 +38,22 @@ interface OperationTableProps {
  */
 export const OperationTable = ({
   items,
+  month,
   isLoading = false,
   hasNextPage = false,
   isFetchingNextPage = false,
   onLoadMore,
 }: OperationTableProps) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // [변경: 2026-03-06 00:00, 김병현 수정] month(YYYY-MM)로 월 시작일/종료일 계산
+  const { monthStart, monthEnd } = useMemo(() => {
+    const [year, mon] = month.split("-").map(Number);
+    const start = `${year}-${String(mon).padStart(2, "0")}-01`;
+    const lastDay = new Date(year, mon, 0).getDate();
+    const end = `${year}-${String(mon).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    return { monthStart: start, monthEnd: end };
+  }, [month]);
 
   // IntersectionObserver를 사용한 무한 스크롤
   const handleObserver = useCallback(
@@ -197,16 +209,55 @@ export const OperationTable = ({
                 </a>
               </td>
               <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
-                {formatCount(item.activeTicketCount, UNIT_COUNT)}
+                {/* [변경: 2026-03-06 00:00, 김병현 수정] 활성 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {item.activeTicketCount !== null &&
+                item.activeTicketCount !== undefined ? (
+                  <a
+                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND (status CHANGED DURING ("${monthStart}", "${monthEnd}") OR assignee CHANGED DURING ("${monthStart}", "${monthEnd}") OR summary CHANGED DURING ("${monthStart}", "${monthEnd}") OR description CHANGED DURING ("${monthStart}", "${monthEnd}") OR (updated >= "${monthStart}" AND updated <= "${monthEnd}") OR (created >= "${monthStart}" AND created <= "${monthEnd}")) AND status NOT IN ("Canceled", "취소")`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {formatCount(item.activeTicketCount, UNIT_COUNT)}
+                  </a>
+                ) : (
+                  NULL_DISPLAY
+                )}
               </td>
               <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {formatCount(item.updatedCount, UNIT_COUNT)}
               </td>
               <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
-                {formatCount(item.completedCount, UNIT_COUNT)}
+                {/* [변경: 2026-03-06 00:00, 김병현 수정] 완료 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {item.completedCount !== null &&
+                item.completedCount !== undefined ? (
+                  <a
+                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND resolved >= "${monthStart}" AND resolved <= "${monthEnd}"`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {formatCount(item.completedCount, UNIT_COUNT)}
+                  </a>
+                ) : (
+                  NULL_DISPLAY
+                )}
               </td>
               <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
-                {formatCount(item.createdCount, UNIT_COUNT)}
+                {/* [변경: 2026-03-06 00:00, 김병현 수정] 생성 티켓수 클릭 시 Jira JQL 검색 페이지로 이동 */}
+                {item.createdCount !== null &&
+                item.createdCount !== undefined ? (
+                  <a
+                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND created >= "${monthStart}" AND created <= "${monthEnd}"`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 hover:underline"
+                  >
+                    {formatCount(item.createdCount, UNIT_COUNT)}
+                  </a>
+                ) : (
+                  NULL_DISPLAY
+                )}
               </td>
               <td className="px-1 lg:px-2 xl:px-4 py-4 text-center text-sm text-gray-900">
                 {item.createdAt
