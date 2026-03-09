@@ -54,7 +54,7 @@ const tutorialSteps: TutorialStep[] = [
     icon: BarChart3,
     iconBg: "bg-blue-600",
     description:
-      "BDPI(Bithumb Development Productivity Index)란, 코드품질/리뷰품질/개발효율을 종합 측정하는 빗썸 개발생산성 지수입니다. 전사 BDPI 점수는 조회 월 기준으로 코드품질/리뷰품질/개발효율 3개 범주의 전사 점수를 동일 가중치로 평균한 종합 지수(%)입니다. 해당 영역에서는 전사 종합 점수와 전월 대비 증감(이번 달 점수 − 전월 점수)을 함께 확인할 수 있습니다.",
+      "BDPI(Bithumb Development Productivity Indicator)란, 코드품질/리뷰품질/개발효율을 종합 측정하는 빗썸 개발생산성 지수입니다. 전사 BDPI 점수는 조회 월 기준으로 코드품질/리뷰품질/개발효율 3개 범주의 전사 점수를 동일 가중치로 평균한 종합 지수(%)입니다. 해당 영역에서는 전사 종합 점수와 전월 대비 증감(이번 달 점수 − 전월 점수)을 함께 확인할 수 있습니다.",
     image: "dashboard",
     highlight: { x: 2, y: 10, width: 18, height: 27 },
   },
@@ -128,16 +128,6 @@ const tutorialSteps: TutorialStep[] = [
     image: "codeReview",
     highlight: null,
   },
-  // {
-  //   step: 10,
-  //   title: "튜토리얼 완료!",
-  //   icon: HelpCircle,
-  //   iconBg: "bg-orange-500",
-  //   description:
-  //     "튜토리얼이 완료되었습니다. 우측 상단의 [?] 버튼을 클릭하면 단계별 튜토리얼을 언제든 다시 볼 수 있습니다.",
-  //   image: "dashboard",
-  //   highlight: null,
-  // },
 ];
 
 const HighlightOverlay = ({ highlight }: { highlight: Highlight | null }) => {

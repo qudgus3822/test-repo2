@@ -232,7 +232,7 @@ export const OperationTable = ({
                 {item.completedCount !== null &&
                 item.completedCount !== undefined ? (
                   <a
-                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND resolved >= "${monthStart}" AND resolved <= "${monthEnd}"`)}`}
+                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND resolved >= "${monthStart}" AND resolved <= "${monthEnd}" AND status NOT IN ("Canceled", "취소")`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 hover:underline"
