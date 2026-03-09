@@ -109,14 +109,6 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     iconBg: "bg-pink-500",
     highlight: { x: 38, y: 22, width: 61.5, height: 72 },
   },
-  // {
-  //   id: "complete",
-  //   title: "튜토리얼 완료!",
-  //   description:
-  //     "조직비교 화면의 주요 기능을 모두 살펴보았습니다. 이제 조직별 개발생산성을 효과적으로 비교하고 분석해 보세요!",
-  //   icon: CheckCircle2,
-  //   highlight: null,
-  // },
 ];
 
 const HighlightOverlay = ({ highlight }: { highlight: Highlight | null }) => {
