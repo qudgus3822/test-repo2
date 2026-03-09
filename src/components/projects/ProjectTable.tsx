@@ -347,7 +347,7 @@ export const ProjectTable = ({
                 {project.completedCount !== null &&
                 project.completedCount !== undefined ? (
                   <a
-                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${project.epicId} AND resolved >= "${monthStart}" AND resolved <= "${monthEnd}"`)}`}
+                    href={`${project.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${project.epicId} AND resolved >= "${monthStart}" AND resolved <= "${monthEnd}" AND status NOT IN ("Canceled", "취소")`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 hover:underline"
