@@ -213,7 +213,7 @@ export const OperationTable = ({
                 {item.activeTicketCount !== null &&
                 item.activeTicketCount !== undefined ? (
                   <a
-                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND (status CHANGED DURING ("${monthStart}", "${monthEnd}") OR assignee CHANGED DURING ("${monthStart}", "${monthEnd}") OR summary CHANGED DURING ("${monthStart}", "${monthEnd}") OR description CHANGED DURING ("${monthStart}", "${monthEnd}") OR (updated >= "${monthStart}" AND updated <= "${monthEnd}") OR (created >= "${monthStart}" AND created <= "${monthEnd}")) AND status NOT IN ("Canceled", "취소")`)}`}
+                    href={`${item.epicUrl.replace(/\/browse\/.*/, "")}/issues/?jql=${encodeURIComponent(`parentEpic = ${item.epicId} AND (status CHANGED DURING ("${monthStart}", "${monthEnd}") OR assignee CHANGED DURING ("${monthStart}", "${monthEnd}") OR (updated >= "${monthStart}" AND updated <= "${monthEnd}") OR (created >= "${monthStart}" AND created <= "${monthEnd}")) AND status NOT IN ("Canceled", "취소")`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 hover:underline"
