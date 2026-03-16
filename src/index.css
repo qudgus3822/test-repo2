@@ -7,7 +7,12 @@
   }
 
   * {
-    font-family: Pretendard, "Pretendard", MalgunGothic, "맑은 고딕", "돋움",
-      Dotum, AppleGothic, Sans-serif, Arial;
+    font-family:
+      Pretendard, "Pretendard", MalgunGothic, "맑은 고딕", "돋움", Dotum,
+      AppleGothic, Sans-serif, Arial;
+  }
+
+  button {
+    cursor: pointer;
   }
 }

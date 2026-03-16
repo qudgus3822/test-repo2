@@ -239,7 +239,7 @@ export const DashboardTutorialModal = ({
         {/* 닫기 버튼 */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors z-20"
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer z-20"
         >
           <X size={20} />
         </button>
@@ -288,7 +288,7 @@ export const DashboardTutorialModal = ({
                   <button
                     key={i}
                     onClick={() => setCurrentStep(i)}
-                    className={`h-2 rounded-full transition-all ${
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
                       i === currentStep
                         ? "bg-orange-500 w-4"
                         : "bg-gray-300 hover:bg-gray-400 w-2"
@@ -302,13 +302,13 @@ export const DashboardTutorialModal = ({
                 <button
                   onClick={handlePrev}
                   disabled={currentStep === 0}
-                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
                 >
                   <ChevronLeft size={16} /> 이전
                 </button>
                 <button
                   onClick={handleNext}
-                  className="flex items-center gap-1 px-5 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors"
+                  className="flex items-center gap-1 px-5 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 cursor-pointer transition-colors"
                 >
                   {currentStep === totalSteps - 1 ? "완료" : "다음"}
                   {currentStep < totalSteps - 1 && <ChevronRight size={16} />}
