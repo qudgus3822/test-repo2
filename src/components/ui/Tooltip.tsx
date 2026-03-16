@@ -56,6 +56,8 @@ export const Tooltip = ({
   offset = 8,
 }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
+  // [변경: 2026-03-16 00:00, 김병현 수정] 위치 계산 완료 전 툴팁이 좌표 0에서 보이는 문제 해결 - 계산 완료 후 표시
+  const [isPositioned, setIsPositioned] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [arrowTop, setArrowTop] = useState<number | null>(null);
   const [adjustedTransform, setAdjustedTransform] = useState<string | null>(null);
@@ -64,6 +66,8 @@ export const Tooltip = ({
 
   useEffect(() => {
     if (isVisible && triggerRef.current) {
+      // 새로 표시될 때마다 위치 계산 완료 상태 초기화
+      setIsPositioned(false);
       const rect = triggerRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
       const padding = 8; // 화면 가장자리 여백
@@ -87,6 +91,7 @@ export const Tooltip = ({
             } else {
               setAdjustedTransform(null);
             }
+            setIsPositioned(true);
           }
         });
       } else if (direction === "top") {
@@ -96,6 +101,7 @@ export const Tooltip = ({
         });
         setArrowTop(null);
         setAdjustedTransform(null);
+        setIsPositioned(true);
       } else {
         // 트리거 요소의 세로 중앙 위치
         const triggerCenterY = rect.top + rect.height / 2;
@@ -111,9 +117,12 @@ export const Tooltip = ({
             // 트리거 중앙에서 툴팁 상단까지의 거리 계산
             const arrowOffset = triggerCenterY - tooltipRect.top;
             setArrowTop(arrowOffset);
+            setIsPositioned(true);
           }
         });
       }
+    } else {
+      setIsPositioned(false);
     }
   }, [isVisible, direction, offset]);
 
@@ -136,8 +145,9 @@ export const Tooltip = ({
         createPortal(
           <div
             ref={tooltipRef}
-            className={`fixed z-[9999] px-3 py-2 ${fontSize} text-white rounded-lg shadow-lg pointer-events-none ${noWrap ? "whitespace-pre" : "whitespace-pre-line break-words"}`}
+            className={`fixed z-[9999] px-3 py-2 ${fontSize} text-white rounded-lg shadow-lg pointer-events-none ${noWrap ? "whitespace-pre" : "whitespace-pre-line break-words"} transition-opacity duration-100`}
             style={{
+              opacity: isPositioned ? 1 : 0,
               backgroundColor: color,
               ...(direction === "bottom"
                 ? {
