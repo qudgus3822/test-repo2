@@ -82,6 +82,8 @@ export const LineChart = ({
           style={{ ...CHART_STYLES.axis }}
           tickLine={false}
           tick={{ dy: 8 }} // x축 라벨 위치 조정
+          // [변경: 2026-03-16 00:00, 김병현 수정] 화면 축소 시 x축 날짜 텍스트 겹침 방지: 자동 간격 조정
+          interval="preserveStartEnd"
         />
         <YAxis
           style={{ ...CHART_STYLES.axis }}
@@ -128,9 +130,11 @@ export const LineChart = ({
         />
         {showLegend && (
           <Legend
+            // [변경: 2026-03-16 00:00, 김병현 수정] 화면 축소 시 x축 날짜와 겹침 방지: legend를 상단으로 이동
+            verticalAlign="top"
             content={() => {
               return (
-                <ul className="flex flex-wrap justify-center gap-4 mt-4">
+                <ul className="flex flex-wrap justify-center gap-4 mb-4">
                   {yKeys.map((key, index) => {
                     const isDashed = dashedKeys.includes(key);
                     const color = isDashed
