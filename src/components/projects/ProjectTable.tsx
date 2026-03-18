@@ -51,7 +51,7 @@ const formatCount = (
 // 시간 포맷 헬퍼
 const formatTime = (value: number | null | undefined): string => {
   if (value === null || value === undefined) return NULL_DISPLAY;
-  return `${value}초`;
+  return `${value}분`;
 };
 
 interface ProjectTableProps {
