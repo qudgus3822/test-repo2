@@ -35,13 +35,36 @@ const ProjectsPage = () => {
   // API 호출을 위한 월 포맷 (YYYY-MM)
   const month = formatYearMonth(currentDate);
 
-  // 프로젝트 대시보드 요약 데이터 조회 (mock 모드에서는 API 비활성화)
-  const { data: summaryApiData } = useProjectDashboardSummary(month, !USE_MOCK);
+  // 프로젝트 대시보드 요약 데이터 조회
+  const { data: summaryApiData } = useProjectDashboardSummary(month, true);
 
-  // mock 모드일 때 mock 요약 데이터 사용
-  const summaryData = USE_MOCK
-    ? getMockProjectDashboardSummary(month)
-    : summaryApiData;
+  // [변경: 2026-03-18 00:00, 김병현 수정] mock 모드: 실제 요약 데이터에 mock 요약 데이터를 합산
+  const summaryData = useMemo(() => {
+    if (!USE_MOCK) return summaryApiData;
+    const mock = getMockProjectDashboardSummary(month);
+    if (!summaryApiData) return mock;
+    return {
+      ...summaryApiData,
+      tfProjectCount: summaryApiData.tfProjectCount
+        ? {
+            ...summaryApiData.tfProjectCount,
+            value: summaryApiData.tfProjectCount.value + mock.tfProjectCount.value,
+            completedCount: (summaryApiData.tfProjectCount.completedCount ?? 0) + (mock.tfProjectCount.completedCount ?? 0),
+            updatedCount: (summaryApiData.tfProjectCount.updatedCount ?? 0) + (mock.tfProjectCount.updatedCount ?? 0),
+            createdCount: (summaryApiData.tfProjectCount.createdCount ?? 0) + (mock.tfProjectCount.createdCount ?? 0),
+          }
+        : mock.tfProjectCount,
+      operationProjectCount: summaryApiData.operationProjectCount
+        ? {
+            ...summaryApiData.operationProjectCount,
+            value: summaryApiData.operationProjectCount.value + mock.operationProjectCount.value,
+            completedCount: (summaryApiData.operationProjectCount.completedCount ?? 0) + (mock.operationProjectCount.completedCount ?? 0),
+            updatedCount: (summaryApiData.operationProjectCount.updatedCount ?? 0) + (mock.operationProjectCount.updatedCount ?? 0),
+            createdCount: (summaryApiData.operationProjectCount.createdCount ?? 0) + (mock.operationProjectCount.createdCount ?? 0),
+          }
+        : mock.operationProjectCount,
+    };
+  }, [summaryApiData, month]);
 
   // TF 프로젝트 테이블 데이터
   const tfTable = useProjectTableData(month, activeTab === "tf");
