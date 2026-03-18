@@ -29,7 +29,8 @@ import type {
 } from "@/types/organization.types";
 
 // 개발 환경에서 mockup changes 데이터 주입 여부
-const ENABLE_MOCK_CHANGES = import.meta.env.DEV;
+// const ENABLE_MOCK_CHANGES = import.meta.env.DEV;
+const ENABLE_MOCK_CHANGES = false;
 
 // Mockup changes 데이터
 const MOCK_DEPT_CHANGES: ChangeInfo[] = [
