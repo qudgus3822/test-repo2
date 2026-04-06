@@ -27,3 +27,10 @@ ngrok.yml
 *.sw?
 
 src.zip
+
+.claude
+CLAUDE.md
+
+PR_MESSAGE.md
+
+deep_module_cheat_sheet.md

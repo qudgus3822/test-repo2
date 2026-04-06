@@ -8,3 +8,4 @@ export { OrganizationBdpiFlatTable } from "./OrganizationBdpiFlatTable";
 export { ScoreLegend } from "./ScoreLegend";
 export { OrganizationDetailModal } from "./OrganizationDetailModal";
 export type { OrganizationDetailItem } from "./OrganizationDetailModal";
+export { TraceOverlay } from "./traceOverlay/TraceOverlay";

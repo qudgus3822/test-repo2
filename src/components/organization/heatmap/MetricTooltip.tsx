@@ -4,6 +4,7 @@
  * - Portal을 사용하여 overflow 컨테이너 외부에 렌더링
  */
 
+import { forwardRef } from "react";
 import { createPortal } from "react-dom";
 import { ScoreLevelColor, ScoreLevelLabel } from "@/types/organization.types";
 
@@ -28,157 +29,184 @@ interface MetricTooltipProps {
   /** 툴팁 설명 (API 응답) */
   description?: string;
   status?: string | null;
+  /** 역추적 오버레이 열기 콜백 -- 제공 시 역추적 버튼 표시 */
+  onTraceClick?: () => void;
 }
 
 /**
  * 달성률에 따른 달성단계 카테고리 반환
  */
 
-export const MetricTooltip = ({
-  metricCode,
-  metricName,
-  value,
-  avgRate,
-  visible,
-  position,
-  targetValue,
-  unit,
-  description,
-  status,
-}: MetricTooltipProps) => {
-  if (!visible) return null;
+export const MetricTooltip = forwardRef<HTMLDivElement, MetricTooltipProps>(
+  (
+    {
+      metricCode,
+      metricName,
+      value,
+      avgRate,
+      visible,
+      position,
+      targetValue,
+      unit,
+      description,
+      status,
+      onTraceClick,
+    },
+    ref,
+  ) => {
+    if (!visible) return null;
 
-  const displayMetricName = metricName || metricCode;
-  // API 응답값 사용
-  const displayUnit = unit ?? "";
+    const displayMetricName = metricName || metricCode;
+    // API 응답값 사용
+    const displayUnit = unit ?? "";
 
-  // 목표값 포맷팅
-  const formattedTargetValue =
-    targetValue !== null && targetValue !== undefined
-      ? typeof targetValue === "number"
-        ? Number.isInteger(targetValue)
-          ? `${targetValue}`
-          : `${parseFloat(targetValue.toFixed(2))}`
-        : `${targetValue}`
-      : "--";
+    // 목표값 포맷팅
+    const formattedTargetValue =
+      targetValue !== null && targetValue !== undefined
+        ? typeof targetValue === "number"
+          ? Number.isInteger(targetValue)
+            ? `${targetValue}`
+            : `${parseFloat(targetValue.toFixed(2))}`
+          : `${targetValue}`
+        : "--";
 
-  // [변경: 2026-01-26 15:50, 임도휘 수정] 현재값 포맷팅 (value 필드 사용)
-  // [변경: 2026-01-28 17:00, 임도휘 수정] 소수점 표기 조건 추가 (정수부=0 && 소수첫째=0이면 둘째자리까지)
-  const formatCurrentValue = (val: number | null): string => {
-    if (val === null) return "--";
-    if (typeof val !== "number") return `${val}`;
-    if (Number.isInteger(val)) return `${val}`;
+    // [변경: 2026-01-26 15:50, 임도휘 수정] 현재값 포맷팅 (value 필드 사용)
+    // [변경: 2026-01-28 17:00, 임도휘 수정] 소수점 표기 조건 추가 (정수부=0 && 소수첫째=0이면 둘째자리까지)
+    const formatCurrentValue = (val: number | null): string => {
+      if (val === null) return "--";
+      if (typeof val !== "number") return `${val}`;
+      if (Number.isInteger(val)) return `${val}`;
 
-    return parseFloat(val.toFixed(2)).toString();
-  };
+      return parseFloat(val.toFixed(2)).toString();
+    };
 
-  const formattedValue = formatCurrentValue(value);
+    const formattedValue = formatCurrentValue(value);
 
-  const tooltipContent = (
-    <div
-      className="fixed z-[9999] bg-white text-gray-900 text-sm rounded-lg shadow-xl border border-gray-200 w-[280px] pointer-events-none"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: "translate(-50%, -100%) translateY(-8px)",
-      }}
-    >
-      {/* 헤더: 지표명 */}
-      <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-        <div className="font-medium text-gray-800 text-base">
-          {displayMetricName}
+    const tooltipContent = (
+      <div
+        ref={ref}
+        className="fixed z-[9999] bg-white text-gray-900 text-sm rounded-lg shadow-xl border border-gray-200 w-[280px]"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          transform: "translate(-50%, -100%) translateY(-8px)",
+        }}
+      >
+        {/* 헤더: 지표명 */}
+        <div className="px-4 pt-3 pb-2 border-b border-gray-100">
+          <div className="font-medium text-gray-800 text-base">
+            {displayMetricName}
+          </div>
+          {description && (
+            <div className="text-xs text-gray-500 mt-1 leading-relaxed">
+              {description}
+            </div>
+          )}
         </div>
-        {description && (
-          <div className="text-xs text-gray-500 mt-1 leading-relaxed">
-            {description}
+
+        {/* 본문: 현재값 / 목표값 */}
+        <div className="px-4 py-3">
+          <div className="flex gap-6">
+            {/* 현재값 */}
+            <div className="flex-1">
+              <div className="text-xs text-gray-400 mb-1">현재값</div>
+              <div className="text-md font-medium text-gray-900">
+                {formattedValue}
+                {value !== null && (
+                  <span className="text-sm font-normal ml-0.5">
+                    {displayUnit}
+                  </span>
+                )}
+              </div>
+            </div>
+            {/* 목표값 */}
+            <div className="flex-1">
+              <div className="text-xs text-gray-400 mb-1">목표값</div>
+              <div className="text-md font-medium text-gray-900">
+                {targetValue !== null && targetValue !== undefined ? (
+                  <>
+                    {formattedTargetValue}
+                    {displayUnit && (
+                      <span className="text-sm font-normal ml-0.5">
+                        {displayUnit}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  "--"
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 하단: 달성률 / 달성단계 */}
+        <div className="px-4 py-3 border-t border-gray-100">
+          <div className="flex gap-6">
+            {/* [변경: 2026-01-26 15:50, 임도휘 수정] 달성률 (avgRate 필드 사용) */}
+            <div className="flex-1">
+              <div className="text-xs text-gray-400 mb-1">달성률</div>
+              <div className="text-md font-medium text-gray-900">
+                {avgRate !== null ? `${parseFloat(avgRate.toFixed(2))} %` : "--"}
+              </div>
+            </div>
+            {/* 달성단계 */}
+            <div className="flex-1">
+              <div className="text-xs text-gray-400 mb-1">달성단계</div>
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{
+                    backgroundColor:
+                      ScoreLevelColor[status as keyof typeof ScoreLevelColor] ??
+                      "#9CA3AF",
+                  }}
+                />
+                <span className="text-md font-medium text-gray-900">
+                  {ScoreLevelLabel[status as keyof typeof ScoreLevelLabel] ||
+                    "데이터 없음"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 역추적 버튼 -- onTraceClick이 제공된 경우에만 표시 */}
+        {onTraceClick && (
+          <div className="px-4 py-2 border-t border-gray-100">
+            <button
+              type="button"
+              className="w-full text-center text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded py-1.5 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onTraceClick();
+              }}
+            >
+              역추적
+            </button>
           </div>
         )}
+
+        {/* Triangle pointer */}
+        <div
+          className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full"
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: "8px solid transparent",
+            borderRight: "8px solid transparent",
+            borderTop: "8px solid white",
+            filter: "drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))",
+          }}
+        />
       </div>
+    );
 
-      {/* 본문: 현재값 / 목표값 */}
-      <div className="px-4 py-3">
-        <div className="flex gap-6">
-          {/* 현재값 */}
-          <div className="flex-1">
-            <div className="text-xs text-gray-400 mb-1">현재값</div>
-            <div className="text-md font-medium text-gray-900">
-              {formattedValue}
-              {value !== null && (
-                <span className="text-sm font-normal ml-0.5">
-                  {displayUnit}
-                </span>
-              )}
-            </div>
-          </div>
-          {/* 목표값 */}
-          <div className="flex-1">
-            <div className="text-xs text-gray-400 mb-1">목표값</div>
-            <div className="text-md font-medium text-gray-900">
-              {targetValue !== null && targetValue !== undefined ? (
-                <>
-                  {formattedTargetValue}
-                  {displayUnit && (
-                    <span className="text-sm font-normal ml-0.5">
-                      {displayUnit}
-                    </span>
-                  )}
-                </>
-              ) : (
-                "--"
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+    // Portal을 사용하여 document.body에 렌더링
+    return createPortal(tooltipContent, document.body);
+  },
+);
 
-      {/* 하단: 달성률 / 달성단계 */}
-      <div className="px-4 py-3 border-t border-gray-100">
-        <div className="flex gap-6">
-          {/* [변경: 2026-01-26 15:50, 임도휘 수정] 달성률 (avgRate 필드 사용) */}
-          <div className="flex-1">
-            <div className="text-xs text-gray-400 mb-1">달성률</div>
-            <div className="text-md font-medium text-gray-900">
-              {avgRate !== null ? `${parseFloat(avgRate.toFixed(2))} %` : "--"}
-            </div>
-          </div>
-          {/* 달성단계 */}
-          <div className="flex-1">
-            <div className="text-xs text-gray-400 mb-1">달성단계</div>
-            <div className="flex items-center gap-1.5">
-              <div
-                className="w-2.5 h-2.5 rounded-full"
-                style={{
-                  backgroundColor:
-                    ScoreLevelColor[status as keyof typeof ScoreLevelColor] ??
-                    "#9CA3AF",
-                }}
-              />
-              <span className="text-md font-medium text-gray-900">
-                {ScoreLevelLabel[status as keyof typeof ScoreLevelLabel] ||
-                  "데이터 없음"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Triangle pointer */}
-      <div
-        className="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full"
-        style={{
-          width: 0,
-          height: 0,
-          borderLeft: "8px solid transparent",
-          borderRight: "8px solid transparent",
-          borderTop: "8px solid white",
-          filter: "drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1))",
-        }}
-      />
-    </div>
-  );
-
-  // Portal을 사용하여 document.body에 렌더링
-  return createPortal(tooltipContent, document.body);
-};
+MetricTooltip.displayName = "MetricTooltip";
 
 export default MetricTooltip;

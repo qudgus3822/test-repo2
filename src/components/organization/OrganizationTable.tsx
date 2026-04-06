@@ -62,6 +62,7 @@ import {
   type MetricData,
   type SummaryCounts,
 } from "./heatmap/types";
+import type { TraceOverlayContext } from "@/types/traceability.types";
 
 // 플랫 아이템 타입
 interface FlatTreeItem {
@@ -82,6 +83,8 @@ interface OrganizationTableProps {
   onMetricDetailChange?: (isOpen: boolean) => void;
   /** 테이블 전체보기 (zoom 축소) 모드 */
   isZoomed?: boolean;
+  /** 역추적 오버레이 열기 콜백 */
+  onTraceClick?: (context: TraceOverlayContext) => void;
 }
 
 // 트리를 플랫 배열로 변환 (expand 상태 고려)
@@ -154,6 +157,8 @@ const CombinedDepartmentRow = ({
   metricOrder,
   hideValue = false,
   aggregationType = "avg",
+  onTraceClick,
+  metricCodeToEnumMap = {},
 }: {
   item: FlatTreeItem;
   summaryCounts: SummaryCounts;
@@ -161,6 +166,8 @@ const CombinedDepartmentRow = ({
   metricOrder: string[];
   hideValue?: boolean;
   aggregationType?: AggregationType;
+  onTraceClick?: (context: TraceOverlayContext) => void;
+  metricCodeToEnumMap?: Record<string, string>;
 }) => {
   const dept = item.data as OrganizationDepartment;
   const paddingLeft = 16 + item.depth * 24;
@@ -263,6 +270,16 @@ const CombinedDepartmentRow = ({
               unit={unit}
               description={description}
               status={status}
+              onTraceClick={() =>
+                onTraceClick?.({
+                  metricCode: code,
+                  metricApiName: metricCodeToEnumMap[code] ?? code.toLowerCase(),
+                  metricDisplayName: metricName,
+                  aggregationLevel: dept.level <= 2 ? "DIVISION" : "TEAM",
+                  departmentCode: dept.code,
+                  departmentName: dept.name,
+                })
+              }
             />
           </td>
         );
@@ -278,12 +295,16 @@ const CombinedMemberRow = ({
   metricOrder,
   hideValue = false,
   aggregationType = "avg",
+  onTraceClick,
+  metricCodeToEnumMap = {},
 }: {
   item: FlatTreeItem;
   summaryCounts: SummaryCounts;
   metricOrder: string[];
   hideValue?: boolean;
   aggregationType?: AggregationType;
+  onTraceClick?: (context: TraceOverlayContext) => void;
+  metricCodeToEnumMap?: Record<string, string>;
 }) => {
   const member = item.data as OrganizationMember;
   const paddingLeft = 24 + item.depth * 24;
@@ -381,6 +402,18 @@ const CombinedMemberRow = ({
               targetValue={targetValue}
               unit={unit}
               status={status}
+              onTraceClick={() =>
+                onTraceClick?.({
+                  metricCode: code,
+                  metricApiName: metricCodeToEnumMap[code] ?? code.toLowerCase(),
+                  metricDisplayName: metricName,
+                  aggregationLevel: "MEMBER",
+                  memberId: member.employeeID,
+                  memberName: member.name,
+                  departmentCode: member.departmentCode,
+                  departmentName: member.departmentName,
+                })
+              }
             />
           </td>
         );
@@ -502,6 +535,7 @@ export const OrganizationTable = ({
   aggregationType = "avg",
   onMetricDetailChange,
   isZoomed = false,
+  onTraceClick,
 }: OrganizationTableProps) => {
   // 전체 탭일 경우 API 옵션 설정
   const apiOptions =
@@ -546,6 +580,15 @@ export const OrganizationTable = ({
     () =>
       Object.fromEntries(
         metricVisibleInfoList.map((info) => [info.enumCode, info.isSummable]),
+      ),
+    [metricVisibleInfoList],
+  );
+
+  // metricCode → enumCode 맵 (역추적 API의 metricName으로 사용)
+  const metricCodeToEnumMap = useMemo(
+    () =>
+      Object.fromEntries(
+        metricVisibleInfoList.map((info) => [info.metricCode, info.enumCode]),
       ),
     [metricVisibleInfoList],
   );
@@ -916,6 +959,8 @@ export const OrganizationTable = ({
                     metricOrder={visibleMetricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
+                    onTraceClick={onTraceClick}
+                    metricCodeToEnumMap={metricCodeToEnumMap}
                   />
                 ) : (
                   <CombinedMemberRow
@@ -927,6 +972,8 @@ export const OrganizationTable = ({
                     metricOrder={visibleMetricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
+                    onTraceClick={onTraceClick}
+                    metricCodeToEnumMap={metricCodeToEnumMap}
                   />
                 );
               })}

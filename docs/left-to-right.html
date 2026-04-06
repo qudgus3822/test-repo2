@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metric trace chain — Left to right</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --surface-2: #F3F2EE;
+    --text-1: #1A1A18;
+    --text-2: #6B6A65;
+    --text-3: #9C9A92;
+    --border: #E5E4DF;
+    --border-light: #EEEDEA;
+    --division-fill: #F5F0FF;
+    --division-stroke: #8B5CF6;
+    --division-text: #5B21B6;
+    --division-badge: #EDE9FE;
+    --team-fill: #ECFDF5;
+    --team-stroke: #10B981;
+    --team-text: #065F46;
+    --team-badge: #D1FAE5;
+    --member-fill: #EFF6FF;
+    --member-stroke: #3B82F6;
+    --member-text: #1E40AF;
+    --member-badge: #DBEAFE;
+    --font: 'IBM Plex Sans KR', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+    --radius: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413;
+      --surface: #1E1E1C;
+      --surface-2: #262624;
+      --text-1: #E8E6DF;
+      --text-2: #9C9A92;
+      --text-3: #6B6A65;
+      --border: #333330;
+      --border-light: #2A2A28;
+      --division-fill: #2D2545;
+      --division-stroke: #A78BFA;
+      --division-text: #C4B5FD;
+      --division-badge: #3B2D63;
+      --team-fill: #14332A;
+      --team-stroke: #34D399;
+      --team-text: #6EE7B7;
+      --team-badge: #1A4D3E;
+      --member-fill: #1A2744;
+      --member-stroke: #60A5FA;
+      --member-text: #93C5FD;
+      --member-badge: #1E3A5F;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-1);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  .page-header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .page-header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .page-header .sub {
+    font-size: 13px;
+    color: var(--text-2);
+    font-family: var(--mono);
+  }
+  .meta-row {
+    display: flex;
+    gap: 20px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--surface-2);
+    color: var(--text-2);
+  }
+  .meta-pill strong { color: var(--text-1); font-weight: 500; }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 40px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface);
+  }
+  .toolbar button {
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .toolbar button:hover {
+    background: var(--surface-2);
+    color: var(--text-1);
+  }
+  .toolbar .spacer { flex: 1; }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend .line-demo { width: 24px; height: 2px; border-radius: 1px; background: var(--text-3); }
+  .legend .line-thin { height: 1px; }
+  .legend .line-thick { height: 4px; }
+
+  .canvas-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+  }
+  .canvas-wrap.grabbing { cursor: grabbing; }
+  .canvas-wrap svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  svg text { font-family: var(--font); }
+
+  .node-group { cursor: pointer; }
+  .node-group:hover .node-border { stroke-width: 2; }
+
+  .edge { transition: opacity .2s; }
+  .edge:hover { opacity: 1 !important; }
+
+  .zoom-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 10;
+  }
+  .zoom-controls button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+  }
+  .zoom-controls button:first-child { border-radius: 8px 8px 0 0; }
+  .zoom-controls button:last-child { border-radius: 0 0 8px 8px; }
+  .zoom-controls button:hover { background: var(--surface-2); color: var(--text-1); }
+  .zoom-info {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: var(--mono);
+    background: var(--surface);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    z-index: 10;
+    user-select: none;
+  }
+
+  .tooltip {
+    position: fixed;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+    font-size: 12px;
+    color: var(--text-1);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .15s;
+    z-index: 100;
+    max-width: 220px;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip .tt-label { font-weight: 500; margin-bottom: 2px; }
+  .tooltip .tt-val { color: var(--text-2); }
+
+  .col-label {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>코드 스멜 — Metric trace chain</h1>
+  <div class="sub">code_smell · quality · AVG</div>
+  <div class="meta-row">
+    <span class="meta-pill"><strong>기간</strong> 2026년 3월 (월별)</span>
+    <span class="meta-pill"><strong>대상</strong> 모두플랫폼개발실</span>
+    <span class="meta-pill"><strong>집계</strong> DIVISION</span>
+    <span class="meta-pill"><strong>문서</strong> 22건 · 사용자 11명</span>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button onclick="expandAll()">모두 펼치기</button>
+  <button onclick="collapseAll()">모두 접기</button>
+  <div class="spacer"></div>
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:var(--division-stroke)"></span>부문/실</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--team-stroke)"></span>팀</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--member-stroke)"></span>개인</span>
+    <span class="legend-item" style="margin-left:8px"><span class="line-demo line-thin"></span>낮은 기여</span>
+    <span class="legend-item"><span class="line-demo line-thick"></span>높은 기여</span>
+  </div>
+</div>
+
+<div class="canvas-wrap" id="canvasWrap">
+  <svg id="graph"><g id="world"></g></svg>
+  <div class="zoom-controls">
+    <button onclick="zoomIn()" title="확대">+</button>
+    <button onclick="resetView()" title="초기화">⌂</button>
+    <button onclick="zoomOut()" title="축소">−</button>
+  </div>
+  <div class="zoom-info" id="zoomInfo">100%</div>
+</div>
+
+<div class="tooltip" id="tooltip">
+  <div class="tt-label"></div>
+  <div class="tt-val"></div>
+</div>
+
+<script>
+const DATA = {
+  id:'div', label:'모두플랫폼개발실', tag:'부문/실', type:'division',
+  metrics:{count:3, score:100, days:6}, method:'가중 평균', weight:1,
+  children:[
+    { id:'tA', label:'A플랫폼개발팀', tag:'팀', type:'team',
+      metrics:{count:3, score:100, days:2}, method:'가중 평균', weight:0.4,
+      children:[
+        {id:'lsw', label:'이승우', sub:'moco.seungwoo', type:'member', metrics:{count:0, score:100, days:5}, weight:0.5},
+        {id:'psj', label:'박서진', sub:'moco.seojin', type:'member', metrics:{count:6, score:100, days:5}, weight:0.5}
+      ]},
+    { id:'tB', label:'B플랫폼개발팀', tag:'팀', type:'team',
+      metrics:{count:3.33, score:100, days:3}, method:'가중 평균', weight:0.6,
+      children:[
+        {id:'cmj', label:'최민재', sub:'moco.minjae', type:'member', metrics:{count:4, score:100, days:22}, weight:0.4},
+        {id:'hjw', label:'한지우', sub:'moco.jiwoo', type:'member', metrics:{count:3, score:100, days:22}, weight:0.3},
+        {id:'kyr', label:'강예린', sub:'moco.yerin', type:'member', metrics:{count:3, score:100, days:22}, weight:0.3}
+      ]}
+  ]
+};
+
+const expanded = {div:true, tA:true, tB:true};
+const svg = document.getElementById('graph');
+const world = document.getElementById('world');
+const canvasWrap = document.getElementById('canvasWrap');
+const zoomInfo = document.getElementById('zoomInfo');
+const NS = 'http://www.w3.org/2000/svg';
+const tooltip = document.getElementById('tooltip');
+
+const COLORS = {
+  division:{fill:'var(--division-fill)',stroke:'var(--division-stroke)',text:'var(--division-text)',badge:'var(--division-badge)'},
+  team:{fill:'var(--team-fill)',stroke:'var(--team-stroke)',text:'var(--team-text)',badge:'var(--team-badge)'},
+  member:{fill:'var(--member-fill)',stroke:'var(--member-stroke)',text:'var(--member-text)',badge:'var(--member-badge)'}
+};
+
+const NODE_W = {division:220, team:200, member:190};
+const NODE_H = {division:88, team:82, member:74};
+const H_GAP = 80;
+const V_GAP = 20;
+const COL_X = [40, 340, 640];
+
+// --- Pan & Zoom ---
+let zoom = 1;
+const MIN_ZOOM = 0.2, MAX_ZOOM = 3;
+let panX = 0, panY = 0;
+let isPanning = false, panStartX = 0, panStartY = 0, panOriginX = 0, panOriginY = 0;
+let contentW = 900, contentH = 500;
+
+function applyTransform(){
+  world.setAttribute('transform', `translate(${panX},${panY}) scale(${zoom})`);
+  zoomInfo.textContent = Math.round(zoom*100)+'%';
+}
+function zoomIn(){ zoom = Math.min(MAX_ZOOM, zoom * 1.25); applyTransform(); }
+function zoomOut(){ zoom = Math.max(MIN_ZOOM, zoom / 1.25); applyTransform(); }
+function resetView(){ zoom = 1; panX = 0; panY = 0; fitContent(); }
+function fitContent(){
+  const rect = canvasWrap.getBoundingClientRect();
+  const vw = rect.width, vh = rect.height;
+  const scaleX = vw / (contentW + 60), scaleY = vh / (contentH + 60);
+  zoom = Math.min(scaleX, scaleY, 1.2);
+  panX = (vw - contentW * zoom) / 2;
+  panY = (vh - contentH * zoom) / 2;
+  applyTransform();
+}
+
+canvasWrap.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const rect = canvasWrap.getBoundingClientRect();
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  const oldZoom = zoom;
+  const factor = e.deltaY < 0 ? 1.1 : 1/1.1;
+  zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+  panX = mx - (mx - panX) * (zoom / oldZoom);
+  panY = my - (my - panY) * (zoom / oldZoom);
+  applyTransform();
+}, {passive:false});
+
+canvasWrap.addEventListener('mousedown', e=>{
+  if(e.target.closest('.node-group,.edge,.zoom-controls')) return;
+  isPanning = true;
+  panStartX = e.clientX; panStartY = e.clientY;
+  panOriginX = panX; panOriginY = panY;
+  canvasWrap.classList.add('grabbing');
+});
+window.addEventListener('mousemove', e=>{
+  if(!isPanning) return;
+  panX = panOriginX + (e.clientX - panStartX);
+  panY = panOriginY + (e.clientY - panStartY);
+  applyTransform();
+});
+window.addEventListener('mouseup', ()=>{
+  isPanning = false;
+  canvasWrap.classList.remove('grabbing');
+});
+
+let lastTouches = null;
+canvasWrap.addEventListener('touchstart', e=>{
+  if(e.touches.length === 1){
+    isPanning = true;
+    panStartX = e.touches[0].clientX; panStartY = e.touches[0].clientY;
+    panOriginX = panX; panOriginY = panY;
+  }
+  lastTouches = [...e.touches];
+}, {passive:true});
+canvasWrap.addEventListener('touchmove', e=>{
+  if(e.touches.length === 1 && isPanning){
+    panX = panOriginX + (e.touches[0].clientX - panStartX);
+    panY = panOriginY + (e.touches[0].clientY - panStartY);
+    applyTransform();
+  } else if(e.touches.length === 2 && lastTouches && lastTouches.length === 2){
+    e.preventDefault();
+    const oldDist = Math.hypot(lastTouches[0].clientX - lastTouches[1].clientX,
+                               lastTouches[0].clientY - lastTouches[1].clientY);
+    const newDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                               e.touches[0].clientY - e.touches[1].clientY);
+    const factor = newDist / oldDist;
+    const rect = canvasWrap.getBoundingClientRect();
+    const cx = (e.touches[0].clientX + e.touches[1].clientX)/2 - rect.left;
+    const cy = (e.touches[0].clientY + e.touches[1].clientY)/2 - rect.top;
+    const oldZoom = zoom;
+    zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+    panX = cx - (cx - panX) * (zoom / oldZoom);
+    panY = cy - (cy - panY) * (zoom / oldZoom);
+    applyTransform();
+    lastTouches = [...e.touches];
+  }
+}, {passive:false});
+canvasWrap.addEventListener('touchend', ()=>{ isPanning = false; lastTouches = null; });
+
+// --- Graph ---
+function el(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for(const[k,v] of Object.entries(attrs||{})) e.setAttribute(k,v);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+
+function countLeaves(node){
+  if(!node.children || !expanded[node.id]) return 1;
+  return node.children.reduce((s,c)=>s+countLeaves(c), 0);
+}
+
+function positionLR(node, col, yStart){
+  const w = NODE_W[node.type], h = NODE_H[node.type];
+  node._w = w; node._h = h;
+  node._x = COL_X[col];
+  if(!node.children || !expanded[node.id]){
+    node._y = yStart; node._cy = yStart + h/2; node._cx = node._x + w/2;
+    return { bottom: yStart + h };
+  }
+  let cy = yStart, maxBottom = yStart;
+  node.children.forEach(child => {
+    const result = positionLR(child, col+1, cy);
+    cy = result.bottom + V_GAP;
+    maxBottom = result.bottom;
+  });
+  const firstChild = node.children[0], lastChild = node.children[node.children.length-1];
+  const childrenMidY = (firstChild._cy + lastChild._cy) / 2;
+  node._y = childrenMidY - h/2; node._cy = childrenMidY; node._cx = node._x + w/2;
+  return { bottom: Math.max(maxBottom, node._y + h) };
+}
+
+function drawEdge(parent, child, container){
+  const x1 = parent._x + parent._w, y1 = parent._cy;
+  const x2 = child._x, y2 = child._cy;
+  const midX = x1 + (x2 - x1) * 0.5;
+  const w = Math.max(1, child.weight * 6);
+  const col = COLORS[parent.type].stroke;
+  const opacity = 0.25 + child.weight * 0.55;
+  const g = el('g',{class:'edge', style:`opacity:${opacity}`}, container);
+  el('path',{
+    d:`M${x1} ${y1} C${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`,
+    fill:'none', stroke:col, 'stroke-width':w, 'stroke-linecap':'round'
+  }, g);
+  const bx = midX, by = (y1+y2)/2;
+  const pct = Math.round(child.weight*100)+'%';
+  el('rect',{x:bx-16, y:by-9, width:32, height:18, rx:9,
+    fill:COLORS[parent.type].badge, stroke:col, 'stroke-width':.5}, g);
+  const t = el('text',{x:bx, y:by+1, 'text-anchor':'middle', 'dominant-baseline':'central',
+    'font-size':'10', fill:COLORS[parent.type].text, 'font-weight':'500', 'font-family':'var(--mono)'}, g);
+  t.textContent = pct;
+  g.addEventListener('mouseenter', e=>{
+    tooltip.querySelector('.tt-label').textContent = `${parent.label} → ${child.label}`;
+    tooltip.querySelector('.tt-val').textContent = `가중치: ${pct}`;
+    tooltip.classList.add('show');
+  });
+  g.addEventListener('mousemove', e=>{
+    tooltip.style.left = e.clientX+12+'px'; tooltip.style.top = e.clientY-30+'px';
+  });
+  g.addEventListener('mouseleave', ()=>tooltip.classList.remove('show'));
+}
+
+function drawNode(node, container){
+  const c = COLORS[node.type];
+  const g = el('g',{class:'node-group'}, container);
+  el('rect',{class:'node-bg', x:node._x, y:node._y, width:node._w, height:node._h, rx:12, fill:c.fill}, g);
+  el('rect',{class:'node-border', x:node._x, y:node._y, width:node._w, height:node._h, rx:12, fill:'none', stroke:c.stroke, 'stroke-width':1}, g);
+  const lx = node._x+14, ly = node._y+20;
+  const t = el('text',{x:lx, y:ly, 'font-size':'13', fill:c.text, 'font-weight':'500', 'dominant-baseline':'central'}, g);
+  t.textContent = node.label;
+  if(node.tag){
+    const tw = node.tag.length*8+10, tx = node._x + node._w - tw - 10;
+    el('rect',{x:tx, y:ly-9, width:tw, height:18, rx:4, fill:c.badge}, g);
+    const tt = el('text',{x:tx+tw/2, y:ly, 'text-anchor':'middle', 'dominant-baseline':'central',
+      'font-size':'10', fill:c.text, 'font-weight':'500'}, g);
+    tt.textContent = node.tag;
+  }
+  if(node.sub){
+    const st = el('text',{x:lx, y:ly+18, 'font-size':'11', fill:c.text, opacity:'.5',
+      'font-family':'var(--mono)', 'dominant-baseline':'central'}, g);
+    st.textContent = node.sub;
+  }
+  const my = node.sub ? ly+36 : ly+20;
+  const countStr = Number.isInteger(node.metrics.count) ? node.metrics.count : node.metrics.count.toFixed(1);
+  const metrics = [{val:countStr+'개'},{val:node.metrics.score+'점'},{val:node.metrics.days+'일'}];
+  let mx = lx;
+  metrics.forEach((m,i)=>{
+    if(i>0){ const dot = el('text',{x:mx, y:my, 'font-size':'10', fill:c.text, opacity:'.2', 'dominant-baseline':'central'}, g); dot.textContent = '·'; mx += 10; }
+    const mt = el('text',{x:mx, y:my, 'font-size':'11', fill:c.text, opacity:'.65', 'dominant-baseline':'central', 'font-family':'var(--mono)'}, g);
+    mt.textContent = m.val; mx += m.val.length*7 + 8;
+  });
+  if(node.children){
+    const ix = node._x + node._w - 14, iy = node._y + node._h - 14;
+    const ind = el('text',{x:ix, y:iy, 'text-anchor':'middle', 'font-size':'10', fill:c.text, opacity:'.4', 'dominant-baseline':'central'}, g);
+    ind.textContent = expanded[node.id] ? '◂' : '▸';
+  }
+  g.addEventListener('click', ()=>{
+    if(node.children){ expanded[node.id] = !expanded[node.id]; render(); }
+  });
+}
+
+function drawColumnHeaders(container){
+  const labels = ['부문/실 (Division)', '팀 (Team)', '개인 (Member)'];
+  const strokes = ['var(--division-stroke)','var(--team-stroke)','var(--member-stroke)'];
+  COL_X.forEach((x,i)=>{
+    const t = el('text',{x:x, y:16, 'font-size':'10', fill:strokes[i],
+      'dominant-baseline':'central', 'letter-spacing':'0.06em', 'font-weight':'500',
+      'font-family':'var(--font)', class:'col-label'}, container);
+    t.textContent = labels[i];
+  });
+}
+
+function render(){
+  world.innerHTML = '';
+  const result = positionLR(DATA, 0, 40);
+  contentH = result.bottom + 40;
+  contentW = Math.max(900, COL_X[2] + NODE_W.member + 40);
+
+  const headerG = el('g',{}, world);
+  drawColumnHeaders(headerG);
+
+  for(let i=1; i<3; i++){
+    el('line',{x1:COL_X[i]-H_GAP/2, y1:28, x2:COL_X[i]-H_GAP/2, y2:contentH-20,
+      stroke:'var(--border-light)', 'stroke-width':1, 'stroke-dasharray':'4 4'}, world);
+  }
+
+  const edgeG = el('g',{}, world);
+  const nodeG = el('g',{}, world);
+
+  function drawEdges(node){
+    if(!node.children || !expanded[node.id]) return;
+    node.children.forEach(ch=>{drawEdge(node, ch, edgeG); drawEdges(ch);});
+  }
+  function drawNodes(node){
+    drawNode(node, nodeG);
+    if(node.children && expanded[node.id]) node.children.forEach(ch=>drawNodes(ch));
+  }
+  drawEdges(DATA);
+  drawNodes(DATA);
+  fitContent();
+}
+
+function expandAll(){ walk(DATA, n=>{if(n.children) expanded[n.id]=true;}); render(); }
+function collapseAll(){ Object.keys(expanded).forEach(k=>expanded[k]=(k==='div')); render(); }
+function walk(n,fn){ fn(n); if(n.children) n.children.forEach(c=>walk(c,fn)); }
+
+render();
+</script>
+</body>
+</html>
