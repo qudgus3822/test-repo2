@@ -1,0 +1,193 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent } from "react";
+import {
+  buildGraphTree,
+  computeGraphLayout,
+} from "@/utils/traceGraphLayout.js";
+import { useGraphPanZoom } from "@/hooks/useGraphPanZoom.js";
+import { GraphNode } from "./graph/GraphNode.js";
+import { GraphEdge } from "./graph/GraphEdge.js";
+import { EdgeTooltip } from "./graph/EdgeTooltip.js";
+import { ZoomControls } from "./graph/ZoomControls.js";
+import type {
+  TraceNode,
+  MetricInfo,
+  PositionedEdge,
+} from "@/types/traceability.types.js";
+import type { DivisionLoadStatus } from "@/api/hooks/useSequentialDivisionLoader.js";
+
+interface TraceGraphProps {
+  root: TraceNode | null;
+  metricInfo: MetricInfo;
+  /** Expand/collapse state owned by TraceOverlay */
+  expandedNodes: Set<string>;
+  onToggleNode: (nodeId: string) => void;
+  /** Only provided for company-level traces */
+  divisionStates?: Map<string, DivisionLoadStatus>;
+  retryDivision?: (departmentCode: string) => void;
+}
+
+/**
+ * Pure SVG graph renderer. Owns NO expand/collapse state (all lifted to TraceOverlay).
+ * Computes layout via memoized buildGraphTree + computeGraphLayout.
+ */
+export const TraceGraph = ({
+  root,
+  metricInfo,
+  expandedNodes,
+  onToggleNode,
+  divisionStates,
+  retryDivision,
+}: TraceGraphProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const {
+    transformStr,
+    zoomLevel,
+    handlers,
+    zoomIn,
+    zoomOut,
+    resetView,
+    fitContent,
+    isPanning,
+  } = useGraphPanZoom(containerRef);
+
+  // Tooltip state — only hoveredEdge needs React state (mouseenter/leave)
+  // Position is updated imperatively to avoid re-renders on every mousemove
+  const [hoveredEdge, setHoveredEdge] = useState<PositionedEdge | null>(null);
+  const tooltipDivRef = useRef<HTMLDivElement>(null);
+
+  const handleEdgeEnter = useCallback((edge: PositionedEdge) => {
+    setHoveredEdge(edge);
+  }, []);
+
+  const handleEdgeLeave = useCallback(() => {
+    setHoveredEdge(null);
+  }, []);
+
+  const handleEdgeMove = useCallback((e: MouseEvent) => {
+    if (tooltipDivRef.current && containerRef.current) {
+      // The modal has CSS transform (scale-100) which creates a new containing
+      // block for position:fixed descendants. Convert viewport coords to
+      // container-local coords so the tooltip aligns with the cursor.
+      const rect = containerRef.current.getBoundingClientRect();
+      const localX = e.clientX - rect.left;
+      const localY = e.clientY - rect.top;
+      const x = localX + 8;
+      const y = localY + 8;
+      const tooltipWidth = tooltipDivRef.current.offsetWidth;
+      const tooltipHeight = tooltipDivRef.current.offsetHeight;
+      const adjustedX =
+        x + tooltipWidth > rect.width ? localX - tooltipWidth - 8 : x;
+      const adjustedY =
+        y + tooltipHeight > rect.height ? localY - tooltipHeight - 8 : y;
+      tooltipDivRef.current.style.left = `${adjustedX}px`;
+      tooltipDivRef.current.style.top = `${adjustedY}px`;
+    }
+  }, []);
+
+  const isCompanyLevel = root?.level === "COMPANY";
+
+  const layout = useMemo(() => {
+    if (!root) return null;
+    const graphTrees = buildGraphTree(
+      root,
+      isCompanyLevel ? divisionStates : undefined,
+    );
+    return computeGraphLayout(graphTrees, expandedNodes);
+  }, [root, expandedNodes, divisionStates, isCompanyLevel]);
+
+  // Fit content only once on initial layout (not on every division load)
+  const hasInitialFitRef = useRef(false);
+  useEffect(() => {
+    if (layout && !hasInitialFitRef.current) {
+      fitContent(layout.contentWidth, layout.contentHeight);
+      hasInitialFitRef.current = true;
+    }
+  }, [layout, fitContent]);
+
+  // Reset fit flag when root changes (new trace query)
+  useEffect(() => {
+    hasInitialFitRef.current = false;
+  }, [root]);
+
+  const handleNodeClick = useCallback(
+    (nodeId: string) => {
+      // Error nodes trigger retry instead of toggle
+      // Use nodeMap for O(1) lookup instead of linear scan
+      if (retryDivision && layout) {
+        const clickedNode = layout.nodeMap.get(nodeId);
+        if (clickedNode?.loadState === "error") {
+          retryDivision(nodeId);
+          return;
+        }
+      }
+      onToggleNode(nodeId);
+    },
+    [onToggleNode, retryDivision, layout],
+  );
+
+  if (!root || !layout) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <p className="text-gray-400 text-sm">데이터가 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`flex-1 relative overflow-hidden ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+      onMouseDown={handlers.onMouseDown}
+      onMouseMove={handlers.onMouseMove}
+      onMouseUp={handlers.onMouseUp}
+      onTouchStart={handlers.onTouchStart}
+      onTouchMove={handlers.onTouchMove}
+      onTouchEnd={handlers.onTouchEnd}
+    >
+      <svg className="w-full h-full">
+        <defs>
+          <style>{`
+            .node-group { cursor: pointer; }
+            .node-group:hover .node-border { stroke-width: 2; }
+            .edge { transition: opacity 0.2s; }
+            .edge:hover { opacity: 1 !important; }
+          `}</style>
+        </defs>
+        <g transform={transformStr}>
+          {/* Edges first (behind nodes) */}
+          {layout.edges.map((edge) => (
+            <GraphEdge
+              key={edge.id}
+              edge={edge}
+              onMouseEnter={handleEdgeEnter}
+              onMouseLeave={handleEdgeLeave}
+              onMouseMove={handleEdgeMove}
+            />
+          ))}
+          {/* Nodes on top */}
+          {layout.nodes.map((node) => (
+            <GraphNode
+              key={node.id}
+              node={node}
+              metricInfo={metricInfo}
+              onClick={handleNodeClick}
+            />
+          ))}
+        </g>
+      </svg>
+      <ZoomControls
+        zoomLevel={zoomLevel}
+        onZoomIn={zoomIn}
+        onZoomOut={zoomOut}
+        onReset={resetView}
+      />
+      <EdgeTooltip
+        ref={tooltipDivRef}
+        visible={hoveredEdge !== null}
+        edge={hoveredEdge}
+        rawUnit={metricInfo.rawUnit}
+      />
+    </div>
+  );
+};

@@ -148,7 +148,7 @@ export const HeatmapCell = ({
           unit={metricDefinition?.unit || unit}
           description={metricDefinition?.tooltip ?? undefined}
           status={metricDefinition?.status ?? status}
-          onTraceClick={onTraceClick}
+          onTraceClick={onTraceClick ? () => { setTooltipVisible(false); onTraceClick(); } : undefined}
         />
       )}
     </div>

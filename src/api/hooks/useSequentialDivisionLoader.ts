@@ -157,9 +157,10 @@ export const useSequentialDivisionLoader = (
 
   // Clean up all retry controllers on unmount
   useEffect(() => {
+    const ref = retryAbortRef.current;
     return () => {
-      retryAbortRef.current.forEach(controller => controller.abort());
-      retryAbortRef.current.clear();
+      ref.forEach(controller => controller.abort());
+      ref.clear();
     };
   }, []);
 
