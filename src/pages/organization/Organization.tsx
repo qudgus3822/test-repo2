@@ -39,6 +39,8 @@ import { useDetailModal } from "@/hooks/organization/useDetailModal";
 import { usePageInitialization } from "@/hooks/organization/usePageInitialization";
 import { useViewMode } from "@/hooks/organization/useViewMode";
 import { useSearchArea } from "@/hooks/organization/useSearchArea";
+import { useTraceOverlay } from "@/hooks/organization/useTraceOverlay";
+import { TraceOverlay } from "@/components/organization/traceOverlay/TraceOverlay";
 
 // Level 1(부문) 조직 코드만 수집
 // 초기 화면 진입 시 사용 → 실 단위까지 보임
@@ -137,6 +139,14 @@ const OrganizationPage = () => {
     closeModal: handleDetailModalClose,
   } = useDetailModal();
 
+  // 역추적 오버레이 상태
+  const {
+    isOpen: isTraceOverlayOpen,
+    context: traceContext,
+    openOverlay: handleTraceClick,
+    closeOverlay: handleTraceOverlayClose,
+  } = useTraceOverlay();
+
   // 뷰 모드 관련 상태
   // [변경: 2026-02-06 00:00, 임도휘 수정] currentDate 전달하여 날짜 변경 시 뷰 모드 초기화
   const {
@@ -231,6 +241,20 @@ const OrganizationPage = () => {
     flatViewFilter,
     activeSearchKeyword,
   ]);
+
+  // 역추적 오버레이 -- 날짜 또는 탭 변경 시 자동 닫기 (consolidated effect)
+  // prevRef 패턴을 사용하여 실제 변경만 감지 (첫 렌더링 시 닫기 방지)
+  const prevDateRef = useRef(currentDate);
+  const prevTabRef = useRef(activeTab);
+  useEffect(() => {
+    const dateChanged = prevDateRef.current !== currentDate;
+    const tabChanged = prevTabRef.current !== activeTab;
+    if ((dateChanged || tabChanged) && isTraceOverlayOpen) {
+      handleTraceOverlayClose();
+    }
+    prevDateRef.current = currentDate;
+    prevTabRef.current = activeTab;
+  }, [currentDate, activeTab, isTraceOverlayOpen, handleTraceOverlayClose]);
 
   // 이전 필터 값을 추적하는 ref (필터 변경 감지용)
   const prevFiltersRef = useRef({ viewType, flatViewFilter, aggregationType });
@@ -669,6 +693,7 @@ const OrganizationPage = () => {
                   month={yearMonth}
                   activeTab={activeTab}
                   onDetailClick={handleDetailClick}
+                  onTraceClick={handleTraceClick}
                   aggregationType={aggregationType}
                   onMetricDetailChange={setIsMetricDetailOpen}
                   isZoomed={isTableZoomed}
@@ -679,6 +704,7 @@ const OrganizationPage = () => {
                   activeTab={activeTab}
                   filterType={flatViewFilter}
                   onDetailClick={handleDetailClick}
+                  onTraceClick={handleTraceClick}
                   searchKeyword={activeSearchKeyword}
                   onSearchResult={setSearchResultCount}
                   aggregationType={aggregationType}
@@ -721,6 +747,14 @@ const OrganizationPage = () => {
         isOpen={isDetailModalOpen}
         onClose={handleDetailModalClose}
         item={selectedDetailItem}
+      />
+
+      {/* 역추적 오버레이 */}
+      <TraceOverlay
+        isOpen={isTraceOverlayOpen}
+        onClose={handleTraceOverlayClose}
+        context={traceContext}
+        yearMonth={yearMonth}
       />
 
       {/* 조직도 변경 히스토리 모달 */}

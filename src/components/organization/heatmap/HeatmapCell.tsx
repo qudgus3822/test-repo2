@@ -33,6 +33,8 @@ interface HeatmapCellProps {
   description?: string;
   /** 달성 상태 (API 응답) */
   status?: string | null;
+  /** 역추적 오버레이 열기 콜백 -- 부모 행 컴포넌트에서 컨텍스트를 미리 바인딩하여 제공 */
+  onTraceClick?: () => void;
 }
 
 export const HeatmapCell = ({
@@ -45,6 +47,7 @@ export const HeatmapCell = ({
   unit,
   showTooltip = true,
   status,
+  onTraceClick,
 }: HeatmapCellProps) => {
   // [변경: 2026-01-26 15:50, 임도휘 수정] 표시 모드에 따라 실제값(value) 또는 달성률(avgRate) 표시
   const displayMode = useOrganizationStore((state) => state.displayMode);
@@ -55,15 +58,18 @@ export const HeatmapCell = ({
     useState<MetricDefinitionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const cellRef = useRef<HTMLDivElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   // 클릭 외부 감지하여 툴팁 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        cellRef.current &&
-        !cellRef.current.contains(event.target as Node) &&
-        tooltipVisible
-      ) {
+      const target = event.target as Node;
+      // 셀 내부 클릭이면 무시
+      if (cellRef.current && cellRef.current.contains(target)) return;
+      // Portal로 렌더링된 툴팁 내부 클릭이면 무시 (역추적 버튼 등)
+      if (tooltipRef.current && tooltipRef.current.contains(target)) return;
+      // 진짜 외부 클릭 -- 툴팁 닫기
+      if (tooltipVisible) {
         setTooltipVisible(false);
       }
     };
@@ -131,6 +137,7 @@ export const HeatmapCell = ({
       />
       {showTooltip && (
         <MetricTooltip
+          ref={tooltipRef}
           metricCode={metricCode}
           metricName={metricDefinition?.title || metricName}
           value={metricDefinition?.value ?? value}
@@ -141,6 +148,7 @@ export const HeatmapCell = ({
           unit={metricDefinition?.unit || unit}
           description={metricDefinition?.tooltip ?? undefined}
           status={metricDefinition?.status ?? status}
+          onTraceClick={onTraceClick ? () => { setTooltipVisible(false); onTraceClick(); } : undefined}
         />
       )}
     </div>

@@ -66,6 +66,7 @@ import {
   type MetricData,
   type SummaryCounts,
 } from "./heatmap/types";
+import type { TraceOverlayContext } from "@/types/traceability.types";
 
 // 플랫뷰 필터 타입 (API 파라미터와 동일)
 export type FlatViewFilterType = "division" | "team" | "member";
@@ -83,6 +84,8 @@ interface OrganizationFlatTableProps {
   onMetricDetailChange?: (isOpen: boolean) => void;
   /** 테이블 전체보기 (zoom 축소) 모드 */
   isZoomed?: boolean;
+  /** 역추적 오버레이 열기 콜백 */
+  onTraceClick?: (context: TraceOverlayContext) => void;
 }
 
 // 플랫 데이터 아이템 타입
@@ -173,6 +176,8 @@ const CombinedRow = ({
   metricOrder,
   hideValue = false,
   aggregationType = "avg",
+  onTraceClick,
+  metricCodeToEnumMap = {},
 }: {
   item: FlatItem;
   summaryCounts: SummaryCounts;
@@ -181,6 +186,8 @@ const CombinedRow = ({
   metricOrder: string[];
   hideValue?: boolean;
   aggregationType?: AggregationType;
+  onTraceClick?: (context: TraceOverlayContext) => void;
+  metricCodeToEnumMap?: Record<string, string>;
 }) => {
   const data = item.data;
   const isDepartment = item.type === "department";
@@ -339,6 +346,32 @@ const CombinedRow = ({
               unit={unit}
               description={description}
               status={status}
+              onTraceClick={() => {
+                const apiName = metricCodeToEnumMap[code] ?? code.toLowerCase();
+                if (item.type === "department") {
+                  const dept = item.data as OrganizationDepartment;
+                  onTraceClick?.({
+                    metricCode: code,
+                    metricApiName: apiName,
+                    metricDisplayName: metricName,
+                    aggregationLevel: dept.level <= 2 ? "DIVISION" : "TEAM",
+                    departmentCode: dept.code,
+                    departmentName: dept.name,
+                  });
+                } else {
+                  const member = item.data as OrganizationMember;
+                  onTraceClick?.({
+                    metricCode: code,
+                    metricApiName: apiName,
+                    metricDisplayName: metricName,
+                    aggregationLevel: "MEMBER",
+                    memberId: member.employeeID,
+                    memberName: member.name,
+                    departmentCode: member.departmentCode,
+                    departmentName: member.departmentName,
+                  });
+                }
+              }}
             />
           </td>
         );
@@ -496,6 +529,7 @@ export const OrganizationFlatTable = ({
   aggregationType = "avg",
   onMetricDetailChange,
   isZoomed = false,
+  onTraceClick,
 }: OrganizationFlatTableProps) => {
   // 전체 탭일 경우 API 옵션 설정 (검색 키워드 포함)
   const apiOptions =
@@ -549,6 +583,15 @@ export const OrganizationFlatTable = ({
           info.enumCode,
           { isSummable: info.isSummable, groups: info.groups },
         ]),
+      ),
+    [metricVisibleInfoList],
+  );
+
+  // metricCode → enumCode 맵 (역추적 API의 metricName으로 사용)
+  const metricCodeToEnumMap = useMemo(
+    () =>
+      Object.fromEntries(
+        metricVisibleInfoList.map((info) => [info.metricCode, info.enumCode]),
       ),
     [metricVisibleInfoList],
   );
@@ -1152,6 +1195,8 @@ export const OrganizationFlatTable = ({
                     metricOrder={visibleMetricOrder}
                     hideValue={hideValues}
                     aggregationType={aggregationType}
+                    onTraceClick={onTraceClick}
+                    metricCodeToEnumMap={metricCodeToEnumMap}
                   />
                 );
               })}
