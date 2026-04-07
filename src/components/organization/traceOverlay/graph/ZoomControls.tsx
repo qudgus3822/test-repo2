@@ -1,3 +1,5 @@
+const ZOOM_BUTTON = "w-9 h-9 border border-gray-200 bg-white text-gray-500 text-base flex items-center justify-center hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer";
+
 interface ZoomControlsProps {
   zoomLevel: number;
   onZoomIn: () => void;
@@ -21,7 +23,7 @@ export const ZoomControls = ({
         <button
           type="button"
           onClick={onZoomIn}
-          className="w-9 h-9 border border-gray-200 bg-white text-gray-500 text-base flex items-center justify-center rounded-t-lg hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer"
+          className={`${ZOOM_BUTTON} rounded-t-lg`}
           title="확대"
         >
           +
@@ -29,7 +31,7 @@ export const ZoomControls = ({
         <button
           type="button"
           onClick={onReset}
-          className="w-9 h-9 border border-gray-200 bg-white text-gray-500 text-base flex items-center justify-center hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer"
+          className={ZOOM_BUTTON}
           title="초기화"
         >
           ⌂
@@ -37,14 +39,14 @@ export const ZoomControls = ({
         <button
           type="button"
           onClick={onZoomOut}
-          className="w-9 h-9 border border-gray-200 bg-white text-gray-500 text-base flex items-center justify-center rounded-b-lg hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer"
+          className={`${ZOOM_BUTTON} rounded-b-lg`}
           title="축소"
         >
           −
         </button>
       </div>
       {/* Zoom level indicator - bottom left */}
-      <div className="absolute bottom-5 left-5 text-xs text-gray-400 font-mono bg-white px-2.5 py-1 rounded-md border border-gray-100 z-10 select-none">
+      <div className="absolute bottom-5 left-5 z-10 px-2.5 py-1 bg-white border border-gray-100 rounded-md text-xs text-gray-400 font-mono select-none">
         {Math.round(zoomLevel * 100)}%
       </div>
     </>

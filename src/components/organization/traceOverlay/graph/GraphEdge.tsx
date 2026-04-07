@@ -1,3 +1,4 @@
+import { memo } from "react";
 import type { MouseEvent } from "react";
 import { GRAPH_COLORS } from "@/utils/traceGraphPresentation.js";
 import type { PositionedEdge } from "@/types/traceability.types.js";
@@ -11,17 +12,22 @@ interface GraphEdgeProps {
 
 /**
  * Renders a single SVG bezier curve edge from parent right edge to child left edge.
- * Weight badge shown when weight is between 0 and 1 exclusive (siblings with contribution rates).
- * Single children (weight=1.0) and overflow nodes (weight=0) do not show a badge.
+ * Badge is shown for all multi-child edges (siblingCount > 1) regardless of weight value.
+ * Single children (siblingCount=1) do not show a badge since 100% is implied.
  */
-export const GraphEdge = ({ edge, onMouseEnter, onMouseLeave, onMouseMove }: GraphEdgeProps) => {
+export const GraphEdge = memo(({ edge, onMouseEnter, onMouseLeave, onMouseMove }: GraphEdgeProps) => {
   const colors = GRAPH_COLORS[edge.parentType];
   const midX = edge.x1 + (edge.x2 - edge.x1) * 0.5;
   const midY = (edge.y1 + edge.y2) / 2;
 
-  const strokeWidth = edge.weight < 1 ? Math.max(1, edge.weight * 6) : 2;
-  const opacity = edge.weight < 1 ? 0.25 + edge.weight * 0.55 : 0.6;
-  const showBadge = edge.weight > 0 && edge.weight < 1;
+  const isMultiChild = edge.tooltip.siblingCount > 1;
+  const strokeWidth = isMultiChild
+    ? Math.max(1.5, edge.weight * 6)
+    : 2;
+  const opacity = isMultiChild
+    ? Math.max(0.4, 0.25 + edge.weight * 0.55)
+    : 0.6;
+  const showBadge = isMultiChild;
 
   const badgeText = `${Math.round(edge.weight * 100)}%`;
   const badgeWidth = Math.max(32, badgeText.length * 7 + 8);
@@ -70,4 +76,6 @@ export const GraphEdge = ({ edge, onMouseEnter, onMouseLeave, onMouseMove }: Gra
       )}
     </g>
   );
-};
+});
+
+GraphEdge.displayName = "GraphEdge";

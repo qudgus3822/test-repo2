@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { GRAPH_COLORS, truncateText } from "@/utils/traceGraphPresentation.js";
 import { formatMetricValue, formatCount } from "@/utils/traceability";
 import type {
@@ -13,19 +14,32 @@ import type {
 //   DIVISION: 88px  TEAM: 82px  MEMBER: 74px  MR: 82px
 //
 // DIVISION / TEAM / MEMBER nodes (rx=12 rounded rect):
-//   node.y + 20   Label text (name) -- centered at row 1
-//   node.y + 38   Sub-label text (employee ID for MEMBER) -- centered at row 2
-//   node.y + 40   Metrics row when no sub-label (DIVISION/TEAM)
-//   node.y + 56   Metrics row when sub-label present (MEMBER)
-//   node.x + 14   Horizontal indent for all left-aligned text
+//   node.y + Y_LABEL          Label text (name) -- centered at row 1
+//   node.y + Y_SUBLABEL        Sub-label text (employee ID for MEMBER) -- centered at row 2
+//   node.y + Y_METRICS         Metrics row when no sub-label (DIVISION/TEAM)
+//   node.y + Y_METRICS_WITH_SUB  Metrics row when sub-label present (MEMBER)
+//   node.x + X_PADDING         Horizontal indent for all left-aligned text
 //
 // MR nodes (rx=10 rounded rect, height 82px):
-//   node.y + 16   MR title (iid + title)
-//   node.y + 32   Repository name
-//   node.y + 46   Branch info (source → target)
-//   node.y + 60   Author name
-//   node.y + 74   Metric detail (response time, etc.) — optional
-//   node.x + 10   Horizontal indent for MR content
+//   node.y + MR_Y_TITLE        MR title (iid + title)
+//   node.y + MR_Y_REPO         Repository name
+//   node.y + MR_Y_BRANCH       Branch info (source → target)
+//   node.y + MR_Y_AUTHOR       Author name
+//   node.y + MR_Y_METRIC       Metric detail (response time, etc.) — optional
+//   node.x + MR_X_PADDING      Horizontal indent for MR content
+
+const Y_LABEL = 20;
+const Y_SUBLABEL = 38;
+const Y_METRICS = 40;
+const Y_METRICS_WITH_SUB = 56;
+const X_PADDING = 14;
+
+const MR_Y_TITLE = 16;
+const MR_Y_REPO = 32;
+const MR_Y_BRANCH = 46;
+const MR_Y_AUTHOR = 60;
+const MR_Y_METRIC = 74;
+const MR_X_PADDING = 10;
 
 interface GraphNodeProps {
   node: PositionedNode;
@@ -46,7 +60,7 @@ const TagBadge = ({
   tag: string;
   colors: { badge: string; text: string };
 }) => {
-  const width = tag.length * 8 + 10;
+  const width = tag.length * 8 + 10; // ~8px per char at fontSize 10, plus 10px horizontal padding
   const tx = x - width; // right-aligned
   return (
     <>
@@ -75,12 +89,16 @@ const TagBadge = ({
 
 // ── Metric formatting helpers ──────────────────────────────────────────────────
 
-/** Formats a numeric value to 2 decimal places if it has more precision. */
+/**
+ * Formats a numeric value for compact node display.
+ * Integers are returned without decimals; all other values are fixed to 2 decimal places.
+ * Note: toFixed(2) always produces exactly 2 decimal digits (e.g. "1.50", not "1.5").
+ *
+ * Local helper — intentionally not shared since MetricsRow is the only consumer.
+ */
 function formatToTwoDecimals(value: number): string {
   if (Number.isInteger(value)) return String(value);
-  const fixed = value.toFixed(2);
-  // Avoid trailing zeros beyond what toFixed provides — keep exactly 2 decimal places
-  return fixed;
+  return value.toFixed(2);
 }
 
 const MetricsRow = ({
@@ -96,7 +114,7 @@ const MetricsRow = ({
   if (!gn.metric) return null;
 
   // Y position: if subLabel exists (employeeId for members), shift down
-  const my = gn.subLabel ? node.y + 56 : node.y + 40;
+  const my = gn.subLabel ? node.y + Y_METRICS_WITH_SUB : node.y + Y_METRICS;
 
   const formatted = formatMetricValue(
     gn.metric.value,
@@ -118,7 +136,7 @@ const MetricsRow = ({
   const countStr = formatCount(gn.metric.count, gn.metric.countLabel);
 
   // Build full metrics string to check if it fits within the node
-  const maxWidth = node.width; // - 28; // 14px padding on each side
+  const maxWidth = node.width;
   const fullMetrics = `${displayValue} · ${displayScore} · ${countStr}`;
   const truncatedMetrics = truncateText(fullMetrics, maxWidth);
   const fullTooltip = `${fullValueStr} · ${fullScore} · ${countStr}`;
@@ -126,7 +144,7 @@ const MetricsRow = ({
   return (
     <g>
       <text
-        x={node.x + 14}
+        x={node.x + X_PADDING}
         y={my}
         fontSize={11}
         fill={colors.text}
@@ -233,8 +251,8 @@ const MRNodeContent = ({
       />
       {/* MR title */}
       <text
-        x={node.x + 10}
-        y={node.y + 16}
+        x={node.x + MR_X_PADDING}
+        y={node.y + MR_Y_TITLE}
         fontSize={11}
         fill={colors.text}
         fontWeight={500}
@@ -244,8 +262,8 @@ const MRNodeContent = ({
       </text>
       {/* Repository name */}
       <text
-        x={node.x + 10}
-        y={node.y + 32}
+        x={node.x + MR_X_PADDING}
+        y={node.y + MR_Y_REPO}
         fontSize={10}
         fill={colors.text}
         opacity={0.6}
@@ -255,8 +273,8 @@ const MRNodeContent = ({
       </text>
       {/* Branch info */}
       <text
-        x={node.x + 10}
-        y={node.y + 46}
+        x={node.x + MR_X_PADDING}
+        y={node.y + MR_Y_BRANCH}
         fontSize={9}
         fill={colors.text}
         opacity={0.5}
@@ -270,8 +288,8 @@ const MRNodeContent = ({
       </text>
       {/* Author */}
       <text
-        x={node.x + 10}
-        y={node.y + 60}
+        x={node.x + MR_X_PADDING}
+        y={node.y + MR_Y_AUTHOR}
         fontSize={9}
         fill={colors.text}
         opacity={0.5}
@@ -282,8 +300,8 @@ const MRNodeContent = ({
       {/* Metric detail */}
       {metricDisplay && (
         <text
-          x={node.x + 10}
-          y={node.y + 74}
+          x={node.x + MR_X_PADDING}
+          y={node.y + MR_Y_METRIC}
           fontSize={10}
           fill={colors.text}
           fontWeight={500}
@@ -306,7 +324,7 @@ const MRNodeContent = ({
  * - MR: distinct amber styling with title/repo/branch/author/metric
  * - DIVISION/TEAM/MEMBER: colored rect with label, tag badge, sublabel, metrics row
  */
-export const GraphNode = ({ node, metricInfo, onClick }: GraphNodeProps) => {
+export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) => {
   const colors = GRAPH_COLORS[node.type];
   const gn = node.graphNode;
 
@@ -353,8 +371,8 @@ export const GraphNode = ({ node, metricInfo, onClick }: GraphNodeProps) => {
       />
       {/* Label */}
       <text
-        x={node.x + 14}
-        y={node.y + 20}
+        x={node.x + X_PADDING}
+        y={node.y + Y_LABEL}
         fontSize={13}
         fill={isError ? "#991B1B" : colors.text}
         fontWeight={500}
@@ -366,7 +384,7 @@ export const GraphNode = ({ node, metricInfo, onClick }: GraphNodeProps) => {
       {gn.tag && (
         <TagBadge
           x={node.x + node.width - 10}
-          y={node.y + 20}
+          y={node.y + Y_LABEL}
           tag={gn.tag}
           colors={colors}
         />
@@ -374,8 +392,8 @@ export const GraphNode = ({ node, metricInfo, onClick }: GraphNodeProps) => {
       {/* Sub label (employeeId for MEMBER) */}
       {gn.subLabel && (
         <text
-          x={node.x + 14}
-          y={node.y + 38}
+          x={node.x + X_PADDING}
+          y={node.y + Y_SUBLABEL}
           fontSize={11}
           fill={colors.text}
           opacity={0.5}
@@ -458,4 +476,6 @@ export const GraphNode = ({ node, metricInfo, onClick }: GraphNodeProps) => {
       )}
     </g>
   );
-};
+});
+
+GraphNode.displayName = "GraphNode";

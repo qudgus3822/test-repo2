@@ -15,7 +15,6 @@ import type {
   MemberTraceNode,
   MergeRequestSummary,
   GraphTreeNode,
-  //GraphNodeType,
   GraphLayout,
   PositionedNode,
   PositionedEdge,
@@ -54,6 +53,18 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
   if (realChildren.length === 0) return;
   if (realChildren.length === 1) {
     realChildren[0].weight = 1;
+    const only = realChildren[0];
+    only.tooltipData = {
+      weightStrategy: "volumeContribution",
+      rawValue: only.metric?.rawValue ?? 0,
+      count: only.metric?.count ?? 0,
+      countLabel: only.metric?.countLabel ?? "ITEMS",
+      rawValueSum: only.metric?.rawValue ?? 0,
+      siblingsSameCount: true,
+      numerator: 1,
+      denominator: 1,
+      siblingCount: 1,
+    };
     return;
   }
 
@@ -73,6 +84,7 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
         siblingsSameCount: true,
         numerator: 1,
         denominator: N,
+        siblingCount: N,
       };
     }
     return;
@@ -98,6 +110,8 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
     0,
   );
 
+  const siblingCount = realChildren.length;
+
   if (rvSum > 0) {
     for (let i = 0; i < realChildren.length; i++) {
       realChildren[i].weight = rvProducts[i] / rvSum;
@@ -110,6 +124,7 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
         siblingsSameCount: sameCount,
         numerator: rvProducts[i],
         denominator: rvSum,
+        siblingCount,
       };
     }
     return;
@@ -129,6 +144,7 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
       siblingsSameCount: true,
       numerator: 1,
       denominator: N,
+      siblingCount: N,
     };
   }
 }
@@ -318,7 +334,7 @@ function buildDivisionNode(
 /**
  * Transforms TraceNode tree into GraphTreeNode tree with:
  * 1. MR leaf nodes derived from member.mergeRequests[]
- * 2. Uniform edge weights (1.0) for all edges
+ * 2. Contribution-rate edge weights computed by calculateSiblingWeights()
  * 3. Enriched MR detail data joined from rawDailyData
  *
  * IMPORTANT: Company-level root is NOT included as a graph node.
@@ -521,6 +537,7 @@ function positionNode(
         siblingsSameCount: true,
         numerator: 1,
         denominator: 1,
+        siblingCount: 1,
       };
       outEdges.push({
         id: `${node.id}->${child.id}`,

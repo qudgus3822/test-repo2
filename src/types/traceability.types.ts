@@ -164,6 +164,8 @@ export interface EdgeTooltipData {
   numerator: number;
   /** Denominator of the weight fraction */
   denominator: number;
+  /** Number of real siblings (excluding overflow nodes). Used to distinguish single-child from multi-child edges. */
+  siblingCount: number;
 }
 
 /**
@@ -250,7 +252,7 @@ export interface PositionedEdge {
   y1: number;
   x2: number; // child left edge center
   y2: number;
-  weight: number; // 0-1, currently always 1.0
+  weight: number; // 0-1, contribution ratio computed by calculateSiblingWeights()
   // Identity labels (not tooltip data -- used to display parent → child header in tooltip)
   parentLabel: string;
   childLabel: string;

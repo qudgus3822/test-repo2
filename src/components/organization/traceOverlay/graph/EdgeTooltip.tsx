@@ -1,28 +1,16 @@
 import { forwardRef } from "react";
 import type { PositionedEdge } from "@/types/traceability.types.js";
-
-// ── Constants ──────────────────────────────────────────────────────────────────
-
-/**
- * Maps countLabel values from the API to Korean display units.
- * DAYS: measurement period in working days
- * MEMBERS: head count (e.g., team size)
- * ITEMS: generic items (commits, MRs, etc.)
- */
-const COUNT_UNITS: Record<string, string> = {
-  DAYS: '일',
-  MEMBERS: '명',
-  ITEMS: '건',
-};
+import { COUNT_UNITS } from "@/utils/traceGraphPresentation.js";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 /**
  * Safe toFixed that guards against NaN / Infinity values from missing metric data.
- * Returns '0' instead of 'NaN' or 'Infinity' to prevent broken tooltip rendering.
+ * Returns '-' as a missing-data sentinel so the tooltip clearly signals absent data
+ * rather than silently displaying a misleading zero.
  */
 function safeFixed(val: number, digits: number): string {
-  return Number.isFinite(val) ? val.toFixed(digits) : '0';
+  return Number.isFinite(val) ? val.toFixed(digits) : '-';
 }
 
 /**
@@ -90,7 +78,7 @@ export const EdgeTooltip = forwardRef<HTMLDivElement, EdgeTooltipProps>(
       return (
         <div
           ref={ref}
-          style={{ position: 'absolute', pointerEvents: 'none', display: 'none', zIndex: 100 }}
+          className="absolute pointer-events-none hidden z-[100]"
         />
       );
     }
@@ -100,8 +88,7 @@ export const EdgeTooltip = forwardRef<HTMLDivElement, EdgeTooltipProps>(
     return (
       <div
         ref={ref}
-        style={{ position: 'absolute', pointerEvents: 'none', zIndex: 100 }}
-        className="bg-white border border-gray-200 rounded shadow-md px-3 py-2 text-xs"
+        className="absolute pointer-events-none z-[100] bg-white border border-gray-200 rounded shadow-md px-3 py-2 text-xs"
       >
         <div className="text-gray-600 mb-0.5">
           {edge.parentLabel} → {edge.childLabel}
