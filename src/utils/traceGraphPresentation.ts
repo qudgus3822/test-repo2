@@ -40,6 +40,20 @@ export const GRAPH_COLORS = {
   },
 } as const;
 
+// ── Tooltip constants ──────────────────────────────────────────────────────────
+
+/**
+ * Maps countLabel values from the API to Korean display units.
+ * DAYS: measurement period in working days
+ * MEMBERS: head count (e.g., team size)
+ * ITEMS: generic items (commits, MRs, etc.)
+ */
+export const COUNT_UNITS: Record<string, string> = {
+  DAYS: '일',
+  MEMBERS: '명',
+  ITEMS: '건',
+};
+
 // ── Text helpers ───────────────────────────────────────────────────────────────
 
 // CJK characters are ~1.7x wider than Latin at the same font size.

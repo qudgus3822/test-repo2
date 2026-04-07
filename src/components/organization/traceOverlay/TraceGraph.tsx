@@ -13,8 +13,11 @@ import type {
   TraceNode,
   MetricInfo,
   PositionedEdge,
+  PositionedNode,
 } from "@/types/traceability.types.js";
 import type { DivisionLoadStatus } from "@/api/hooks/useSequentialDivisionLoader.js";
+
+const TOOLTIP_OFFSET = 8;
 
 interface TraceGraphProps {
   root: TraceNode | null;
@@ -72,18 +75,21 @@ export const TraceGraph = ({
       const rect = containerRef.current.getBoundingClientRect();
       const localX = e.clientX - rect.left;
       const localY = e.clientY - rect.top;
-      const x = localX + 8;
-      const y = localY + 8;
+      const x = localX + TOOLTIP_OFFSET;
+      const y = localY + TOOLTIP_OFFSET;
       const tooltipWidth = tooltipDivRef.current.offsetWidth;
       const tooltipHeight = tooltipDivRef.current.offsetHeight;
       const adjustedX =
-        x + tooltipWidth > rect.width ? localX - tooltipWidth - 8 : x;
+        x + tooltipWidth > rect.width ? localX - tooltipWidth - TOOLTIP_OFFSET : x;
       const adjustedY =
-        y + tooltipHeight > rect.height ? localY - tooltipHeight - 8 : y;
+        y + tooltipHeight > rect.height ? localY - tooltipHeight - TOOLTIP_OFFSET : y;
       tooltipDivRef.current.style.left = `${adjustedX}px`;
       tooltipDivRef.current.style.top = `${adjustedY}px`;
     }
   }, []);
+
+  // Stable ref so handleNodeClick does not need layout in its dependency array
+  const nodeMapRef = useRef<Map<string, PositionedNode> | undefined>(undefined);
 
   const isCompanyLevel = root?.level === "COMPANY";
 
@@ -95,6 +101,11 @@ export const TraceGraph = ({
     );
     return computeGraphLayout(graphTrees, expandedNodes);
   }, [root, expandedNodes, divisionStates, isCompanyLevel]);
+
+  // Keep nodeMapRef in sync with layout so handleNodeClick has stable O(1) lookup
+  useEffect(() => {
+    nodeMapRef.current = layout?.nodeMap;
+  }, [layout]);
 
   // Fit content only once on initial layout (not on every division load)
   const hasInitialFitRef = useRef(false);
@@ -113,9 +124,9 @@ export const TraceGraph = ({
   const handleNodeClick = useCallback(
     (nodeId: string) => {
       // Error nodes trigger retry instead of toggle
-      // Use nodeMap for O(1) lookup instead of linear scan
-      if (retryDivision && layout) {
-        const clickedNode = layout.nodeMap.get(nodeId);
+      // Use nodeMapRef for O(1) lookup without adding layout to dependency array
+      if (retryDivision && nodeMapRef.current) {
+        const clickedNode = nodeMapRef.current.get(nodeId);
         if (clickedNode?.loadState === "error") {
           retryDivision(nodeId);
           return;
@@ -123,7 +134,7 @@ export const TraceGraph = ({
       }
       onToggleNode(nodeId);
     },
-    [onToggleNode, retryDivision, layout],
+    [onToggleNode, retryDivision],
   );
 
   if (!root || !layout) {
@@ -148,10 +159,9 @@ export const TraceGraph = ({
       <svg className="w-full h-full">
         <defs>
           <style>{`
-            .node-group { cursor: pointer; }
             .node-group:hover .node-border { stroke-width: 2; }
             .edge { transition: opacity 0.2s; }
-            .edge:hover { opacity: 1 !important; }
+            .edge:hover { opacity: 1; }
           `}</style>
         </defs>
         <g transform={transformStr}>

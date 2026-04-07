@@ -8,6 +8,8 @@ interface TraceGraphToolbarProps {
   rootType: GraphNodeType;
 }
 
+const TOOLBAR_BUTTON = "text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer";
+
 const LEGEND_ITEMS: { type: GraphNodeType; label: string }[] = [
   { type: 'DIVISION', label: '부문/실' },
   { type: 'TEAM', label: '팀' },
@@ -32,18 +34,18 @@ export const TraceGraphToolbar = ({
   const visibleLegend = LEGEND_ITEMS.filter(item => visibleTypes.has(item.type));
 
   return (
-    <div className="flex items-center gap-2 px-6 py-2 border-b border-gray-100 flex-shrink-0">
+    <div className="flex items-center gap-2 px-6 py-2 border-b border-gray-100 shrink-0">
       <button
         type="button"
         onClick={onExpandAll}
-        className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer"
+        className={TOOLBAR_BUTTON}
       >
         모두 펼치기
       </button>
       <button
         type="button"
         onClick={onCollapseAll}
-        className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer"
+        className={TOOLBAR_BUTTON}
       >
         모두 접기
       </button>

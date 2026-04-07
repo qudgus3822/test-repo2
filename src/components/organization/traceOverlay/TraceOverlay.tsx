@@ -13,6 +13,10 @@ import type {
   TraceNode,
 } from "@/types/traceability.types";
 
+import { TraceHeader } from "./TraceHeader";
+import { TraceGraphToolbar } from "./TraceGraphToolbar";
+import { TraceGraph } from "./TraceGraph";
+
 /** Maps TraceNode root level to the root GraphNodeType for the toolbar legend. */
 function getRootType(level: TraceNode["level"]): GraphNodeType {
   switch (level) {
@@ -25,9 +29,6 @@ function getRootType(level: TraceNode["level"]): GraphNodeType {
       return "MEMBER";
   }
 }
-import { TraceHeader } from "./TraceHeader";
-import { TraceGraphToolbar } from "./TraceGraphToolbar";
-import { TraceGraph } from "./TraceGraph";
 
 interface TraceOverlayProps {
   isOpen: boolean;
@@ -196,7 +197,7 @@ export const TraceOverlay = ({
           }`}
         >
           {/* Modal header */}
-          <div className="flex items-start justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-start justify-between px-6 py-4 border-b border-gray-200 shrink-0">
             <h2 className="text-lg font-semibold text-gray-900">
               {context
                 ? (context.metricDisplayName ?? context.metricCode)
@@ -237,7 +238,6 @@ export const TraceOverlay = ({
             ) : data ? (
               <div className="flex flex-col flex-1 overflow-hidden">
                 <TraceHeader
-                  //metricInfo={data.metricInfo}
                   query={data.query}
                   rawDailyMetric={data.rawDailyMetric}
                   metadata={data.metadata}
