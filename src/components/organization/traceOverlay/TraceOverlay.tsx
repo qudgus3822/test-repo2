@@ -242,6 +242,7 @@ export const TraceOverlay = ({
                   rawDailyMetric={data.rawDailyMetric}
                   metadata={data.metadata}
                   overlayContext={context}
+                  direction={data.metricInfo.direction}
                 />
                 <TraceGraphToolbar
                   onExpandAll={handleExpandAll}

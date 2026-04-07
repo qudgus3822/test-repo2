@@ -1,15 +1,21 @@
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 import { formatPeriodKey } from "@/utils/traceability";
 import type {
   TraceResult,
   TraceOverlayContext,
 } from "@/types/traceability.types";
 
+const DIRECTION_HINT: Record<"FORWARD" | "REVERSE", string> = {
+  FORWARD: "정방향 메트릭이므로, 높은 기여도는 긍정적인 의미입니다.",
+  REVERSE: "역방향 메트릭이므로, 높은 기여도는 부정적인 의미입니다.",
+};
+
 interface TraceHeaderProps {
   query: TraceResult["query"];
   rawDailyMetric: TraceResult["rawDailyMetric"];
   metadata: TraceResult["metadata"];
   overlayContext: TraceOverlayContext;
+  direction: "FORWARD" | "REVERSE";
 }
 
 export const TraceHeader = ({
@@ -17,6 +23,7 @@ export const TraceHeader = ({
   rawDailyMetric,
   metadata,
   overlayContext,
+  direction,
 }: TraceHeaderProps) => {
   const entityName =
     overlayContext.memberName ??
@@ -44,6 +51,12 @@ export const TraceHeader = ({
           <span className="text-gray-400">대상: </span>
           {entityName}
         </span>
+      </div>
+
+      {/* Direction hint */}
+      <div className="flex items-center gap-1.5 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1">
+        <Info className="w-3.5 h-3.5 shrink-0" />
+        <span>{DIRECTION_HINT[direction]}</span>
       </div>
 
       {/* Shallow response warning */}
