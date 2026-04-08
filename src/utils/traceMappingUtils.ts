@@ -177,6 +177,23 @@ export function formatValueByType(
       return value ? '예' : '아니오';
     case 'string':
       return String(value) || '-';
+    case 'array': {
+      if (!Array.isArray(value) || value.length === 0) return '-';
+      return value.map(item => {
+        if (typeof item === 'object' && item !== null) {
+          const obj = item as Record<string, unknown>;
+          // Priority: username (GitLab users) > name (generic) > title (titled items)
+          return String(obj.username || obj.name || obj.title || JSON.stringify(obj));
+        }
+        return String(item);
+      }).join(', ');
+    }
+    case 'object': {
+      if (typeof value !== 'object' || value === null) return '-';
+      const obj = value as Record<string, unknown>;
+      // Priority: username (GitLab users) > name (generic) > title (titled items)
+      return String(obj.username || obj.name || obj.title || JSON.stringify(value));
+    }
     default:
       if (typeof value === 'object') return JSON.stringify(value);
       return String(value);
@@ -195,7 +212,7 @@ export function formatCellValue(value: unknown, field: TraceMappingField): strin
 
 /** MR general info column definitions. Keys prefixed with __mr_ to avoid collision. */
 export const MR_GENERAL_COLUMNS: TraceMappingField[] = [
-  { key: '__mr_iid', label: 'IID', type: 'number', display: true },
+  { key: '__mr_iid', label: 'MR ID', type: 'number', display: true },
   { key: '__mr_title', label: '제목', type: 'string', display: true },
   { key: '__mr_projectName', label: '프로젝트', type: 'string', display: true },
   { key: '__mr_branch', label: '브랜치', type: 'string', display: true },

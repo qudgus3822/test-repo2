@@ -100,8 +100,10 @@ function ModalContent({
       <TraceMappingSummary entries={summaryEntries} />
 
       {/* Main table or no-data message */}
-      {traceMapping.validItemFields.length === 0 ? (
+      {columns.length === 0 ? (
         <p className="py-6 text-sm text-gray-400 text-center">이 지표는 항목별 상세 데이터가 없습니다.</p>
+      ) : rows.length === 0 ? (
+        <p className="py-6 text-sm text-gray-400 text-center">해당 항목이 없습니다.</p>
       ) : (
         <TraceMappingItemTable
           columns={columns}
