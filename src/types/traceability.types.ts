@@ -111,10 +111,58 @@ export type TraceNode =
   | TeamTraceNode
   | MemberTraceNode;
 
+// ── TraceMapping (schema-driven detail rendering) ──
+
+export interface TraceMappingField {
+  /** Field path in details object (may be dot-notation, e.g. "stats.additions") */
+  key: string;
+  /** Korean display label */
+  label: string;
+  /** Data type for formatting */
+  type: 'string' | 'number' | 'date' | 'boolean' | 'object' | 'array';
+  /** Whether to show as a table column */
+  display: boolean;
+  /** Unit suffix (e.g. "초", "라인") */
+  unit?: string;
+  /** Path to pre-formatted value (e.g. "responseTimeFormatted") */
+  formattedKey?: string;
+  /** Whether this field references another collection */
+  isReference?: boolean;
+  /** Referenced collection name */
+  referenceCollection?: string;
+}
+
+export interface TraceMappingItemsLocation {
+  /** Path to valid items array (e.g. "mergeRequests", "mergeRequests.firstTimePass") */
+  validPath: string;
+  /** Path to invalid items array */
+  invalidPath: string;
+  /** Custom valid tab label (default: "유효") */
+  validLabel?: string;
+  /** Custom invalid tab label (default: "무효") */
+  invalidLabel?: string;
+}
+
+export interface TraceMapping {
+  /** Item type: "mergeRequest" or "commit" */
+  itemType: 'mergeRequest' | 'commit';
+  /** Paths to item arrays within details */
+  itemsLocation: TraceMappingItemsLocation;
+  /** Common reference fields (id, repositoryId, etc.) */
+  referenceFields: TraceMappingField[];
+  /** Per-user summary fields (averages, counts at details root level) */
+  summaryFields: TraceMappingField[];
+  /** Metric columns for valid items */
+  validItemFields: TraceMappingField[];
+  /** Metric columns for invalid items */
+  invalidItemFields: TraceMappingField[];
+}
+
 // ── Response ──
 
 export interface TraceResult {
   metricInfo: MetricInfo;
+  traceMapping: TraceMapping | null;
   query: {
     metricName: string;
     periodKey: string;
@@ -139,7 +187,7 @@ export interface TraceResult {
 
 // -- Graph Layout Types --
 
-export type GraphNodeType = "DIVISION" | "TEAM" | "MEMBER" | "MR";
+export type GraphNodeType = "DIVISION" | "TEAM" | "MEMBER" | "MR_SUMMARY";
 
 /**
  * Opaque bundle of tooltip data for an edge's contribution rate display.
@@ -169,33 +217,18 @@ export interface EdgeTooltipData {
 }
 
 /**
- * Typed structure for MR-level metric detail data from rawDailyData.
- * Fields are based on the known API response structure.
- * The index signature allows extensibility for other metric types.
- */
-export interface MergeRequestMetricDetail {
-  responseTime?: number;
-  responseTimeFormatted?: string;
-  reviewRequestTime?: string;
-  firstResponseTime?: string;
-  [key: string]: unknown; // extensible for other metrics
-}
-
-/**
  * Intermediate tree node used by the graph layout engine.
- * Wraps TraceNode data and MR data into a uniform structure.
+ * Wraps TraceNode data into a uniform structure.
  * Built by buildGraphTree() from TraceNode + expand state.
  */
 export interface GraphTreeNode {
   id: string;
   type: GraphNodeType;
   label: string;
-  subLabel?: string; // employeeId for MEMBER, repoName for MR
-  tag?: string; // "부문/실", "팀", "개인", "MR"
+  subLabel?: string; // employeeId for MEMBER
+  tag?: string; // "부문/실", "팀", "개인"
   // Source data references
   traceNode?: DivisionTraceNode | TeamTraceNode | MemberTraceNode;
-  mergeRequest?: MergeRequestSummary;
-  mrMetricData?: MergeRequestMetricDetail | null; // Enriched detail from rawDailyData
   // Metrics for display
   metric?: MetricSnapshot;
   aggregationMethod?: "WEIGHTED_AVERAGE" | "SUM";

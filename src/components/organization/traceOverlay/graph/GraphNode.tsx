@@ -1,32 +1,23 @@
 import { memo } from "react";
 import { GRAPH_COLORS, truncateText } from "@/utils/traceGraphPresentation.js";
-import { formatMetricValue, formatCount } from "@/utils/traceability";
+import { formatMetricValue, formatCount } from "@/utils/traceability.js";
 import type {
   PositionedNode,
   MetricInfo,
-  MergeRequestMetricDetail,
-} from "@/types/traceability.types";
+} from "@/types/traceability.types.js";
 
 // ── Node content Y-offset grid ────────────────────────────────────────────────
 //
 // All Y positions below are relative to node.y (top-left corner of the node).
-// The grid is designed around the node heights defined in traceGraphLayout.ts:
-//   DIVISION: 88px  TEAM: 82px  MEMBER: 74px  MR: 82px
+// The grid is designed around the node heights defined in traceGraphPresentation.ts:
+//   DIVISION: 88px  TEAM: 82px  MEMBER: 74px  MR_SUMMARY: 36px
 //
 // DIVISION / TEAM / MEMBER nodes (rx=12 rounded rect):
-//   node.y + Y_LABEL          Label text (name) -- centered at row 1
-//   node.y + Y_SUBLABEL        Sub-label text (employee ID for MEMBER) -- centered at row 2
-//   node.y + Y_METRICS         Metrics row when no sub-label (DIVISION/TEAM)
+//   node.y + Y_LABEL             Label text (name) -- centered at row 1
+//   node.y + Y_SUBLABEL          Sub-label text (employee ID for MEMBER) -- centered at row 2
+//   node.y + Y_METRICS           Metrics row when no sub-label (DIVISION/TEAM)
 //   node.y + Y_METRICS_WITH_SUB  Metrics row when sub-label present (MEMBER)
-//   node.x + X_PADDING         Horizontal indent for all left-aligned text
-//
-// MR nodes (rx=10 rounded rect, height 82px):
-//   node.y + MR_Y_TITLE        MR title (iid + title)
-//   node.y + MR_Y_REPO         Repository name
-//   node.y + MR_Y_BRANCH       Branch info (source → target)
-//   node.y + MR_Y_AUTHOR       Author name
-//   node.y + MR_Y_METRIC       Metric detail (response time, etc.) — optional
-//   node.x + MR_X_PADDING      Horizontal indent for MR content
+//   node.x + X_PADDING           Horizontal indent for all left-aligned text
 
 const Y_LABEL = 20;
 const Y_SUBLABEL = 38;
@@ -34,17 +25,12 @@ const Y_METRICS = 40;
 const Y_METRICS_WITH_SUB = 56;
 const X_PADDING = 14;
 
-const MR_Y_TITLE = 16;
-const MR_Y_REPO = 32;
-const MR_Y_BRANCH = 46;
-const MR_Y_AUTHOR = 60;
-const MR_Y_METRIC = 74;
-const MR_X_PADDING = 10;
-
 interface GraphNodeProps {
   node: PositionedNode;
   metricInfo: MetricInfo;
   onClick: (nodeId: string) => void;
+  isSelected?: boolean;
+  onDetailClick?: (nodeId: string) => void;
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -159,160 +145,64 @@ const MetricsRow = ({
   );
 };
 
-// ── MR metric detail extraction ───────────────────────────────────────────────
+// ── MR_SUMMARY node content ────────────────────────────────────────────────────
 
-function extractMRMetricDisplay(
-  data?: MergeRequestMetricDetail | null,
-): string | null {
-  if (!data) return null;
-  if (data.responseTimeFormatted) return data.responseTimeFormatted;
-  if (data.reviewRequestTime) return `리뷰요청: ${data.reviewRequestTime}`;
-  if (data.firstResponseTime) return `첫 응답: ${data.firstResponseTime}`;
-  // Last resort: look for any *Formatted field from the extensible portion
-  for (const key of Object.keys(data)) {
-    if (key.endsWith("Formatted") && typeof data[key] === "string") {
-      return data[key] as string;
-    }
-  }
-  return null;
-}
-
-// ── MR node (distinct from other types) ──────────────────────────────────────
-
-const MRNodeContent = ({
+const SummaryNodeContent = ({
   node,
-  colors,
+  onDetailClick,
 }: {
   node: PositionedNode;
-  colors: (typeof GRAPH_COLORS)["MR"];
+  onDetailClick?: (nodeId: string) => void;
 }) => {
-  const gn = node.graphNode;
-  const mr = gn.mergeRequest;
-
-  // Overflow indicator node ("+N건 더보기") — has no mergeRequest data
-  if (!mr) {
-    return (
-      <g className="node-group">
-        <rect
-          x={node.x}
-          y={node.y}
-          width={node.width}
-          height={node.height}
-          rx={10}
-          fill="#F3F4F6"
-        />
-        <rect
-          x={node.x}
-          y={node.y}
-          width={node.width}
-          height={node.height}
-          rx={10}
-          fill="none"
-          stroke="#9CA3AF"
-          strokeWidth={1}
-          strokeDasharray="4 4"
-        />
-        <text
-          x={node.x + node.width / 2}
-          y={node.y + node.height / 2}
-          textAnchor="middle"
-          dominantBaseline="central"
-          fontSize={12}
-          fill="#6B7280"
-          fontWeight={500}
-        >
-          {gn.label}
-        </text>
-      </g>
-    );
-  }
-
-  const metricDisplay = extractMRMetricDisplay(gn.mrMetricData);
+  const colors = GRAPH_COLORS.MR_SUMMARY;
+  const label = node.graphNode.label || "항목";
 
   return (
     <g className="node-group">
       <rect
-        x={node.x}
-        y={node.y}
-        width={node.width}
-        height={node.height}
-        rx={10}
+        x={node.x} y={node.y}
+        width={node.width} height={node.height}
+        rx={8}
         fill={colors.fill}
-      />
-      <rect
-        x={node.x}
-        y={node.y}
-        width={node.width}
-        height={node.height}
-        rx={10}
-        fill="none"
         stroke={colors.stroke}
         strokeWidth={1}
       />
-      {/* MR title */}
       <text
-        x={node.x + MR_X_PADDING}
-        y={node.y + MR_Y_TITLE}
+        x={node.x + X_PADDING}
+        y={node.y + node.height / 2}
         fontSize={11}
         fill={colors.text}
         fontWeight={500}
         dominantBaseline="central"
       >
-        {truncateText(`!${mr.iid} ${mr.title}`, node.width - 20)}
+        {label}
       </text>
-      {/* Repository name */}
-      <text
-        x={node.x + MR_X_PADDING}
-        y={node.y + MR_Y_REPO}
-        fontSize={10}
-        fill={colors.text}
-        opacity={0.6}
-        dominantBaseline="central"
-      >
-        {truncateText(mr.repositoryName, node.width - 20)}
-      </text>
-      {/* Branch info */}
-      <text
-        x={node.x + MR_X_PADDING}
-        y={node.y + MR_Y_BRANCH}
-        fontSize={9}
-        fill={colors.text}
-        opacity={0.5}
-        dominantBaseline="central"
-        fontFamily="monospace"
-      >
-        {truncateText(
-          `${mr.sourceBranch} → ${mr.targetBranch}`,
-          node.width - 20,
-        )}
-      </text>
-      {/* Author */}
-      <text
-        x={node.x + MR_X_PADDING}
-        y={node.y + MR_Y_AUTHOR}
-        fontSize={9}
-        fill={colors.text}
-        opacity={0.5}
-        dominantBaseline="central"
-      >
-        {mr.author}
-      </text>
-      {/* Metric detail */}
-      {metricDisplay && (
-        <text
-          x={node.x + MR_X_PADDING}
-          y={node.y + MR_Y_METRIC}
-          fontSize={10}
-          fill={colors.text}
-          fontWeight={500}
-          opacity={0.8}
-          dominantBaseline="central"
-          fontFamily="monospace"
+      {onDetailClick && (
+        <g
+          onClick={(e) => { e.stopPropagation(); onDetailClick(node.id); }}
+          className="cursor-pointer"
         >
-          {metricDisplay}
-        </text>
+          <rect
+            x={node.x + node.width - 58}
+            y={node.y + 4}
+            width={50}
+            height={node.height - 8}
+            rx={4}
+            fill={colors.badge}
+          />
+          <text
+            x={node.x + node.width - 33}
+            y={node.y + node.height / 2}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={10}
+            fill={colors.text}
+            fontWeight={500}
+          >
+            상세보기
+          </text>
+        </g>
       )}
-      <title>{`!${mr.iid} ${mr.title}\n${mr.repositoryName}\n${mr.sourceBranch} → ${mr.targetBranch}\n${mr.author}`}</title>
     </g>
   );
 };
@@ -321,16 +211,16 @@ const MRNodeContent = ({
 
 /**
  * Renders a single SVG node group.
- * - MR: distinct amber styling with title/repo/branch/author/metric
  * - DIVISION/TEAM/MEMBER: colored rect with label, tag badge, sublabel, metrics row
+ * - MR_SUMMARY: compact amber node with item count and "상세보기" button
  */
-export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) => {
+export const GraphNode = memo(({ node, metricInfo, onClick, isSelected, onDetailClick }: GraphNodeProps) => {
+  if (node.type === "MR_SUMMARY") {
+    return <SummaryNodeContent node={node} onDetailClick={onDetailClick} />;
+  }
+
   const colors = GRAPH_COLORS[node.type];
   const gn = node.graphNode;
-
-  if (node.type === "MR") {
-    return <MRNodeContent node={node} colors={GRAPH_COLORS.MR} />;
-  }
 
   const handleClick = () => {
     if (node.hasChildren || node.loadState === "error") {
@@ -342,18 +232,25 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
   const borderColor = isError ? "#EF4444" : colors.stroke;
   const borderWidth = isError ? 2 : 1;
 
+  const rectHeight = node.height;
+  const toggleY = node.y + node.height - 24;
+
   return (
     <g
       className="node-group"
-      onClick={handleClick}
-      style={{ cursor: node.hasChildren || isError ? "pointer" : "default" }}
+      onClick={node.type !== "MEMBER" ? handleClick : undefined}
+      style={{
+        cursor: node.type !== "MEMBER" && (node.hasChildren || isError)
+          ? "pointer"
+          : "default",
+      }}
     >
       {/* Background rect */}
       <rect
         x={node.x}
         y={node.y}
         width={node.width}
-        height={node.height}
+        height={rectHeight}
         rx={12}
         fill={isError ? "#FEF2F2" : colors.fill}
       />
@@ -363,12 +260,26 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
         x={node.x}
         y={node.y}
         width={node.width}
-        height={node.height}
+        height={rectHeight}
         rx={12}
         fill="none"
         stroke={borderColor}
         strokeWidth={borderWidth}
       />
+      {/* Selection ring */}
+      {isSelected && (
+        <rect
+          x={node.x - 2}
+          y={node.y - 2}
+          width={node.width + 4}
+          height={node.height + 4}
+          rx={14}
+          fill="none"
+          stroke="#3B82F6"
+          strokeWidth={2}
+          opacity={0.8}
+        />
+      )}
       {/* Label */}
       <text
         x={node.x + X_PADDING}
@@ -405,12 +316,12 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
       )}
       {/* Metrics row */}
       <MetricsRow node={node} metricInfo={metricInfo} colors={colors} />
-      {/* Expand/collapse indicator */}
-      {node.hasChildren && !isError && (
-        <g opacity={0.5}>
+      {/* Expand/collapse indicator — hidden for MEMBER (MR_SUMMARY children are always visible) */}
+      {node.hasChildren && !isError && node.type !== "MEMBER" && (
+        <g opacity={0.5} onClick={(e) => { e.stopPropagation(); onClick(node.id); }} className="cursor-pointer">
           <rect
             x={node.x + node.width - 28}
-            y={node.y + node.height - 24}
+            y={toggleY}
             width={20}
             height={16}
             rx={4}
@@ -418,7 +329,7 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
           />
           <text
             x={node.x + node.width - 18}
-            y={node.y + node.height - 16}
+            y={toggleY + 8}
             textAnchor="middle"
             fontSize={12}
             fill={colors.text}
@@ -433,7 +344,7 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
       {isError && (
         <text
           x={node.x + node.width / 2}
-          y={node.y + node.height - 14}
+          y={node.y + rectHeight - 14}
           textAnchor="middle"
           fontSize={10}
           fill="#EF4444"
@@ -449,7 +360,7 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
           x={node.x}
           y={node.y}
           width={node.width}
-          height={node.height}
+          height={rectHeight}
           rx={12}
           fill={colors.fill}
           opacity={0.5}
@@ -468,7 +379,7 @@ export const GraphNode = memo(({ node, metricInfo, onClick }: GraphNodeProps) =>
           x={node.x}
           y={node.y}
           width={node.width}
-          height={node.height}
+          height={rectHeight}
           rx={12}
           fill="#F3F4F6"
           opacity={0.6}

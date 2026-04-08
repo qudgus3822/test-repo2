@@ -13,47 +13,36 @@ import type {
   DivisionTraceNode,
   TeamTraceNode,
   MemberTraceNode,
-  MergeRequestSummary,
   GraphTreeNode,
   GraphLayout,
   PositionedNode,
   PositionedEdge,
-  MergeRequestMetricDetail,
-  DailyUserMetric,
   EdgeTooltipData,
-} from "@/types/traceability.types";
-import type { DivisionLoadStatus } from "@/api/hooks/useSequentialDivisionLoader";
+} from "@/types/traceability.types.js";
+import type { DivisionLoadStatus } from "@/api/hooks/useSequentialDivisionLoader.js";
 import { NODE_W, NODE_H } from "@/utils/traceGraphPresentation.js";
+import { getItemTypeLabel, countItemsFromDetails } from "@/utils/traceMappingUtils.js";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const H_GAP = 80; // horizontal gap between parent and child nodes
-const V_GAP = 20; // vertical gap between sibling nodes
+const V_GAP = 32; // vertical gap between sibling nodes
 const HEADER_OFFSET = 20; // top padding above the first node
 const ROOT_X = 40; // X position for root nodes
-
-// 8 MRs fill ~700px vertical space, matching a typical viewport height.
-// Showing more than 8 causes the graph to overflow without meaningful gain.
-const MAX_VISIBLE_MRS = 8;
 
 // ── Sibling weight calculation ────────────────────────────────────────────────
 
 /**
  * Calculates contribution weights for sibling nodes:
  *
- * - Non-MR children: rawValue × count / sum(rv × c)  [volume contribution]
+ * - rawValue × count / sum(rv × c)  [volume contribution]
  *   Falls back to 1/N if sum is 0.
- * - MR children: 1/N  [equal distribution, no metric data on MRs]
- *
- * Overflow nodes (id starts with 'mr-overflow-') are excluded from calculations.
  */
 function calculateSiblingWeights(children: GraphTreeNode[]): void {
-  const realChildren = children.filter((c) => !c.id.startsWith("mr-overflow-"));
-
-  if (realChildren.length === 0) return;
-  if (realChildren.length === 1) {
-    realChildren[0].weight = 1;
-    const only = realChildren[0];
+  if (children.length === 0) return;
+  if (children.length === 1) {
+    children[0].weight = 1;
+    const only = children[0];
     only.tooltipData = {
       weightStrategy: "volumeContribution",
       rawValue: only.metric?.rawValue ?? 0,
@@ -68,30 +57,8 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
     return;
   }
 
-  // MR children: always 1/N (no metric data on MRs)
-  if (realChildren[0].type === "MR") {
-    const N = realChildren.length;
-    const eq = 1 / N;
-    for (const child of realChildren) {
-      child.weight = eq;
-      // MR nodes have no metric data; use sentinel values for tooltip
-      child.tooltipData = {
-        weightStrategy: "equal",
-        rawValue: 0,
-        count: 0,
-        countLabel: "ITEMS",
-        rawValueSum: 0,
-        siblingsSameCount: true,
-        numerator: 1,
-        denominator: N,
-        siblingCount: N,
-      };
-    }
-    return;
-  }
-
-  // Non-MR children: rawValue × count / sum(rv × c)
-  const rvProducts = realChildren.map((c) => {
+  // rawValue × count / sum(rv × c)
+  const rvProducts = children.map((c) => {
     const rv = c.metric?.rawValue ?? 0;
     const count = c.metric?.count ?? 1;
     return rv * count;
@@ -101,25 +68,25 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
   // Detect whether all siblings share the same count value.
   // Counts with missing metric are treated as 0. If a sibling has no metric,
   // it cannot be meaningfully compared, so we treat the group as mixed.
-  const counts = realChildren.map((c) => c.metric?.count ?? 0);
+  const counts = children.map((c) => c.metric?.count ?? 0);
   const sameCount = counts.length > 0 && counts.every((c) => c === counts[0]);
 
   // Sum of rawValues (used as denominator when sameCount is true, since count cancels out)
-  const rawValueSum = realChildren.reduce(
+  const rawValueSum = children.reduce(
     (s, c) => s + (c.metric?.rawValue ?? 0),
     0,
   );
 
-  const siblingCount = realChildren.length;
+  const siblingCount = children.length;
 
   if (rvSum > 0) {
-    for (let i = 0; i < realChildren.length; i++) {
-      realChildren[i].weight = rvProducts[i] / rvSum;
-      realChildren[i].tooltipData = {
+    for (let i = 0; i < children.length; i++) {
+      children[i].weight = rvProducts[i] / rvSum;
+      children[i].tooltipData = {
         weightStrategy: "volumeContribution",
-        rawValue: realChildren[i].metric?.rawValue ?? 0,
-        count: realChildren[i].metric?.count ?? 0,
-        countLabel: realChildren[i].metric?.countLabel ?? "ITEMS",
+        rawValue: children[i].metric?.rawValue ?? 0,
+        count: children[i].metric?.count ?? 0,
+        countLabel: children[i].metric?.countLabel ?? "ITEMS",
         rawValueSum,
         siblingsSameCount: sameCount,
         numerator: rvProducts[i],
@@ -131,9 +98,9 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
   }
 
   // Fallback: equal distribution (all rv × c are 0)
-  const N = realChildren.length;
+  const N = children.length;
   const eq = 1 / N;
-  for (const child of realChildren) {
+  for (const child of children) {
     child.weight = eq;
     child.tooltipData = {
       weightStrategy: "equal",
@@ -149,77 +116,31 @@ function calculateSiblingWeights(children: GraphTreeNode[]): void {
   }
 }
 
-// ── MR detail data enrichment ─────────────────────────────────────────────────
-
-/**
- * Joins MR detail data from rawDailyData by matching iid + repositoryId.
- * Uses Number() coercion on both sides — the JSON deserializer may produce strings.
- */
-function findMRDetailData(
-  rawDailyData: DailyUserMetric[] | null,
-  iid: number,
-  repositoryId: number,
-): MergeRequestMetricDetail | null {
-  if (!rawDailyData) return null;
-  for (const day of rawDailyData) {
-    if (!day.details) continue;
-    const detailMRs = (day.details as Record<string, unknown>)["mergeRequests"];
-    if (!Array.isArray(detailMRs)) continue;
-    for (const dmr of detailMRs) {
-      const rec = dmr as Record<string, unknown>;
-      if (Number(rec.id) === iid && Number(rec.repositoryId) === repositoryId) {
-        return rec as MergeRequestMetricDetail;
-      }
-    }
-  }
-  return null;
-}
-
 // ── Tree node builders ────────────────────────────────────────────────────────
 
-function buildMRNode(
-  mr: MergeRequestSummary,
+function buildMemberNode(
   member: MemberTraceNode,
+  itemType?: 'mergeRequest' | 'commit',
+  validPath?: string,
 ): GraphTreeNode {
-  const detailData = findMRDetailData(
-    member.rawDailyData,
-    mr.iid,
-    mr.repositoryId,
-  );
-  return {
-    // Include memberId to prevent ID collision when the same MR appears under multiple reviewers
-    id: `mr-${member.memberId}-${mr.iid}-${mr.repositoryId}`,
-    type: "MR",
-    label: mr.title,
-    subLabel: mr.repositoryName,
-    tag: "MR",
-    mergeRequest: mr,
-    mrMetricData: detailData,
-    weight: 0, // will be set by calculateSiblingWeights
-  };
-}
+  // For commit-type metrics, count items from rawDailyData (MR count is irrelevant for commits).
+  // For mergeRequest-type metrics, use the mergeRequests array length.
+  const itemCount = itemType === 'commit' && validPath
+    ? countItemsFromDetails(member.rawDailyData, validPath)
+    : (member.mergeRequests?.length ?? 0);
 
-function buildMemberNode(member: MemberTraceNode): GraphTreeNode {
-  let mrNodes: GraphTreeNode[] = (member.mergeRequests ?? []).map((mr) =>
-    buildMRNode(mr, member),
-  );
-
-  if (mrNodes.length > MAX_VISIBLE_MRS) {
-    const overflow = mrNodes.length - MAX_VISIBLE_MRS;
-    mrNodes = mrNodes.slice(0, MAX_VISIBLE_MRS);
-    mrNodes.push({
-      id: `mr-overflow-${member.memberId}`,
-      type: "MR",
-      label: `+${overflow}건 더보기`,
-      subLabel: "",
-      tag: "",
-      weight: 0, // overflow node has no edge weight
-    });
-  }
-
-  if (mrNodes.length > 0) {
-    calculateSiblingWeights(mrNodes);
-  }
+  // Build MR_SUMMARY child when traceMapping provides an itemType and items exist.
+  // traceNode stores the parent MemberTraceNode so handleDetailClick can find the member.
+  const summaryChild: GraphTreeNode | undefined =
+    itemType && itemCount > 0
+      ? {
+          id: `summary-${member.memberId}`,
+          type: "MR_SUMMARY",
+          label: `${getItemTypeLabel(itemType)} ${itemCount}건`,
+          traceNode: member,
+          weight: 1,
+        }
+      : undefined;
 
   return {
     id: member.memberId,
@@ -229,7 +150,7 @@ function buildMemberNode(member: MemberTraceNode): GraphTreeNode {
     tag: "개인",
     traceNode: member,
     metric: member.metric,
-    children: mrNodes.length > 0 ? mrNodes : undefined,
+    children: summaryChild ? [summaryChild] : undefined,
     weight: 0, // will be set by calculateSiblingWeights in parent
   };
 }
@@ -239,9 +160,13 @@ function buildMemberNode(member: MemberTraceNode): GraphTreeNode {
  * Virtual teams (same departmentCode as division) are kept as regular TEAM nodes
  * but given a prefixed ID to avoid collision with the parent division node.
  */
-function buildDivisionChildren(division: DivisionTraceNode): GraphTreeNode[] {
+function buildDivisionChildren(
+  division: DivisionTraceNode,
+  itemType?: 'mergeRequest' | 'commit',
+  validPath?: string,
+): GraphTreeNode[] {
   const teamNodes = (division.children ?? []).map((team) => {
-    const node = buildTeamNode(team);
+    const node = buildTeamNode(team, itemType, validPath);
     // Virtual team has same departmentCode as division -- prefix to avoid ID collision
     if (team.departmentCode === division.departmentCode) {
       node.id = `vteam-${team.departmentCode}`;
@@ -256,8 +181,12 @@ function buildDivisionChildren(division: DivisionTraceNode): GraphTreeNode[] {
   return teamNodes;
 }
 
-function buildTeamNode(team: TeamTraceNode): GraphTreeNode {
-  const memberChildren = (team.children ?? []).map((m) => buildMemberNode(m));
+function buildTeamNode(
+  team: TeamTraceNode,
+  itemType?: 'mergeRequest' | 'commit',
+  validPath?: string,
+): GraphTreeNode {
+  const memberChildren = (team.children ?? []).map((m) => buildMemberNode(m, itemType, validPath));
   if (memberChildren.length > 0) {
     calculateSiblingWeights(memberChildren);
   }
@@ -277,6 +206,8 @@ function buildTeamNode(team: TeamTraceNode): GraphTreeNode {
 function buildDivisionNode(
   division: DivisionTraceNode,
   divisionStates?: Map<string, DivisionLoadStatus>,
+  itemType?: 'mergeRequest' | 'commit',
+  validPath?: string,
 ): GraphTreeNode {
   // Check sequential loader state for this division
   const status = divisionStates?.get(division.departmentCode);
@@ -285,7 +216,7 @@ function buildDivisionNode(
     if (status.state === "loaded" && status.data?.root?.level === "DIVISION") {
       // Use detailed data from sequential loader
       const detailedDiv = status.data.root as DivisionTraceNode;
-      const allChildren = buildDivisionChildren(detailedDiv);
+      const allChildren = buildDivisionChildren(detailedDiv, itemType, validPath);
       return {
         id: detailedDiv.departmentCode,
         type: "DIVISION",
@@ -315,7 +246,7 @@ function buildDivisionNode(
   }
 
   // No sequential loader — build from the division's own children (may be null for shallow)
-  const allChildren = buildDivisionChildren(division);
+  const allChildren = buildDivisionChildren(division, itemType, validPath);
   return {
     id: division.departmentCode,
     type: "DIVISION",
@@ -333,9 +264,8 @@ function buildDivisionNode(
 
 /**
  * Transforms TraceNode tree into GraphTreeNode tree with:
- * 1. MR leaf nodes derived from member.mergeRequests[]
+ * 1. MEMBER nodes may have a single MR_SUMMARY child when itemType is defined and items exist
  * 2. Contribution-rate edge weights computed by calculateSiblingWeights()
- * 3. Enriched MR detail data joined from rawDailyData
  *
  * IMPORTANT: Company-level root is NOT included as a graph node.
  * For COMPANY root, returns an array of division GraphTreeNodes.
@@ -344,16 +274,18 @@ function buildDivisionNode(
 export function buildGraphTree(
   root: TraceNode,
   divisionStates?: Map<string, DivisionLoadStatus>,
+  itemType?: 'mergeRequest' | 'commit',
+  validPath?: string,
 ): GraphTreeNode[] {
   switch (root.level) {
     case "COMPANY":
-      return root.children.map((div) => buildDivisionNode(div, divisionStates));
+      return root.children.map((div) => buildDivisionNode(div, divisionStates, itemType, validPath));
     case "DIVISION":
-      return [buildDivisionNode(root as DivisionTraceNode, divisionStates)];
+      return [buildDivisionNode(root as DivisionTraceNode, divisionStates, itemType, validPath)];
     case "TEAM":
-      return [buildTeamNode(root as TeamTraceNode)];
+      return [buildTeamNode(root as TeamTraceNode, itemType, validPath)];
     case "MEMBER":
-      return [buildMemberNode(root as MemberTraceNode)];
+      return [buildMemberNode(root as MemberTraceNode, itemType, validPath)];
   }
 }
 
@@ -449,20 +381,22 @@ function positionNode(
   const h = NODE_H[node.type];
   const x = xStart;
 
-  const isExpanded = node.type === "MR" ? false : expandedNodes.has(node.id);
   const hasChildren = !!node.children && node.children.length > 0;
+  // MEMBER nodes with children (MR_SUMMARY) are always expanded — no toggle needed
+  const isExpanded = node.type === "MEMBER" ? hasChildren : expandedNodes.has(node.id);
 
   if (!hasChildren || !isExpanded) {
-    // Leaf or collapsed: place at yStart
+    // Leaf or collapsed: place at yStart.
+    const nodeY = yStart;
     const positioned: PositionedNode = {
       id: node.id,
       type: node.type,
       x,
-      y: yStart,
+      y: nodeY,
       width: w,
       height: h,
       cx: x + w / 2,
-      cy: yStart + h / 2,
+      cy: nodeY + h / 2,
       graphNode: node,
       hasChildren,
       isExpanded,
@@ -473,13 +407,16 @@ function positionNode(
     return { bottom: yStart + h };
   }
 
-  // Children's X is parent's right edge + H_GAP
   const childX = x + w + H_GAP;
 
   // Has expanded children: position children first, then center parent
   let cy = yStart;
   let maxBottom = yStart;
   const childPositions: { cy: number }[] = [];
+
+  // Snapshot counts before children are positioned so we can shift the subtree if needed
+  const nodesBeforeChildren = outNodes.length;
+  const edgesBeforeChildren = outEdges.length;
 
   for (const child of node.children!) {
     const result = positionNode(
@@ -499,13 +436,32 @@ function positionNode(
     maxBottom = result.bottom;
   }
 
-  // Center parent among children naturally (no clamping here).
-  // computeGraphLayout() shifts the entire subtree down if any node ends up above
-  // HEADER_OFFSET, which preserves correct edge alignment between parent and children.
+  // Center parent among children; clamp so parent never drifts above yStart.
+  // When the child subtree is shorter than the parent node, centering can push
+  // parentY below yStart, eating into V_GAP with the previous sibling.
+  // In that case, shift all already-positioned child nodes (and their edges) down
+  // by the deficit to maintain the centering relationship while keeping parentY >= yStart.
   const firstChildCy = childPositions[0]?.cy ?? yStart;
   const lastChildCy = childPositions[childPositions.length - 1]?.cy ?? yStart;
   const parentCy = (firstChildCy + lastChildCy) / 2;
-  const parentY = parentCy - h / 2;
+  let parentY = parentCy - h / 2;
+
+  if (parentY < yStart) {
+    const shift = yStart - parentY;
+    for (const n of outNodes.slice(nodesBeforeChildren)) {
+      n.y += shift;
+      n.cy += shift;
+    }
+    for (const e of outEdges.slice(edgesBeforeChildren)) {
+      e.y1 += shift;
+      e.y2 += shift;
+    }
+    parentY = yStart;
+    maxBottom += shift;
+  }
+
+  // After potential clamping, recompute the actual vertical center of the parent node
+  const actualParentCy = parentY + h / 2;
 
   const positioned: PositionedNode = {
     id: node.id,
@@ -515,7 +471,7 @@ function positionNode(
     width: w,
     height: h,
     cx: x + w / 2,
-    cy: parentCy,
+    cy: actualParentCy,
     graphNode: node,
     hasChildren: true,
     isExpanded: true,
@@ -546,7 +502,7 @@ function positionNode(
         parentType: node.type,
         childType: child.type,
         x1: x + w, // parent right edge
-        y1: parentCy,
+        y1: actualParentCy,
         x2: childPositioned.x, // child left edge
         y2: childPositioned.cy,
         weight: child.weight ?? 1,
