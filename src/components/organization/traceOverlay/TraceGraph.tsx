@@ -12,6 +12,7 @@ import { ZoomControls } from "./graph/ZoomControls.js";
 import type {
   TraceNode,
   MetricInfo,
+  MemberTraceNode,
   PositionedEdge,
   PositionedNode,
 } from "@/types/traceability.types.js";
@@ -28,6 +29,14 @@ interface TraceGraphProps {
   /** Only provided for company-level traces */
   divisionStates?: Map<string, DivisionLoadStatus>;
   retryDivision?: (departmentCode: string) => void;
+  /** Callback when a member node is selected for detail view */
+  onSelectMember?: (member: MemberTraceNode) => void;
+  /** Currently selected node ID (for visual highlight) */
+  selectedNodeId?: string | null;
+  /** Item type from traceMapping — gates MR_SUMMARY child creation on MEMBER nodes */
+  itemType?: 'mergeRequest' | 'commit';
+  /** Valid item path from traceMapping.itemsLocation — used for commit item counting */
+  validPath?: string;
 }
 
 /**
@@ -41,6 +50,10 @@ export const TraceGraph = ({
   onToggleNode,
   divisionStates,
   retryDivision,
+  onSelectMember,
+  selectedNodeId,
+  itemType,
+  validPath,
 }: TraceGraphProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const {
@@ -98,9 +111,11 @@ export const TraceGraph = ({
     const graphTrees = buildGraphTree(
       root,
       isCompanyLevel ? divisionStates : undefined,
+      itemType,
+      validPath,
     );
     return computeGraphLayout(graphTrees, expandedNodes);
-  }, [root, expandedNodes, divisionStates, isCompanyLevel]);
+  }, [root, expandedNodes, divisionStates, isCompanyLevel, itemType, validPath]);
 
   // Keep nodeMapRef in sync with layout so handleNodeClick has stable O(1) lookup
   useEffect(() => {
@@ -132,9 +147,27 @@ export const TraceGraph = ({
           return;
         }
       }
+
       onToggleNode(nodeId);
     },
     [onToggleNode, retryDivision],
+  );
+
+  const handleDetailClick = useCallback(
+    (nodeId: string) => {
+      if (!onSelectMember || !nodeMapRef.current) return;
+      const clickedNode = nodeMapRef.current.get(nodeId);
+      if (!clickedNode) return;
+
+      // MR_SUMMARY nodes store the parent MemberTraceNode in traceNode
+      if (clickedNode.type === "MR_SUMMARY") {
+        const memberTrace = clickedNode.graphNode.traceNode as MemberTraceNode | undefined;
+        if (memberTrace) {
+          onSelectMember(memberTrace);
+        }
+      }
+    },
+    [onSelectMember],
   );
 
   if (!root || !layout) {
@@ -148,7 +181,7 @@ export const TraceGraph = ({
   return (
     <div
       ref={containerRef}
-      className={`flex-1 relative overflow-hidden ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
+      className={`relative flex-1 overflow-hidden ${isPanning ? "cursor-grabbing" : "cursor-grab"}`}
       onMouseDown={handlers.onMouseDown}
       onMouseMove={handlers.onMouseMove}
       onMouseUp={handlers.onMouseUp}
@@ -182,6 +215,8 @@ export const TraceGraph = ({
               node={node}
               metricInfo={metricInfo}
               onClick={handleNodeClick}
+              isSelected={node.id === selectedNodeId}
+              onDetailClick={handleDetailClick}
             />
           ))}
         </g>

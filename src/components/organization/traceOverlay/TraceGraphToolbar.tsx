@@ -14,14 +14,14 @@ const LEGEND_ITEMS: { type: GraphNodeType; label: string }[] = [
   { type: 'DIVISION', label: '부문/실' },
   { type: 'TEAM', label: '팀' },
   { type: 'MEMBER', label: '개인' },
-  { type: 'MR', label: 'MR' },
+  { type: 'MR_SUMMARY', label: 'MR/커밋' },
 ];
 
-const TYPE_ORDER: GraphNodeType[] = ['DIVISION', 'TEAM', 'MEMBER', 'MR'];
+const TYPE_ORDER: GraphNodeType[] = ['DIVISION', 'TEAM', 'MEMBER', 'MR_SUMMARY'];
 
 /**
  * Toolbar between header and graph: expand/collapse all buttons + legend.
- * Shows all node types from rootType onward (Division -> Team -> Member -> MR).
+ * Shows all node types from rootType onward (Division -> Team -> Member -> MR_SUMMARY).
  */
 export const TraceGraphToolbar = ({
   onExpandAll,

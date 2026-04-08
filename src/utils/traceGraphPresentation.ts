@@ -13,14 +13,14 @@ export const NODE_W: Record<GraphNodeType, number> = {
   DIVISION: 220,
   TEAM: 200,
   MEMBER: 190,
-  MR: 180,
+  MR_SUMMARY: 150,
 };
 
 export const NODE_H: Record<GraphNodeType, number> = {
   DIVISION: 88,
   TEAM: 82,
   MEMBER: 74,
-  MR: 82,
+  MR_SUMMARY: 36,
 };
 
 // ── Colors ─────────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ export const GRAPH_COLORS = {
   MEMBER: {
     fill: '#EFF6FF', stroke: '#3B82F6', text: '#1E40AF', badge: '#DBEAFE',
   },
-  MR: {
+  MR_SUMMARY: {
     fill: '#FFFBEB', stroke: '#F59E0B', text: '#92400E', badge: '#FEF3C7',
   },
 } as const;

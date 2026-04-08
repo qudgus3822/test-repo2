@@ -1,21 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
-import { useModalAnimation } from "@/hooks";
-import { useTraceability } from "@/api/hooks/useTraceability";
-import { useSequentialDivisionLoader } from "@/api/hooks/useSequentialDivisionLoader";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { collectAllNodeIds } from "@/utils/traceGraphLayout";
+import { useModalAnimation } from "@/hooks/index.js";
+import { useTraceability } from "@/api/hooks/useTraceability.js";
+import { useSequentialDivisionLoader } from "@/api/hooks/useSequentialDivisionLoader.js";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner.js";
+import { collectAllNodeIds } from "@/utils/traceGraphLayout.js";
+import { getItemTypeLabel } from "@/utils/traceMappingUtils.js";
 import type {
   TraceOverlayContext,
   TraceQuery,
   CompanyTraceNode,
   GraphNodeType,
   TraceNode,
-} from "@/types/traceability.types";
+  MemberTraceNode,
+} from "@/types/traceability.types.js";
 
-import { TraceHeader } from "./TraceHeader";
-import { TraceGraphToolbar } from "./TraceGraphToolbar";
-import { TraceGraph } from "./TraceGraph";
+import { TraceHeader } from "./TraceHeader.js";
+import { TraceGraphToolbar } from "./TraceGraphToolbar.js";
+import { TraceGraph } from "./TraceGraph.js";
+import { TraceDetailModal } from "./detail/TraceDetailModal.js";
+import { TraceMappingErrorBoundary } from "./detail/TraceMappingErrorBoundary.js";
+
+// ── Variant constants ─────────────────────────────────────────────────────────
+
+const ICON_BUTTON = "text-gray-400 hover:text-gray-600 cursor-pointer";
+const PRIMARY_BUTTON = "px-4 py-2 bg-blue-600 rounded text-sm text-white hover:bg-blue-700 transition-colors";
 
 /** Maps TraceNode root level to the root GraphNodeType for the toolbar legend. */
 function getRootType(level: TraceNode["level"]): GraphNodeType {
@@ -101,6 +110,7 @@ export const TraceOverlay = ({
   // Update expanded set when new divisions load (add only their newly-available children)
   useEffect(() => {
     if (!isCompanyLevel) return;
+    const allNewIds: string[] = [];
     const newlyProcessed: string[] = [];
     divisionStates.forEach((status, code) => {
       if (
@@ -109,14 +119,17 @@ export const TraceOverlay = ({
         !processedDivisionsRef.current.has(code)
       ) {
         newlyProcessed.push(code);
-        setExpandedNodes((prev) => {
-          const next = new Set(prev);
-          const newIds = collectAllNodeIds(status.data!.root!, undefined);
-          newIds.forEach((id) => next.add(id));
-          return next;
-        });
+        const newIds = collectAllNodeIds(status.data!.root!, undefined);
+        allNewIds.push(...newIds);
       }
     });
+    if (allNewIds.length > 0) {
+      setExpandedNodes((prev) => {
+        const next = new Set(prev);
+        allNewIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
     // Mark these divisions as processed so we don't re-expand them on future updates
     newlyProcessed.forEach((code) => processedDivisionsRef.current.add(code));
   }, [divisionStates, isCompanyLevel]);
@@ -155,15 +168,39 @@ export const TraceOverlay = ({
     }
   }, [data?.root]);
 
-  // Close on Escape key
+  // -- Selected member state (for detail panel) --
+  const [selectedMember, setSelectedMember] = useState<MemberTraceNode | null>(null);
+
+  // Clear selection when root data changes (new query)
+  useEffect(() => {
+    setSelectedMember(null);
+  }, [data?.root]);
+
+  const handleSelectMember = useCallback((member: MemberTraceNode) => {
+    setSelectedMember(prev =>
+      prev?.memberId === member.memberId ? null : member,
+    );
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedMember(null);
+  }, []);
+
+  // Close on Escape key — closes detail modal first, then the overlay
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (selectedMember) {
+          handleCloseDetail();
+        } else {
+          onClose();
+        }
+      }
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, selectedMember, handleCloseDetail]);
 
   // Prevent body scroll while open
   useEffect(() => {
@@ -183,14 +220,14 @@ export const TraceOverlay = ({
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
         onClick={onClose}
       />
 
       {/* Centered modal */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
         <div
           className={`pointer-events-auto w-[90vw] max-w-[1400px] h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
             isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
@@ -206,7 +243,7 @@ export const TraceOverlay = ({
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              className={ICON_BUTTON}
             >
               <X className="w-6 h-6" />
             </button>
@@ -230,7 +267,7 @@ export const TraceOverlay = ({
                 <button
                   type="button"
                   onClick={() => void refetch()}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  className={PRIMARY_BUTTON}
                 >
                   다시 시도
                 </button>
@@ -249,14 +286,33 @@ export const TraceOverlay = ({
                   onCollapseAll={handleCollapseAll}
                   rootType={getRootType(data.root?.level ?? "DIVISION")}
                 />
-                <TraceGraph
-                  root={data.root}
-                  metricInfo={data.metricInfo}
-                  expandedNodes={expandedNodes}
-                  onToggleNode={handleToggleNode}
-                  divisionStates={isCompanyLevel ? divisionStates : undefined}
-                  retryDivision={isCompanyLevel ? retryDivision : undefined}
-                />
+                <div className="relative flex flex-1 overflow-hidden">
+                  <TraceGraph
+                    root={data.root}
+                    metricInfo={data.metricInfo}
+                    expandedNodes={expandedNodes}
+                    onToggleNode={handleToggleNode}
+                    divisionStates={isCompanyLevel ? divisionStates : undefined}
+                    retryDivision={isCompanyLevel ? retryDivision : undefined}
+                    onSelectMember={handleSelectMember}
+                    selectedNodeId={selectedMember?.memberId ?? null}
+                    itemType={data.traceMapping?.itemType}
+                    validPath={data.traceMapping?.itemsLocation.validPath}
+                  />
+                  {selectedMember && data.traceMapping && (
+                    <TraceMappingErrorBoundary key={selectedMember.memberId}>
+                      <TraceDetailModal
+                        traceMapping={data.traceMapping}
+                        rawDailyData={selectedMember.rawDailyData}
+                        mergeRequests={selectedMember.mergeRequests}
+                        period={data.query.period}
+                        memberName={selectedMember.memberName}
+                        itemTypeLabel={getItemTypeLabel(data.traceMapping.itemType)}
+                        onClose={handleCloseDetail}
+                      />
+                    </TraceMappingErrorBoundary>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
