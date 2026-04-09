@@ -11,6 +11,13 @@
     font-family:
       Pretendard, "Pretendard", MalgunGothic, "맑은 고딕", "돋움", Dotum,
       AppleGothic, Sans-serif, Arial;
+    caret-color: transparent;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    caret-color: auto;
   }
 
   button {
