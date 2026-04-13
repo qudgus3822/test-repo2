@@ -17,6 +17,7 @@ export interface EnrichedMergeRequest {
   mergedAt?: string;
   projectEpicKey?: string;
   projectName?: string;
+  externalUrl?: string;
   // Metric-specific data (from details.mergeRequests[])
   metricData: Record<string, unknown>;
   // Role determination
@@ -71,6 +72,7 @@ export function enrichMergeRequests(
         mergedAt: mr.mergedAt,
         projectEpicKey: mr.projectEpicKey,
         projectName: mr.projectName,
+        externalUrl: mr.externalUrl,
         metricData: detailMR,
         isAuthor: memberEmployeeId === mr.author,
         isReviewer: mr.reviewers.includes(memberEmployeeId),

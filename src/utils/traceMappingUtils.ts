@@ -107,6 +107,8 @@ export function extractSummaryValues(
 export interface TableRow {
   /** Display values keyed by column key (for rendering) */
   display: Record<string, string>;
+  /** Non-display metadata keyed by column key. Currently used for external URLs; may widen to structured objects if future needs require non-URL metadata (tooltips, flags, etc.). */
+  meta?: Record<string, string>;
 }
 
 /**
@@ -305,7 +307,10 @@ export function buildUnifiedRows(
       }
     }
 
-    return { display };
+    const externalUrl = mr?.externalUrl;
+    return externalUrl
+      ? { display, meta: { '__mr_iid': externalUrl } }
+      : { display };
   });
 }
 
