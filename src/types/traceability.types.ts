@@ -55,6 +55,7 @@ export interface MergeRequestSummary {
   mergedAt?: string;
   projectEpicKey?: string;
   projectName?: string;
+  externalUrl?: string; // External page URL (e.g. GitLab MR). Empty string = unavailable. Optional for rolling deployment safety.
 }
 
 // ── Daily Data ──
