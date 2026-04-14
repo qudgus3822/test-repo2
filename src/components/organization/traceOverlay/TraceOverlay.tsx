@@ -305,6 +305,7 @@ export const TraceOverlay = ({
                         traceMapping={data.traceMapping}
                         rawDailyData={selectedMember.rawDailyData}
                         mergeRequests={selectedMember.mergeRequests}
+                        aggregatedSummary={selectedMember.aggregatedSummary}
                         period={data.query.period}
                         memberName={selectedMember.memberName}
                         itemTypeLabel={getItemTypeLabel(data.traceMapping.itemType)}

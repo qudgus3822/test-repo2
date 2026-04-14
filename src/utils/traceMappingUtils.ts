@@ -112,6 +112,20 @@ export interface TableRow {
 }
 
 /**
+ * formattedKey가 있으면 이미 포맷된 값을 반환, 없으면 null 반환하여 caller가 fallback 처리.
+ * 빈 문자열('')도 유효한 포맷 결과가 아니므로 null 반환.
+ */
+function resolveFormattedValue(
+  item: Record<string, unknown>,
+  col: TraceMappingField,
+): string | null {
+  if (!col.formattedKey) return null;
+  const formattedValue = getNestedValue(item, col.formattedKey);
+  if (formattedValue === null || formattedValue === undefined || formattedValue === '') return null;
+  return String(formattedValue);
+}
+
+/**
  * Constructs row data from items + columns.
  * Handles nested dot-notation keys and formattedKey fallback.
  */
@@ -125,14 +139,12 @@ export function buildTableRows(
       const display: Record<string, string> = {};
 
       for (const col of columns) {
-        const rawValue = getNestedValue(item, col.key);
-
-        // Use formattedKey value for display if available
-        const displayValue = col.formattedKey
-          ? (getNestedValue(item, col.formattedKey) ?? rawValue)
-          : rawValue;
-
-        display[col.key] = formatCellValue(displayValue, col);
+        const formatted = resolveFormattedValue(item, col);
+        if (formatted !== null) {
+          display[col.key] = formatted;
+          continue;
+        }
+        display[col.key] = formatCellValue(getNestedValue(item, col.key), col);
       }
 
       return { display };
@@ -299,11 +311,12 @@ export function buildUnifiedRows(
         display[col.key] = mr?.author ?? '-';
       } else {
         // Metric-specific field from traceMapping
-        const rawValue = getNestedValue(item, col.key);
-        const displayValue = col.formattedKey
-          ? (getNestedValue(item, col.formattedKey) ?? rawValue)
-          : rawValue;
-        display[col.key] = formatCellValue(displayValue, col);
+        const formatted = resolveFormattedValue(item, col);
+        if (formatted !== null) {
+          display[col.key] = formatted;
+          continue;
+        }
+        display[col.key] = formatCellValue(getNestedValue(item, col.key), col);
       }
     }
 
@@ -315,20 +328,46 @@ export function buildUnifiedRows(
 }
 
 /**
- * Flattens items from all days' details into a single array with date metadata.
+ * rawDailyData의 모든 일자에서 items를 추출하여 단일 배열로 평탄화합니다.
+ * 복합 키(id+repositoryId)로 중복 감지: 같은 MR이 여러 날짜에 존재하면 나중 날짜 항목만 유지합니다.
+ *
+ * 주의: 중복 제거 시 in-place 교체를 사용하므로, 반환 배열의 순서는
+ * 입력 날짜 순서와 일치하지 않을 수 있습니다. 소비자는 정렬 순서에 의존하지 마십시오.
  */
 export function flattenDailyItems(
   rawDailyData: DailyUserMetric[],
   validPath: string,
 ): UnifiedRowInput[] {
   const result: UnifiedRowInput[] = [];
+  // 복합 키(id+repositoryId)로 중복 감지, 나중 날짜 항목 우선
+  const seen = new Map<string, number>();
+
   for (const day of rawDailyData) {
     if (!day.details) continue;
     const items = extractItems(day.details, validPath);
     for (const item of items) {
-      result.push({ date: day.date, item: item as Record<string, unknown> });
+      const rec = item as Record<string, unknown>;
+      // 모든 메트릭이 `id` 필드를 사용 (검증 완료: reviewSpeedCalculator 등 9개 메트릭)
+      // commit 타입은 id가 SHA 문자열이므로 중복 검사 동일 적용
+      const id = rec.id;
+      const repoId = rec.repositoryId;
+
+      // id와 repositoryId가 모두 있는 경우에만 중복 검사
+      if (id != null && repoId != null) {
+        const compositeKey = `${id}:${repoId}`;
+        const existingIdx = seen.get(compositeKey);
+        if (existingIdx !== undefined) {
+          // 나중 날짜(배열 뒤쪽) 항목으로 교체
+          result[existingIdx] = { date: day.date, item: rec };
+          continue;
+        }
+        seen.set(compositeKey, result.length);
+      }
+
+      result.push({ date: day.date, item: rec });
     }
   }
+
   return result;
 }
 
@@ -359,6 +398,7 @@ export function buildUnifiedTable(
   rawDailyData: DailyUserMetric[] | null,
   mergeRequests: MergeRequestSummary[] | null,
   period: 'DAILY' | 'MONTHLY',
+  aggregatedSummary?: Record<string, unknown> | null,
 ): UnifiedTableResult {
   const { referenceFields, validItemFields, invalidItemFields, itemsLocation, summaryFields, itemType } = traceMapping;
   const isMultiDay = period === 'MONTHLY' && (rawDailyData?.length ?? 0) > 1;
@@ -368,8 +408,10 @@ export function buildUnifiedTable(
   const inputs = rawDailyData ? flattenDailyItems(rawDailyData, itemsLocation.validPath) : [];
   const rows = buildUnifiedRows(inputs, columns, mergeRequests, itemType);
 
-  const dayWithData = rawDailyData?.find(d => d.details !== null) ?? null;
-  const summaryEntries = extractSummaryValues(dayWithData?.details ?? null, summaryFields);
+  // 버그 수정: 기존 코드는 첫 번째 non-null details만 사용하여 MONTHLY 조회 시 나머지 일자 데이터를 무시함.
+  // 수정: 백엔드에서 계산된 aggregatedSummary를 직접 사용 (aggregation 로직 없음, 순수 presentation).
+  // aggregatedSummary가 undefined(구 백엔드)이면 null로 fallback → extractSummaryValues가 [] 반환.
+  const summaryEntries = extractSummaryValues(aggregatedSummary ?? null, summaryFields);
 
   const invalidColumns = extractDisplayColumns(referenceFields, invalidItemFields);
   const invalidInputs = rawDailyData ? flattenDailyItems(rawDailyData, itemsLocation.invalidPath) : [];
