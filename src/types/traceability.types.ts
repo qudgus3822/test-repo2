@@ -79,6 +79,8 @@ export interface MemberTraceNode {
   metric: MetricSnapshot;
   rawDailyData: DailyUserMetric[] | null;
   mergeRequests: MergeRequestSummary[] | null;
+  /** summaryFields 일별 합산 요약. 백엔드에서 계산. null이면 데이터 없음. */
+  aggregatedSummary?: Record<string, unknown> | null;
 }
 
 export interface TeamTraceNode {

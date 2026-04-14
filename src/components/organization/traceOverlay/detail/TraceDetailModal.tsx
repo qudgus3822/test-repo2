@@ -13,6 +13,7 @@ interface TraceDetailModalProps {
   traceMapping: TraceMapping;
   rawDailyData: DailyUserMetric[] | null;
   mergeRequests: MergeRequestSummary[] | null;
+  aggregatedSummary?: Record<string, unknown> | null;
   period: 'DAILY' | 'MONTHLY';
   memberName: string;
   itemTypeLabel: string;
@@ -29,6 +30,7 @@ export function TraceDetailModal({
   traceMapping,
   rawDailyData,
   mergeRequests,
+  aggregatedSummary,
   period,
   memberName,
   itemTypeLabel,
@@ -59,6 +61,7 @@ export function TraceDetailModal({
       traceMapping={traceMapping}
       rawDailyData={rawDailyData}
       mergeRequests={mergeRequests}
+      aggregatedSummary={aggregatedSummary}
       period={period}
       memberName={memberName}
       itemTypeLabel={itemTypeLabel}
@@ -77,14 +80,15 @@ function ModalContent({
   traceMapping,
   rawDailyData,
   mergeRequests,
+  aggregatedSummary,
   period,
   memberName,
   itemTypeLabel,
   onClose,
 }: ModalContentProps) {
   const { columns, rows, summaryEntries, invalidColumns, invalidRows } = useMemo(
-    () => buildUnifiedTable(traceMapping, rawDailyData, mergeRequests, period),
-    [traceMapping, rawDailyData, mergeRequests, period],
+    () => buildUnifiedTable(traceMapping, rawDailyData, mergeRequests, period, aggregatedSummary),
+    [traceMapping, rawDailyData, mergeRequests, period, aggregatedSummary],
   );
 
   const invalidLabel = traceMapping.itemsLocation.invalidLabel ?? '무효 항목';

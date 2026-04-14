@@ -13,10 +13,13 @@ import {
   buildTableRows,
   formatCellValue,
   isTraceMappingValid,
+  buildUnifiedTable,
+  flattenDailyItems,
 } from "../traceMappingUtils.js";
 import type {
   TraceMappingField,
   TraceMapping,
+  DailyUserMetric,
 } from "@/types/traceability.types.js";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -259,6 +262,34 @@ describe("buildTableRows", () => {
     expect(rows[0].display["responseTime"]).toBe("1시간");
   });
 
+  it("formattedKey가 null이면 rawValue로 fallback한다", () => {
+    const items = [{ responseTime: 3600, responseTimeFormatted: null }];
+    const columns: TraceMappingField[] = [
+      makeField({
+        key: "responseTime",
+        label: "응답시간",
+        type: "number",
+        formattedKey: "responseTimeFormatted",
+      }),
+    ];
+    const rows = buildTableRows(items, columns);
+    expect(rows[0].display["responseTime"]).toBe("3600");
+  });
+
+  it('formattedKey 값이 빈 문자열이면 rawValue로 fallback한다', () => {
+    const items = [{ responseTime: 3600, responseTimeFormatted: "" }];
+    const columns: TraceMappingField[] = [
+      makeField({
+        key: "responseTime",
+        label: "응답시간",
+        type: "number",
+        formattedKey: "responseTimeFormatted",
+      }),
+    ];
+    const rows = buildTableRows(items, columns);
+    expect(rows[0].display["responseTime"]).toBe("3600");
+  });
+
   it('null values in items display "-"', () => {
     const items = [{ id: null }];
     const columns: TraceMappingField[] = [
@@ -360,5 +391,286 @@ describe("isTraceMappingValid", () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { referenceFields: _, ...m } = validMapping;
     expect(isTraceMappingValid(m)).toBe(false);
+  });
+});
+
+// ── buildUnifiedTable ────────────────────────────────────────────────────────
+
+describe("buildUnifiedTable", () => {
+  const traceMapping: TraceMapping = {
+    itemType: "mergeRequest",
+    itemsLocation: { validPath: "mergeRequests", invalidPath: "invalidMergeRequests" },
+    referenceFields: [
+      makeField({ key: "id", label: "MR ID", type: "string", display: true }),
+      makeField({ key: "repositoryId", label: "저장소 ID", type: "number", display: false }),
+    ],
+    summaryFields: [
+      makeField({ key: "totalResolvableSuggestions", label: "해결 가능한 제안 수", type: "number", display: true, unit: "개" }),
+      makeField({ key: "acceptedSuggestions", label: "수용된 제안 수", type: "number", display: true, unit: "개" }),
+      makeField({ key: "acceptanceRate", label: "제안 수용률", type: "number", display: true, unit: "%" }),
+    ],
+    validItemFields: [
+      makeField({ key: "totalResolvableSuggestions", label: "해결 가능한 제안 수", type: "number", display: true, unit: "개" }),
+    ],
+    invalidItemFields: [],
+  };
+
+  it("aggregatedSummary 제공 시 summaryEntries가 해당 값을 반영한다", () => {
+    const rawDailyData: DailyUserMetric[] = [
+      {
+        date: "20260407", value: 0, totalCount: 0,
+        relatedMergeRequests: [],
+        details: {
+          mergeRequests: [], invalidMergeRequests: [],
+          totalResolvableSuggestions: 0, acceptedSuggestions: 0, acceptanceRate: 0,
+        },
+      },
+      {
+        date: "20260408", value: 100, totalCount: 1,
+        relatedMergeRequests: [],
+        details: {
+          mergeRequests: [], invalidMergeRequests: [],
+          totalResolvableSuggestions: 1, acceptedSuggestions: 1, acceptanceRate: 100,
+        },
+      },
+    ];
+
+    // 백엔드에서 계산된 aggregatedSummary
+    const aggregatedSummary = {
+      totalResolvableSuggestions: 1,
+      acceptedSuggestions: 1,
+      acceptanceRate: 100,
+    };
+
+    const result = buildUnifiedTable(traceMapping, rawDailyData, null, "MONTHLY", aggregatedSummary);
+
+    expect(result.summaryEntries).toHaveLength(3);
+    const suggestions = result.summaryEntries.find(e => e.label === "해결 가능한 제안 수");
+    expect(suggestions?.value).toBe(1);
+    const accepted = result.summaryEntries.find(e => e.label === "수용된 제안 수");
+    expect(accepted?.value).toBe(1);
+    const rate = result.summaryEntries.find(e => e.label === "제안 수용률");
+    expect(rate?.value).toBe(100);
+  });
+
+  it("DAILY 조회 시 aggregatedSummary가 올바르게 표시된다", () => {
+    const rawDailyData: DailyUserMetric[] = [
+      {
+        date: "20260408", value: 100, totalCount: 1,
+        relatedMergeRequests: [],
+        details: {
+          mergeRequests: [], invalidMergeRequests: [],
+          totalResolvableSuggestions: 2, acceptedSuggestions: 1, acceptanceRate: 50,
+        },
+      },
+    ];
+
+    // DAILY에서도 백엔드가 aggregatedSummary를 계산하여 전달
+    const aggregatedSummary = {
+      totalResolvableSuggestions: 2,
+      acceptedSuggestions: 1,
+      acceptanceRate: 50,
+    };
+
+    const result = buildUnifiedTable(traceMapping, rawDailyData, null, "DAILY", aggregatedSummary);
+
+    expect(result.summaryEntries).toHaveLength(3);
+    const suggestions = result.summaryEntries.find(e => e.label === "해결 가능한 제안 수");
+    expect(suggestions?.value).toBe(2);
+    const rate = result.summaryEntries.find(e => e.label === "제안 수용률");
+    expect(rate?.value).toBe(50);
+  });
+
+  it("aggregatedSummary가 null이면 summaryEntries가 빈 배열이다", () => {
+    const rawDailyData: DailyUserMetric[] = [
+      {
+        date: "20260408", value: 100, totalCount: 1,
+        relatedMergeRequests: [],
+        details: {
+          mergeRequests: [], invalidMergeRequests: [],
+          totalResolvableSuggestions: 1, acceptedSuggestions: 1, acceptanceRate: 100,
+        },
+      },
+    ];
+
+    const result = buildUnifiedTable(traceMapping, rawDailyData, null, "DAILY", null);
+    expect(result.summaryEntries).toEqual([]);
+  });
+
+  it("aggregatedSummary 미전달 시 (구 백엔드) summaryEntries가 빈 배열이다", () => {
+    const rawDailyData: DailyUserMetric[] = [
+      {
+        date: "20260408", value: 100, totalCount: 1,
+        relatedMergeRequests: [],
+        details: {
+          mergeRequests: [], invalidMergeRequests: [],
+          totalResolvableSuggestions: 1, acceptedSuggestions: 1, acceptanceRate: 100,
+        },
+      },
+    ];
+
+    // aggregatedSummary 파라미터 생략
+    const result = buildUnifiedTable(traceMapping, rawDailyData, null, "DAILY");
+    expect(result.summaryEntries).toEqual([]);
+  });
+
+  it("validItemFields에 formattedKey가 있으면 포맷된 값을 사용한다", () => {
+    const traceMappingWithFormatted: TraceMapping = {
+      itemType: "mergeRequest",
+      itemsLocation: { validPath: "mergeRequests", invalidPath: "invalidMergeRequests" },
+      referenceFields: [
+        makeField({ key: "id", label: "MR ID", type: "string", display: true }),
+        makeField({ key: "repositoryId", label: "저장소 ID", type: "number", display: false }),
+      ],
+      summaryFields: [],
+      validItemFields: [
+        makeField({
+          key: "responseTime",
+          label: "응답 시간",
+          type: "number",
+          display: true,
+          formattedKey: "responseTimeFormatted",
+        }),
+      ],
+      invalidItemFields: [],
+    };
+
+    const rawDailyData: DailyUserMetric[] = [
+      {
+        date: "20260408", value: 100, totalCount: 1,
+        relatedMergeRequests: [{ iid: 58, repositoryId: 77132601 }],
+        details: {
+          mergeRequests: [{
+            id: "58", repositoryId: 77132601,
+            responseTime: 3600, responseTimeFormatted: "1시간",
+          }],
+          invalidMergeRequests: [],
+        },
+      },
+    ];
+
+    const mergeRequests = [{
+      iid: 58, repositoryId: 77132601, repositoryName: "moco_api",
+      title: "feat: test", author: "moco.minjae", authorEmail: "",
+      reviewers: [], sourceBranch: "feat", targetBranch: "master",
+      createdAt: "2026-04-08T03:26:02Z", mergedAt: "2026-04-08T03:26:27Z",
+      projectEpicKey: undefined, projectName: undefined, externalUrl: undefined,
+    }];
+
+    const result = buildUnifiedTable(
+      traceMappingWithFormatted, rawDailyData, mergeRequests, "DAILY", null,
+    );
+
+    // formattedKey가 있으므로 "1시간" 사용, type: number로 재포맷 하지 않음
+    const responseTimeCol = result.columns.find(c => c.label === "응답 시간");
+    expect(responseTimeCol).toBeDefined();
+    expect(result.rows[0].display[responseTimeCol!.key]).toBe("1시간");
+  });
+});
+
+// ── flattenDailyItems deduplication ───────────────────────────────────────────
+
+describe("flattenDailyItems deduplication", () => {
+  /**
+   * DailyUserMetric 목업 생성 헬퍼
+   */
+  function makeDay(date: string, items: Record<string, unknown>[]): DailyUserMetric {
+    return {
+      date,
+      details: { mergeRequests: items },
+    } as unknown as DailyUserMetric;
+  }
+
+  const validPath = "mergeRequests";
+
+  it("같은 (id, repositoryId)가 다른 날짜에 있을 때 나중 날짜만 포함된다", () => {
+    // Arrange: 같은 MR이 11-05와 11-06 모두에 존재하는 중복 상황
+    const day1 = makeDay("20251105", [
+      { id: "11", repositoryId: 72305182, responseTime: 100 },
+    ]);
+    const day2 = makeDay("20251106", [
+      { id: "11", repositoryId: 72305182, responseTime: 200 },
+    ]);
+
+    // Act
+    const result = flattenDailyItems([day1, day2], validPath);
+
+    // Assert: 나중 날짜(11-06) 항목만 포함
+    expect(result).toHaveLength(1);
+    expect(result[0].date).toBe("20251106");
+    expect(result[0].item["responseTime"]).toBe(200);
+  });
+
+  it("서로 다른 (id, repositoryId)는 모두 유지된다", () => {
+    // Arrange
+    const day1 = makeDay("20251105", [
+      { id: "10", repositoryId: 72305182, responseTime: 100 },
+    ]);
+    const day2 = makeDay("20251106", [
+      { id: "11", repositoryId: 72305182, responseTime: 200 },
+    ]);
+
+    // Act
+    const result = flattenDailyItems([day1, day2], validPath);
+
+    // Assert: 각각 다른 MR이므로 둘 다 유지
+    expect(result).toHaveLength(2);
+  });
+
+  it("id 또는 repositoryId가 없는 항목은 중복 검사 없이 모두 유지된다", () => {
+    // Arrange: id가 없는 항목
+    const day1 = makeDay("20251105", [
+      { repositoryId: 72305182, responseTime: 100 }, // id 없음
+      { id: "11", responseTime: 200 }, // repositoryId 없음
+    ]);
+    const day2 = makeDay("20251106", [
+      { repositoryId: 72305182, responseTime: 300 }, // id 없음 (중복 검사 없이 추가)
+    ]);
+
+    // Act
+    const result = flattenDailyItems([day1, day2], validPath);
+
+    // Assert: id 또는 repositoryId가 없으면 중복 검사 생략 → 모두 유지
+    expect(result).toHaveLength(3);
+  });
+
+  it("중복이 없는 경우 기존 동작과 동일하다", () => {
+    // Arrange
+    const day1 = makeDay("20251105", [
+      { id: "1", repositoryId: 1001, responseTime: 10 },
+      { id: "2", repositoryId: 1001, responseTime: 20 },
+    ]);
+    const day2 = makeDay("20251106", [
+      { id: "3", repositoryId: 1001, responseTime: 30 },
+    ]);
+
+    // Act
+    const result = flattenDailyItems([day1, day2], validPath);
+
+    // Assert
+    expect(result).toHaveLength(3);
+  });
+
+  it("3일치 데이터에서 동일 MR이 첫째/셋째날에 있을 때 셋째날 항목만 유지된다", () => {
+    // Arrange: MR #5가 1일차와 3일차에 중복
+    const day1 = makeDay("20251104", [
+      { id: "5", repositoryId: 100, responseTime: 50 },
+    ]);
+    const day2 = makeDay("20251105", [
+      { id: "6", repositoryId: 100, responseTime: 60 }, // 다른 MR
+    ]);
+    const day3 = makeDay("20251106", [
+      { id: "5", repositoryId: 100, responseTime: 500 }, // day1의 #5와 중복
+    ]);
+
+    // Act
+    const result = flattenDailyItems([day1, day2, day3], validPath);
+
+    // Assert: MR #5는 3일차(20251106) 항목만, MR #6은 유지 → 총 2개
+    expect(result).toHaveLength(2);
+    const mr5 = result.find((r) => r.item["id"] === "5");
+    expect(mr5).toBeDefined();
+    expect(mr5!.date).toBe("20251106");
+    expect(mr5!.item["responseTime"]).toBe(500);
   });
 });
