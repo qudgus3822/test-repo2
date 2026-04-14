@@ -554,7 +554,7 @@ describe("buildUnifiedTable", () => {
       title: "feat: test", author: "moco.minjae", authorEmail: "",
       reviewers: [], sourceBranch: "feat", targetBranch: "master",
       createdAt: "2026-04-08T03:26:02Z", mergedAt: "2026-04-08T03:26:27Z",
-      projectEpicKey: null, projectName: null, externalUrl: null,
+      projectEpicKey: undefined, projectName: undefined, externalUrl: undefined,
     }];
 
     const result = buildUnifiedTable(
