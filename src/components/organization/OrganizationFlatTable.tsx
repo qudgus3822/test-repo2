@@ -367,7 +367,7 @@ const CombinedRow = ({
                     metricApiName: apiName,
                     metricDisplayName: metricName,
                     aggregationLevel: "MEMBER",
-                    memberId: member.employeeID,
+                    employeeId: member.employeeID,
                     memberName: member.name,
                     departmentCode: member.departmentCode,
                     departmentName: member.departmentName,

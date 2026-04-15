@@ -10,6 +10,7 @@
 
 import type {
   TraceNode,
+  CompanyTraceNode,
   DivisionTraceNode,
   TeamTraceNode,
   MemberTraceNode,
@@ -260,6 +261,38 @@ function buildDivisionNode(
   };
 }
 
+// ── buildCompanyNode ──────────────────────────────────────────────────────────
+
+// COMPANY root is rendered as a reserved synthetic node
+// (id = "__company_root__") whose metric comes from response.root.metric
+// and whose children are the response.root.children DIVISIONs.
+// Label is supplied by the caller via companyLabel (the clicked
+// department name from TraceOverlayContext).
+function buildCompanyNode(
+  company: CompanyTraceNode,
+  companyLabel: string,
+  divisionStates?: Map<string, DivisionLoadStatus>,
+  itemType?: 'mergeRequest' | 'commit',
+  validPath?: string,
+): GraphTreeNode {
+  const divisionChildren = company.children.map((div) =>
+    buildDivisionNode(div, divisionStates, itemType, validPath),
+  );
+  if (divisionChildren.length > 0) {
+    calculateSiblingWeights(divisionChildren);
+  }
+  return {
+    id: "__company_root__",
+    type: "COMPANY",
+    label: companyLabel,
+    tag: "회사",
+    metric: company.metric,
+    aggregationMethod: company.aggregationMethod,
+    children: divisionChildren.length > 0 ? divisionChildren : undefined,
+    weight: 0,
+  };
+}
+
 // ── Public API: buildGraphTree ─────────────────────────────────────────────────
 
 /**
@@ -267,8 +300,8 @@ function buildDivisionNode(
  * 1. MEMBER nodes may have a single MR_SUMMARY child when itemType is defined and items exist
  * 2. Contribution-rate edge weights computed by calculateSiblingWeights()
  *
- * IMPORTANT: Company-level root is NOT included as a graph node.
- * For COMPANY root, returns an array of division GraphTreeNodes.
+ * For COMPANY root, returns a single-element array with the COMPANY node as root,
+ * with DIVISION children nested beneath it (id = "__company_root__").
  * For other roots, returns a single-element array.
  */
 export function buildGraphTree(
@@ -276,10 +309,17 @@ export function buildGraphTree(
   divisionStates?: Map<string, DivisionLoadStatus>,
   itemType?: 'mergeRequest' | 'commit',
   validPath?: string,
+  companyLabel?: string,
 ): GraphTreeNode[] {
   switch (root.level) {
     case "COMPANY":
-      return root.children.map((div) => buildDivisionNode(div, divisionStates, itemType, validPath));
+      return [buildCompanyNode(
+        root as CompanyTraceNode,
+        companyLabel ?? "회사",
+        divisionStates,
+        itemType,
+        validPath,
+      )];
     case "DIVISION":
       return [buildDivisionNode(root as DivisionTraceNode, divisionStates, itemType, validPath)];
     case "TEAM":
@@ -334,6 +374,7 @@ export function collectAllNodeIds(
 
   switch (root.level) {
     case "COMPANY":
+      ids.push("__company_root__");
       for (const div of root.children) {
         // Use detailed division data from sequential loader if available
         const status = divisionStates?.get(div.departmentCode);

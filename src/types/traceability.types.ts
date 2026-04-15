@@ -13,7 +13,6 @@ export interface TraceQuery {
   metricName: string;
   periodKey: string; // "YYYYMMDD" (DAILY) or "YYYY-MM" (MONTHLY)
   aggregationLevel: TraceAggregationLevel;
-  memberId?: string;
   employeeId?: string;
   departmentCode?: string;
   excludeMergeRequests?: boolean;
@@ -199,7 +198,7 @@ export interface TraceResult {
 
 // -- Graph Layout Types --
 
-export type GraphNodeType = "DIVISION" | "TEAM" | "MEMBER" | "MR_SUMMARY";
+export type GraphNodeType = "COMPANY" | "DIVISION" | "TEAM" | "MEMBER" | "MR_SUMMARY";
 
 /**
  * Opaque bundle of tooltip data for an edge's contribution rate display.
@@ -334,8 +333,7 @@ export interface TraceOverlayContext {
   departmentCode?: string;
   /** department name for display */
   departmentName?: string;
-  /** member employee ID -- available from OrganizationMember.employeeID */
-  memberId?: string;
+  employeeId?: string;
   /** member name for display */
   memberName?: string;
 }
