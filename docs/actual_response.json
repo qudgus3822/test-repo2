@@ -1,0 +1,25 @@
+{
+  "metricInfo": {
+    "title": "코드 중복률",
+    "category": "quality",
+    "aggregationType": "AVG",
+    "rawUnit": "",
+    "displayUnit": "",
+    "timeUnitConversion": "none",
+    "direction": "REVERSE"
+  },
+  "traceMapping": null,
+  "query": {
+    "metricName": "code_duplication",
+    "periodKey": "2026-04",
+    "period": "MONTHLY",
+    "aggregationLevel": "DIVISION"
+  },
+  "root": null,
+  "rawDailyMetric": null,
+  "metadata": {
+    "supportsMemberLevel": true,
+    "lowestTraceLevel": "DIVISION",
+    "mergeRequestsIncluded": true
+  }
+}

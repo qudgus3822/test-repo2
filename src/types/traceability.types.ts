@@ -1,9 +1,18 @@
+// ── Aggregation level (shared) ──
+
+/**
+ * Aggregation granularity for a traceability request/context.
+ * Source of truth for both TraceQuery (request) and
+ * TraceOverlayContext (UI context).
+ */
+export type TraceAggregationLevel = "COMPANY" | "DIVISION" | "TEAM" | "MEMBER";
+
 // ── Query Parameters ──
 
 export interface TraceQuery {
   metricName: string;
   periodKey: string; // "YYYYMMDD" (DAILY) or "YYYY-MM" (MONTHLY)
-  aggregationLevel: "MEMBER" | "TEAM" | "DIVISION" | "COMPANY";
+  aggregationLevel: TraceAggregationLevel;
   memberId?: string;
   employeeId?: string;
   departmentCode?: string;
@@ -320,7 +329,7 @@ export interface TraceOverlayContext {
   /** metricName for display (Korean name, e.g. "리뷰 속도") */
   metricDisplayName?: string;
   /** aggregation level determined by which row type was clicked */
-  aggregationLevel: "MEMBER" | "TEAM" | "DIVISION";
+  aggregationLevel: TraceAggregationLevel;
   /** department code -- available from OrganizationDepartment.code */
   departmentCode?: string;
   /** department name for display */

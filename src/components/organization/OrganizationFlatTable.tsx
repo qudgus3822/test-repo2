@@ -47,6 +47,7 @@ import type {
 } from "@/types/organization.types";
 import { getMemberRoleOrPositionLabel } from "@/utils/organization";
 import { getSourceLogo } from "@/utils/metrics";
+import { resolveTraceAggregation } from "@/utils/traceability.js";
 import { useShallow } from "zustand/react/shallow";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
@@ -350,12 +351,13 @@ const CombinedRow = ({
                 const apiName = metricCodeToEnumMap[code] ?? code.toLowerCase();
                 if (item.type === "department") {
                   const dept = item.data as OrganizationDepartment;
+                  const { aggregationLevel, departmentCode } = resolveTraceAggregation(dept);
                   onTraceClick?.({
                     metricCode: code,
                     metricApiName: apiName,
                     metricDisplayName: metricName,
-                    aggregationLevel: dept.level <= 2 ? "DIVISION" : "TEAM",
-                    departmentCode: dept.code,
+                    aggregationLevel,
+                    departmentCode,
                     departmentName: dept.name,
                   });
                 } else {
