@@ -10,6 +10,7 @@ import type { GraphNodeType } from "@/types/traceability.types.js";
 // ── Node dimensions ────────────────────────────────────────────────────────────
 
 export const NODE_W: Record<GraphNodeType, number> = {
+  COMPANY: 240,
   DIVISION: 220,
   TEAM: 200,
   MEMBER: 190,
@@ -17,6 +18,7 @@ export const NODE_W: Record<GraphNodeType, number> = {
 };
 
 export const NODE_H: Record<GraphNodeType, number> = {
+  COMPANY: 92,
   DIVISION: 88,
   TEAM: 82,
   MEMBER: 74,
@@ -26,6 +28,9 @@ export const NODE_H: Record<GraphNodeType, number> = {
 // ── Colors ─────────────────────────────────────────────────────────────────────
 
 export const GRAPH_COLORS = {
+  COMPANY: {
+    fill: '#EEF2FF', stroke: '#6366F1', text: '#3730A3', badge: '#E0E7FF',
+  },
   DIVISION: {
     fill: '#F5F0FF', stroke: '#8B5CF6', text: '#5B21B6', badge: '#EDE9FE',
   },

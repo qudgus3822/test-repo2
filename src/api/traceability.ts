@@ -19,7 +19,6 @@ export const fetchTraceability = async (
   params.set("metricName", query.metricName);
   params.set("periodKey", query.periodKey);
   params.set("aggregationLevel", query.aggregationLevel);
-  if (query.memberId) params.set("memberId", query.memberId);
   if (query.employeeId) params.set("employeeId", query.employeeId);
   if (query.departmentCode) params.set("departmentCode", query.departmentCode);
   if (query.excludeMergeRequests) params.set("excludeMergeRequests", "true");

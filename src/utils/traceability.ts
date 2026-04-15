@@ -1,4 +1,5 @@
-import type { MergeRequestSummary } from "@/types/traceability.types";
+import type { MergeRequestSummary, TraceAggregationLevel } from "@/types/traceability.types.js";
+import type { OrganizationDepartment } from "@/types/organization.types.js";
 
 // ── MR Enrichment ──
 
@@ -246,4 +247,38 @@ export function getScoreColor(score: number): string {
   if (score >= 100) return "text-green-600";
   if (score >= 70) return "text-yellow-600";
   return "text-red-600";
+}
+
+// ── Trace Aggregation Resolution ──
+
+export interface TraceAggregationTarget {
+  aggregationLevel: TraceAggregationLevel;
+  departmentCode: string | undefined;
+}
+
+/**
+ * Maps an OrganizationDepartment click to the TraceQuery shape.
+ *
+ * Rules:
+ * - level === 1 → COMPANY, no departmentCode.
+ * - level === 2 → DIVISION with the dept's code.
+ * - level >= 3 (팀/파트) → TEAM with the dept's code.
+ *
+ * NOTE on level-1 uniqueness: OrganizationDepartment.level is not
+ * guaranteed unique across the tree (Organization.tsx:48 and
+ * useOrganizationTree.ts:75 both treat level-1 as plural-possible).
+ * If multiple level-1 rows ever appear, both clicks emit the same
+ * COMPANY request with no departmentCode. The backend has no company
+ * discriminator today; see plan §5.1 and §10 for backend follow-up.
+ */
+export function resolveTraceAggregation(
+  dept: Pick<OrganizationDepartment, "level" | "code">,
+): TraceAggregationTarget {
+  if (dept.level === 1) {
+    return { aggregationLevel: "COMPANY", departmentCode: undefined };
+  }
+  if (dept.level === 2) {
+    return { aggregationLevel: "DIVISION", departmentCode: dept.code };
+  }
+  return { aggregationLevel: "TEAM", departmentCode: dept.code };
 }

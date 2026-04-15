@@ -246,5 +246,13 @@ export const useSequentialDivisionLoader = (
     [divisions, metricName, periodKey, queryClient],
   );
 
-  return { divisionStates, retryDivision };
+  // allSettled: true only when all divisions have reached a terminal state (loaded or error).
+  // size === 0 guard prevents vacuous true on an empty map (non-COMPANY flow or before init).
+  const allSettled =
+    divisionStates.size > 0 &&
+    Array.from(divisionStates.values()).every(
+      (s) => s.state === "loaded" || s.state === "error",
+    );
+
+  return { divisionStates, retryDivision, allSettled };
 };
