@@ -28,6 +28,8 @@ interface UseGraphPanZoomReturn {
   resetView: () => void;
   fitContent: (contentWidth: number, contentHeight: number) => void;
   isPanning: boolean;
+  /** Returns true if the user has panned/zoomed since the last programmatic fitContent call. */
+  isUserZoomed: () => boolean;
 }
 
 const MIN_ZOOM = 0.2;
@@ -43,6 +45,10 @@ export function useGraphPanZoom(
   const panStartRef = useRef({ x: 0, y: 0 });
   const panOriginRef = useRef({ x: 0, y: 0 });
   const lastTouchesRef = useRef<React.Touch[] | null>(null);
+
+  // Snapshot of the last values fitContent wrote. Null means "never fit".
+  // Used to detect whether the user has panned/zoomed since the last programmatic fit.
+  const lastProgrammaticRef = useRef<{ zoom: number; panX: number; panY: number } | null>(null);
 
   // Render state -- only updated by zoom/fit operations or after pan ends
   const [transformStr, setTransformStr] = useState("translate(0,0) scale(1)");
@@ -193,8 +199,27 @@ export function useGraphPanZoom(
     zoomRef.current = Math.min(scaleX, scaleY, 1.2);
     panRef.current.x = (rect.width - contentWidth * zoomRef.current) / 2;
     panRef.current.y = (rect.height - contentHeight * zoomRef.current) / 2;
+    // Snapshot the values we just programmed so isUserZoomed can detect user divergence.
+    lastProgrammaticRef.current = {
+      zoom: zoomRef.current,
+      panX: panRef.current.x,
+      panY: panRef.current.y,
+    };
     applyTransform();
   }, [containerRef, applyTransform]);
+
+  // Returns true if the user has panned or zoomed since the last programmatic fitContent call.
+  // False if fitContent was never called or if live values still match the last programmatic snapshot.
+  const isUserZoomed = useCallback((): boolean => {
+    const p = lastProgrammaticRef.current;
+    if (!p) return false;
+    const eps = 1e-3;
+    return (
+      Math.abs(zoomRef.current - p.zoom) > eps ||
+      Math.abs(panRef.current.x - p.panX) > eps ||
+      Math.abs(panRef.current.y - p.panY) > eps
+    );
+  }, []);
 
   return {
     transformStr,
@@ -212,5 +237,6 @@ export function useGraphPanZoom(
     resetView,
     fitContent,
     isPanning,
+    isUserZoomed,
   };
 }

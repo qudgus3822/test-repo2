@@ -1,0 +1,240 @@
+{
+  "metricInfo": {
+    "title": "리뷰 요청 응답률",
+    "category": "review",
+    "aggregationType": "AVG",
+    "rawUnit": "%",
+    "displayUnit": "%",
+    "timeUnitConversion": "none",
+    "direction": "FORWARD"
+  },
+  "traceMapping": {
+    "itemType": "mergeRequest",
+    "itemsLocation": {
+      "validPath": "mergeRequests",
+      "invalidPath": "invalidMergeRequests"
+    },
+    "referenceFields": [
+      {
+        "key": "id",
+        "label": "MR ID",
+        "type": "string",
+        "display": true,
+        "isReference": true,
+        "referenceCollection": "raw_merge_requests"
+      },
+      {
+        "key": "repositoryId",
+        "label": "저장소 ID",
+        "type": "number",
+        "display": false,
+        "isReference": true,
+        "referenceCollection": "raw_merge_requests"
+      }
+    ],
+    "summaryFields": [
+      {
+        "key": "totalAssigned",
+        "label": "총 배정 수",
+        "type": "number",
+        "display": true,
+        "unit": "개",
+        "derived": true,
+        "derivedFrom": ["items", "invalidItems"],
+        "formula": "sumOfLengths"
+      },
+      {
+        "key": "respondedWithinThreshold",
+        "label": "임계값 내 응답 수",
+        "type": "number",
+        "display": true,
+        "unit": "개",
+        "derived": true,
+        "derivedFrom": ["items.respondedInTime"],
+        "formula": "countWhere"
+      },
+      {
+        "key": "responseThresholdHours",
+        "label": "응답 임계값",
+        "type": "number",
+        "display": true,
+        "unit": "시간"
+      },
+      {
+        "key": "totalCount",
+        "label": "전체 건수",
+        "type": "number",
+        "display": false,
+        "derived": true,
+        "derivedFrom": ["items", "invalidItems"],
+        "formula": "sumOfLengths"
+      },
+      {
+        "key": "validCount",
+        "label": "유효 건수",
+        "type": "number",
+        "display": false,
+        "derived": true,
+        "derivedFrom": ["items"],
+        "formula": "arrayLength"
+      },
+      {
+        "key": "validityRate",
+        "label": "유효율",
+        "type": "number",
+        "display": false,
+        "unit": "%",
+        "derived": true,
+        "derivedFrom": ["validCount", "totalCount"],
+        "formula": "percentage"
+      }
+    ],
+    "validItemFields": [
+      {
+        "key": "assignedAt",
+        "label": "리뷰어 지정 시각",
+        "type": "date",
+        "display": true
+      },
+      {
+        "key": "respondedAt",
+        "label": "응답 시각",
+        "type": "date",
+        "display": true
+      },
+      {
+        "key": "responseDelayHours",
+        "label": "응답 지연(시간)",
+        "type": "number",
+        "display": false,
+        "unit": "시간",
+        "derived": true,
+        "derivedFrom": ["assignedAt", "respondedAt"],
+        "formula": "timeDiffHours"
+      },
+      {
+        "key": "responseDelayMinutes",
+        "label": "응답 지연(분)",
+        "type": "number",
+        "display": true,
+        "unit": "분",
+        "derived": true,
+        "derivedFrom": ["assignedAt", "respondedAt"],
+        "formula": "timeDiffMinutes"
+      },
+      {
+        "key": "respondedInTime",
+        "label": "제시간 응답 여부",
+        "type": "boolean",
+        "display": true,
+        "derived": true,
+        "derivedFrom": ["responseDelayHours", "responseThresholdHours"],
+        "formula": "threshold"
+      }
+    ],
+    "invalidItemFields": [
+      {
+        "key": "assignedAt",
+        "label": "리뷰어 지정 시각",
+        "type": "date",
+        "display": true
+      },
+      {
+        "key": "respondedAt",
+        "label": "응답 시각",
+        "type": "date",
+        "display": true
+      },
+      {
+        "key": "responseDelayHours",
+        "label": "응답 지연(시간)",
+        "type": "number",
+        "display": false,
+        "unit": "시간",
+        "derived": true,
+        "derivedFrom": ["assignedAt", "respondedAt"],
+        "formula": "timeDiffHours"
+      },
+      {
+        "key": "responseDelayMinutes",
+        "label": "응답 지연(분)",
+        "type": "number",
+        "display": true,
+        "unit": "분",
+        "derived": true,
+        "derivedFrom": ["assignedAt", "respondedAt"],
+        "formula": "timeDiffMinutes"
+      },
+      {
+        "key": "respondedInTime",
+        "label": "제시간 응답 여부",
+        "type": "boolean",
+        "display": true,
+        "derived": true,
+        "derivedFrom": ["responseDelayHours", "responseThresholdHours"],
+        "formula": "threshold"
+      }
+    ]
+  },
+  "query": {
+    "metricName": "review_request_response_rate",
+    "periodKey": "2026-04",
+    "period": "MONTHLY",
+    "aggregationLevel": "COMPANY"
+  },
+  "root": {
+    "level": "COMPANY",
+    "metric": {
+      "value": 81.92857142857143,
+      "rawValue": 81.92857142857143,
+      "score": 67.70956316410862,
+      "weightedScore": 5.64246359700905,
+      "count": 7,
+      "countLabel": "MEMBERS",
+      "unit": "%"
+    },
+    "aggregationMethod": "WEIGHTED_AVERAGE",
+    "children": [
+      {
+        "level": "DIVISION",
+        "departmentCode": "3000",
+        "departmentName": "모두규제개발실",
+        "metric": {
+          "value": 87.5,
+          "rawValue": 87.5,
+          "score": 72.31404958677686,
+          "weightedScore": 6.026170798898071,
+          "count": 4,
+          "countLabel": "MEMBERS",
+          "unit": "%"
+        },
+        "aggregationMethod": "WEIGHTED_AVERAGE",
+        "children": null
+      },
+      {
+        "level": "DIVISION",
+        "departmentCode": "2000",
+        "departmentName": "모두플랫폼개발실",
+        "metric": {
+          "value": 74.5,
+          "rawValue": 74.5,
+          "score": 61.57024793388429,
+          "weightedScore": 5.130853994490357,
+          "count": 3,
+          "countLabel": "MEMBERS",
+          "unit": "%"
+        },
+        "aggregationMethod": "WEIGHTED_AVERAGE",
+        "children": null
+      }
+    ]
+  },
+  "rawDailyMetric": null,
+  "metadata": {
+    "supportsMemberLevel": true,
+    "lowestTraceLevel": "COMPANY",
+    "mergeRequestsIncluded": false,
+    "mergeRequestsExcludedReason": "COMPANY_LEVEL",
+    "isShallowResponse": true
+  }
+}

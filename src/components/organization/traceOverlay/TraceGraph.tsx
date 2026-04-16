@@ -37,6 +37,10 @@ interface TraceGraphProps {
   itemType?: 'mergeRequest' | 'commit';
   /** Valid item path from traceMapping.itemsLocation — used for commit item counting */
   validPath?: string;
+  /** True once all sequential division loads have settled (loaded or error). Triggers a second fit. */
+  allDivisionsSettled?: boolean;
+  /** Label for the COMPANY root node (from clicked dept name in TraceOverlayContext). */
+  companyLabel?: string;
 }
 
 /**
@@ -54,6 +58,8 @@ export const TraceGraph = ({
   selectedNodeId,
   itemType,
   validPath,
+  allDivisionsSettled = false,
+  companyLabel,
 }: TraceGraphProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const {
@@ -65,6 +71,7 @@ export const TraceGraph = ({
     resetView,
     fitContent,
     isPanning,
+    isUserZoomed,
   } = useGraphPanZoom(containerRef);
 
   // Tooltip state — only hoveredEdge needs React state (mouseenter/leave)
@@ -113,27 +120,40 @@ export const TraceGraph = ({
       isCompanyLevel ? divisionStates : undefined,
       itemType,
       validPath,
+      companyLabel,
     );
     return computeGraphLayout(graphTrees, expandedNodes);
-  }, [root, expandedNodes, divisionStates, isCompanyLevel, itemType, validPath]);
+  }, [root, expandedNodes, divisionStates, isCompanyLevel, itemType, validPath, companyLabel]);
 
   // Keep nodeMapRef in sync with layout so handleNodeClick has stable O(1) lookup
   useEffect(() => {
     nodeMapRef.current = layout?.nodeMap;
   }, [layout]);
 
-  // Fit content only once on initial layout (not on every division load)
+  // Fit #1: immediately on first layout (may be shallow for COMPANY).
+  // A2: set latch BEFORE fitContent to stay idempotent across concurrent effect ticks.
   const hasInitialFitRef = useRef(false);
   useEffect(() => {
-    if (layout && !hasInitialFitRef.current) {
-      fitContent(layout.contentWidth, layout.contentHeight);
-      hasInitialFitRef.current = true;
-    }
+    if (!layout || hasInitialFitRef.current) return;
+    hasInitialFitRef.current = true;                 // A2: latch first
+    fitContent(layout.contentWidth, layout.contentHeight);
   }, [layout, fitContent]);
 
-  // Reset fit flag when root changes (new trace query)
+  // Fit #2: once more when all sequential divisions have settled (loaded/errored).
+  // A2: set latch BEFORE fitContent to stay idempotent across concurrent effect ticks.
+  // A3: skip if user has zoomed/panned since last programmatic fit.
+  const hasSettledFitRef = useRef(false);
+  useEffect(() => {
+    if (!layout || !allDivisionsSettled || hasSettledFitRef.current) return;
+    hasSettledFitRef.current = true;                 // A2: latch first
+    if (isUserZoomed()) return;                      // A3: preserve user gesture
+    fitContent(layout.contentWidth, layout.contentHeight);
+  }, [layout, allDivisionsSettled, fitContent, isUserZoomed]);
+
+  // Reset both guards on a new trace query
   useEffect(() => {
     hasInitialFitRef.current = false;
+    hasSettledFitRef.current = false;
   }, [root]);
 
   const handleNodeClick = useCallback(

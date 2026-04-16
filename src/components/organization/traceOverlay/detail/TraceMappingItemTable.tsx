@@ -1,5 +1,6 @@
 import type { TraceMappingField } from "@/types/traceability.types.js";
 import type { TableRow } from "@/utils/traceMappingUtils.js";
+import { isHttpUrl } from "@/utils/url.js";
 
 interface TraceMappingItemTableProps {
   columns: TraceMappingField[];
@@ -42,7 +43,19 @@ export function TraceMappingItemTable({
             <tr key={rowIndex}>
               {columns.map(col => (
                 <td key={col.key} className="py-1.5 pr-3 border-b border-gray-50 last:border-0 text-gray-800">
-                  {row.display[col.key]}
+                  {isHttpUrl(row.meta?.[col.key]) ? (
+                    <a
+                      href={row.meta![col.key]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 hover:underline"
+                      aria-label={`MR ${row.display[col.key]} 열기`}
+                    >
+                      {row.display[col.key]}
+                    </a>
+                  ) : (
+                    row.display[col.key]
+                  )}
                 </td>
               ))}
             </tr>

@@ -45,7 +45,17 @@ import { TraceOverlay } from "@/components/organization/traceOverlay/TraceOverla
 // Level 1(부문) 조직 코드만 수집
 // 초기 화면 진입 시 사용 → 실 단위까지 보임
 const getLevel1DepartmentCodes = (orgs: OrganizationDepartment[]): string[] => {
-  return orgs.filter((org) => org.level === 1).map((org) => org.code);
+  const codes = orgs.filter((org) => org.level === 1).map((org) => org.code);
+  if (import.meta.env.DEV && codes.length > 1) {
+    console.warn(
+      "[trace] Multi-root tenant detected: %d level-1 departments (%o). " +
+        "COMPANY-level trace clicks will be indistinguishable until backend " +
+        "adds a companyCode discriminator. See plan §5.1.",
+      codes.length,
+      codes,
+    );
+  }
+  return codes;
 };
 
 // Level 2(실)까지의 조직 코드 수집 (부문 + 실)

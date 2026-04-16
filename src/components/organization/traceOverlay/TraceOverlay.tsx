@@ -30,6 +30,7 @@ const PRIMARY_BUTTON = "px-4 py-2 bg-blue-600 rounded text-sm text-white hover:b
 function getRootType(level: TraceNode["level"]): GraphNodeType {
   switch (level) {
     case "COMPANY":
+      return "COMPANY";
     case "DIVISION":
       return "DIVISION";
     case "TEAM":
@@ -62,7 +63,7 @@ export const TraceOverlay = ({
         periodKey: yearMonth,
         aggregationLevel: context.aggregationLevel,
         departmentCode: context.departmentCode,
-        memberId: context.memberId,
+        employeeId: context.employeeId,
       }
     : {
         metricName: "",
@@ -83,12 +84,25 @@ export const TraceOverlay = ({
 
   // Sequential loader for company-level traces
   const isCompanyLevel = data?.root?.level === "COMPANY";
-  const { divisionStates, retryDivision } = useSequentialDivisionLoader(
+  const { divisionStates, retryDivision, allSettled } = useSequentialDivisionLoader(
     isCompanyLevel ? (data!.root as CompanyTraceNode).children : [],
     data?.query.metricName ?? "",
     data?.query.periodKey ?? "",
     isCompanyLevel,
   );
+
+  // Derive shallow-loading signal for the header banner.
+  // A1: size === 0 carve-out covers the first frame after the COMPANY response
+  // arrives but before useSequentialDivisionLoader's init effect has populated
+  // the map — without this guard, some() on an empty map returns false and the
+  // banner flickers off for one paint.
+  const isShallowLoading =
+    isCompanyLevel &&
+    (data?.metadata?.isShallowResponse ?? false) &&
+    (divisionStates.size === 0 ||
+      Array.from(divisionStates.values()).some(
+        (s) => s.state === "pending" || s.state === "loading",
+      ));
 
   // Initialize expand state: expand all on first load (only on root change)
   useEffect(() => {
@@ -158,13 +172,11 @@ export const TraceOverlay = ({
   const handleCollapseAll = useCallback(() => {
     if (!data?.root) return;
     if (data.root.level === "COMPANY") {
-      setExpandedNodes(
-        new Set(
-          (data.root as CompanyTraceNode).children.map((d) => d.departmentCode),
-        ),
-      );
+      setExpandedNodes(new Set(["__company_root__"]));
+    } else if (data.root.level === "MEMBER") {
+      setExpandedNodes(new Set([data.root.memberId]));
     } else {
-      setExpandedNodes(new Set()); // collapse everything
+      setExpandedNodes(new Set([data.root.departmentCode]));
     }
   }, [data?.root]);
 
@@ -257,12 +269,9 @@ export const TraceOverlay = ({
                 <LoadingSpinner />
               </div>
             ) : isError ? (
-              <div className="flex flex-col items-center justify-center h-full gap-4">
+              <div className="flex flex-col items-center justify-center h-full gap-4 px-6">
                 <p className="text-red-600 text-sm">
-                  데이터를 불러오는 중 오류가 발생했습니다.
-                </p>
-                <p className="text-gray-500 text-xs">
-                  {(error as Error)?.message}
+                  요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.
                 </p>
                 <button
                   type="button"
@@ -271,6 +280,16 @@ export const TraceOverlay = ({
                 >
                   다시 시도
                 </button>
+                {import.meta.env.DEV && (error as Error)?.message && (
+                  <details className="text-xs text-gray-400 max-w-full">
+                    <summary className="cursor-pointer select-none">
+                      상세 정보 (dev only)
+                    </summary>
+                    <pre className="mt-2 whitespace-pre-wrap break-all text-left">
+                      {(error as Error).message}
+                    </pre>
+                  </details>
+                )}
               </div>
             ) : data ? (
               <div className="flex flex-col flex-1 overflow-hidden">
@@ -280,6 +299,7 @@ export const TraceOverlay = ({
                   metadata={data.metadata}
                   overlayContext={context}
                   direction={data.metricInfo.direction}
+                  isShallowLoading={isShallowLoading}
                 />
                 <TraceGraphToolbar
                   onExpandAll={handleExpandAll}
@@ -298,6 +318,8 @@ export const TraceOverlay = ({
                     selectedNodeId={selectedMember?.memberId ?? null}
                     itemType={data.traceMapping?.itemType}
                     validPath={data.traceMapping?.itemsLocation.validPath}
+                    allDivisionsSettled={isCompanyLevel ? allSettled : false}
+                    companyLabel={isCompanyLevel ? context.departmentName : undefined}
                   />
                   {selectedMember && data.traceMapping && (
                     <TraceMappingErrorBoundary key={selectedMember.memberId}>
@@ -305,6 +327,7 @@ export const TraceOverlay = ({
                         traceMapping={data.traceMapping}
                         rawDailyData={selectedMember.rawDailyData}
                         mergeRequests={selectedMember.mergeRequests}
+                        aggregatedSummary={selectedMember.aggregatedSummary}
                         period={data.query.period}
                         memberName={selectedMember.memberName}
                         itemTypeLabel={getItemTypeLabel(data.traceMapping.itemType)}

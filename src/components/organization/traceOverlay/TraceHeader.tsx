@@ -1,4 +1,4 @@
-import { AlertCircle, Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 import { formatPeriodKey } from "@/utils/traceability.js";
 import type {
   TraceResult,
@@ -7,7 +7,6 @@ import type {
 
 const ALERT_VARIANTS = {
   info: "flex items-center gap-1.5 px-2 py-1 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700",
-  warning: "flex items-center gap-1.5 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-xs text-amber-700",
 };
 
 const DIRECTION_HINT: Record<"FORWARD" | "REVERSE", string> = {
@@ -21,19 +20,21 @@ interface TraceHeaderProps {
   metadata: TraceResult["metadata"];
   overlayContext: TraceOverlayContext;
   direction: "FORWARD" | "REVERSE";
+  /** Derived by TraceOverlay: true while company-level sequential loader is still pending/loading. */
+  isShallowLoading?: boolean;
 }
 
 export const TraceHeader = ({
   query,
   rawDailyMetric,
-  metadata,
   overlayContext,
   direction,
+  isShallowLoading = false,
 }: TraceHeaderProps) => {
   const entityName =
     overlayContext.memberName ??
     overlayContext.departmentName ??
-    overlayContext.memberId ??
+    overlayContext.employeeId ??
     overlayContext.departmentCode ??
     "-";
 
@@ -41,7 +42,7 @@ export const TraceHeader = ({
 
   return (
     <div className="flex flex-col gap-1 shrink-0 px-6 py-3 border-b border-gray-100">
-      {/* Single compact row: context pills */}
+      {/* Single compact row: context pills + optional shallow-loading chip */}
       <div className="flex items-center flex-wrap gap-x-3 gap-y-1">
         <span className="text-xs text-gray-500">
           <span className="text-gray-400">기간: </span>
@@ -56,6 +57,12 @@ export const TraceHeader = ({
           <span className="text-gray-400">대상: </span>
           {entityName}
         </span>
+        {isShallowLoading && (
+          <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-700">
+            <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+            요약 데이터 · 상세 로드 중
+          </span>
+        )}
       </div>
 
       {/* Direction hint */}
@@ -63,17 +70,6 @@ export const TraceHeader = ({
         <Info className="w-3.5 h-3.5 shrink-0" />
         <span>{DIRECTION_HINT[direction]}</span>
       </div>
-
-      {/* Shallow response warning */}
-      {metadata.isShallowResponse && (
-        <div className={ALERT_VARIANTS.warning}>
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-          <span>
-            요약 데이터입니다. 각 부문의 상세 데이터를 순차적으로 불러오는
-            중입니다.
-          </span>
-        </div>
-      )}
     </div>
   );
 };

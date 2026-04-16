@@ -46,6 +46,7 @@ import {
   getLevelBackgroundColor,
 } from "@/utils/organization";
 import { getSourceLogo } from "@/utils/metrics";
+import { resolveTraceAggregation } from "@/utils/traceability.js";
 import { Tooltip } from "@/components/ui/Tooltip";
 import {
   useOrganizationTree,
@@ -270,16 +271,17 @@ const CombinedDepartmentRow = ({
               unit={unit}
               description={description}
               status={status}
-              onTraceClick={() =>
+              onTraceClick={() => {
+                const { aggregationLevel, departmentCode } = resolveTraceAggregation(dept);
                 onTraceClick?.({
                   metricCode: code,
                   metricApiName: metricCodeToEnumMap[code] ?? code.toLowerCase(),
                   metricDisplayName: metricName,
-                  aggregationLevel: dept.level <= 2 ? "DIVISION" : "TEAM",
-                  departmentCode: dept.code,
+                  aggregationLevel,
+                  departmentCode,
                   departmentName: dept.name,
-                })
-              }
+                });
+              }}
             />
           </td>
         );
@@ -408,7 +410,7 @@ const CombinedMemberRow = ({
                   metricApiName: metricCodeToEnumMap[code] ?? code.toLowerCase(),
                   metricDisplayName: metricName,
                   aggregationLevel: "MEMBER",
-                  memberId: member.employeeID,
+                  employeeId: member.employeeID,
                   memberName: member.name,
                   departmentCode: member.departmentCode,
                   departmentName: member.departmentName,

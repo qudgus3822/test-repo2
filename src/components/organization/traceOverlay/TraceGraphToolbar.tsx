@@ -11,13 +11,14 @@ interface TraceGraphToolbarProps {
 const TOOLBAR_BUTTON = "text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-800 transition-colors cursor-pointer";
 
 const LEGEND_ITEMS: { type: GraphNodeType; label: string }[] = [
+  { type: 'COMPANY', label: '회사' },
   { type: 'DIVISION', label: '부문/실' },
   { type: 'TEAM', label: '팀' },
   { type: 'MEMBER', label: '개인' },
   { type: 'MR_SUMMARY', label: 'MR/커밋' },
 ];
 
-const TYPE_ORDER: GraphNodeType[] = ['DIVISION', 'TEAM', 'MEMBER', 'MR_SUMMARY'];
+const TYPE_ORDER: GraphNodeType[] = ['COMPANY', 'DIVISION', 'TEAM', 'MEMBER', 'MR_SUMMARY'];
 
 /**
  * Toolbar between header and graph: expand/collapse all buttons + legend.

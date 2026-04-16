@@ -5,10 +5,11 @@ import {
   formatDateKey,
   enrichMergeRequests,
   getScoreColor,
-} from "@/utils/traceability";
-import { CollapsibleSection } from "../CollapsibleSection";
-import { GenericDetail } from "../GenericDetail";
-import type { MemberTraceNode, MetricInfo } from "@/types/traceability.types";
+} from "@/utils/traceability.js";
+import { isHttpUrl } from "@/utils/url.js";
+import { CollapsibleSection } from "../CollapsibleSection.js";
+import { GenericDetail } from "../GenericDetail.js";
+import type { MemberTraceNode, MetricInfo } from "@/types/traceability.types.js";
 
 interface MemberNodeProps {
   node: MemberTraceNode;
@@ -117,7 +118,21 @@ export const MemberNode = ({ node, metricInfo }: MemberNodeProps) => {
                   className="bg-gray-50 rounded p-2 text-xs"
                 >
                   <div className="font-medium text-gray-800 truncate">
-                    !{mr.iid} {mr.title}
+                    {mr.externalUrl && isHttpUrl(mr.externalUrl) ? (
+                      <a
+                        href={mr.externalUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        aria-label={`MR !${mr.iid} 열기`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        !{mr.iid}
+                      </a>
+                    ) : (
+                      <span>!{mr.iid}</span>
+                    )}{" "}
+                    {mr.title}
                   </div>
                   <div className="text-gray-500 mt-0.5">
                     <span>{mr.repositoryName}</span>

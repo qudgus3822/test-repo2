@@ -1,10 +1,18 @@
+// ── Aggregation level (shared) ──
+
+/**
+ * Aggregation granularity for a traceability request/context.
+ * Source of truth for both TraceQuery (request) and
+ * TraceOverlayContext (UI context).
+ */
+export type TraceAggregationLevel = "COMPANY" | "DIVISION" | "TEAM" | "MEMBER";
+
 // ── Query Parameters ──
 
 export interface TraceQuery {
   metricName: string;
   periodKey: string; // "YYYYMMDD" (DAILY) or "YYYY-MM" (MONTHLY)
-  aggregationLevel: "MEMBER" | "TEAM" | "DIVISION" | "COMPANY";
-  memberId?: string;
+  aggregationLevel: TraceAggregationLevel;
   employeeId?: string;
   departmentCode?: string;
   excludeMergeRequests?: boolean;
@@ -55,6 +63,7 @@ export interface MergeRequestSummary {
   mergedAt?: string;
   projectEpicKey?: string;
   projectName?: string;
+  externalUrl?: string; // External page URL (e.g. GitLab MR). Empty string = unavailable. Optional for rolling deployment safety.
 }
 
 // ── Daily Data ──
@@ -78,6 +87,8 @@ export interface MemberTraceNode {
   metric: MetricSnapshot;
   rawDailyData: DailyUserMetric[] | null;
   mergeRequests: MergeRequestSummary[] | null;
+  /** summaryFields 일별 합산 요약. 백엔드에서 계산. null이면 데이터 없음. */
+  aggregatedSummary?: Record<string, unknown> | null;
 }
 
 export interface TeamTraceNode {
@@ -187,7 +198,7 @@ export interface TraceResult {
 
 // -- Graph Layout Types --
 
-export type GraphNodeType = "DIVISION" | "TEAM" | "MEMBER" | "MR_SUMMARY";
+export type GraphNodeType = "COMPANY" | "DIVISION" | "TEAM" | "MEMBER" | "MR_SUMMARY";
 
 /**
  * Opaque bundle of tooltip data for an edge's contribution rate display.
@@ -317,13 +328,12 @@ export interface TraceOverlayContext {
   /** metricName for display (Korean name, e.g. "리뷰 속도") */
   metricDisplayName?: string;
   /** aggregation level determined by which row type was clicked */
-  aggregationLevel: "MEMBER" | "TEAM" | "DIVISION";
+  aggregationLevel: TraceAggregationLevel;
   /** department code -- available from OrganizationDepartment.code */
   departmentCode?: string;
   /** department name for display */
   departmentName?: string;
-  /** member employee ID -- available from OrganizationMember.employeeID */
-  memberId?: string;
+  employeeId?: string;
   /** member name for display */
   memberName?: string;
 }
