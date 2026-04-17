@@ -69,6 +69,10 @@ export const ProgressSquare = ({
   // - 8글자 (10만 단위): XX.XX만 (소수점 2자리)
   // - 9글자 (100만 단위): XXX.X만 (소수점 1자리)
   // - 10글자 이상: 말줄임
+  // [변경: 2026-04-17 00:00, 김병현 수정] 실제 표시 문자열(fullValue) 길이 기준으로 변경 + 만 단위 소수점 2자리 통일
+  // - 7글자 이하: 그대로 표시 (예: 4000.12)
+  // - 8~9글자 (1만~100만 단위): X.XX만 / XX.XX만 (소수점 2자리 통일)
+  // - 10글자 이상: 말줄임
   const MAX_DISPLAY_LENGTH = 7;
 
   const formatValue = (): { display: string; full: string } => {
@@ -87,9 +91,6 @@ export const ProgressSquare = ({
         fullValue = formattedNum;
       } else {
         // 실제값 모드: 글자수 기반 포맷팅
-        // 글자수 계산 시 항상 소수점 1자리 기준 (예: 1234 → "1234.0" = 6글자)
-        const baseFormatted = value.toFixed(2);
-        const charCount = baseFormatted.length;
         // [변경: 2026-01-28 16:30, 임도휘 수정] 소수점 표기 조건
         // - 정수인 경우 소수점 없이 표시
         // - 소수인 경우: 정수부가 0이고 소수점 첫째자리도 0이면 둘째자리까지, 아니면 첫째자리까지
@@ -98,19 +99,16 @@ export const ProgressSquare = ({
           ? `${value}`
           : parseFloat(value.toFixed(2)).toString();
 
-        if (charCount <= 6) {
-          // 6글자 이하 (천단위): 정수는 그대로, 소수는 소수점 1자리
+        // [변경: 2026-04-17 00:00, 김병현 수정]
+        // 실제 표시될 문자열(fullValue) 길이를 기준으로 분기하도록 변경
+        // - 7글자 이하: 그대로 표시 (예: 4000.12)
+        // - 8~9글자: 만 단위 변환 + 소수점 2자리 통일 (예: 12000.13 → 1.20만)
+        // - 10글자 이상: 말줄임
+        const displayCharCount = fullValue.length;
+
+        if (displayCharCount <= 7) {
           formattedNum = fullValue;
-        } else if (charCount === 7) {
-          // 7글자 (1만 단위): 소수점 3자리 + "만"
-          const inMan = value / 10000;
-          formattedNum = `${inMan.toFixed(3)}만`;
-        } else if (charCount === 8) {
-          // 8글자 (10만 단위): 소수점 2자리 + "만"
-          const inMan = value / 10000;
-          formattedNum = `${inMan.toFixed(2)}만`;
-        } else if (charCount === 9) {
-          // 9글자 (100만 단위): 소수점 1자리 + "만"
+        } else if (displayCharCount <= 9) {
           const inMan = value / 10000;
           formattedNum = `${inMan.toFixed(2)}만`;
         } else {
