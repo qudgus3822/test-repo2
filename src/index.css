@@ -16,4 +16,15 @@
   button {
     cursor: pointer;
   }
+
+  /* [변경: 2026-04-17 00:00, 김병현 수정] 전체 페이지 입력 커서 깜빡임 제거 (선택은 정상 동작) */
+  * {
+    caret-color: transparent;
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    caret-color: auto;
+  }
 }
